@@ -1,0 +1,81 @@
+{
+  "name": "odds_all_extended_markets_output",
+  "type": "object",
+  "required": ["extended_markets"],
+  "properties": {
+    "extended_markets": {
+      "type": "object",
+      "required": ["safety", "goals_depth", "discipline_and_set_pieces"],
+      "properties": {
+        "safety": {
+          "type": "object",
+          "required": ["double_chance", "draw_no_bet"],
+          "properties": {
+            "double_chance": {
+              "type": "object",
+              "required": ["1X", "X2", "12"],
+              "properties": {
+                "1X": { "type": ["number", "null"] },
+                "X2": { "type": ["number", "null"] },
+                "12": { "type": ["number", "null"] }
+              }
+            },
+            "draw_no_bet": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            }
+          }
+        },
+        "goals_depth": {
+          "type": "object",
+          "required": ["btts", "over_under_2.5"],
+          "properties": {
+            "btts": {
+              "type": "object",
+              "required": ["yes", "no"],
+              "properties": {
+                "yes": { "type": ["number", "null"] },
+                "no": { "type": ["number", "null"] }
+              }
+            },
+            "over_under_2.5": {
+              "type": "object",
+              "required": ["over", "under"],
+              "properties": {
+                "over": { "type": ["number", "null"] },
+                "under": { "type": ["number", "null"] }
+              }
+            }
+          }
+        },
+        "discipline_and_set_pieces": {
+          "type": "object",
+          "required": ["total_cards_3.5", "total_corners_9.5"],
+          "properties": {
+            "total_cards_3.5": {
+              "type": "object",
+              "required": ["over", "under"],
+              "properties": {
+                "over": { "type": ["number", "null"] },
+                "under": { "type": ["number", "null"] }
+              }
+            },
+            "total_corners_9.5": {
+              "type": "object",
+              "required": ["over", "under"],
+              "properties": {
+                "over": { "type": ["number", "null"] },
+                "under": { "type": ["number", "null"] }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

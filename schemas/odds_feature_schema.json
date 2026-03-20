@@ -1,0 +1,56 @@
+{
+  "name": "odds_feature_market_snapshot_output",
+  "type": "object",
+  "required": ["market_snapshot"],
+  "properties": {
+    "market_snapshot": {
+      "type": "object",
+      "required": ["full_time_1x2", "asian_handicap"],
+      "properties": {
+        "full_time_1x2": {
+          "type": "object",
+          "required": ["home", "draw", "away"],
+          "properties": {
+            "home": {
+              "type": "object",
+              "required": ["current", "initial", "trend"],
+              "properties": {
+                "current": { "type": ["number", "null"] },
+                "initial": { "type": ["number", "null"] },
+                "trend": { "type": ["integer", "null"] }
+              }
+            },
+            "draw": {
+              "type": "object",
+              "required": ["current", "initial", "trend"],
+              "properties": {
+                "current": { "type": ["number", "null"] },
+                "initial": { "type": ["number", "null"] },
+                "trend": { "type": ["integer", "null"] }
+              }
+            },
+            "away": {
+              "type": "object",
+              "required": ["current", "initial", "trend"],
+              "properties": {
+                "current": { "type": ["number", "null"] },
+                "initial": { "type": ["number", "null"] },
+                "trend": { "type": ["integer", "null"] }
+              }
+            }
+          }
+        },
+        "asian_handicap": {
+          "type": "object",
+          "required": ["line", "home_odds", "away_odds"],
+          "properties": {
+            "line": { "type": "string" },
+            "home_odds": { "type": ["number", "null"] },
+            "away_odds": { "type": ["number", "null"] }
+          }
+        }
+      }
+    }
+  }
+}
+

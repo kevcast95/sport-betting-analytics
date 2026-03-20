@@ -1,0 +1,14 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Playwright
+playwright-browsers/
+
+# Local caches / OS
+.DS_Store
+
+# Sandbox git directory
+.git2/
+

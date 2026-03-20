@@ -1,0 +1,202 @@
+{
+  "name": "statistics_output_v2",
+  "type": "object",
+  "required": ["match_performance", "pressure_and_volume", "defensive_reliability"],
+  "properties": {
+    "match_performance": {
+      "type": "object",
+      "required": ["xg", "shots", "chances", "defensive_pressure", "efficiency"],
+      "properties": {
+        "xg": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        },
+        "shots": {
+          "type": "object",
+          "required": ["total", "on_target"],
+          "properties": {
+            "total": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            },
+            "on_target": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            }
+          }
+        },
+        "chances": {
+          "type": "object",
+          "required": ["big_created", "big_missed"],
+          "properties": {
+            "big_created": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            },
+            "big_missed": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            }
+          }
+        },
+        "defensive_pressure": {
+          "type": "object",
+          "required": ["goalkeeper_saves", "possession"],
+          "properties": {
+            "goalkeeper_saves": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            },
+            "possession": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            }
+          }
+        },
+        "efficiency": {
+          "type": "object",
+          "required": ["penalty_area_touches", "errors_lead_to_shot", "errors_lead_to_goal"],
+          "properties": {
+            "penalty_area_touches": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            },
+            "errors_lead_to_shot": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            },
+            "errors_lead_to_goal": {
+              "type": "object",
+              "required": ["home", "away"],
+              "properties": {
+                "home": { "type": ["number", "null"] },
+                "away": { "type": ["number", "null"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pressure_and_volume": {
+      "type": "object",
+      "required": ["possession", "penalty_area_touches", "corners", "final_third_entries"],
+      "properties": {
+        "possession": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        },
+        "penalty_area_touches": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        },
+        "corners": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        },
+        "final_third_entries": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        }
+      }
+    },
+    "defensive_reliability": {
+      "type": "object",
+      "required": ["goalkeeper_saves", "errors_lead_to_shot", "errors_lead_to_goal", "duels_won_pct", "recoveries"],
+      "properties": {
+        "goalkeeper_saves": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        },
+        "errors_lead_to_shot": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        },
+        "errors_lead_to_goal": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        },
+        "duels_won_pct": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        },
+        "recoveries": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": { "type": ["number", "null"] },
+            "away": { "type": ["number", "null"] }
+          }
+        }
+      }
+    }
+  }
+}
+

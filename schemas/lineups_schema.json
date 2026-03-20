@@ -1,0 +1,56 @@
+{
+  "name": "lineups_summary_output",
+  "description": "Salida limpia del processor process_lineups(raw_lineups).",
+  "type": "object",
+  "required": ["lineup_summary"],
+  "properties": {
+    "lineup_summary": {
+      "type": "object",
+      "required": ["is_confirmed", "home", "away"],
+      "properties": {
+        "is_confirmed": { "type": "boolean" },
+        "home": {
+          "type": "object",
+          "required": ["formation", "avg_rating", "key_player", "missing"],
+          "properties": {
+            "formation": { "type": "string" },
+            "avg_rating": { "type": "number" },
+            "key_player": { "type": "string" },
+            "missing": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "reason"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "reason": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "away": {
+          "type": "object",
+          "required": ["formation", "avg_rating", "key_player", "missing"],
+          "properties": {
+            "formation": { "type": "string" },
+            "avg_rating": { "type": "number" },
+            "key_player": { "type": "string" },
+            "missing": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "reason"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "reason": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

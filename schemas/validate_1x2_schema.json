@@ -1,0 +1,28 @@
+{
+  "name": "validate_1x2_output",
+  "type": "object",
+  "required": ["selection", "result_1x2", "outcome", "score"],
+  "properties": {
+    "selection": {
+      "type": ["string", "null"],
+      "enum": ["1", "X", "2", null]
+    },
+    "result_1x2": {
+      "type": ["string", "null"],
+      "enum": ["1", "X", "2", null]
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["win", "loss", "pending"]
+    },
+    "score": {
+      "type": "object",
+      "required": ["home", "away"],
+      "properties": {
+        "home": { "type": ["integer", "null"] },
+        "away": { "type": ["integer", "null"] }
+      }
+    }
+  }
+}
+
