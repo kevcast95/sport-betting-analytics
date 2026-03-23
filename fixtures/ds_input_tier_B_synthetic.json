@@ -1,0 +1,99 @@
+{
+  "event_id": 99000001,
+  "selection_tier": "B",
+  "event_context": {
+    "event_id": 99000001,
+    "sport": "Football",
+    "tournament": "Liga de ejemplo (fixture sintético)",
+    "home_team": "FC Alpha",
+    "away_team": "Beta United",
+    "start_timestamp": 1742600000,
+    "status": "not_started",
+    "match_state": "not started",
+    "home_score": null,
+    "away_score": null,
+    "result_1x2": null
+  },
+  "processed": {
+    "lineups": {
+      "lineup_summary": {
+        "is_confirmed": true,
+        "home": {
+          "formation": "4-3-3",
+          "avg_rating": 6.85,
+          "key_player": { "name": "Delantero Local", "position": "F" },
+          "missing": []
+        },
+        "away": {
+          "formation": "4-4-2",
+          "avg_rating": 6.72,
+          "key_player": { "name": "Medio Visitante", "position": "M" },
+          "missing": []
+        }
+      }
+    },
+    "statistics": {},
+    "h2h": {
+      "ok": true,
+      "team_duel": {
+        "home_wins": 3,
+        "away_wins": 2,
+        "draws": 1,
+        "home_team": { "name": "FC Alpha" },
+        "away_team": { "name": "Beta United" }
+      }
+    },
+    "team_streaks": {
+      "ok": true,
+      "general": [
+        {
+          "name": "Invicto últimos 5",
+          "value": "4V 1E",
+          "team": { "name": "FC Alpha" }
+        }
+      ],
+      "head2head": [
+        {
+          "name": "Ambos marcaron últimos 3 enfrentamientos",
+          "value": "2/3",
+          "team": { "name": "—" }
+        }
+      ]
+    },
+    "odds_all": {
+      "extended_markets": {
+        "safety": {
+          "double_chance": { "1X": 1.22, "X2": 1.65, "12": 1.28 }
+        },
+        "goals_depth": {
+          "btts": { "yes": 1.95, "no": 1.85 },
+          "over_under_2.5": { "over": 2.1, "under": 1.75 }
+        }
+      }
+    },
+    "odds_featured": {
+      "market_snapshot": {
+        "full_time_1x2": {
+          "home": { "current": 2.4, "initial": 2.5, "trend": null },
+          "draw": { "current": 3.2, "initial": 3.1, "trend": null },
+          "away": { "current": 3.0, "initial": 2.95, "trend": null }
+        },
+        "asian_handicap": {
+          "line": "-0.25 FC Alpha",
+          "home_odds": 1.92,
+          "away_odds": 1.92
+        }
+      }
+    }
+  },
+  "diagnostics": {
+    "event_ok": true,
+    "lineups_ok": true,
+    "statistics_ok": false,
+    "h2h_ok": true,
+    "team_streaks_ok": true,
+    "odds_all_ok": true,
+    "odds_featured_ok": true,
+    "fetch_errors": {}
+  }
+}

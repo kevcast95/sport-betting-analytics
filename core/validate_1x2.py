@@ -3,7 +3,7 @@
 core/validate_1x2.py
 
 Valida una selección 1X2 contra el marcador final de SofaScore.
-Este módulo está pensado para que OpenClaw lo ejecute ~2 horas después.
+Este módulo está pensado para ejecutarse en orquestación batch (p. ej. horas después del partido).
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 from typing import Any, Dict, Optional
 
 from playwright.async_api import async_playwright
@@ -24,6 +25,50 @@ _FETCH_HEADERS = {
     "Referer": "https://www.sofascore.com/",
     "Origin": "https://www.sofascore.com",
 }
+
+
+def _resolve_playwright_chrome_executable() -> Optional[str]:
+    """
+    Resuelve el binario compatible con la arquitectura presente bajo PLAYWRIGHT_BROWSERS_PATH.
+    Prioriza el Chromium completo (más estable) y si no, usa el chrome-headless-shell.
+    """
+    base = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
+    if not base or not os.path.isdir(base):
+        return None
+
+    try:
+        entries = os.listdir(base)
+    except Exception:
+        return None
+
+    # 1) Chromium completo (ej. chromium-<rev>/chrome-mac-arm64/Google Chrome for Testing.app/...)
+    for entry in entries:
+        if not entry.startswith("chromium-"):
+            continue
+        rev_root = os.path.join(base, entry)
+        for arch_dir in ("chrome-mac-arm64", "chrome-mac-x64"):
+            candidate = os.path.join(
+                rev_root,
+                arch_dir,
+                "Google Chrome for Testing.app",
+                "Contents",
+                "MacOS",
+                "Google Chrome for Testing",
+            )
+            if os.path.exists(candidate):
+                return candidate
+
+    # 2) Headless shell (fallback)
+    for entry in entries:
+        if not entry.startswith("chromium_headless_shell-"):
+            continue
+        rev_root = os.path.join(base, entry)
+        for arch_dir in ("chrome-headless-shell-mac-arm64", "chrome-headless-shell-mac-x64"):
+            candidate = os.path.join(rev_root, arch_dir, "chrome-headless-shell")
+            if os.path.exists(candidate):
+                return candidate
+
+    return None
 
 
 def _to_int(x: Any) -> Optional[int]:
@@ -76,7 +121,11 @@ def _normalize_selection(sel: str) -> Optional[str]:
 
 async def validate_1x2(event_id: int, selection: str) -> Dict[str, Any]:
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        executable_path = _resolve_playwright_chrome_executable()
+        if executable_path:
+            browser = await p.chromium.launch(headless=True, executable_path=executable_path)
+        else:
+            browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             locale="en-US",

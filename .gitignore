@@ -12,3 +12,10 @@ playwright-browsers/
 # Sandbox git directory
 .git2/
 
+# Salidas locales de jobs / pruebas (no commitear)
+candidates.json
+picks.json
+candidates_*.json
+out/candidates_*.json
+out/batches/
+
