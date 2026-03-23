@@ -28,6 +28,8 @@ def ensure_daily_run(conn: sqlite3.Connection, run_date: str, sport: str) -> Tup
     if existing is not None:
         daily_run_id = int(existing["daily_run_id"])
         status = str(existing["status"])
+        if status == "complete":
+            return daily_run_id, status
         if status != "complete":
             conn.execute(
                 "UPDATE daily_runs SET status = ? WHERE daily_run_id = ?",
@@ -50,6 +52,9 @@ def ensure_daily_run(conn: sqlite3.Connection, run_date: str, sport: str) -> Tup
 
 
 def update_status(conn: sqlite3.Connection, daily_run_id: int, status: str) -> None:
+    # Compatibilidad defensiva: si alguien pasa "completed", normalizamos a "complete".
+    if status == "completed":
+        status = "complete"
     conn.execute(
         "UPDATE daily_runs SET status = ? WHERE daily_run_id = ?",
         (status, daily_run_id),

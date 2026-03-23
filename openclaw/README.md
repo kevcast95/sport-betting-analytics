@@ -15,6 +15,9 @@ Esta carpeta es el **hogar del agente** para este proyecto: lo que debe vivir **
 | **`NAMING_ARTIFACTS.md`** | Nombres en `out/`: `candidates_{DATE}_select`, `exec_08h`, `exec_16h`, lotes. |
 | **`PROMPT_ANTI_ALUCINACION_COSTOS.md`** | Guardrails: evidencias antes de “ban”, coste/tokens, heartbeat corto, plantilla de incidente. |
 | **`DEEPSEEK_LOCAL.md`** | Ejecución local (sin OpenClaw): DeepSeek + formatter + Telegram. |
+| **`INDEPENDENT_SYSTEM_WEEK1.md`** | Plan operativo 7 días sin OC: cron, variables, KPIs, dry-run. |
+| **`../scripts/bootstrap_env.sh`** | Valida/carga `.env` y obliga separación `DS_CHAT_MODEL` vs `DS_ANALYSIS_MODEL`. |
+| **`../jobs/report_effectiveness.py`** | Métricas de efectividad (win-rate/ROI) por día/mercado/franja a JSON+CSV. |
 | **`../openclaw.md`** | Contrato operativo (pipeline, Telegram); en la raíz del repo para lectura humana y referencias cruzadas. |
 
 El estado **en vivo** del run sigue recomendándose en `out/heartbeat.md` dentro del repo cuando ejecutes jobs (OC puede leerlo/actualizarlo por ruta si tiene acceso al workspace).

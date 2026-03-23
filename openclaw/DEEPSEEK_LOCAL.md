@@ -5,10 +5,16 @@ Objetivo: emular el flujo de OpenClaw para probar 08:00 / 16:00 sin Gateway/OC.
 ### Requisitos
 - `DEEPSEEK_API_KEY` (env var)
 - `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID` (env vars)
+- `DS_CHAT_MODEL=deepseek-chat` (interpretación ligera)
+- `DS_ANALYSIS_MODEL=deepseek-reasoner` (análisis de picks)
 
 ### Flujo para una ventana (ej. morning/exec_08h)
 
 Supón `DATE=YYYY-MM-DD` y ejecuta desde la raíz del repo `scrapper`:
+
+```bash
+./scripts/bootstrap_env.sh
+```
 
 1) `select_candidates` (usa la `daily_run_id` que corresponda):
 ```bash
@@ -32,7 +38,7 @@ python3 jobs/split_ds_batches.py -i "out/candidates_${DATE}_exec_08h.json" \
 python3 jobs/deepseek_batches_to_telegram_payload_parts.py \
   --input-glob "out/batches/candidates_${DATE}_exec_08h_batch*.json" \
   --date "${DATE}" --exec-id exec_08h \
-  --model deepseek-chat
+  --model "${DS_ANALYSIS_MODEL}"
 ```
 
 5) Merge + render:

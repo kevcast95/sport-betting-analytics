@@ -110,3 +110,29 @@ El envío a Telegram debe ser **solo** el contenido de `out/telegram_message.txt
 - `persist_event_bundle` y `persist_picks` usan constraints e `INSERT OR IGNORE` para evitar duplicados.
 - `validate_picks` solo valida picks `pending` que todavía no tengan fila en `pick_results`.
 
+## Scheduler (launchd, macOS)
+
+Atajo: `./run.sh start|stop|restart|status|logs|tick` (ver `./run.sh help`).
+
+1. **Ejecutar un ciclo ahora (sin esperar el reloj):**
+   ```bash
+   cd /ruta/al/repo
+   ./run.sh run-now midnight              # FECHA por defecto = hoy (TZ local del script)
+   ./run.sh run-now morning 2026-03-23
+   ./run.sh run-now afternoon 2026-03-23
+   ./run.sh run-now report                # informe; opcional: días como 3er arg
+   ```
+2. **Dejar el automático corriendo:** `./run.sh start` (instala `com.copafoxkids.independent.runner` y dispara `scripts/runner_tick.sh` cada 60 s).
+3. **Solo horarios de producción por defecto:** `00:00` midnight, `08:00` morning, `16:00` afternoon, `23:55` report (TZ: `COPA_FOXKIDS_TZ` o `America/Bogota`).
+4. **Pruebas — cambiar solo los disparos del tick:** en `.env` (mismo formato `HH:MM`):
+   ```bash
+   COPA_FOXKIDS_TZ=America/Bogota
+   COPA_TICK_SLOT_MIDNIGHT=09:05
+   COPA_TICK_SLOT_MORNING=09:12
+   COPA_TICK_SLOT_AFTERNOON=09:18
+   COPA_TICK_SLOT_REPORT=09:24
+   ```
+   Tras editar `.env`, no hace falta reinstalar launchd; el tick lee `.env` en cada minuto. **Vuelve a comentar o borra estas líneas** cuando termines las pruebas.
+5. **Estado y logs:** `./run.sh status` y `./run.sh logs`.
+6. **Forzar un tick manual (respeta “una vez por día” por slot):** `./run.sh tick`.
+

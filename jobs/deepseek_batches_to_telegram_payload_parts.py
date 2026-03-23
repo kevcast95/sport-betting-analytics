@@ -20,6 +20,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import sys
 import time
 import urllib.request
@@ -35,7 +36,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--date", required=True, help="YYYY-MM-DD (para header/date del payload)")
     p.add_argument("--exec-id", required=True, help="exec_08h o exec_16h (solo para naming de salida)")
     p.add_argument("--title", default="Copa Foxkids", help="header.title del payload")
-    p.add_argument("--model", default="deepseek-chat", help="deepseek-chat o deepseek-reasoner")
+    p.add_argument("--model", default="deepseek-reasoner", help="deepseek-chat o deepseek-reasoner")
     p.add_argument("--temperature", type=float, default=0.2)
     p.add_argument("--max-tokens", type=int, default=1200)
     p.add_argument("--timeout-sec", type=int, default=180)
@@ -43,6 +44,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--base-url", default="https://api.deepseek.com", help="DeepSeek base_url (OpenAI-compatible)")
     p.add_argument("--api-key-env", default="DEEPSEEK_API_KEY", help="Env var con la API key")
     p.add_argument("--output-dir", default="out", help="Directorio de salida (default: out)")
+    p.add_argument(
+        "--chat-fallback-model",
+        default=os.environ.get("DS_CHAT_MODEL", "deepseek-chat"),
+        help="Modelo chat para convertir reasoning->JSON si reasoner devuelve content vacío.",
+    )
     p.add_argument(
         "--disable-response-format",
         action="store_true",
@@ -178,23 +184,85 @@ def _call_deepseek_chat(
     return json.loads(raw)
 
 
-def _extract_text_content(resp: Dict[str, Any]) -> str:
+def _extract_message_content(resp: Dict[str, Any]) -> Tuple[str, str]:
     # OpenAI chat format: choices[0].message.content
     choices = resp.get("choices") or []
     if not choices:
         raise ValueError("DeepSeek response sin choices")
     msg = choices[0].get("message") or {}
     content = msg.get("content")
-    if not isinstance(content, str):
-        raise ValueError("DeepSeek response sin message.content str")
+    if isinstance(content, str):
+        rc = msg.get("reasoning_content")
+        return content, rc if isinstance(rc, str) else ""
+    # Compat: algunas APIs devuelven lista de partes [{type,text}, ...]
+    if isinstance(content, list):
+        parts: List[str] = []
+        for c in content:
+            if isinstance(c, dict):
+                t = c.get("text")
+                if isinstance(t, str):
+                    parts.append(t)
+        if parts:
+            rc = msg.get("reasoning_content")
+            return "\n".join(parts), rc if isinstance(rc, str) else ""
+    # fallback: reasoning_content
+    rc = msg.get("reasoning_content")
+    if isinstance(rc, str) and rc.strip():
+        return "", rc
+    raise ValueError("DeepSeek response sin contenido textual parseable")
+
+
+def _force_json_from_reasoning(
+    *,
+    base_url: str,
+    api_key: str,
+    chat_model: str,
+    reasoning_text: str,
+    timeout_sec: int,
+) -> str:
+    prompt = (
+        "Convierte el siguiente razonamiento en SOLO un objeto JSON válido con la forma "
+        "{\"picks_by_event\":[{\"event_id\":123,\"picks\":[{\"market\":\"...\",\"selection\":\"...\","
+        "\"odds\":1.23,\"edge_pct\":2.34,\"confianza\":\"Media\",\"razon\":\"...\"}]}]}. "
+        "Sin markdown, sin explicaciones.\n\nRazonamiento:\n"
+        + reasoning_text
+    )
+    resp = _call_deepseek_chat(
+        base_url=base_url,
+        api_key=api_key,
+        model=chat_model,
+        system_prompt="Devuelve JSON estricto únicamente.",
+        user_prompt=prompt,
+        temperature=0.0,
+        max_tokens=900,
+        timeout_sec=timeout_sec,
+        disable_response_format=False,
+    )
+    content, _ = _extract_message_content(resp)
     return content
 
 
+def _extract_json_object(raw: str) -> str:
+    s = raw.strip()
+    # Caso común: bloque ```json ... ```
+    fenced = re.search(r"```(?:json)?\s*(\{.*\})\s*```", s, re.DOTALL | re.IGNORECASE)
+    if fenced:
+        return fenced.group(1)
+    # Caso: texto alrededor; tomar desde primer '{' hasta último '}'
+    i = s.find("{")
+    j = s.rfind("}")
+    if i != -1 and j != -1 and j > i:
+        return s[i : j + 1]
+    return s
+
+
 def _parse_model_output(content: str) -> Dict[str, Any]:
+    payload = _extract_json_object(content)
     try:
-        data = json.loads(content)
+        data = json.loads(payload)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Salida no es JSON válido: {e}") from e
+        snippet = content[:500].replace("\n", "\\n")
+        raise ValueError(f"Salida no es JSON válido: {e}; snippet={snippet}") from e
     if not isinstance(data, dict):
         raise ValueError("Salida JSON no es objeto")
     if "picks_by_event" not in data:
@@ -311,7 +379,16 @@ def main() -> None:
                     timeout_sec=args.timeout_sec,
                     disable_response_format=args.disable_response_format,
                 )
-                content = _extract_text_content(resp)
+                content, reasoning = _extract_message_content(resp)
+                if not (content or "").strip() and reasoning.strip():
+                    # Caso real visto con reasoner: content vacío, reasoning lleno.
+                    content = _force_json_from_reasoning(
+                        base_url=args.base_url,
+                        api_key=api_key,
+                        chat_model=args.chat_fallback_model,
+                        reasoning_text=reasoning,
+                        timeout_sec=args.timeout_sec,
+                    )
                 model_out = _parse_model_output(content)
                 payload = _build_payload_from_batch(
                     batch, model_out, date_str=args.date, exec_id=args.exec_id, title=args.title

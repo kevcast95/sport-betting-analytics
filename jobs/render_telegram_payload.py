@@ -52,6 +52,7 @@ def _load_payload(path: str | None) -> Any:
 
 def _render(data: Dict[str, Any]) -> str:
     lines: List[str] = []
+    divider = "----------------------------------------"
     h = data.get("header") or {}
     title = h.get("title") or "Copa Foxkids"
     date = h.get("date") or ""
@@ -67,12 +68,22 @@ def _render(data: Dict[str, Any]) -> str:
     lines.append(head)
     lines.append("")
 
-    for ev in data.get("events") or []:
+    events = data.get("events") or []
+    discarded = 0
+    picked_events = 0
+
+    for ev in events:
         label = ev.get("label") or "?"
         league = ev.get("league") or ""
         lt = ev.get("local_time_short") or ""
         eid = ev.get("event_id")
-        sub = f"---\n🔍 {label}"
+        picks = ev.get("picks") or []
+        if not picks:
+            discarded += 1
+            continue
+        picked_events += 1
+
+        sub = f"{divider}\n🔍 **{label}**"
         if league:
             sub += f" | 🏆 {league}"
         if lt:
@@ -82,23 +93,60 @@ def _render(data: Dict[str, Any]) -> str:
         lines.append(sub)
         lines.append("")
 
-        for i, p in enumerate(ev.get("picks") or [], start=1):
-            n = len(ev.get("picks") or [])
+        for i, p in enumerate(picks, start=1):
+            n = len(picks)
             prefix = "**PICK**" if n == 1 else f"**PICK {i}**"
             lines.append(prefix)
-            lines.append(f"🎯 MARKET: {p.get('market', '')}")
-            lines.append(f"✅ SELECTION: {p.get('selection', '')}")
+            lines.append(f"🎯 **MARKET**: {p.get('market', '')}")
+            lines.append(f"✅ **SELECTION**: {p.get('selection', '')}")
             if p.get("odds") is not None:
-                lines.append(f"💰 ODDS: {p['odds']}")
+                lines.append(f"💰 **ODDS**: {p['odds']}")
             if p.get("edge_pct") is not None:
-                lines.append(f"📈 EDGE: {p['edge_pct']}%")
-            lines.append(f"📊 CONFIANZA: {p.get('confianza', '')}")
-            lines.append(f"💡 RAZÓN: {p.get('razon', '')}")
+                lines.append(f"📈 **EDGE**: {p['edge_pct']}%")
+            lines.append(f"📊 **CONFIANZA**: {p.get('confianza', '')}")
+            lines.append(f"💡 **RAZÓN**: {p.get('razon', '')}")
             lines.append("")
+
+    if picked_events == 0:
+        lines.append(f"{divider}")
+        lines.append("ℹ️ **SIN PICKS CON VALOR** en esta ventana.")
+        lines.append("")
+
+    if discarded > 0:
+        lines.append(f"🧪 **DESCARTADOS**: {discarded} evento(s) sin valor suficiente.")
+        lines.append("")
 
     db_line = data.get("db_1x2_line")
     if db_line:
-        lines.append(f"💾 DB 1X2: {db_line}")
+        lines.append(divider)
+        lines.append(f"💾 **DB 1X2**: {db_line}")
+
+    alloc = data.get("allocation") or {}
+    singles = alloc.get("singles") or []
+    combos = alloc.get("combos") or []
+    if singles:
+        lines.append("")
+        lines.append(divider)
+        lines.append(
+            f"💼 **PLAN BANKROLL**: ${int(alloc.get('bankroll_cop', 0)):,} COP | exposición {alloc.get('max_exposure_pct', 0)}%"
+        )
+        for i, s in enumerate(singles[:5], start=1):
+            lines.append(
+                f"{i}. **${int(s.get('stake_cop', 0)):,}** ({s.get('stake_pct_bankroll', 0)}%) "
+                f"→ {s.get('label', '?')} | {s.get('market', '')}={s.get('selection', '')} "
+                f"| odds {s.get('odds', '')} | edge {s.get('edge_pct', '')}%"
+            )
+        if len(singles) > 5:
+            lines.append(f"… +{len(singles) - 5} pick(s) adicionales en ranking interno.")
+
+    if combos:
+        lines.append("")
+        lines.append("🧩 **COMBINADAS SUGERIDAS**")
+        for c in combos[:2]:
+            lines.append(
+                f"- **{c.get('name','Combo')}** | cuota {c.get('odds_total','')} | "
+                f"stake ${int(c.get('stake_cop', 0)):,} ({c.get('stake_pct_bankroll', 0)}%)"
+            )
     return "\n".join(lines).rstrip() + "\n"
 
 

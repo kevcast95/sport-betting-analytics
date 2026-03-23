@@ -9,13 +9,21 @@ playwright-browsers/
 # Local caches / OS
 .DS_Store
 
-# Sandbox git directory
+# Directorio Git interno (worktree / separado del working tree)
 .git2/
 
-# Salidas locales de jobs / pruebas (no commitear)
+# SQLite local (no commitear DB de desarrollo)
+db/*.sqlite3
+db/*.sqlite3-shm
+db/*.sqlite3-wal
+
+# Salidas, logs, estado de scheduler y artefactos de jobs
+out/
+
+# Raíz: JSON sueltos de prueba (legacy)
 candidates.json
 picks.json
 candidates_*.json
-out/candidates_*.json
-out/batches/
 
+# Secrets / entorno local
+.env

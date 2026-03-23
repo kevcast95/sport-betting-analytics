@@ -100,7 +100,7 @@ async def _run(args: argparse.Namespace) -> None:
     init_db(conn)
 
     daily_run_id, existing_status = ensure_daily_run(conn, args.date, args.sport)
-    if existing_status == "complete":
+    if existing_status in ("complete", "completed"):
         print("\n=== INGEST_DAILY_EVENTS ===")
         print(json.dumps({"job": "ingest_daily_events", "daily_run_id": daily_run_id, "status": "already_complete"}, indent=2))
         print("=== OK (skip) ===\n")
