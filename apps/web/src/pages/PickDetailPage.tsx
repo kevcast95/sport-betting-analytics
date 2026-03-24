@@ -327,6 +327,7 @@ export default function PickDetailPage() {
           {userId != null && boardPick && (
             <div className="mt-3 rounded-xl border border-white/80 bg-white/90 p-3 shadow-sm">
               <PickTrackingControls
+                key={`${boardPick.pick_id}-${boardPick.stake_amount ?? ''}`}
                 pick={boardPick}
                 userId={userId}
                 bankrollCOP={bankrollCOP}

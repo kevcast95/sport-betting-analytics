@@ -69,7 +69,7 @@ export type PickCardData = {
 }
 
 /** Resultado mostrado en UI y P/L: primero el usuario, luego sistema. */
-export function effectivePickOutcome(
+function effectivePickOutcome(
   p: PickCardData,
 ): 'win' | 'loss' | 'pending' | null {
   const u = p.user_outcome

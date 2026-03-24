@@ -28,10 +28,6 @@ function BankrollSidebar() {
     bankrollCOP != null ? String(Math.round(bankrollCOP)) : '',
   )
 
-  useEffect(() => {
-    setDraft(bankrollCOP != null ? String(Math.round(bankrollCOP)) : '')
-  }, [bankrollCOP])
-
   return (
     <div className="mt-6 border-t border-app-line px-2 pt-5">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-app-muted">
@@ -81,6 +77,9 @@ function BankrollSidebar() {
 }
 
 function AppLayout() {
+  const { userId } = useTrackingUser()
+  const { bankrollCOP } = useBankrollCOP(userId)
+  const bankrollSidebarKey = `${userId ?? 'none'}:${bankrollCOP ?? 'na'}`
   const [menuOpen, setMenuOpen] = useState(false)
   const [reportNotice, setReportNotice] = useState<string | null>(null)
   const [notificationPermission, setNotificationPermission] = useState<
@@ -255,7 +254,7 @@ function AppLayout() {
                 </button>
               </div>
             )}
-            <BankrollSidebar />
+            <BankrollSidebar key={bankrollSidebarKey} />
           </div>
         </aside>
 

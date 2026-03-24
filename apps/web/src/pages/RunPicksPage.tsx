@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PickTelegramCard, type PickCardData } from '@/components/PickTelegramCard'
 import {
@@ -53,7 +53,7 @@ export default function RunPicksPage() {
   const qc = useQueryClient()
 
   const usersQ = useUsersQuery()
-  const users = usersQ.data ?? []
+  const users = useMemo(() => usersQ.data ?? [], [usersQ.data])
 
   useEffect(() => {
     if (users.length === 0) return
@@ -298,6 +298,7 @@ export default function RunPicksPage() {
                     pickOrdinal={i + 1}
                     trackingSlot={
                       <PickTrackingControls
+                        key={`${p.pick_id}-${p.stake_amount ?? ''}`}
                         pick={p}
                         userId={userId}
                         bankrollCOP={bankrollCOP}
@@ -373,6 +374,7 @@ export default function RunPicksPage() {
                         ))}
                       </ol>
                       <ComboTrackingControls
+                        key={`${c.suggested_combo_id}-${c.user_stake_amount ?? ''}`}
                         combo={c}
                         bankrollCOP={bankrollCOP}
                         disabled={saveComboM.isPending}

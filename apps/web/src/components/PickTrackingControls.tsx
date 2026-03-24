@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { TrackingBoardOut } from '@/types/api'
 import { formatCOP } from '@/lib/formatDateTime'
 import { usePickTrackingLock } from '@/lib/pickTrackingLock'
@@ -87,11 +87,6 @@ export function PickTrackingControls({
   const [copDraft, setCopDraft] = useState<string>(() =>
     p.stake_amount != null ? String(Math.round(p.stake_amount)) : '',
   )
-  useEffect(() => {
-    setCopDraft(
-      p.stake_amount != null ? String(Math.round(p.stake_amount)) : '',
-    )
-  }, [p.pick_id, p.stake_amount])
 
   const [copHint, setCopHint] = useState<{
     tone: 'ok' | 'warn' | 'risk'

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { TrackingBoardOut } from '@/types/api'
 import { formatCOP } from '@/lib/formatDateTime'
 import {
@@ -71,11 +71,6 @@ export function ComboTrackingControls({
   const [copDraft, setCopDraft] = useState(() =>
     c.user_stake_amount != null ? String(Math.round(c.user_stake_amount)) : '',
   )
-  useEffect(() => {
-    setCopDraft(
-      c.user_stake_amount != null ? String(Math.round(c.user_stake_amount)) : '',
-    )
-  }, [c.suggested_combo_id, c.user_stake_amount])
 
   const [copHint, setCopHint] = useState<{
     tone: 'ok' | 'warn' | 'risk'

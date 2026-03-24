@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DashboardPerformanceChart } from '@/components/DashboardPerformanceChart'
 import { PickTelegramCard, type PickCardData } from '@/components/PickTelegramCard'
@@ -52,9 +52,12 @@ function rejectReasonLabelEs(reason: string | null | undefined): string {
 export default function DashboardPage() {
   const { userId, setUserId } = useTrackingUser()
   const usersQ = useUsersQuery()
-  const users = usersQ.data ?? []
+  const users = useMemo(() => usersQ.data ?? [], [usersQ.data])
   const [runDate, setRunDate] = useState(todayISO)
   const [onlyTaken, setOnlyTaken] = useState(false)
+  if (userId == null && onlyTaken) {
+    setOnlyTaken(false)
+  }
 
   const dashQ = useQuery({
     queryKey: ['dashboard', runDate, userId, onlyTaken],
@@ -73,10 +76,6 @@ export default function DashboardPage() {
     if (userId == null) setUserId(users[0].user_id)
     else if (!users.some((u) => u.user_id === userId)) setUserId(users[0].user_id)
   }, [users, userId, setUserId])
-
-  useEffect(() => {
-    if (userId == null) setOnlyTaken(false)
-  }, [userId])
 
   return (
     <div>
