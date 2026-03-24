@@ -1,0 +1,3306 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Scrapper tracking API",
+    "description": "Lectura de daily_runs, picks, pick_results y backtests (SQLite).",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/effectiveness/latest-status": {
+      "get": {
+        "summary": "Api Latest Effectiveness Report Status",
+        "operationId": "api_latest_effectiveness_report_status_reports_effectiveness_latest_status_get",
+        "parameters": [
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectivenessReportStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "summary": "Api Dashboard",
+        "operationId": "api_dashboard_dashboard_get",
+        "parameters": [
+          {
+            "name": "run_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (default: hoy en el servidor)",
+              "title": "Run Date"
+            },
+            "description": "YYYY-MM-DD (default: hoy en el servidor)"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Para m\u00e9tricas \u2018tom\u00e9\u2019 / stake / P/L estimado",
+              "title": "User Id"
+            },
+            "description": "Para m\u00e9tricas \u2018tom\u00e9\u2019 / stake / P/L estimado"
+          },
+          {
+            "name": "only_taken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Si true, la lista reciente solo incluye picks marcados como tomados",
+              "default": false,
+              "title": "Only Taken"
+            },
+            "description": "Si true, la lista reciente solo incluye picks marcados como tomados"
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardBundleOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-runs": {
+      "get": {
+        "summary": "List Daily Runs",
+        "operationId": "list_daily_runs_daily_runs_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Keyset estable: daily_run_id estrictamente menor que este valor",
+              "title": "Cursor"
+            },
+            "description": "Keyset estable: daily_run_id estrictamente menor que este valor"
+          },
+          {
+            "name": "run_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run Date"
+            }
+          },
+          {
+            "name": "sport",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sport"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyRunPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-runs/{daily_run_id}/events": {
+      "get": {
+        "summary": "Api Daily Run Events Inspect",
+        "operationId": "api_daily_run_events_inspect_daily_runs__daily_run_id__events_get",
+        "parameters": [
+          {
+            "name": "daily_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Daily Run Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyRunEventsInspectOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/picks": {
+      "get": {
+        "summary": "List Picks",
+        "operationId": "list_picks_picks_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Keyset estable: pick_id estrictamente menor que este valor",
+              "title": "Cursor"
+            },
+            "description": "Keyset estable: pick_id estrictamente menor que este valor"
+          },
+          {
+            "name": "daily_run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Daily Run Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/picks/{pick_id}": {
+      "get": {
+        "summary": "Get Pick",
+        "operationId": "get_pick_picks__pick_id__get",
+        "parameters": [
+          {
+            "name": "pick_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pick Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/picks/{pick_id}/status": {
+      "patch": {
+        "summary": "Patch Pick Status",
+        "description": "Solo permite marcar void un pick en pending (escritura acotada).",
+        "operationId": "patch_pick_status_picks__pick_id__status_patch",
+        "parameters": [
+          {
+            "name": "pick_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pick Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickStatusPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickStatusPatchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backtest-runs": {
+      "get": {
+        "summary": "List Backtest Runs",
+        "operationId": "list_backtest_runs_backtest_runs_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Keyset estable: backtest_run_id estrictamente menor que este valor",
+              "title": "Cursor"
+            },
+            "description": "Keyset estable: backtest_run_id estrictamente menor que este valor"
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BacktestRunPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Api List Users",
+        "operationId": "api_list_users_users_get",
+        "parameters": [
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserOut"
+                  },
+                  "title": "Response Api List Users Users Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Api Create User",
+        "operationId": "api_create_user_users_post",
+        "parameters": [
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "summary": "Api Get User",
+        "operationId": "api_get_user_users__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/bankroll": {
+      "put": {
+        "summary": "Api Put User Bankroll",
+        "operationId": "api_put_user_bankroll_users__user_id__bankroll_put",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBankrollBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/bootstrap": {
+      "post": {
+        "summary": "Api Bootstrap Users",
+        "operationId": "api_bootstrap_users_users_bootstrap_post",
+        "parameters": [
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserOut"
+                  },
+                  "title": "Response Api Bootstrap Users Users Bootstrap Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-runs/{daily_run_id}/board": {
+      "get": {
+        "summary": "Api Tracking Board",
+        "operationId": "api_tracking_board_daily_runs__daily_run_id__board_get",
+        "parameters": [
+          {
+            "name": "daily_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Daily Run Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "Usuario que ve el tablero",
+              "title": "User Id"
+            },
+            "description": "Usuario que ve el tablero"
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingBoardOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/picks/{pick_id}/taken": {
+      "put": {
+        "summary": "Api Put Pick Taken",
+        "operationId": "api_put_pick_taken_users__user_id__picks__pick_id__taken_put",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "pick_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pick Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPickTakenBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Api Put Pick Taken Users  User Id  Picks  Pick Id  Taken Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/suggested-combos/{combo_id}/taken": {
+      "put": {
+        "summary": "Api Put Combo Taken",
+        "operationId": "api_put_combo_taken_users__user_id__suggested_combos__combo_id__taken_put",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "combo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Combo Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserComboTakenBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Api Put Combo Taken Users  User Id  Suggested Combos  Combo Id  Taken Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-runs/{daily_run_id}/suggested-combos/regenerate": {
+      "post": {
+        "summary": "Api Regenerate Combos",
+        "operationId": "api_regenerate_combos_daily_runs__daily_run_id__suggested_combos_regenerate_post",
+        "parameters": [
+          {
+            "name": "daily_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Daily Run Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegenerateCombosResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-runs/{daily_run_id}/pick-baselines": {
+      "post": {
+        "summary": "Api Ensure Baselines",
+        "operationId": "api_ensure_baselines_daily_runs__daily_run_id__pick_baselines_post",
+        "parameters": [
+          {
+            "name": "daily_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Daily Run Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnsureBaselinesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/picks/{pick_id}/signal-checks": {
+      "post": {
+        "summary": "Api Signal Check",
+        "operationId": "api_signal_check_picks__pick_id__signal_checks_post",
+        "parameters": [
+          {
+            "name": "pick_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pick Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignalCheckBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalCheckOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BacktestRunOut": {
+        "properties": {
+          "backtest_run_id": {
+            "type": "integer",
+            "title": "Backtest Run Id"
+          },
+          "range_start": {
+            "type": "string",
+            "title": "Range Start"
+          },
+          "range_end": {
+            "type": "string",
+            "title": "Range End"
+          },
+          "strategy_version": {
+            "type": "string",
+            "title": "Strategy Version"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "metrics_json": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metrics Json"
+          }
+        },
+        "type": "object",
+        "required": [
+          "backtest_run_id",
+          "range_start",
+          "range_end",
+          "strategy_version",
+          "created_at_utc",
+          "metrics_json"
+        ],
+        "title": "BacktestRunOut"
+      },
+      "BacktestRunPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BacktestRunOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "BacktestRunPage"
+      },
+      "ComboLegOut": {
+        "properties": {
+          "pick_id": {
+            "type": "integer",
+            "title": "Pick Id"
+          },
+          "leg_order": {
+            "type": "integer",
+            "title": "Leg Order"
+          },
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "selection": {
+            "type": "string",
+            "title": "Selection"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pick_id",
+          "leg_order",
+          "event_id",
+          "market",
+          "selection"
+        ],
+        "title": "ComboLegOut"
+      },
+      "DailyRunBoardOut": {
+        "properties": {
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "run_date": {
+            "type": "string",
+            "title": "Run Date"
+          },
+          "sport": {
+            "type": "string",
+            "title": "Sport"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "daily_run_id",
+          "run_date",
+          "sport",
+          "status"
+        ],
+        "title": "DailyRunBoardOut"
+      },
+      "DailyRunEventInspectOut": {
+        "properties": {
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "event_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Label"
+          },
+          "league": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League"
+          },
+          "h2h_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "H2H Summary"
+          },
+          "match_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match State"
+          },
+          "passed_candidate_filters": {
+            "type": "boolean",
+            "title": "Passed Candidate Filters"
+          },
+          "in_ds_input": {
+            "type": "boolean",
+            "title": "In Ds Input"
+          },
+          "reject_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reject Reason"
+          },
+          "selection_tier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Tier"
+          },
+          "event_context": {
+            "title": "Event Context"
+          },
+          "diagnostics": {
+            "title": "Diagnostics"
+          },
+          "processed": {
+            "title": "Processed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "daily_run_id",
+          "event_id",
+          "passed_candidate_filters",
+          "in_ds_input"
+        ],
+        "title": "DailyRunEventInspectOut"
+      },
+      "DailyRunEventsInspectOut": {
+        "properties": {
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "run_date": {
+            "type": "string",
+            "title": "Run Date"
+          },
+          "captured_at_utc": {
+            "type": "string",
+            "title": "Captured At Utc"
+          },
+          "total_events": {
+            "type": "integer",
+            "title": "Total Events"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DailyRunEventInspectOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "daily_run_id",
+          "run_date",
+          "captured_at_utc",
+          "total_events",
+          "items"
+        ],
+        "title": "DailyRunEventsInspectOut"
+      },
+      "DailyRunOut": {
+        "properties": {
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "run_date": {
+            "type": "string",
+            "title": "Run Date"
+          },
+          "sport": {
+            "type": "string",
+            "title": "Sport"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "complete",
+              "failed"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "daily_run_id",
+          "run_date",
+          "sport",
+          "created_at_utc",
+          "status"
+        ],
+        "title": "DailyRunOut"
+      },
+      "DailyRunPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DailyRunOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Siguiente cursor (daily_run_id): enviar como query `cursor` para la p\u00e1gina siguiente."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "DailyRunPage"
+      },
+      "DashboardBundleOut": {
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/DashboardSummaryBlock"
+          },
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardRecentPick"
+            },
+            "type": "array",
+            "title": "Recent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "recent"
+        ],
+        "title": "DashboardBundleOut"
+      },
+      "DashboardPerformanceBlock": {
+        "properties": {
+          "totals": {
+            "$ref": "#/components/schemas/DashboardPerformanceSplit"
+          },
+          "taken": {
+            "$ref": "#/components/schemas/DashboardPerformanceSplit"
+          },
+          "not_taken": {
+            "$ref": "#/components/schemas/DashboardPerformanceSplit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "totals",
+          "taken",
+          "not_taken"
+        ],
+        "title": "DashboardPerformanceBlock",
+        "description": "Todos los picks del d\u00eda vs tomados vs no tomados (requiere usuario para el cruce)."
+      },
+      "DashboardPerformanceSplit": {
+        "properties": {
+          "wins": {
+            "type": "integer",
+            "title": "Wins"
+          },
+          "losses": {
+            "type": "integer",
+            "title": "Losses"
+          },
+          "pending": {
+            "type": "integer",
+            "title": "Pending"
+          }
+        },
+        "type": "object",
+        "required": [
+          "wins",
+          "losses",
+          "pending"
+        ],
+        "title": "DashboardPerformanceSplit",
+        "description": "Conteos por resultado efectivo (prioriza cierre usuario + pick_results)."
+      },
+      "DashboardRecentPick": {
+        "properties": {
+          "pick_id": {
+            "type": "integer",
+            "title": "Pick Id"
+          },
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "selection": {
+            "type": "string",
+            "title": "Selection"
+          },
+          "picked_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Picked Value"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome",
+            "description": "Resultado efectivo (prioriza cierre manual del usuario)."
+          },
+          "outcome_system": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome System",
+            "description": "Solo validaci\u00f3n autom\u00e1tica (pick_results), si existe."
+          },
+          "user_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Outcome",
+            "description": "Cierre declarado por el usuario, si lo hubo."
+          },
+          "user_taken": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Taken"
+          },
+          "risk_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Category"
+          },
+          "decision_origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Origin"
+          },
+          "stake_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Amount"
+          },
+          "event_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Label"
+          },
+          "league": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League"
+          },
+          "kickoff_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff Display"
+          },
+          "kickoff_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff At Utc"
+          },
+          "match_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match State"
+          },
+          "selection_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Display"
+          },
+          "odds_reference": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Odds Reference",
+            "description": "Metadatos del modelo (edge, confianza, raz\u00f3n, etc.)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pick_id",
+          "daily_run_id",
+          "event_id",
+          "market",
+          "selection",
+          "picked_value",
+          "created_at_utc"
+        ],
+        "title": "DashboardRecentPick"
+      },
+      "DashboardSummaryBlock": {
+        "properties": {
+          "run_date": {
+            "type": "string",
+            "title": "Run Date"
+          },
+          "events_total": {
+            "type": "integer",
+            "title": "Events Total",
+            "default": 0
+          },
+          "selection_passed_filters": {
+            "type": "integer",
+            "title": "Selection Passed Filters",
+            "default": 0
+          },
+          "selection_rejected": {
+            "type": "integer",
+            "title": "Selection Rejected",
+            "default": 0
+          },
+          "selection_selected_events": {
+            "type": "integer",
+            "title": "Selection Selected Events",
+            "default": 0
+          },
+          "selection_top_reject_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Top Reject Reason"
+          },
+          "selection_top_reject_reason_count": {
+            "type": "integer",
+            "title": "Selection Top Reject Reason Count",
+            "default": 0
+          },
+          "selection_analyzed_without_pick": {
+            "type": "integer",
+            "title": "Selection Analyzed Without Pick",
+            "default": 0
+          },
+          "picks_total": {
+            "type": "integer",
+            "title": "Picks Total"
+          },
+          "outcome_wins": {
+            "type": "integer",
+            "title": "Outcome Wins"
+          },
+          "outcome_losses": {
+            "type": "integer",
+            "title": "Outcome Losses"
+          },
+          "outcome_pending": {
+            "type": "integer",
+            "title": "Outcome Pending"
+          },
+          "picks_taken_count": {
+            "type": "integer",
+            "title": "Picks Taken Count"
+          },
+          "taken_outcome_wins": {
+            "type": "integer",
+            "title": "Taken Outcome Wins",
+            "default": 0
+          },
+          "taken_outcome_losses": {
+            "type": "integer",
+            "title": "Taken Outcome Losses",
+            "default": 0
+          },
+          "taken_outcome_pending": {
+            "type": "integer",
+            "title": "Taken Outcome Pending",
+            "default": 0
+          },
+          "performance": {
+            "$ref": "#/components/schemas/DashboardPerformanceBlock"
+          },
+          "bankroll_cop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankroll Cop",
+            "description": "Saldo en servidor (`users.bankroll_cop`); se ajusta con wins/loss de picks tomados."
+          },
+          "net_pl_estimate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Pl Estimate"
+          },
+          "has_stake_data": {
+            "type": "boolean",
+            "title": "Has Stake Data",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_date",
+          "picks_total",
+          "outcome_wins",
+          "outcome_losses",
+          "outcome_pending",
+          "picks_taken_count",
+          "performance"
+        ],
+        "title": "DashboardSummaryBlock"
+      },
+      "EffectivenessReportStatusOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "generated_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At Utc"
+          },
+          "range_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range Start"
+          },
+          "range_end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range End"
+          },
+          "days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
+          "issued": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued"
+          },
+          "settled": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Settled"
+          },
+          "win_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Rate"
+          },
+          "roi_unit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available"
+        ],
+        "title": "EffectivenessReportStatusOut"
+      },
+      "EnsureBaselinesResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "baselines_inserted": {
+            "type": "integer",
+            "title": "Baselines Inserted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "daily_run_id",
+          "baselines_inserted"
+        ],
+        "title": "EnsureBaselinesResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthOut": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "db_path": {
+            "type": "string",
+            "title": "Db Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "db_path"
+        ],
+        "title": "HealthOut"
+      },
+      "PickDetail": {
+        "properties": {
+          "pick_id": {
+            "type": "integer",
+            "title": "Pick Id"
+          },
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "selection": {
+            "type": "string",
+            "title": "Selection"
+          },
+          "picked_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Picked Value"
+          },
+          "odds_reference": {
+            "title": "Odds Reference"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "validated",
+              "void"
+            ],
+            "title": "Status"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "title": "Idempotency Key"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PickResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "user_taken": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Taken",
+            "description": "Si se env\u00eda user_id en el board, indica si el usuario marc\u00f3 \u2018tomado\u2019."
+          },
+          "risk_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Category"
+          },
+          "decision_origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Origin"
+          },
+          "stake_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Amount"
+          },
+          "user_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Outcome",
+            "description": "Cierre manual (omitir en PATCH parcial para conservar el valor guardado)."
+          },
+          "realized_return_cop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Realized Return Cop",
+            "description": "Ganancia bruta en COP persistida solo si el resultado efectivo es win."
+          },
+          "event_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Label",
+            "description": "Partido A vs B (desde event_features del run)"
+          },
+          "league": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League"
+          },
+          "kickoff_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff Display",
+            "description": "Hora de inicio del partido en Colombia (p. ej. 18:30 \u00b7 hora Colombia)."
+          },
+          "kickoff_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff At Utc",
+            "description": "Inicio del partido en ISO 8601 UTC (Z)."
+          },
+          "match_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match State",
+            "description": "Estado del partido desde event_features (not started, live, finished)."
+          },
+          "run_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Date",
+            "description": "YYYY-MM-DD del daily_run (d\u00eda del an\u00e1lisis / listado)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "pick_id",
+          "daily_run_id",
+          "event_id",
+          "market",
+          "selection",
+          "picked_value",
+          "odds_reference",
+          "status",
+          "created_at_utc",
+          "idempotency_key",
+          "result"
+        ],
+        "title": "PickDetail",
+        "description": "Mismo shape que lista pero expl\u00edcito para OpenAPI / detalle."
+      },
+      "PickPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PickSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "PickPage"
+      },
+      "PickResultOut": {
+        "properties": {
+          "validated_at_utc": {
+            "type": "string",
+            "title": "Validated At Utc"
+          },
+          "home_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Score"
+          },
+          "away_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Away Score"
+          },
+          "result_1x2": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "X",
+                  "2"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result 1X2"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "win",
+              "loss",
+              "pending"
+            ],
+            "title": "Outcome"
+          },
+          "evidence_json": {
+            "title": "Evidence Json"
+          }
+        },
+        "type": "object",
+        "required": [
+          "validated_at_utc",
+          "home_score",
+          "away_score",
+          "result_1x2",
+          "outcome",
+          "evidence_json"
+        ],
+        "title": "PickResultOut"
+      },
+      "PickStatusPatch": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "void",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "PickStatusPatch",
+        "description": "Escritura acotada: solo void desde operaciones manuales locales."
+      },
+      "PickStatusPatchResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "pick_id": {
+            "type": "integer",
+            "title": "Pick Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "pick_id",
+          "status"
+        ],
+        "title": "PickStatusPatchResponse"
+      },
+      "PickSummary": {
+        "properties": {
+          "pick_id": {
+            "type": "integer",
+            "title": "Pick Id"
+          },
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "selection": {
+            "type": "string",
+            "title": "Selection"
+          },
+          "picked_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Picked Value"
+          },
+          "odds_reference": {
+            "title": "Odds Reference"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "validated",
+              "void"
+            ],
+            "title": "Status"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "title": "Idempotency Key"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PickResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "user_taken": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Taken",
+            "description": "Si se env\u00eda user_id en el board, indica si el usuario marc\u00f3 \u2018tomado\u2019."
+          },
+          "risk_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Category"
+          },
+          "decision_origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Origin"
+          },
+          "stake_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Amount"
+          },
+          "user_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Outcome",
+            "description": "Cierre manual (omitir en PATCH parcial para conservar el valor guardado)."
+          },
+          "realized_return_cop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Realized Return Cop",
+            "description": "Ganancia bruta en COP persistida solo si el resultado efectivo es win."
+          },
+          "event_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Label",
+            "description": "Partido A vs B (desde event_features del run)"
+          },
+          "league": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League"
+          },
+          "kickoff_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff Display",
+            "description": "Hora de inicio del partido en Colombia (p. ej. 18:30 \u00b7 hora Colombia)."
+          },
+          "kickoff_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff At Utc",
+            "description": "Inicio del partido en ISO 8601 UTC (Z)."
+          },
+          "match_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match State",
+            "description": "Estado del partido desde event_features (not started, live, finished)."
+          },
+          "run_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Date",
+            "description": "YYYY-MM-DD del daily_run (d\u00eda del an\u00e1lisis / listado)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "pick_id",
+          "daily_run_id",
+          "event_id",
+          "market",
+          "selection",
+          "picked_value",
+          "odds_reference",
+          "status",
+          "created_at_utc",
+          "idempotency_key",
+          "result"
+        ],
+        "title": "PickSummary"
+      },
+      "RegenerateCombosResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "suggested_combo_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Suggested Combo Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "daily_run_id",
+          "suggested_combo_ids"
+        ],
+        "title": "RegenerateCombosResponse"
+      },
+      "SignalCheckBody": {
+        "properties": {
+          "slot": {
+            "type": "string",
+            "title": "Slot",
+            "description": "morning | afternoon | manual | otro"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded",
+              "unknown"
+            ],
+            "title": "Status"
+          },
+          "detail": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot",
+          "status"
+        ],
+        "title": "SignalCheckBody"
+      },
+      "SignalCheckOut": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "check_id": {
+            "type": "integer",
+            "title": "Check Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "check_id"
+        ],
+        "title": "SignalCheckOut"
+      },
+      "SuggestedComboOut": {
+        "properties": {
+          "suggested_combo_id": {
+            "type": "integer",
+            "title": "Suggested Combo Id"
+          },
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "rank_order": {
+            "type": "integer",
+            "title": "Rank Order"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "strategy_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy Note"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/ComboLegOut"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "user_taken": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Taken"
+          },
+          "user_stake_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Stake Amount",
+            "description": "Monto en COP registrado para esta combinada."
+          },
+          "user_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Outcome",
+            "description": "Cierre manual del usuario, si existe."
+          },
+          "outcome_from_legs": {
+            "type": "string",
+            "enum": [
+              "win",
+              "loss",
+              "pending"
+            ],
+            "title": "Outcome From Legs",
+            "description": "Resultado l\u00f3gico si todas las piernas ganan / alguna pierde / resto pendiente."
+          },
+          "outcome_effective": {
+            "type": "string",
+            "enum": [
+              "win",
+              "loss",
+              "pending"
+            ],
+            "title": "Outcome Effective",
+            "description": "Prioriza user_outcome; si no, outcome_from_legs."
+          }
+        },
+        "type": "object",
+        "required": [
+          "suggested_combo_id",
+          "daily_run_id",
+          "rank_order",
+          "created_at_utc",
+          "strategy_note",
+          "legs",
+          "outcome_from_legs",
+          "outcome_effective"
+        ],
+        "title": "SuggestedComboOut"
+      },
+      "TrackingBoardOut": {
+        "properties": {
+          "run": {
+            "$ref": "#/components/schemas/DailyRunBoardOut"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "picks": {
+            "items": {
+              "$ref": "#/components/schemas/PickSummary"
+            },
+            "type": "array",
+            "title": "Picks"
+          },
+          "suggested_combos": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestedComboOut"
+            },
+            "type": "array",
+            "title": "Suggested Combos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run",
+          "user_id",
+          "picks",
+          "suggested_combos"
+        ],
+        "title": "TrackingBoardOut"
+      },
+      "UserBankrollBody": {
+        "properties": {
+          "bankroll_cop": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankroll Cop",
+            "description": "Nuevo bankroll en COP; null borra el valor guardado."
+          }
+        },
+        "type": "object",
+        "title": "UserBankrollBody"
+      },
+      "UserComboTakenBody": {
+        "properties": {
+          "taken": {
+            "type": "boolean",
+            "title": "Taken"
+          },
+          "stake_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Amount"
+          },
+          "user_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Outcome",
+            "description": "Cierre manual de la combinada; omitir para no cambiar el guardado."
+          },
+          "user_outcome_auto": {
+            "type": "boolean",
+            "title": "User Outcome Auto",
+            "description": "Si true, usa solo el resultado inferido de las piernas.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "taken"
+        ],
+        "title": "UserComboTakenBody"
+      },
+      "UserCreate": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "display_name"
+        ],
+        "title": "UserCreate"
+      },
+      "UserOut": {
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc"
+          },
+          "bankroll_cop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankroll Cop",
+            "description": "Bankroll de referencia en COP (persistido en servidor)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "slug",
+          "display_name",
+          "created_at_utc"
+        ],
+        "title": "UserOut"
+      },
+      "UserPickTakenBody": {
+        "properties": {
+          "taken": {
+            "type": "boolean",
+            "title": "Taken"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "risk_category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "escalonada",
+                  "segura",
+                  "balanceada",
+                  "arriesgada",
+                  "justificada"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Category"
+          },
+          "decision_origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "analizada",
+                  "intuicion",
+                  "impulso"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Origin"
+          },
+          "stake_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Amount"
+          },
+          "user_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Outcome",
+            "description": "Tu resultado; no enviar el campo para no modificar el cierre guardado."
+          },
+          "user_outcome_auto": {
+            "type": "boolean",
+            "title": "User Outcome Auto",
+            "description": "Si true, quita el cierre manual (solo score/API autom\u00e1tica).",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "taken"
+        ],
+        "title": "UserPickTakenBody"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

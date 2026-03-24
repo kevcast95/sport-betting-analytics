@@ -3,7 +3,8 @@
 event_bundle_scraper.py
 
 Pipeline unificado por eventId:
-- Descarga payloads crudos de SofaScore (event, lineups, statistics, odds/all, odds/featured)
+- Descarga payloads crudos de SofaScore (event, lineups, statistics, h2h, team-streaks,
+  odds/all, odds/featured, y estadísticas de temporada local/visitante en la misma liga)
 - Aplica processors puros
 - Entrega un JSON limpio y estable para consumo por agentes/LLMs
 """
@@ -13,15 +14,19 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from playwright.async_api import async_playwright
 
+from processors.h2h_processor import process_h2h
 from processors.lineups_processor import process_lineups
 from processors.odds_all_processor import process_odds_all
 from processors.odds_feature_processor import process_odds_feature
 from processors.statistics_processor import process_statistics
+from processors.team_season_stats_processor import process_team_season_stats
+from processors.team_streaks_processor import process_team_streaks
 
 
 def _utc_now_iso() -> str:
@@ -46,6 +51,8 @@ def _safe_event_meta(raw_event: Dict[str, Any]) -> Dict[str, Any]:
     home = event.get("homeTeam") or {}
     away = event.get("awayTeam") or {}
     tournament = event.get("tournament") or {}
+    season_obj = event.get("season") or {}
+    ut_obj = tournament.get("uniqueTournament") if isinstance(tournament.get("uniqueTournament"), dict) else {}
     status = event.get("status") or {}
 
     from typing import Optional
@@ -101,6 +108,11 @@ def _safe_event_meta(raw_event: Dict[str, Any]) -> Dict[str, Any]:
         "tournament": tournament.get("name"),
         "home_team": home.get("name"),
         "away_team": away.get("name"),
+        "home_team_id": _to_int(home.get("id")),
+        "away_team_id": _to_int(away.get("id")),
+        "unique_tournament_id": _to_int(ut_obj.get("id")),
+        "season_id": _to_int(season_obj.get("id")),
+        "season_name": season_obj.get("name"),
         "start_timestamp": event.get("startTimestamp"),
         "status": status.get("description") or status.get("type") or status.get("code"),
         "match_state": match_state,
@@ -119,6 +131,65 @@ _FETCH_HEADERS = {
     "Referer": "https://www.sofascore.com/",
     "Origin": "https://www.sofascore.com",
 }
+
+
+def _resolve_playwright_chrome_executable() -> Optional[str]:
+    """
+    Resuelve el binario compatible con la arquitectura presente bajo PLAYWRIGHT_BROWSERS_PATH.
+    Prioriza el Chromium completo (más estable en algunos entornos) y si no, usa el chrome-headless-shell.
+    """
+    base = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
+    if not base or not os.path.isdir(base):
+        return None
+
+    try:
+        entries = os.listdir(base)
+    except Exception:
+        return None
+
+    # 1) Chromium completo (ej. chromium-<rev>/chrome-mac-arm64/Google Chrome for Testing.app/...)
+    for entry in entries:
+        if not entry.startswith("chromium-"):
+            continue
+        rev_root = os.path.join(base, entry)
+        for arch_dir in ("chrome-mac-arm64", "chrome-mac-x64"):
+            candidate = os.path.join(
+                rev_root,
+                arch_dir,
+                "Google Chrome for Testing.app",
+                "Contents",
+                "MacOS",
+                "Google Chrome for Testing",
+            )
+            if os.path.exists(candidate):
+                return candidate
+
+    # 2) Headless shell (fallback)
+    for entry in entries:
+        if not entry.startswith("chromium_headless_shell-"):
+            continue
+        rev_root = os.path.join(base, entry)
+        for arch_dir in ("chrome-headless-shell-mac-arm64", "chrome-headless-shell-mac-x64"):
+            candidate = os.path.join(rev_root, arch_dir, "chrome-headless-shell")
+            if os.path.exists(candidate):
+                return candidate
+
+    return None
+
+
+def _season_stats_urls(
+    base: str,
+    *,
+    home_team_id: int,
+    away_team_id: int,
+    unique_tournament_id: int,
+    season_id: int,
+) -> Dict[str, str]:
+    path = f"unique-tournament/{unique_tournament_id}/season/{season_id}/statistics/overall"
+    return {
+        "team_season_home": f"{base}/team/{home_team_id}/{path}",
+        "team_season_away": f"{base}/team/{away_team_id}/{path}",
+    }
 
 
 async def _fetch_json(context, url: str) -> Dict[str, Any]:
@@ -152,12 +223,21 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
         "event": f"{base}/event/{event_id}",
         "lineups": f"{base}/event/{event_id}/lineups",
         "statistics": f"{base}/event/{event_id}/statistics",
+        "h2h": f"{base}/event/{event_id}/h2h",
+        "team_streaks": f"{base}/event/{event_id}/team-streaks",
         "odds_all": f"{base}/event/{event_id}/odds/1/all",
         "odds_featured": f"{base}/event/{event_id}/odds/1/featured",
     }
 
+    raw_team_season_home: Dict[str, Any] = {}
+    raw_team_season_away: Dict[str, Any] = {}
+
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        executable_path = _resolve_playwright_chrome_executable()
+        if executable_path:
+            browser = await p.chromium.launch(headless=True, executable_path=executable_path)
+        else:
+            browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
             user_agent=(
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -172,22 +252,71 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
         raw_event = await _fetch_json(context, urls["event"])
         raw_lineups = await _fetch_json(context, urls["lineups"])
         raw_statistics = await _fetch_json(context, urls["statistics"])
+        raw_h2h = await _fetch_json(context, urls["h2h"])
+        raw_team_streaks = await _fetch_json(context, urls["team_streaks"])
         raw_odds_all = await _fetch_json(context, urls["odds_all"])
         raw_odds_featured = await _fetch_json(context, urls["odds_featured"])
 
+        ev_for_ids = raw_event.get("event") if isinstance(raw_event.get("event"), dict) else raw_event
+        if isinstance(ev_for_ids, dict):
+            home_t = ev_for_ids.get("homeTeam") or {}
+            away_t = ev_for_ids.get("awayTeam") or {}
+            tourn = ev_for_ids.get("tournament") or {}
+            seas = ev_for_ids.get("season") or {}
+            ut = tourn.get("uniqueTournament") if isinstance(tourn.get("uniqueTournament"), dict) else {}
+            try:
+                hid = int(home_t.get("id"))
+                aid = int(away_t.get("id"))
+                utid = int(ut.get("id"))
+                sid = int(seas.get("id"))
+                ss_urls = _season_stats_urls(base, home_team_id=hid, away_team_id=aid, unique_tournament_id=utid, season_id=sid)
+                raw_team_season_home = await _fetch_json(context, ss_urls["team_season_home"])
+                raw_team_season_away = await _fetch_json(context, ss_urls["team_season_away"])
+            except (TypeError, ValueError):
+                raw_team_season_home = {"_error": True, "_status": 0, "_statusText": "missing_ids_for_season_stats", "_url": ""}
+                raw_team_season_away = {"_error": True, "_status": 0, "_statusText": "missing_ids_for_season_stats", "_url": ""}
+
         await browser.close()
+
+    raw_h2h_d = raw_h2h if isinstance(raw_h2h, dict) else {}
+    raw_streaks_d = raw_team_streaks if isinstance(raw_team_streaks, dict) else {}
+
+    proc_h2h = process_h2h(raw_h2h_d)
+    proc_streaks = process_team_streaks(raw_streaks_d)
+
+    r_tsh = raw_team_season_home if isinstance(raw_team_season_home, dict) else {}
+    r_tsa = raw_team_season_away if isinstance(raw_team_season_away, dict) else {}
+    proc_tsh = process_team_season_stats(r_tsh, side="home")
+    proc_tsa = process_team_season_stats(r_tsa, side="away")
 
     processed = {
         "lineups": process_lineups(raw_lineups if isinstance(raw_lineups, dict) else {}),
         "statistics": process_statistics(raw_statistics if isinstance(raw_statistics, dict) else {}),
+        "h2h": proc_h2h,
+        "team_streaks": proc_streaks,
+        "team_season_stats": {
+            "home": proc_tsh,
+            "away": proc_tsa,
+        },
         "odds_all": process_odds_all(raw_odds_all if isinstance(raw_odds_all, dict) else {}),
         "odds_featured": process_odds_feature(raw_odds_featured if isinstance(raw_odds_featured, dict) else {}),
     }
+
+    h2h_ok = (not bool(raw_h2h_d.get("_error"))) and bool(proc_h2h.get("ok"))
+    team_streaks_ok = (not bool(raw_streaks_d.get("_error"))) and bool(proc_streaks.get("ok"))
+    team_season_home_ok = (not bool(r_tsh.get("_error"))) and bool(proc_tsh.get("ok"))
+    team_season_away_ok = (not bool(r_tsa.get("_error"))) and bool(proc_tsa.get("ok"))
+    team_season_stats_ok = team_season_home_ok and team_season_away_ok
 
     diagnostics = {
         "event_ok": not bool(raw_event.get("_error")) if isinstance(raw_event, dict) else False,
         "lineups_ok": not bool(raw_lineups.get("_error")) if isinstance(raw_lineups, dict) else False,
         "statistics_ok": not bool(raw_statistics.get("_error")) if isinstance(raw_statistics, dict) else False,
+        "h2h_ok": h2h_ok,
+        "team_streaks_ok": team_streaks_ok,
+        "team_season_stats_ok": team_season_stats_ok,
+        "team_season_stats_home_ok": team_season_home_ok,
+        "team_season_stats_away_ok": team_season_away_ok,
         "odds_all_ok": not bool(raw_odds_all.get("_error")) if isinstance(raw_odds_all, dict) else False,
         "odds_featured_ok": not bool(raw_odds_featured.get("_error")) if isinstance(raw_odds_featured, dict) else False,
         # Solo entradas con fallo real (evita ruido en JSON)
@@ -197,6 +326,10 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
                 ("event", _fetch_failure_detail(raw_event if isinstance(raw_event, dict) else {})),
                 ("lineups", _fetch_failure_detail(raw_lineups if isinstance(raw_lineups, dict) else {})),
                 ("statistics", _fetch_failure_detail(raw_statistics if isinstance(raw_statistics, dict) else {})),
+                ("h2h", _fetch_failure_detail(raw_h2h_d)),
+                ("team_streaks", _fetch_failure_detail(raw_streaks_d)),
+                ("team_season_home", _fetch_failure_detail(r_tsh)),
+                ("team_season_away", _fetch_failure_detail(r_tsa)),
                 ("odds_all", _fetch_failure_detail(raw_odds_all if isinstance(raw_odds_all, dict) else {})),
                 ("odds_featured", _fetch_failure_detail(raw_odds_featured if isinstance(raw_odds_featured, dict) else {})),
             )
@@ -217,7 +350,7 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Pipeline unificado por eventId para OpenClaw/DeepSeek.")
+    parser = argparse.ArgumentParser(description="Pipeline unificado por eventId (Copa Foxkids / juapi-tartara).")
     parser.add_argument("--event-id", "-e", type=int, required=True, help="ID del evento en SofaScore.")
     parser.add_argument("--pretty", action="store_true", help="Imprime JSON con indentación.")
     return parser.parse_args()
