@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import glob
 import json
 import os
 import sqlite3
@@ -21,39 +22,56 @@ def _effective_outcome(u_outcome: Any, pr_outcome: Any) -> str:
 
 def _selection_stats_from_artifact(run_date: str) -> Dict[str, Any]:
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    p = os.path.join(repo_root, "out", f"candidates_{run_date}_select.json")
-    if not os.path.exists(p):
-        return {}
-    try:
-        with open(p, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except (OSError, json.JSONDecodeError):
-        return {}
-    if not isinstance(data, dict):
-        return {}
-    reasons = data.get("rejection_reasons")
-    reasons_d = reasons if isinstance(reasons, dict) else {}
+    out_dir = os.path.join(repo_root, "out")
+    paths: list[str] = []
+    legacy = os.path.join(out_dir, f"candidates_{run_date}_select.json")
+    if os.path.exists(legacy):
+        paths.append(legacy)
+    paths.extend(
+        sorted(glob.glob(os.path.join(out_dir, f"candidates_{run_date}_*_select.json")))
+    )
+    seen: set[str] = set()
+    agg_reasons: Dict[str, int] = {}
+    total_events = passed = rejected = 0
+    selected_n = 0
+    for p in paths:
+        if p in seen:
+            continue
+        seen.add(p)
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(data, dict):
+            continue
+        total_events += int(data.get("total_events") or 0)
+        passed += int(data.get("passed_filters") or 0)
+        rejected += int(data.get("rejected") or 0)
+        reasons = data.get("rejection_reasons")
+        if isinstance(reasons, dict):
+            for k, v in reasons.items():
+                try:
+                    agg_reasons[str(k)] = agg_reasons.get(str(k), 0) + int(v)
+                except (TypeError, ValueError):
+                    continue
+        sel = data.get("selected")
+        if isinstance(sel, list):
+            selected_n += len(sel)
     top_reason = None
     top_reason_count = 0
-    for k, v in reasons_d.items():
-        try:
-            n = int(v)
-        except (TypeError, ValueError):
-            continue
-        if n > top_reason_count:
-            top_reason = str(k)
-            top_reason_count = n
-    out: Dict[str, Any] = {
-        "selection_total_events": int(data.get("total_events") or 0),
-        "selection_passed_filters": int(data.get("passed_filters") or 0),
-        "selection_rejected": int(data.get("rejected") or 0),
+    for k, v in agg_reasons.items():
+        if v > top_reason_count:
+            top_reason = k
+            top_reason_count = v
+    return {
+        "selection_total_events": total_events,
+        "selection_passed_filters": passed,
+        "selection_rejected": rejected,
         "selection_top_reject_reason": top_reason,
         "selection_top_reject_reason_count": top_reason_count,
+        "selection_selected_events": selected_n,
     }
-    selected = data.get("selected")
-    if isinstance(selected, list):
-        out["selection_selected_events"] = len(selected)
-    return out
 
 
 def _rows_for_date(
@@ -123,7 +141,7 @@ def daily_picks_summary(
         SELECT COUNT(DISTINCT ef.event_id) AS n
         FROM daily_runs dr
         INNER JOIN event_features ef
-          ON ef.captured_at_utc = dr.created_at_utc
+          ON ef.captured_at_utc = dr.created_at_utc AND ef.sport = dr.sport
         WHERE dr.run_date = ?
         """,
         (run_date,),

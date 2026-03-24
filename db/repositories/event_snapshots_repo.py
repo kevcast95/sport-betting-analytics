@@ -11,20 +11,23 @@ def upsert_event_snapshot(
     captured_at_utc: str,
     payload_raw: Any,
     source: Optional[str],
+    *,
+    sport: str = "football",
 ) -> None:
     """
-    Inserta idempotente por UNIQUE(event_id, dataset, captured_at_utc).
+    Inserta idempotente por UNIQUE(sport, event_id, dataset, captured_at_utc).
     Si ya existe, no duplica (INSERT OR IGNORE).
     """
     payload_text = dumps_json_stable(payload_raw)
+    sp = (sport or "football").strip().lower()
     conn.execute(
         """
         INSERT OR IGNORE INTO event_snapshots (
-            event_id, dataset, captured_at_utc, payload_raw, source
+            sport, event_id, dataset, captured_at_utc, payload_raw, source
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (event_id, dataset, captured_at_utc, payload_text, source),
+        (sp, event_id, dataset, captured_at_utc, payload_text, source),
     )
     # No commit aquí para permitir transacciones por batch.
 

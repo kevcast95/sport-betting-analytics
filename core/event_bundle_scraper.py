@@ -27,6 +27,7 @@ from processors.odds_feature_processor import process_odds_feature
 from processors.statistics_processor import process_statistics
 from processors.team_season_stats_processor import process_team_season_stats
 from processors.team_streaks_processor import process_team_streaks
+from processors.tennis_odds_processor import process_tennis_odds_all
 
 
 def _utc_now_iso() -> str:
@@ -217,7 +218,8 @@ async def _fetch_json(context, url: str) -> Dict[str, Any]:
         }
 
 
-async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
+async def fetch_event_bundle(event_id: int, *, sport: str = "football") -> Dict[str, Any]:
+    sport_l = (sport or "football").strip().lower()
     base = "https://www.sofascore.com/api/v1"
     urls = {
         "event": f"{base}/event/{event_id}",
@@ -289,7 +291,7 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
     proc_tsh = process_team_season_stats(r_tsh, side="home")
     proc_tsa = process_team_season_stats(r_tsa, side="away")
 
-    processed = {
+    processed: Dict[str, Any] = {
         "lineups": process_lineups(raw_lineups if isinstance(raw_lineups, dict) else {}),
         "statistics": process_statistics(raw_statistics if isinstance(raw_statistics, dict) else {}),
         "h2h": proc_h2h,
@@ -301,12 +303,23 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
         "odds_all": process_odds_all(raw_odds_all if isinstance(raw_odds_all, dict) else {}),
         "odds_featured": process_odds_feature(raw_odds_featured if isinstance(raw_odds_featured, dict) else {}),
     }
+    if sport_l == "tennis":
+        processed["tennis_odds"] = process_tennis_odds_all(
+            raw_odds_all if isinstance(raw_odds_all, dict) else {}
+        )
 
     h2h_ok = (not bool(raw_h2h_d.get("_error"))) and bool(proc_h2h.get("ok"))
     team_streaks_ok = (not bool(raw_streaks_d.get("_error"))) and bool(proc_streaks.get("ok"))
     team_season_home_ok = (not bool(r_tsh.get("_error"))) and bool(proc_tsh.get("ok"))
     team_season_away_ok = (not bool(r_tsa.get("_error"))) and bool(proc_tsa.get("ok"))
     team_season_stats_ok = team_season_home_ok and team_season_away_ok
+
+    odds_all_ok = not bool(raw_odds_all.get("_error")) if isinstance(raw_odds_all, dict) else False
+    odds_featured_ok = not bool(raw_odds_featured.get("_error")) if isinstance(raw_odds_featured, dict) else False
+    if sport_l == "tennis":
+        t_odds = processed.get("tennis_odds") if isinstance(processed.get("tennis_odds"), dict) else {}
+        if t_odds.get("has_any_odds"):
+            odds_all_ok = True
 
     diagnostics = {
         "event_ok": not bool(raw_event.get("_error")) if isinstance(raw_event, dict) else False,
@@ -317,8 +330,8 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
         "team_season_stats_ok": team_season_stats_ok,
         "team_season_stats_home_ok": team_season_home_ok,
         "team_season_stats_away_ok": team_season_away_ok,
-        "odds_all_ok": not bool(raw_odds_all.get("_error")) if isinstance(raw_odds_all, dict) else False,
-        "odds_featured_ok": not bool(raw_odds_featured.get("_error")) if isinstance(raw_odds_featured, dict) else False,
+        "odds_all_ok": odds_all_ok,
+        "odds_featured_ok": odds_featured_ok,
         # Solo entradas con fallo real (evita ruido en JSON)
         "fetch_errors": {
             k: v
@@ -342,6 +355,7 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
             "generated_at_utc": _utc_now_iso(),
             "source": "sofascore",
             "event_id": event_id,
+            "ingest_sport": sport_l,
         },
         "event_context": _safe_event_meta(raw_event if isinstance(raw_event, dict) else {}),
         "diagnostics": diagnostics,
@@ -352,12 +366,17 @@ async def fetch_event_bundle(event_id: int) -> Dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Pipeline unificado por eventId (Copa Foxkids / juapi-tartara).")
     parser.add_argument("--event-id", "-e", type=int, required=True, help="ID del evento en SofaScore.")
+    parser.add_argument(
+        "--sport",
+        default="football",
+        help="Slug API SofaScore (football, tennis, …). Afecta diagnósticos/tennis_odds.",
+    )
     parser.add_argument("--pretty", action="store_true", help="Imprime JSON con indentación.")
     return parser.parse_args()
 
 
 async def _cli_main(args: argparse.Namespace) -> None:
-    bundle = await fetch_event_bundle(args.event_id)
+    bundle = await fetch_event_bundle(args.event_id, sport=args.sport)
     if args.pretty:
         print(json.dumps(bundle, ensure_ascii=False, indent=2))
     else:

@@ -24,7 +24,7 @@ import json
 import os
 import sys
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from zoneinfo import ZoneInfo
 
 
@@ -33,15 +33,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from db.config import get_db_config  # noqa: E402
 from db.db import connect  # noqa: E402
 from db.init_db import init_db  # noqa: E402
+from core.candidate_contract import (  # noqa: E402
+    classify_tier,
+    contract_description,
+    diagnostics_flags,
+    normalize_sport,
+    reject_reason as contract_reject_reason,
+)
 from db.repositories.daily_runs_repo import get_daily_run  # noqa: E402
 from db.repositories.event_features_repo import fetch_event_features_by_captured_at  # noqa: E402
-
-
-REQUIRED_EVENT_OK = True
-REQUIRE_LINEUPS = True
-REQUIRE_ODDS = True  # odds_all o odds_featured
-REQUIRE_H2H = True
-REQUIRE_TEAM_STREAKS = True
 
 
 def _schedule_display(event_context: Dict[str, Any], tz_name: str) -> Dict[str, Any]:
@@ -97,62 +97,9 @@ def _is_terminal_match(event_context: Dict[str, Any]) -> bool:
     return False
 
 
-def _diagnostics_flags(d: Dict[str, Any]) -> Dict[str, bool]:
-    return {
-        "event_ok": bool(d.get("event_ok")),
-        "lineups_ok": bool(d.get("lineups_ok")),
-        "statistics_ok": bool(d.get("statistics_ok")),
-        "h2h_ok": bool(d.get("h2h_ok")),
-        "team_streaks_ok": bool(d.get("team_streaks_ok")),
-        "team_season_stats_ok": bool(d.get("team_season_stats_ok")),
-        "odds_all_ok": bool(d.get("odds_all_ok")),
-        "odds_featured_ok": bool(d.get("odds_featured_ok")),
-    }
-
-
 def _quality_score(flags: Dict[str, bool]) -> int:
     """Cuantos flags OK (0-8). team_season_stats_ok es respaldo opcional, no filtro duro."""
     return sum(1 for v in flags.values() if v)
-
-
-def _base_contract(flags: Dict[str, bool]) -> bool:
-    if REQUIRED_EVENT_OK and not flags["event_ok"]:
-        return False
-    if REQUIRE_LINEUPS and not flags["lineups_ok"]:
-        return False
-    if REQUIRE_H2H and not flags["h2h_ok"]:
-        return False
-    if REQUIRE_TEAM_STREAKS and not flags["team_streaks_ok"]:
-        return False
-    if REQUIRE_ODDS and not (flags["odds_all_ok"] or flags["odds_featured_ok"]):
-        return False
-    return True
-
-
-def _classify_tier(flags: Dict[str, bool]) -> Optional[str]:
-    """
-    None si no cumple contrato base.
-    'A' si además statistics_ok; 'B' si base OK pero no statistics.
-    """
-    if not _base_contract(flags):
-        return None
-    if flags["statistics_ok"]:
-        return "A"
-    return "B"
-
-
-def _reject_reason(flags: Dict[str, bool]) -> str:
-    if REQUIRED_EVENT_OK and not flags["event_ok"]:
-        return "event_not_ok"
-    if REQUIRE_LINEUPS and not flags["lineups_ok"]:
-        return "lineups_not_ok"
-    if REQUIRE_H2H and not flags["h2h_ok"]:
-        return "h2h_not_ok"
-    if REQUIRE_TEAM_STREAKS and not flags["team_streaks_ok"]:
-        return "team_streaks_not_ok"
-    if REQUIRE_ODDS and not (flags["odds_all_ok"] or flags["odds_featured_ok"]):
-        return "no_odds"
-    return "unknown"
 
 
 def parse_args() -> argparse.Namespace:
@@ -185,8 +132,9 @@ def run(args: argparse.Namespace) -> None:
 
     daily = get_daily_run(conn, args.daily_run_id)
     captured_at_utc = str(daily["created_at_utc"])
+    sport = normalize_sport(daily["sport"])
 
-    rows = fetch_event_features_by_captured_at(conn, captured_at_utc)
+    rows = fetch_event_features_by_captured_at(conn, captured_at_utc, sport=sport)
 
     candidates: List[Dict[str, Any]] = []
     rejected: List[Dict[str, Any]] = []
@@ -206,7 +154,7 @@ def run(args: argparse.Namespace) -> None:
                 {
                     "event_id": event_id,
                     "reason": "match_finished",
-                    "diagnostics": _diagnostics_flags(features.get("diagnostics") or {}),
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
                     "match_state": match_state,
                     "status": event_context.get("status"),
                 }
@@ -214,9 +162,9 @@ def run(args: argparse.Namespace) -> None:
             continue
 
         diagnostics = features.get("diagnostics") or {}
-        flags = _diagnostics_flags(diagnostics)
+        flags = diagnostics_flags(diagnostics)
         score = _quality_score(flags)
-        tier = _classify_tier(flags)
+        tier = classify_tier(flags, sport=sport)
 
         if tier is not None:
             candidates.append(
@@ -228,7 +176,9 @@ def run(args: argparse.Namespace) -> None:
                 }
             )
         else:
-            reason = _reject_reason(flags)
+            reason = contract_reject_reason(
+                flags, str(event_context.get("match_state") or ""), sport=sport
+            ) or "unknown"
             rejected_reason_by_event[event_id] = reason
             reasons[reason] = reasons.get(reason, 0) + 1
             rejected.append({"event_id": event_id, "reason": reason, "diagnostics": flags})
@@ -244,15 +194,13 @@ def run(args: argparse.Namespace) -> None:
     for c in top:
         tier_selected[c["tier"]] = tier_selected.get(c["tier"], 0) + 1
 
+    desc = contract_description(sport=sport)
     result = {
         "job": "select_candidates",
         "daily_run_id": args.daily_run_id,
+        "sport": sport,
         "captured_at_utc": captured_at_utc,
-        "contract": {
-            "base": "event_ok + lineups_ok + h2h_ok + team_streaks_ok + (odds_all_ok | odds_featured_ok)",
-            "tier_A": "base + statistics_ok",
-            "tier_B": "base sin statistics_ok (fallback)",
-        },
+        "contract": desc,
         "total_events": len(rows),
         "passed_filters": len(candidates),
         "tier_counts_all_passed": tier_counts,
@@ -388,6 +336,11 @@ def run(args: argparse.Namespace) -> None:
         '{ "picks": [ { "event_id": int, "market": "1X2", "selection": "1"|"X"|"2", '
         '"picked_value": float?, "odds_reference": {}? } ] }'
     )
+    if sport == "tennis":
+        print(
+            "Tenis: 1=jugador local (homeTeam), 2=visitante; processed.tennis_odds resume mercados; "
+            "X casi nunca aplica."
+        )
     print("Tier B implica menor cobertura de estadísticas de equipo en vivo; ponderar confianza.")
     print("=== FIN PAYLOAD DS ===\n")
 

@@ -62,7 +62,6 @@ from db.repositories.pick_event_meta_repo import (
     load_event_meta_for_daily_run,
     merge_meta_into_odds_ref,
 )
-from db.sqlite_migrate import apply_migrations
 from db.repositories.picks_repo import set_pick_status
 from db.repositories.suggest_combos_repo import (
     list_legs_for_combo,
@@ -85,6 +84,13 @@ from db.repositories.users_repo import (
     list_users,
     set_user_bankroll_cop,
 )
+from core.candidate_contract import (
+    base_contract_ok,
+    classify_tier,
+    diagnostics_flags,
+    normalize_sport,
+    reject_reason as contract_reject_reason,
+)
 
 
 @asynccontextmanager
@@ -94,7 +100,6 @@ async def _lifespan(app: FastAPI):
     conn = db_connect(cfg.path)
     try:
         init_db(conn)
-        apply_migrations(conn)
         conn.commit()
     finally:
         conn.close()
@@ -133,51 +138,6 @@ app.add_middleware(
 )
 
 _global_deps = [Depends(verify_local_api_key)]
-
-
-def _diag_flags_from_any(d: Any) -> Dict[str, bool]:
-    base = d if isinstance(d, dict) else {}
-    return {
-        "event_ok": bool(base.get("event_ok")),
-        "lineups_ok": bool(base.get("lineups_ok")),
-        "statistics_ok": bool(base.get("statistics_ok")),
-        "h2h_ok": bool(base.get("h2h_ok")),
-        "team_streaks_ok": bool(base.get("team_streaks_ok")),
-        "odds_all_ok": bool(base.get("odds_all_ok")),
-        "odds_featured_ok": bool(base.get("odds_featured_ok")),
-    }
-
-
-def _base_contract_ok(flags: Dict[str, bool]) -> bool:
-    return (
-        flags["event_ok"]
-        and flags["lineups_ok"]
-        and flags["h2h_ok"]
-        and flags["team_streaks_ok"]
-        and (flags["odds_all_ok"] or flags["odds_featured_ok"])
-    )
-
-
-def _tier_from_flags(flags: Dict[str, bool]) -> Optional[str]:
-    if not _base_contract_ok(flags):
-        return None
-    return "A" if flags["statistics_ok"] else "B"
-
-
-def _reject_reason_from_flags(flags: Dict[str, bool], match_state: str) -> Optional[str]:
-    if match_state == "finished":
-        return "match_finished"
-    if not flags["event_ok"]:
-        return "event_not_ok"
-    if not flags["lineups_ok"]:
-        return "lineups_not_ok"
-    if not flags["h2h_ok"]:
-        return "h2h_not_ok"
-    if not flags["team_streaks_ok"]:
-        return "team_streaks_not_ok"
-    if not (flags["odds_all_ok"] or flags["odds_featured_ok"]):
-        return "no_odds"
-    return None
 
 
 def _h2h_summary_from_processed(processed: Any) -> Optional[str]:
@@ -444,21 +404,22 @@ def api_daily_run_events_inspect(
     limit: int = Query(500, ge=1, le=2000),
 ) -> DailyRunEventsInspectOut:
     run = conn.execute(
-        "SELECT daily_run_id, run_date, created_at_utc FROM daily_runs WHERE daily_run_id = ?",
+        "SELECT daily_run_id, run_date, created_at_utc, sport FROM daily_runs WHERE daily_run_id = ?",
         (daily_run_id,),
     ).fetchone()
     if run is None:
         raise HTTPException(status_code=404, detail="daily_run not found")
 
+    run_sport = normalize_sport(run["sport"])
     feature_rows = conn.execute(
         """
         SELECT event_id, features_json
         FROM event_features
-        WHERE captured_at_utc = ?
+        WHERE captured_at_utc = ? AND sport = ?
         ORDER BY event_id ASC
         LIMIT ?
         """,
-        (str(run["created_at_utc"]), int(limit)),
+        (str(run["created_at_utc"]), run_sport, int(limit)),
     ).fetchall()
 
     selected_event_ids = {
@@ -477,10 +438,14 @@ def api_daily_run_events_inspect(
         diagnostics = feat.get("diagnostics") if isinstance(feat.get("diagnostics"), dict) else {}
         processed = feat.get("processed") if isinstance(feat.get("processed"), dict) else feat.get("processed")
         match_state = str(event_context.get("match_state") or "").lower()
-        flags = _diag_flags_from_any(diagnostics)
-        tier = _tier_from_flags(flags)
-        passed = _base_contract_ok(flags) and match_state != "finished"
-        reject_reason = None if passed else _reject_reason_from_flags(flags, match_state)
+        flags = diagnostics_flags(diagnostics)
+        tier = classify_tier(flags, sport=run_sport)
+        passed = base_contract_ok(flags, sport=run_sport) and match_state != "finished"
+        reject_reason = (
+            None
+            if passed
+            else contract_reject_reason(flags, match_state, sport=run_sport)
+        )
         eid = int(r["event_id"])
         items.append(
             DailyRunEventInspectOut(

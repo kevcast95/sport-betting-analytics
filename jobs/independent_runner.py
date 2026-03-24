@@ -8,6 +8,10 @@ Orquestador local (sin OpenClaw/Gateway) para ejecutar:
   - full_day: mismos pasos que window pero --slot full_day (todos los candidatos del día) y persiste picks en DB.
 
 Pensado para cron diario en America/Bogota.
+
+Artefactos multi-deporte: con --sport distinto de football se añade sufijo al nombre
+(p. ej. candidates_{DATE}_tennis_select.json, payload_{DATE}_exec_08h_tennis_part01.json)
+para no pisar el pipeline de fútbol el mismo día.
 """
 
 from __future__ import annotations
@@ -62,15 +66,27 @@ def _get_daily_run_id(db: str, run_date: str, sport: str) -> int:
         conn.close()
 
 
+def _run_tag(sport: str) -> str:
+    s = (sport or "football").strip().lower()
+    return "" if s == "football" else f"_{s}"
+
+
 def _count_run_events(db: str, daily_run_id: int) -> int:
     conn = sqlite3.connect(db)
     try:
-        cur = conn.execute("SELECT created_at_utc FROM daily_runs WHERE daily_run_id = ?", (daily_run_id,))
+        cur = conn.execute(
+            "SELECT created_at_utc, sport FROM daily_runs WHERE daily_run_id = ?",
+            (daily_run_id,),
+        )
         row = cur.fetchone()
         if not row:
             raise RuntimeError(f"daily_run_id no existe: {daily_run_id}")
         captured = str(row[0])
-        cur2 = conn.execute("SELECT COUNT(*) FROM event_features WHERE captured_at_utc = ?", (captured,))
+        sport = str(row[1] or "football").strip().lower()
+        cur2 = conn.execute(
+            "SELECT COUNT(*) FROM event_features WHERE captured_at_utc = ? AND sport = ?",
+            (captured, sport),
+        )
         return int(cur2.fetchone()[0])
     finally:
         conn.close()
@@ -160,7 +176,8 @@ def _midnight(args: argparse.Namespace, *, repo: str, db: str, date_str: str) ->
         return
 
     daily_run_id = _get_daily_run_id(db, date_str, args.sport)
-    select_out = os.path.join(repo, "out", f"candidates_{date_str}_select.json")
+    tag = _run_tag(args.sport)
+    select_out = os.path.join(repo, "out", f"candidates_{date_str}{tag}_select.json")
     _run(
         [
             sys.executable,
@@ -206,8 +223,11 @@ def _run_windowed_analysis(
     block_label: str,
     persist_picks: bool,
 ) -> None:
-    select_in = os.path.join(repo, "out", f"candidates_{date_str}_select.json")
-    split_out = os.path.join(repo, "out", f"candidates_{date_str}_{exec_id}.json")
+    tag = _run_tag(args.sport)
+    exec_composite = f"{exec_id}{tag}"
+    title_base = "Tenis" if tag == "_tennis" else "Copa Foxkids"
+    select_in = os.path.join(repo, "out", f"candidates_{date_str}{tag}_select.json")
+    split_out = os.path.join(repo, "out", f"candidates_{date_str}{tag}_{exec_id}.json")
     _run(
         [
             sys.executable,
@@ -226,7 +246,7 @@ def _run_windowed_analysis(
         dry_run=args.dry_run,
     )
 
-    batch_prefix = os.path.join(repo, "out", "batches", f"candidates_{date_str}_{exec_id}")
+    batch_prefix = os.path.join(repo, "out", "batches", f"candidates_{date_str}{tag}_{exec_id}")
     _run(
         [
             sys.executable,
@@ -256,9 +276,9 @@ def _run_windowed_analysis(
             "--date",
             date_str,
             "--exec-id",
-            exec_id,
+            exec_composite,
             "--title",
-            f"Copa Foxkids — {block_label}",
+            f"{title_base} — {block_label}",
             "--model",
             args.ds_analysis_model,
             "--max-tokens",
@@ -271,7 +291,7 @@ def _run_windowed_analysis(
         dry_run=False,
     )
 
-    parts = sorted(glob.glob(os.path.join(repo, "out", f"payload_{date_str}_{exec_id}_part*.json")))
+    parts = sorted(glob.glob(os.path.join(repo, "out", f"payload_{date_str}_{exec_composite}_part*.json")))
     if not parts:
         raise RuntimeError("No se generaron payload parts desde DeepSeek.")
 

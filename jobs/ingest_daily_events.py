@@ -140,6 +140,7 @@ async def _run(args: argparse.Namespace) -> None:
                 event_id=event_id,
                 conn=conn,
                 captured_at_utc=captured_at_utc,
+                sport=args.sport,
             )
             if ok:
                 persisted += 1

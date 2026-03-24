@@ -23,19 +23,20 @@ def load_event_meta_for_daily_run(
     Usa el created_at_utc del daily_run como captured_at de features (convención ingest).
     """
     run = conn.execute(
-        "SELECT created_at_utc FROM daily_runs WHERE daily_run_id = ?",
+        "SELECT created_at_utc, sport FROM daily_runs WHERE daily_run_id = ?",
         (daily_run_id,),
     ).fetchone()
     if run is None:
         return {}
     cap = str(run["created_at_utc"])
+    sport = str(run["sport"] or "football").strip().lower()
     cur = conn.execute(
         """
         SELECT event_id, features_json
         FROM event_features
-        WHERE captured_at_utc = ?
+        WHERE captured_at_utc = ? AND sport = ?
         """,
-        (cap,),
+        (cap, sport),
     )
     out: Dict[int, Dict[str, Optional[str]]] = {}
     for row in cur.fetchall():

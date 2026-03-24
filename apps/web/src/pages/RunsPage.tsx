@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { fetchJson } from '@/lib/api'
 import type { DailyRunPage } from '@/types/api'
 import { formatCalendarDateEs } from '@/lib/formatDateTime'
@@ -7,12 +7,16 @@ import { formatCalendarDateEs } from '@/lib/formatDateTime'
 const PAGE = 20
 
 export default function RunsPage() {
+  const [searchParams] = useSearchParams()
+  const sportFilter = searchParams.get('sport')?.trim() || null
+
   const q = useInfiniteQuery({
-    queryKey: ['daily-runs'],
+    queryKey: ['daily-runs', sportFilter ?? 'all'],
     initialPageParam: undefined as number | undefined,
     queryFn: async ({ pageParam }) => {
       const sp = new URLSearchParams({ limit: String(PAGE) })
       if (pageParam != null) sp.set('cursor', String(pageParam))
+      if (sportFilter) sp.set('sport', sportFilter)
       return fetchJson<DailyRunPage>(`/daily-runs?${sp}`)
     },
     getNextPageParam: (last) => last.next_cursor ?? undefined,
@@ -28,7 +32,15 @@ export default function RunsPage() {
         <code className="rounded bg-neutral-100 px-1 font-mono text-xs">
           daily_run_id
         </code>
-        ).
+        ). Filtro opcional:{' '}
+        <code className="rounded bg-neutral-100 px-1 font-mono text-xs">
+          ?sport=football
+        </code>{' '}
+        o{' '}
+        <code className="rounded bg-neutral-100 px-1 font-mono text-xs">
+          ?sport=tennis
+        </code>
+        .
       </p>
 
       {q.isError && (
