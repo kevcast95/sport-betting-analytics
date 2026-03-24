@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import BacktestsPage from '@/pages/BacktestsPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PickDetailPage from '@/pages/PickDetailPage'
 import RunPicksPage from '@/pages/RunPicksPage'
 import RunsPage from '@/pages/RunsPage'
+import { fetchJson } from '@/lib/api'
 import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
+import type { EffectivenessReportStatusOut } from '@/types/api'
 
 function navClass(isActive: boolean) {
   return [
@@ -78,6 +80,16 @@ function BankrollSidebar() {
 
 function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [reportNotice, setReportNotice] = useState<string | null>(null)
+  const [notificationPermission, setNotificationPermission] = useState<
+    NotificationPermission | 'unsupported'
+  >(() => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      return 'unsupported'
+    }
+    return Notification.permission
+  })
+  const latestReportSeenRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -87,6 +99,43 @@ function AppLayout() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [menuOpen])
+
+  useEffect(() => {
+    let cancelled = false
+    const poll = async () => {
+      try {
+        const st = await fetchJson<EffectivenessReportStatusOut>(
+          '/reports/effectiveness/latest-status',
+        )
+        if (!st.available || !st.generated_at_utc) return
+        const lastSeen = latestReportSeenRef.current
+        if (lastSeen == null) {
+          latestReportSeenRef.current = st.generated_at_utc
+          return
+        }
+        if (lastSeen === st.generated_at_utc) return
+        latestReportSeenRef.current = st.generated_at_utc
+        const msg = `Reporte listo (${st.range_start ?? '?'} → ${st.range_end ?? '?'})`
+        if (!cancelled) setReportNotice(msg)
+        if (
+          typeof window !== 'undefined' &&
+          'Notification' in window &&
+          Notification.permission === 'granted'
+        ) {
+          new Notification('ALTEA · Reporte de efectividad', { body: msg })
+        }
+      } catch {
+        // Silencioso: no interrumpir UI si el API está reiniciando.
+      }
+    }
+
+    void poll()
+    const id = window.setInterval(() => void poll(), 60_000)
+    return () => {
+      cancelled = true
+      window.clearInterval(id)
+    }
+  }, [])
 
   const closeMenu = () => setMenuOpen(false)
 
@@ -109,7 +158,21 @@ function AppLayout() {
         <span className="truncate text-sm font-semibold text-violet-900">
           Panel
         </span>
-        <span className="w-10 shrink-0" aria-hidden />
+        {notificationPermission === 'default' ? (
+          <button
+            type="button"
+            className="rounded border border-app-line px-2 py-1 text-[11px] text-app-muted"
+            onClick={async () => {
+              if (!('Notification' in window)) return
+              const p = await Notification.requestPermission()
+              setNotificationPermission(p)
+            }}
+          >
+            Push
+          </button>
+        ) : (
+          <span className="w-10 shrink-0" aria-hidden />
+        )}
       </header>
 
       {menuOpen && (
@@ -165,12 +228,44 @@ function AppLayout() {
             </NavLink>
           </nav>
           <div className="px-3 pb-6">
+            {notificationPermission === 'default' && (
+              <div className="mb-3 rounded-md border border-app-line bg-app-card px-2 py-2">
+                <p className="text-[10px] text-app-muted">
+                  Alertas web
+                </p>
+                <button
+                  type="button"
+                  className="mt-1 w-full rounded border border-app-line px-2 py-1 text-[11px] text-app-fg hover:bg-violet-50/40"
+                  onClick={async () => {
+                    if (!('Notification' in window)) return
+                    const p = await Notification.requestPermission()
+                    setNotificationPermission(p)
+                  }}
+                >
+                  Activar push notification
+                </button>
+              </div>
+            )}
             <BankrollSidebar />
           </div>
         </aside>
 
         <div className="min-w-0 flex-1 md:overflow-y-auto">
           <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 md:px-8 md:py-8">
+            {reportNotice && (
+              <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-app-line bg-app-card px-3 py-2 text-xs text-app-fg">
+                <span>{reportNotice}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="rounded border border-app-line px-2 py-1 text-[11px] text-app-muted hover:text-app-fg"
+                    onClick={() => setReportNotice(null)}
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            )}
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/runs" element={<RunsPage />} />

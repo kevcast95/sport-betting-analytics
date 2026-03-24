@@ -24,6 +24,52 @@
         }
       }
     },
+    "/reports/effectiveness/latest-status": {
+      "get": {
+        "summary": "Api Latest Effectiveness Report Status",
+        "operationId": "api_latest_effectiveness_report_status_reports_effectiveness_latest_status_get",
+        "parameters": [
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectivenessReportStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dashboard": {
       "get": {
         "summary": "Api Dashboard",
@@ -1707,6 +1753,47 @@
             "type": "string",
             "title": "Run Date"
           },
+          "events_total": {
+            "type": "integer",
+            "title": "Events Total",
+            "default": 0
+          },
+          "selection_passed_filters": {
+            "type": "integer",
+            "title": "Selection Passed Filters",
+            "default": 0
+          },
+          "selection_rejected": {
+            "type": "integer",
+            "title": "Selection Rejected",
+            "default": 0
+          },
+          "selection_selected_events": {
+            "type": "integer",
+            "title": "Selection Selected Events",
+            "default": 0
+          },
+          "selection_top_reject_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Top Reject Reason"
+          },
+          "selection_top_reject_reason_count": {
+            "type": "integer",
+            "title": "Selection Top Reject Reason Count",
+            "default": 0
+          },
+          "selection_analyzed_without_pick": {
+            "type": "integer",
+            "title": "Selection Analyzed Without Pick",
+            "default": 0
+          },
           "picks_total": {
             "type": "integer",
             "title": "Picks Total"
@@ -1785,6 +1872,107 @@
           "performance"
         ],
         "title": "DashboardSummaryBlock"
+      },
+      "EffectivenessReportStatusOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "generated_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At Utc"
+          },
+          "range_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range Start"
+          },
+          "range_end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range End"
+          },
+          "days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
+          "issued": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued"
+          },
+          "settled": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Settled"
+          },
+          "win_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Rate"
+          },
+          "roi_unit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available"
+        ],
+        "title": "EffectivenessReportStatusOut"
       },
       "EnsureBaselinesResponse": {
         "properties": {

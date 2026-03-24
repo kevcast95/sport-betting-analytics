@@ -6,6 +6,8 @@ Ejecutar desde la raíz del repo: PYTHONPATH=. uvicorn apps.api.main:app --reloa
 import sqlite3
 from contextlib import asynccontextmanager
 from datetime import date
+import json
+import os
 from typing import Any, Dict, List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query
@@ -26,6 +28,7 @@ from apps.api.schemas import (
     DashboardRecentPick,
     DashboardSummaryBlock,
     EnsureBaselinesResponse,
+    EffectivenessReportStatusOut,
     HealthOut,
     PickDetail,
     PickPage,
@@ -130,6 +133,23 @@ app.add_middleware(
 _global_deps = [Depends(verify_local_api_key)]
 
 
+def _latest_effectiveness_report_path() -> str:
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    return os.path.join(repo_root, "out", "reports", "effectiveness_latest.json")
+
+
+def _read_latest_effectiveness_report() -> Optional[Dict[str, Any]]:
+    p = _latest_effectiveness_report_path()
+    if not os.path.exists(p):
+        return None
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def _stake_amount_unchanged(
     a: Optional[float], b: Optional[float]
 ) -> bool:
@@ -144,6 +164,29 @@ def _stake_amount_unchanged(
 def health() -> HealthOut:
     cfg = get_db_config()
     return HealthOut(ok=True, db_path=cfg.path)
+
+
+@app.get(
+    "/reports/effectiveness/latest-status",
+    response_model=EffectivenessReportStatusOut,
+    dependencies=_global_deps,
+)
+def api_latest_effectiveness_report_status() -> EffectivenessReportStatusOut:
+    raw = _read_latest_effectiveness_report()
+    if raw is None:
+        return EffectivenessReportStatusOut(available=False)
+    totals = raw.get("totals") if isinstance(raw.get("totals"), dict) else {}
+    return EffectivenessReportStatusOut(
+        available=True,
+        generated_at_utc=str(raw.get("generated_at_utc")) if raw.get("generated_at_utc") else None,
+        range_start=str(raw.get("range_start")) if raw.get("range_start") else None,
+        range_end=str(raw.get("range_end")) if raw.get("range_end") else None,
+        days=int(raw["days"]) if raw.get("days") is not None else None,
+        issued=int(totals["issued"]) if totals.get("issued") is not None else None,
+        settled=int(totals["settled"]) if totals.get("settled") is not None else None,
+        win_rate=float(totals["win_rate"]) if totals.get("win_rate") is not None else None,
+        roi_unit=float(totals["roi_unit"]) if totals.get("roi_unit") is not None else None,
+    )
 
 
 @app.get("/dashboard", response_model=DashboardBundleOut, dependencies=_global_deps)
@@ -228,6 +271,17 @@ def api_dashboard(
     return DashboardBundleOut(
         summary=DashboardSummaryBlock(
             run_date=str(s["run_date"]),
+            events_total=int(s.get("events_total", 0)),
+            selection_passed_filters=int(s.get("selection_passed_filters", 0)),
+            selection_rejected=int(s.get("selection_rejected", 0)),
+            selection_selected_events=int(s.get("selection_selected_events", 0)),
+            selection_top_reject_reason=s.get("selection_top_reject_reason"),
+            selection_top_reject_reason_count=int(
+                s.get("selection_top_reject_reason_count", 0)
+            ),
+            selection_analyzed_without_pick=int(
+                s.get("selection_analyzed_without_pick", 0)
+            ),
             picks_total=int(s["picks_total"]),
             outcome_wins=int(s["outcome_wins"]),
             outcome_losses=int(s["outcome_losses"]),

@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/reports/effectiveness/latest-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Api Latest Effectiveness Report Status */
+        get: operations["api_latest_effectiveness_report_status_reports_effectiveness_latest_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dashboard": {
         parameters: {
             query?: never;
@@ -461,6 +478,38 @@ export interface components {
         DashboardSummaryBlock: {
             /** Run Date */
             run_date: string;
+            /**
+             * Events Total
+             * @default 0
+             */
+            events_total: number;
+            /**
+             * Selection Passed Filters
+             * @default 0
+             */
+            selection_passed_filters: number;
+            /**
+             * Selection Rejected
+             * @default 0
+             */
+            selection_rejected: number;
+            /**
+             * Selection Selected Events
+             * @default 0
+             */
+            selection_selected_events: number;
+            /** Selection Top Reject Reason */
+            selection_top_reject_reason?: string | null;
+            /**
+             * Selection Top Reject Reason Count
+             * @default 0
+             */
+            selection_top_reject_reason_count: number;
+            /**
+             * Selection Analyzed Without Pick
+             * @default 0
+             */
+            selection_analyzed_without_pick: number;
             /** Picks Total */
             picks_total: number;
             /** Outcome Wins */
@@ -499,6 +548,27 @@ export interface components {
              * @default false
              */
             has_stake_data: boolean;
+        };
+        /** EffectivenessReportStatusOut */
+        EffectivenessReportStatusOut: {
+            /** Available */
+            available: boolean;
+            /** Generated At Utc */
+            generated_at_utc?: string | null;
+            /** Range Start */
+            range_start?: string | null;
+            /** Range End */
+            range_end?: string | null;
+            /** Days */
+            days?: number | null;
+            /** Issued */
+            issued?: number | null;
+            /** Settled */
+            settled?: number | null;
+            /** Win Rate */
+            win_rate?: number | null;
+            /** Roi Unit */
+            roi_unit?: number | null;
         };
         /** EnsureBaselinesResponse */
         EnsureBaselinesResponse: {
@@ -910,6 +980,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthOut"];
+                };
+            };
+        };
+    };
+    api_latest_effectiveness_report_status_reports_effectiveness_latest_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Local-Api-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EffectivenessReportStatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

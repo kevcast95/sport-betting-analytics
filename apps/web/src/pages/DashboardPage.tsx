@@ -41,6 +41,14 @@ function recentToCard(r: DashboardRecentPick): PickCardData {
   }
 }
 
+function rejectReasonLabelEs(reason: string | null | undefined): string {
+  const x = String(reason ?? '').trim().toLowerCase()
+  if (x === 'lineups_not_ok') return 'alineaciones o datos base incompletos'
+  if (x === 'h2h_not_ok') return 'historial H2H insuficiente'
+  if (x === 'match_finished') return 'partido ya finalizado'
+  return x ? `criterio técnico (${x})` : 'criterios técnicos'
+}
+
 export default function DashboardPage() {
   const { userId, setUserId } = useTrackingUser()
   const usersQ = useUsersQuery()
@@ -83,8 +91,25 @@ export default function DashboardPage() {
             </span>
             <span className="mx-1 text-app-line">·</span>
             <span className="font-mono text-xs tabular-nums">{runDate}</span>
-            {' — '}picks del modelo y lo que marcaste como tomado.
+            {' — '}
+            {s
+              ? `${s.events_total} eventos totales · ${s.picks_total} picks del modelo`
+              : 'eventos y picks del modelo'}
           </p>
+          {s && (s.selection_passed_filters > 0 || s.selection_rejected > 0) && (
+            <div className="mt-2 space-y-1 text-xs text-app-muted">
+              <p>
+                • <span className="text-app-fg">{s.selection_rejected}</span> eventos
+                se descartaron por filtros previos (principalmente{' '}
+                {rejectReasonLabelEs(s.selection_top_reject_reason)}).
+              </p>
+              <p>
+                • <span className="text-app-fg">{s.selection_analyzed_without_pick}</span>{' '}
+                eventos sí pasaron análisis, pero no terminaron en pick por falta de
+                valor suficiente.
+              </p>
+            </div>
+          )}
         </div>
         <Link
           to="/runs"

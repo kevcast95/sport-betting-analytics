@@ -22,3 +22,5 @@ export type DashboardRecentPick = components['schemas']['DashboardRecentPick']
 export type DashboardSummaryBlock = components['schemas']['DashboardSummaryBlock']
 export type DashboardPerformanceBlock =
   components['schemas']['DashboardPerformanceBlock']
+export type EffectivenessReportStatusOut =
+  components['schemas']['EffectivenessReportStatusOut']

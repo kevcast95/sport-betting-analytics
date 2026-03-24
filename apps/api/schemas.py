@@ -263,6 +263,13 @@ class DashboardPerformanceBlock(BaseModel):
 
 class DashboardSummaryBlock(BaseModel):
     run_date: str
+    events_total: int = 0
+    selection_passed_filters: int = 0
+    selection_rejected: int = 0
+    selection_selected_events: int = 0
+    selection_top_reject_reason: Optional[str] = None
+    selection_top_reject_reason_count: int = 0
+    selection_analyzed_without_pick: int = 0
     picks_total: int
     outcome_wins: int
     outcome_losses: int
@@ -318,3 +325,15 @@ class DashboardRecentPick(BaseModel):
 class DashboardBundleOut(BaseModel):
     summary: DashboardSummaryBlock
     recent: List[DashboardRecentPick]
+
+
+class EffectivenessReportStatusOut(BaseModel):
+    available: bool
+    generated_at_utc: Optional[str] = None
+    range_start: Optional[str] = None
+    range_end: Optional[str] = None
+    days: Optional[int] = None
+    issued: Optional[int] = None
+    settled: Optional[int] = None
+    win_rate: Optional[float] = None
+    roi_unit: Optional[float] = None
