@@ -447,6 +447,8 @@ export interface components {
             kickoff_display?: string | null;
             /** Kickoff At Utc */
             kickoff_at_utc?: string | null;
+            /** Match State */
+            match_state?: string | null;
             /** Selection Display */
             selection_display?: string | null;
             /**
@@ -583,9 +585,14 @@ export interface components {
             kickoff_display?: string | null;
             /**
              * Kickoff At Utc
-             * @description Inicio del partido en ISO 8601 UTC (Z). Para bloquear edición de tomé/monto tras +100 min.
+             * @description Inicio del partido en ISO 8601 UTC (Z).
              */
             kickoff_at_utc?: string | null;
+            /**
+             * Match State
+             * @description Estado del partido desde event_features (not started, live, finished).
+             */
+            match_state?: string | null;
             /**
              * Run Date
              * @description YYYY-MM-DD del daily_run (día del análisis / listado).
@@ -698,9 +705,14 @@ export interface components {
             kickoff_display?: string | null;
             /**
              * Kickoff At Utc
-             * @description Inicio del partido en ISO 8601 UTC (Z). Para bloquear edición de tomé/monto tras +100 min.
+             * @description Inicio del partido en ISO 8601 UTC (Z).
              */
             kickoff_at_utc?: string | null;
+            /**
+             * Match State
+             * @description Estado del partido desde event_features (not started, live, finished).
+             */
+            match_state?: string | null;
             /**
              * Run Date
              * @description YYYY-MM-DD del daily_run (día del análisis / listado).

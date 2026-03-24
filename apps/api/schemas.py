@@ -67,7 +67,11 @@ class PickSummary(BaseModel):
     )
     kickoff_at_utc: Optional[str] = Field(
         None,
-        description="Inicio del partido en ISO 8601 UTC (Z). Para bloquear edición de tomé/monto tras +100 min.",
+        description="Inicio del partido en ISO 8601 UTC (Z).",
+    )
+    match_state: Optional[str] = Field(
+        None,
+        description="Estado del partido desde event_features (not started, live, finished).",
     )
     run_date: Optional[str] = Field(
         default=None,
@@ -304,6 +308,7 @@ class DashboardRecentPick(BaseModel):
     league: Optional[str] = None
     kickoff_display: Optional[str] = None
     kickoff_at_utc: Optional[str] = None
+    match_state: Optional[str] = None
     selection_display: Optional[str] = None
     odds_reference: Optional[Any] = Field(
         None, description="Metadatos del modelo (edge, confianza, razón, etc.)"

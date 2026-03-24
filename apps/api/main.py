@@ -220,6 +220,7 @@ def api_dashboard(
                 league=em.get("league") if em else None,
                 kickoff_display=em.get("kickoff_display") if em else None,
                 kickoff_at_utc=em.get("kickoff_at_utc") if em else None,
+                match_state=em.get("match_state") if em else None,
                 selection_display=sel_disp,
                 odds_reference=odds_parsed,
             )
@@ -332,6 +333,7 @@ def _apply_event_meta(
     d["league"] = meta.get("league")
     d["kickoff_display"] = meta.get("kickoff_display")
     d["kickoff_at_utc"] = meta.get("kickoff_at_utc")
+    d["match_state"] = meta.get("match_state")
     d["odds_reference"] = merge_meta_into_odds_ref(d.get("odds_reference"), meta)
     return PickSummary.model_validate(d)
 
@@ -777,7 +779,7 @@ def api_put_pick_taken(
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "Pasaron 100 minutos desde el inicio del partido: no se puede "
+                    "El partido ya terminó: no se puede "
                     "cambiar si tomaste el pick."
                 ),
             )
@@ -785,7 +787,7 @@ def api_put_pick_taken(
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "Pasaron 100 minutos desde el inicio del partido: el monto "
+                    "El partido ya terminó: el monto "
                     "ya no es editable."
                 ),
             )

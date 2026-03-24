@@ -98,7 +98,7 @@ export function PickTrackingControls({
     message: string
   } | null>(null)
 
-  const trackingLocked = usePickTrackingLock(p.kickoff_at_utc)
+  const trackingLocked = usePickTrackingLock(p.match_state)
 
   const stakeNow = useMemo(
     () => effectiveStakeCOP(copDraft, p.stake_amount),
@@ -126,8 +126,8 @@ export function PickTrackingControls({
     <div className="grid gap-2 text-[11px]">
       {userId != null && trackingLocked && (
         <p className="rounded-md border border-neutral-300 bg-neutral-100/90 px-2 py-1.5 text-[10px] leading-relaxed text-neutral-900">
-          <strong>Partido en curso o ya jugado</strong> (pasaron 100 minutos desde
-          el inicio): no puedes cambiar si tomaste el pick ni el monto. Puedes
+          <strong>Partido finalizado</strong>: no puedes cambiar si tomaste el
+          pick ni el monto. Puedes
           seguir ajustando <strong>origen</strong> y <strong>cierre</strong> (resultado).
         </p>
       )}
