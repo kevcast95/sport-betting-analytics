@@ -75,7 +75,8 @@ CREATE TABLE IF NOT EXISTS users (
   user_id INTEGER PRIMARY KEY AUTOINCREMENT,
   slug TEXT NOT NULL UNIQUE,
   display_name TEXT NOT NULL,
-  created_at_utc TEXT NOT NULL
+  created_at_utc TEXT NOT NULL,
+  bankroll_cop REAL
 );
 
 CREATE TABLE IF NOT EXISTS user_pick_decisions (
@@ -89,6 +90,8 @@ CREATE TABLE IF NOT EXISTS user_pick_decisions (
   stake_amount REAL,
   user_outcome TEXT CHECK (user_outcome IN ('win','loss','pending') OR user_outcome IS NULL),
   user_outcome_updated_at_utc TEXT,
+  realized_return_cop REAL,
+  bankroll_delta_applied_cop REAL,
   PRIMARY KEY (user_id, pick_id),
   FOREIGN KEY (user_id) REFERENCES users(user_id),
   FOREIGN KEY (pick_id) REFERENCES picks(pick_id)
@@ -118,6 +121,9 @@ CREATE TABLE IF NOT EXISTS user_combo_decisions (
   suggested_combo_id INTEGER NOT NULL,
   taken INTEGER NOT NULL CHECK (taken IN (0, 1)),
   updated_at_utc TEXT NOT NULL,
+  stake_amount REAL,
+  user_outcome TEXT CHECK (user_outcome IS NULL OR user_outcome IN ('win', 'loss', 'pending')),
+  user_outcome_updated_at_utc TEXT,
   PRIMARY KEY (user_id, suggested_combo_id),
   FOREIGN KEY (user_id) REFERENCES users(user_id),
   FOREIGN KEY (suggested_combo_id) REFERENCES suggested_combos(suggested_combo_id) ON DELETE CASCADE

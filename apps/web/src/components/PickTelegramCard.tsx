@@ -1,5 +1,18 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  formatCOP,
+  formatShortDateFromYMD,
+  kickoffReadableCol,
+} from '@/lib/formatDateTime'
+import {
+  describeMarketKind,
+  describeSelectionPlain,
+} from '@/lib/marketCopy'
+import {
+  confidenceTierFromLabel,
+  tierLabelEs,
+} from '@/lib/stakeSuggestion'
 
 const DIV = 'border-t border-app-line'
 
@@ -34,6 +47,8 @@ export type PickCardData = {
   event_label?: string | null
   league?: string | null
   kickoff_display?: string | null
+  /** ISO UTC (Z); bloqueo tomé/monto +100 min tras inicio. */
+  kickoff_at_utc?: string | null
   created_at_utc?: string
   result?: {
     outcome: string
@@ -73,21 +88,34 @@ function systemOutcomeRaw(p: PickCardData): 'win' | 'loss' | 'pending' | null {
 function outcomePill(outcome: string | undefined) {
   if (outcome === 'win')
     return (
-      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
+      <span className="rounded-full border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-900 shadow-sm">
         Ganada
       </span>
     )
   if (outcome === 'loss')
     return (
-      <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-800">
+      <span className="rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-900 shadow-sm">
         Perdida
       </span>
     )
   return (
-    <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600">
+    <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-900 shadow-sm">
       Pendiente
     </span>
   )
+}
+
+function confTierBadgeClass(tier: ReturnType<typeof confidenceTierFromLabel>) {
+  switch (tier) {
+    case 'high':
+      return 'border-emerald-200 bg-emerald-50 text-emerald-900'
+    case 'medium':
+      return 'border-sky-200 bg-sky-50 text-sky-950'
+    case 'low':
+      return 'border-amber-200 bg-amber-50 text-amber-950'
+    default:
+      return 'border-neutral-200 bg-neutral-100 text-neutral-700'
+  }
 }
 
 function isMarket1x2(market: string) {
@@ -102,8 +130,8 @@ function plEstimateLine(p: PickCardData): string | null {
   if (stake == null || odds == null) return null
   const o = effectivePickOutcome(p)
   if (o === 'win')
-    return `+${(stake * (odds - 1)).toFixed(2)} (est.)`
-  if (o === 'loss') return `−${stake.toFixed(2)} (est.)`
+    return `+${formatCOP(stake * (odds - 1))} (est.)`
+  if (o === 'loss') return `−${formatCOP(stake)} (est.)`
   return null
 }
 
@@ -135,9 +163,9 @@ export function OutcomeFeedbackBlock({
     sys !== eff
 
   const sourceLine = manual
-    ? 'Cierre declarado por ti — no hace falta consultar SofaScore para este pick.'
+    ? 'Usamos el resultado que marcaste tú en «Tu seguimiento».'
     : sys != null
-      ? 'Validación automática (1X2 / job validate_picks).'
+      ? 'El resultado lo tomamos del marcador cuando el sistema ya pudo validarlo.'
       : null
 
   if (eff == null) {
@@ -149,11 +177,10 @@ export function OutcomeFeedbackBlock({
           Resultado: sin datos aún
         </p>
         <p className="mt-1 text-[10px] leading-relaxed text-app-muted">
-          Puedes marcar ganado / perdido / pendiente en «Tu seguimiento» para no
-          depender de validación externa. Si prefieres automático,{' '}
+          Puedes decir tú si ganaste, perdiste o sigue pendiente en «Tu seguimiento».
           {isMarket1x2(p.market)
-            ? 'tras el partido puedes ejecutar validate_picks (1X2).'
-            : 'el job solo cubre 1X2; el resto suele quedar manual.'}
+            ? ' En apuestas al resultado del partido (1-X-2) el sistema a veces puede cerrarlo solo cuando hay marcador final.'
+            : ' En mercados distintos al marcador final suele tocarse a mano.'}
         </p>
       </div>
     )
@@ -186,7 +213,7 @@ export function OutcomeFeedbackBlock({
         )}
         {plLine && (
           <p className="mt-1 font-mono text-[11px] font-medium text-emerald-900 tabular-nums">
-            P/L con tu stake: {plLine}
+            Con tu monto apostado (estimado): {plLine}
           </p>
         )}
       </div>
@@ -220,7 +247,7 @@ export function OutcomeFeedbackBlock({
         )}
         {plLine && (
           <p className="mt-1 font-mono text-[11px] font-medium text-red-900 tabular-nums">
-            P/L con tu stake: {plLine}
+            Con tu monto apostado (estimado): {plLine}
           </p>
         )}
       </div>
@@ -234,13 +261,13 @@ export function OutcomeFeedbackBlock({
       <p className="text-xs font-semibold text-amber-950">Resultado pendiente</p>
       {manual ? (
         <p className="mt-1 text-[10px] leading-relaxed text-amber-900/90">
-          Lo marcaste como pendiente a propósito. Cuando quieras, actualiza el
-          cierre en «Tu seguimiento».
+          Lo dejaste en pendiente a propósito. Cuando quieras, cámbialo en «Tu
+          seguimiento».
         </p>
       ) : (
         <p className="mt-1 text-[10px] leading-relaxed text-amber-900/90">
-          Partido no finalizado o sin marcador en SofaScore. Puedes cerrar a mano
-          o volver a ejecutar validate_picks más tarde.
+          Aún no hay resultado claro (partido en curso o sin datos). Puedes
+          cerrarlo a mano cuando sepas qué pasó.
         </p>
       )}
       {scoreLine && (
@@ -256,12 +283,18 @@ export function PickTelegramCard({
   p,
   compact,
   detailHref,
+  /** Día del run (YYYY-MM-DD): mismo calendario que el listado / histórico. */
+  runDate,
+  /** 1-based en el carrusel o lista del día. */
+  pickOrdinal,
   /** Controles de tracking (tomé, riesgo, etc.): van dentro de la misma card */
   trackingSlot,
 }: {
   p: PickCardData
   compact?: boolean
   detailHref?: string
+  runDate?: string | null
+  pickOrdinal?: number
   trackingSlot?: ReactNode
 }) {
   const ref = p.odds_reference as OddsRef
@@ -270,14 +303,12 @@ export function PickTelegramCard({
   const razon = refStr(ref, 'razon')
   const conf = refStr(ref, 'confianza')
   const edge = refNum(ref, 'edge_pct')
-  const dateLine =
-    p.created_at_utc && p.created_at_utc.length >= 10
-      ? p.created_at_utc.slice(0, 10)
-      : undefined
-  const timeLine =
-    p.created_at_utc && p.created_at_utc.length >= 16
-      ? p.created_at_utc.slice(11, 16)
-      : undefined
+  const tier = confidenceTierFromLabel(conf)
+  const confChipText =
+    conf?.trim() && conf.trim().length > 0
+      ? `Confianza del modelo: ${conf.trim()}`
+      : tierLabelEs(tier)
+  const kickoffCol = kickoffReadableCol(p.kickoff_display ?? null)
 
   const title =
     p.event_label?.trim() ||
@@ -294,24 +325,33 @@ export function PickTelegramCard({
       <div className={`border-b border-app-line px-3 py-2 ${compact ? 'py-1.5' : ''}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="font-semibold leading-snug text-app-fg">{title}</p>
-            {(p.league || p.kickoff_display || dateLine) && (
-              <p className="mt-0.5 text-[10px] leading-relaxed text-app-muted">
-                {[p.league, p.kickoff_display].filter(Boolean).join(' · ')}
-                {dateLine && (
-                  <>
-                    {(p.league || p.kickoff_display) && ' · '}
-                    <span className="font-mono tabular-nums">{dateLine}</span>
-                    {timeLine && (
-                      <span className="font-mono tabular-nums">
-                        {' '}
-                        {timeLine} UTC
-                      </span>
-                    )}
-                  </>
-                )}
+            {pickOrdinal != null && pickOrdinal > 0 && (
+              <p className="mb-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-800">
+                Pick {pickOrdinal}
               </p>
             )}
+            <p className="font-semibold leading-snug text-app-fg">{title}</p>
+            {p.league?.trim() ? (
+              <p className="mt-0.5 text-[10px] leading-relaxed text-app-muted">
+                {p.league.trim()}
+              </p>
+            ) : null}
+            {kickoffCol ? (
+              <p className="mt-0.5 text-[10px] leading-relaxed text-app-fg">
+                <span className="text-app-muted">Inicio del partido: </span>
+                <span className="font-mono font-medium tabular-nums">
+                  {kickoffCol}
+                </span>
+              </p>
+            ) : null}
+            {runDate?.trim() ? (
+              <p className="mt-0.5 text-[10px] text-app-muted">
+                Día del análisis (calendario del run):{' '}
+                <span className="font-mono text-app-fg tabular-nums">
+                  {formatShortDateFromYMD(runDate.trim())}
+                </span>
+              </p>
+            ) : null}
           </div>
           {outcomePill(effectivePickOutcome(p) ?? 'pending')}
         </div>
@@ -328,34 +368,52 @@ export function PickTelegramCard({
 
       <div className="flex flex-1 flex-col gap-0 px-3 py-2">
         <p className="text-[10px] font-medium uppercase tracking-wide text-app-muted">
-          Pick
+          Apuesta
         </p>
         <p className="mt-0.5">
-          <span className="text-app-muted">Mercado:</span>{' '}
-          <span className="font-medium text-app-fg">{p.market}</span>
+          <span className="inline-block rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-900">
+            {p.market.trim()}
+          </span>
         </p>
-        <p className="mt-0.5">
-          <span className="text-app-muted">Selección:</span>{' '}
-          <span className="font-medium text-app-fg">{selShow}</span>
+        <p className="mt-1 text-[10px] leading-relaxed text-app-fg">
+          {describeMarketKind(p.market)}
+        </p>
+        <p className="mt-1.5">
+          <span className="text-app-muted">Código en el boletín:</span>{' '}
+          <span className="font-mono font-medium text-app-fg">{selShow}</span>
+        </p>
+        <p className="mt-0.5 text-[10px] leading-relaxed text-sky-950">
+          <span className="font-medium text-sky-900">Resumen:</span>{' '}
+          {describeSelectionPlain(p.market, p.selection, p.event_label)}
         </p>
         {p.picked_value != null && (
           <p className="mt-0.5 font-mono tabular-nums">
-            <span className="text-app-muted">Cuota:</span>{' '}
+            <span className="text-app-muted">Cuota (pago si aciertas):</span>{' '}
             <span className="text-app-fg">{p.picked_value}</span>
           </p>
         )}
-        {(edge != null || conf) && (
-          <p className={`mt-1 ${DIV} pt-1 text-app-muted`}>
-            {edge != null && (
-              <span className="font-mono tabular-nums">Edge {edge}%</span>
+        {((conf?.trim() || tier !== 'unknown') || edge != null) && (
+          <div
+            className={`mt-2 flex flex-wrap items-center gap-1.5 ${DIV} pt-2`}
+          >
+            {(conf?.trim() || tier !== 'unknown') && (
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${confTierBadgeClass(tier)}`}
+              >
+                {confChipText}
+              </span>
             )}
-            {edge != null && conf && ' · '}
-            {conf && <span>Conf. {conf}</span>}
-          </p>
+            {edge != null && (
+              <span className="rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 font-mono text-[10px] font-medium text-teal-950 tabular-nums">
+                Ventaja que ve el modelo: {edge}%
+              </span>
+            )}
+          </div>
         )}
         {razon && (
           <p className={`mt-2 leading-relaxed text-app-fg ${DIV} pt-2`}>
-            <span className="text-app-muted">Nota:</span> {razon}
+            <span className="text-app-muted">Por qué lo sugiere el modelo:</span>{' '}
+            {razon}
           </p>
         )}
       </div>
@@ -363,8 +421,8 @@ export function PickTelegramCard({
       <OutcomeFeedbackBlock p={p} />
 
       {trackingSlot != null && (
-        <div className={`${DIV} bg-neutral-50/70 px-3 py-3`}>
-          <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-app-muted">
+        <div className={`${DIV} bg-gradient-to-b from-violet-50/90 to-sky-50/40 px-3 py-3`}>
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-violet-900">
             Tu seguimiento
           </p>
           {trackingSlot}
@@ -377,9 +435,9 @@ export function PickTelegramCard({
             <span
               className={
                 p.user_taken === true
-                  ? 'rounded bg-neutral-900 px-1.5 py-0.5 font-medium text-white'
+                  ? 'rounded-md border border-violet-300 bg-violet-600 px-1.5 py-0.5 font-medium text-white shadow-sm'
                   : p.user_taken === false
-                    ? 'rounded bg-neutral-100 px-1.5 py-0.5 text-app-muted'
+                    ? 'rounded-md border border-neutral-200 bg-neutral-100 px-1.5 py-0.5 text-app-muted'
                     : 'text-app-muted'
               }
             >
@@ -389,26 +447,21 @@ export function PickTelegramCard({
                   ? 'No tomado'
                   : 'Tomado —'}
             </span>
-            {p.risk_category && (
-              <span className="rounded-full bg-violet-50 px-2 py-0.5 text-violet-800">
-                {p.risk_category}
-              </span>
-            )}
             {p.decision_origin && (
-              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-900">
+              <span className="rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-950">
                 {p.decision_origin}
               </span>
             )}
             {p.stake_amount != null && (
-              <span className="font-mono tabular-nums text-app-muted">
-                Stake {p.stake_amount}
+              <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 font-mono text-[10px] font-medium text-cyan-950 tabular-nums">
+                {formatCOP(p.stake_amount)}
               </span>
             )}
           </div>
         )}
         <Link
           to={href}
-          className="mt-2 inline-block text-[11px] font-medium text-app-fg underline decoration-app-line underline-offset-2"
+          className="mt-2 inline-block text-[11px] font-semibold text-violet-800 underline decoration-violet-300 underline-offset-2 hover:text-violet-950"
         >
           Ver ficha →
         </Link>

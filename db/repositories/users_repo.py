@@ -9,17 +9,32 @@ def _utc_now_iso() -> str:
 
 def list_users(conn: sqlite3.Connection) -> List[sqlite3.Row]:
     cur = conn.execute(
-        "SELECT user_id, slug, display_name, created_at_utc FROM users ORDER BY user_id ASC"
+        """
+        SELECT user_id, slug, display_name, created_at_utc, bankroll_cop
+        FROM users ORDER BY user_id ASC
+        """
     )
     return cur.fetchall()
 
 
 def get_user_by_id(conn: sqlite3.Connection, user_id: int) -> Optional[sqlite3.Row]:
     cur = conn.execute(
-        "SELECT user_id, slug, display_name, created_at_utc FROM users WHERE user_id = ?",
+        """
+        SELECT user_id, slug, display_name, created_at_utc, bankroll_cop
+        FROM users WHERE user_id = ?
+        """,
         (user_id,),
     )
     return cur.fetchone()
+
+
+def set_user_bankroll_cop(
+    conn: sqlite3.Connection, *, user_id: int, bankroll_cop: Optional[float]
+) -> None:
+    conn.execute(
+        "UPDATE users SET bankroll_cop = ? WHERE user_id = ?",
+        (bankroll_cop, user_id),
+    )
 
 
 def insert_user(conn: sqlite3.Connection, *, slug: str, display_name: str) -> int:

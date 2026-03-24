@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { fetchJson } from '@/lib/api'
 import type { DailyRunPage } from '@/types/api'
+import { formatCalendarDateEs } from '@/lib/formatDateTime'
 
 const PAGE = 20
 
@@ -62,8 +63,14 @@ export default function RunsPage() {
                   className="border-b border-app-line/80 hover:bg-neutral-50/80"
                 >
                   <td className="p-2">{r.daily_run_id}</td>
-                  <td className="p-2 font-mono tabular-nums text-app-fg">
-                    {r.run_date}
+                  <td className="p-2 text-app-fg">
+                    <span className="font-mono text-xs tabular-nums text-violet-900">
+                      {r.run_date}
+                    </span>
+                    <br />
+                    <span className="text-[10px] leading-tight text-app-muted">
+                      {formatCalendarDateEs(r.run_date)}
+                    </span>
                   </td>
                   <td className="p-2">{r.sport}</td>
                   <td className="p-2">{r.status}</td>

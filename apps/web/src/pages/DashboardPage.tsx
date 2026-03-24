@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { DashboardPerformanceChart } from '@/components/DashboardPerformanceChart'
 import { PickTelegramCard, type PickCardData } from '@/components/PickTelegramCard'
 import { fetchJson } from '@/lib/api'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
 import { useUsersQuery } from '@/hooks/useUsersQuery'
 import type { DashboardBundleOut, DashboardRecentPick } from '@/types/api'
+import { formatCalendarDateEs, formatCOP } from '@/lib/formatDateTime'
 
 function todayISO() {
   const d = new Date()
@@ -27,12 +29,12 @@ function recentToCard(r: DashboardRecentPick): PickCardData {
     event_label: r.event_label,
     league: r.league,
     kickoff_display: r.kickoff_display,
+    kickoff_at_utc: r.kickoff_at_utc,
     created_at_utc: r.created_at_utc,
     user_outcome: r.user_outcome ?? undefined,
     system_outcome: r.outcome_system ?? undefined,
     result: null,
     user_taken: r.user_taken,
-    risk_category: r.risk_category,
     decision_origin: r.decision_origin,
     stake_amount: r.stake_amount,
     selection_display: r.selection_display ?? undefined,
@@ -76,9 +78,12 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="mt-1 max-w-xl text-sm text-app-muted">
-            Vista del día en formato{' '}
-            <span className="font-mono tabular-nums">{runDate}</span>: picks del
-            modelo y lo que marcaste como tomado.
+            <span className="font-medium text-violet-900">
+              {formatCalendarDateEs(runDate)}
+            </span>
+            <span className="mx-1 text-app-line">·</span>
+            <span className="font-mono text-xs tabular-nums">{runDate}</span>
+            {' — '}picks del modelo y lo que marcaste como tomado.
           </p>
         </div>
         <Link
@@ -89,19 +94,16 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <div className="mb-8 mt-6 flex flex-wrap items-end gap-4 border-b border-app-line pb-6">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-app-muted">Día (calendario)</span>
+      <div className="mb-8 mt-6 flex flex-wrap items-start gap-4 border-b border-app-line pb-6">
+        <label className="flex flex-col gap-1 text-xs text-app-muted">
+          Fecha del run (picks con este día)
           <input
             type="date"
             value={runDate}
             onChange={(e) => setRunDate(e.target.value)}
             className="rounded-md border border-app-line bg-app-card px-3 py-2 text-sm text-app-fg"
           />
-          <span className="font-mono text-xs text-app-muted tabular-nums">
-            Activo: <span className="text-app-fg">{runDate}</span>
-          </span>
-        </div>
+        </label>
         <label className="flex flex-col gap-1 text-xs text-app-muted">
           Usuario
           <select
@@ -149,8 +151,8 @@ export default function DashboardPage() {
 
       {s && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-app-line bg-app-card p-4 shadow-sm">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-xl border border-app-line border-l-4 border-l-violet-500 bg-app-card p-4 shadow-sm">
               <p className="text-xs font-medium text-app-muted">
                 Picks modelo · {runDate}
               </p>
@@ -162,7 +164,7 @@ export default function DashboardPage() {
                 {s.outcome_pending} pendientes (todos)
               </p>
             </div>
-            <div className="rounded-xl border border-app-line bg-app-card p-4 shadow-sm">
+            <div className="rounded-xl border border-app-line border-l-4 border-l-sky-500 bg-app-card p-4 shadow-sm">
               <p className="text-xs font-medium text-app-muted">
                 Tomados · resultado
               </p>
@@ -175,51 +177,60 @@ export default function DashboardPage() {
                   : 'Elige usuario'}
               </p>
             </div>
-            <div className="rounded-xl border border-app-line bg-app-card p-4 shadow-sm">
+            <div className="rounded-xl border border-app-line border-l-4 border-l-emerald-500 bg-app-card p-4 shadow-sm">
               <p className="text-xs font-medium text-app-muted">
-                Saldo neto (est.)
+                Bankroll · saldo neto
               </p>
               <p
                 className={`mt-2 text-2xl font-semibold tabular-nums ${
-                  s.net_pl_estimate != null && s.net_pl_estimate >= 0
+                  s.bankroll_cop != null && s.bankroll_cop >= 0
                     ? 'text-app-success'
-                    : s.net_pl_estimate != null
+                    : s.bankroll_cop != null
                       ? 'text-app-danger'
                       : ''
                 }`}
               >
-                {s.has_stake_data && s.net_pl_estimate != null
-                  ? `${s.net_pl_estimate >= 0 ? '+' : ''}${s.net_pl_estimate}`
+                {userId != null && s.bankroll_cop != null
+                  ? formatCOP(s.bankroll_cop)
                   : '—'}
               </p>
               <p className="mt-1 text-xs text-app-muted">
-                Solo picks tomados con stake y resultado (1X2 validado)
+                {userId != null
+                  ? 'Persistido en servidor: sube con cada pick tomado que ganas y baja si pierdes.'
+                  : 'Elige usuario'}
               </p>
-            </div>
-            <div className="rounded-xl border border-app-line bg-app-card p-4 shadow-sm">
-              <p className="text-xs font-medium text-app-muted">Meta / límites</p>
-              <p className="mt-2 text-2xl font-semibold text-app-muted">—</p>
-              <p className="mt-1 text-xs text-app-muted">
-                Próximo: límites diarios
-              </p>
+              {userId != null &&
+                s.has_stake_data &&
+                s.net_pl_estimate != null && (
+                  <p className="mt-2 border-t border-app-line pt-2 text-[10px] leading-relaxed text-app-muted">
+                    P/L del día (solo referencia, picks de esta fecha):{' '}
+                    <span
+                      className={`font-mono font-medium tabular-nums ${
+                        s.net_pl_estimate >= 0
+                          ? 'text-emerald-800'
+                          : 'text-red-800'
+                      }`}
+                    >
+                      {s.net_pl_estimate >= 0 ? '+' : ''}
+                      {formatCOP(s.net_pl_estimate)}
+                    </span>
+                  </p>
+                )}
             </div>
           </div>
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-3">
-            <div className="rounded-xl border border-app-line bg-app-card p-5 shadow-sm lg:col-span-2">
+          <div className="mt-8">
+            <div className="rounded-xl border border-app-line bg-app-card p-5 shadow-sm">
               <h2 className="text-sm font-semibold">Rendimiento</h2>
               <p className="mt-0.5 text-xs text-app-muted">
-                Gráfica 7 días — en construcción
+                Proporción ganadas / perdidas / pendientes: total del día, tomados
+                y no tomados (resultado efectivo).
               </p>
-              <div className="mt-8 flex h-40 items-center justify-center rounded-lg border border-dashed border-app-line bg-neutral-50 text-sm text-app-muted">
-                Datos listos en API
-              </div>
-            </div>
-            <div className="rounded-xl border border-app-line bg-app-card p-5 shadow-sm">
-              <h2 className="text-sm font-semibold">Meta diaria</h2>
-              <p className="mt-0.5 text-xs text-app-muted">Próximo</p>
-              <div className="mt-6 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
-                <div className="h-full w-[0%] rounded-full bg-app-accent" />
+              <div className="mt-6">
+                <DashboardPerformanceChart
+                  performance={s.performance}
+                  hasUser={userId != null}
+                />
               </div>
             </div>
           </div>
@@ -231,6 +242,11 @@ export default function DashboardPage() {
                 <p className="text-xs text-app-muted">
                   Tarjetas alineadas al mensaje de Telegram · desliza en móvil
                 </p>
+                {userId != null && s.bankroll_cop != null && (
+                  <p className="mt-1 font-mono text-[11px] font-semibold tabular-nums text-violet-900">
+                    Bankroll actual: {formatCOP(s.bankroll_cop)}
+                  </p>
+                )}
               </div>
               {dashQ.data?.recent[0] && (
                 <Link
@@ -249,10 +265,12 @@ export default function DashboardPage() {
               </p>
             ) : (
               <div className="-mx-1 flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory">
-                {dashQ.data?.recent.map((r) => (
+                {dashQ.data?.recent.map((r, i) => (
                   <PickTelegramCard
                     key={r.pick_id}
                     p={recentToCard(r)}
+                    runDate={runDate}
+                    pickOrdinal={i + 1}
                     detailHref={`/picks/${r.pick_id}`}
                   />
                 ))}

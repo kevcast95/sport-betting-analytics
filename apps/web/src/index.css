@@ -1,15 +1,18 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Notion / Linear — claro, mobile-first */
+  /* Notion / Linear — claro, mobile-first + acentos para badges */
   --color-app-bg: #fafafa;
   --color-app-fg: #171717;
   --color-app-muted: #737373;
   --color-app-line: #e5e5e5;
   --color-app-card: #ffffff;
-  --color-app-accent: #171717;
-  --color-app-success: #16a34a;
+  --color-app-accent: #4c1d95;
+  --color-app-accent-fg: #ffffff;
+  --color-app-success: #15803d;
   --color-app-danger: #dc2626;
+  --color-app-warn: #b45309;
+  --color-app-info: #0369a1;
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;

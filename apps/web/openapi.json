@@ -651,6 +651,126 @@
         }
       }
     },
+    "/users/{user_id}": {
+      "get": {
+        "summary": "Api Get User",
+        "operationId": "api_get_user_users__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/bankroll": {
+      "put": {
+        "summary": "Api Put User Bankroll",
+        "operationId": "api_put_user_bankroll_users__user_id__bankroll_put",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBankrollBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/bootstrap": {
       "post": {
         "summary": "Api Bootstrap Users",
@@ -1315,6 +1435,51 @@
         ],
         "title": "DashboardBundleOut"
       },
+      "DashboardPerformanceBlock": {
+        "properties": {
+          "totals": {
+            "$ref": "#/components/schemas/DashboardPerformanceSplit"
+          },
+          "taken": {
+            "$ref": "#/components/schemas/DashboardPerformanceSplit"
+          },
+          "not_taken": {
+            "$ref": "#/components/schemas/DashboardPerformanceSplit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "totals",
+          "taken",
+          "not_taken"
+        ],
+        "title": "DashboardPerformanceBlock",
+        "description": "Todos los picks del d\u00eda vs tomados vs no tomados (requiere usuario para el cruce)."
+      },
+      "DashboardPerformanceSplit": {
+        "properties": {
+          "wins": {
+            "type": "integer",
+            "title": "Wins"
+          },
+          "losses": {
+            "type": "integer",
+            "title": "Losses"
+          },
+          "pending": {
+            "type": "integer",
+            "title": "Pending"
+          }
+        },
+        "type": "object",
+        "required": [
+          "wins",
+          "losses",
+          "pending"
+        ],
+        "title": "DashboardPerformanceSplit",
+        "description": "Conteos por resultado efectivo (prioriza cierre usuario + pick_results)."
+      },
       "DashboardRecentPick": {
         "properties": {
           "pick_id": {
@@ -1480,6 +1645,17 @@
             ],
             "title": "Kickoff Display"
           },
+          "kickoff_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff At Utc"
+          },
           "selection_display": {
             "anyOf": [
               {
@@ -1555,6 +1731,21 @@
             "title": "Taken Outcome Pending",
             "default": 0
           },
+          "performance": {
+            "$ref": "#/components/schemas/DashboardPerformanceBlock"
+          },
+          "bankroll_cop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankroll Cop",
+            "description": "Saldo en servidor (`users.bankroll_cop`); se ajusta con wins/loss de picks tomados."
+          },
           "net_pl_estimate": {
             "anyOf": [
               {
@@ -1579,7 +1770,8 @@
           "outcome_wins",
           "outcome_losses",
           "outcome_pending",
-          "picks_taken_count"
+          "picks_taken_count",
+          "performance"
         ],
         "title": "DashboardSummaryBlock"
       },
@@ -1762,6 +1954,18 @@
             "title": "User Outcome",
             "description": "Cierre manual (omitir en PATCH parcial para conservar el valor guardado)."
           },
+          "realized_return_cop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Realized Return Cop",
+            "description": "Ganancia bruta en COP persistida solo si el resultado efectivo es win."
+          },
           "event_label": {
             "anyOf": [
               {
@@ -1795,7 +1999,31 @@
               }
             ],
             "title": "Kickoff Display",
-            "description": "Inicio en UTC (YYYY-MM-DD HH:MM UTC) si hay timestamp en features"
+            "description": "Hora de inicio del partido en Colombia (p. ej. 18:30 \u00b7 hora Colombia)."
+          },
+          "kickoff_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff At Utc",
+            "description": "Inicio del partido en ISO 8601 UTC (Z). Para bloquear edici\u00f3n de tom\u00e9/monto tras +100 min."
+          },
+          "run_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Date",
+            "description": "YYYY-MM-DD del daily_run (d\u00eda del an\u00e1lisis / listado)."
           }
         },
         "type": "object",
@@ -2074,6 +2302,18 @@
             "title": "User Outcome",
             "description": "Cierre manual (omitir en PATCH parcial para conservar el valor guardado)."
           },
+          "realized_return_cop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Realized Return Cop",
+            "description": "Ganancia bruta en COP persistida solo si el resultado efectivo es win."
+          },
           "event_label": {
             "anyOf": [
               {
@@ -2107,7 +2347,31 @@
               }
             ],
             "title": "Kickoff Display",
-            "description": "Inicio en UTC (YYYY-MM-DD HH:MM UTC) si hay timestamp en features"
+            "description": "Hora de inicio del partido en Colombia (p. ej. 18:30 \u00b7 hora Colombia)."
+          },
+          "kickoff_at_utc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff At Utc",
+            "description": "Inicio del partido en ISO 8601 UTC (Z). Para bloquear edici\u00f3n de tom\u00e9/monto tras +100 min."
+          },
+          "run_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Date",
+            "description": "YYYY-MM-DD del daily_run (d\u00eda del an\u00e1lisis / listado)."
           }
         },
         "type": "object",
@@ -2249,6 +2513,55 @@
               }
             ],
             "title": "User Taken"
+          },
+          "user_stake_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Stake Amount",
+            "description": "Monto en COP registrado para esta combinada."
+          },
+          "user_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Outcome",
+            "description": "Cierre manual del usuario, si existe."
+          },
+          "outcome_from_legs": {
+            "type": "string",
+            "enum": [
+              "win",
+              "loss",
+              "pending"
+            ],
+            "title": "Outcome From Legs",
+            "description": "Resultado l\u00f3gico si todas las piernas ganan / alguna pierde / resto pendiente."
+          },
+          "outcome_effective": {
+            "type": "string",
+            "enum": [
+              "win",
+              "loss",
+              "pending"
+            ],
+            "title": "Outcome Effective",
+            "description": "Prioriza user_outcome; si no, outcome_from_legs."
           }
         },
         "type": "object",
@@ -2258,7 +2571,9 @@
           "rank_order",
           "created_at_utc",
           "strategy_note",
-          "legs"
+          "legs",
+          "outcome_from_legs",
+          "outcome_effective"
         ],
         "title": "SuggestedComboOut"
       },
@@ -2295,11 +2610,65 @@
         ],
         "title": "TrackingBoardOut"
       },
+      "UserBankrollBody": {
+        "properties": {
+          "bankroll_cop": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankroll Cop",
+            "description": "Nuevo bankroll en COP; null borra el valor guardado."
+          }
+        },
+        "type": "object",
+        "title": "UserBankrollBody"
+      },
       "UserComboTakenBody": {
         "properties": {
           "taken": {
             "type": "boolean",
             "title": "Taken"
+          },
+          "stake_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Amount"
+          },
+          "user_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Outcome",
+            "description": "Cierre manual de la combinada; omitir para no cambiar el guardado."
+          },
+          "user_outcome_auto": {
+            "type": "boolean",
+            "title": "User Outcome Auto",
+            "description": "Si true, usa solo el resultado inferido de las piernas.",
+            "default": false
           }
         },
         "type": "object",
@@ -2343,6 +2712,18 @@
           "created_at_utc": {
             "type": "string",
             "title": "Created At Utc"
+          },
+          "bankroll_cop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankroll Cop",
+            "description": "Bankroll de referencia en COP (persistido en servidor)."
           }
         },
         "type": "object",

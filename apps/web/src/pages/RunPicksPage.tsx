@@ -2,32 +2,22 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PickTelegramCard, type PickCardData } from '@/components/PickTelegramCard'
+import {
+  ComboTrackingControls,
+  type ComboSavePayload,
+} from '@/components/ComboTrackingControls'
+import {
+  PickTrackingControls,
+  type PickSavePayload,
+} from '@/components/PickTrackingControls'
 import { fetchJson } from '@/lib/api'
+import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
 import { useUsersQuery } from '@/hooks/useUsersQuery'
+import { selectionShortLabel } from '@/lib/marketCopy'
 import type { TrackingBoardOut, UserOut } from '@/types/api'
 
-const RISK = [
-  '',
-  'escalonada',
-  'segura',
-  'balanceada',
-  'arriesgada',
-  'justificada',
-] as const
-const ORIGIN = ['', 'analizada', 'intuicion', 'impulso'] as const
-
 type BoardPick = TrackingBoardOut['picks'][number]
-
-function boardPickSaveBase(p: BoardPick) {
-  return {
-    pickId: p.pick_id,
-    taken: p.user_taken ?? false,
-    risk_category: p.risk_category ?? null,
-    decision_origin: p.decision_origin ?? null,
-    stake_amount: p.stake_amount ?? null,
-  }
-}
 
 function toCard(p: BoardPick): PickCardData {
   const ro = p.result?.outcome
@@ -42,13 +32,13 @@ function toCard(p: BoardPick): PickCardData {
     event_label: p.event_label,
     league: p.league,
     kickoff_display: p.kickoff_display,
+    kickoff_at_utc: p.kickoff_at_utc,
     created_at_utc: p.created_at_utc,
     result: p.result,
     user_outcome: p.user_outcome ?? undefined,
     system_outcome:
       ro === 'win' || ro === 'loss' || ro === 'pending' ? ro : undefined,
     user_taken: p.user_taken,
-    risk_category: p.risk_category,
     decision_origin: p.decision_origin,
     stake_amount: p.stake_amount,
   }
@@ -59,6 +49,7 @@ export default function RunPicksPage() {
   const runId = Number(dailyRunId)
   const invalid = Number.isNaN(runId)
   const { userId, setUserId } = useTrackingUser()
+  const { bankrollCOP } = useBankrollCOP(userId)
   const qc = useQueryClient()
 
   const usersQ = useUsersQuery()
@@ -91,19 +82,9 @@ export default function RunPicksPage() {
   })
 
   const savePickM = useMutation({
-    mutationFn: async (payload: {
-      pickId: number
-      taken: boolean
-      risk_category?: string | null
-      decision_origin?: string | null
-      stake_amount?: number | null
-      /** Sin enviar: el API conserva user_outcome. */
-      userOutcome?: 'auto' | 'win' | 'loss' | 'pending'
-    }) => {
+    mutationFn: async (payload: PickSavePayload) => {
       if (userId == null) throw new Error('user')
       const body: Record<string, unknown> = { taken: payload.taken }
-      if (payload.risk_category !== undefined)
-        body.risk_category = payload.risk_category || null
       if (payload.decision_origin !== undefined)
         body.decision_origin = payload.decision_origin || null
       if (payload.stake_amount !== undefined)
@@ -125,26 +106,36 @@ export default function RunPicksPage() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['board', runId, userId] })
       void qc.invalidateQueries({ queryKey: ['dashboard'] })
+      void qc.invalidateQueries({ queryKey: ['user', userId] })
     },
   })
 
-  const toggleComboM = useMutation({
-    mutationFn: async ({
-      comboId,
-      taken,
-    }: {
-      comboId: number
-      taken: boolean
-    }) => {
+  const saveComboM = useMutation({
+    mutationFn: async (payload: ComboSavePayload) => {
       if (userId == null) throw new Error('user')
-      return fetchJson(`/users/${userId}/suggested-combos/${comboId}/taken`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taken }),
-      })
+      const body: Record<string, unknown> = { taken: payload.taken }
+      if (payload.stake_amount !== undefined)
+        body.stake_amount = payload.stake_amount
+      if (payload.userOutcome === 'auto') body.user_outcome_auto = true
+      else if (
+        payload.userOutcome === 'win' ||
+        payload.userOutcome === 'loss' ||
+        payload.userOutcome === 'pending'
+      ) {
+        body.user_outcome = payload.userOutcome
+      }
+      return fetchJson(
+        `/users/${userId}/suggested-combos/${payload.comboId}/taken`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      )
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['board', runId, userId] })
+      void qc.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
 
@@ -180,7 +171,7 @@ export default function RunPicksPage() {
       <p className="mb-4 text-xs text-app-muted">
         <Link
           to="/runs"
-          className="font-medium text-app-fg underline decoration-app-line underline-offset-2"
+          className="font-medium text-violet-800 underline decoration-violet-200 underline-offset-2"
         >
           ← Runs
         </Link>
@@ -189,14 +180,14 @@ export default function RunPicksPage() {
       </p>
       <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-xl font-semibold tracking-tight text-app-fg">
             Picks y tracking
           </h2>
           {board && (
             <p className="mt-1 font-mono text-sm text-app-muted tabular-nums">
-              Fecha run <span className="text-app-fg">{board.run.run_date}</span>
+              Fecha run <span className="text-violet-900">{board.run.run_date}</span>
               {' · '}
-              {board.run.sport}
+              <span className="text-sky-900">{board.run.sport}</span>
             </p>
           )}
         </div>
@@ -208,10 +199,10 @@ export default function RunPicksPage() {
         </p>
       )}
 
-      <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-app-line bg-app-card p-4 text-xs">
-        <span className="text-app-muted">Usuario</span>
+      <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-violet-200/80 bg-gradient-to-r from-violet-50/90 to-white p-4 text-xs shadow-sm">
+        <span className="font-medium text-violet-900">Usuario</span>
         <select
-          className="min-w-[12rem] rounded-md border border-app-line bg-app-bg px-2 py-2 text-app-fg"
+          className="min-w-[12rem] rounded-md border border-violet-200 bg-white px-2 py-2 text-app-fg shadow-sm"
           value={userId != null ? String(userId) : ''}
           onChange={(e) => {
             const v = e.target.value
@@ -233,12 +224,16 @@ export default function RunPicksPage() {
         </select>
         <button
           type="button"
-          className="rounded-md border border-app-line px-3 py-2 text-app-fg disabled:opacity-40"
+          className="rounded-md border border-app-line bg-white px-3 py-2 text-app-fg shadow-sm disabled:opacity-40"
           disabled={bootstrapM.isPending}
           onClick={() => bootstrapM.mutate()}
         >
           Crear usuarios prueba
         </button>
+        <p className="w-full text-[10px] leading-relaxed text-app-muted sm:w-auto sm:flex-1">
+          El bankroll en COP está en la barra lateral: ahí se basan las sugerencias
+          de monto por pick.
+        </p>
       </div>
 
       {userId == null && !usersQ.isLoading && users.length > 0 && (
@@ -260,7 +255,7 @@ export default function RunPicksPage() {
           <div className="mb-4 flex flex-wrap gap-2 text-xs">
             <button
               type="button"
-              className="rounded-md border border-app-line bg-app-card px-3 py-2 text-app-fg disabled:opacity-40"
+              className="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 font-medium text-teal-950 shadow-sm disabled:opacity-40"
               disabled={baselinesM.isPending}
               onClick={() => baselinesM.mutate()}
             >
@@ -268,11 +263,11 @@ export default function RunPicksPage() {
             </button>
             <button
               type="button"
-              className="rounded-md border border-app-line bg-app-card px-3 py-2 text-app-fg disabled:opacity-40"
+              className="rounded-md border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 font-medium text-fuchsia-950 shadow-sm disabled:opacity-40"
               disabled={regenCombosM.isPending}
               onClick={() => regenCombosM.mutate()}
             >
-              Regenerar combinaciones
+              Regenerar combinadas
             </button>
             {baselinesM.isSuccess && (
               <span className="self-center text-app-muted">
@@ -291,7 +286,7 @@ export default function RunPicksPage() {
             </p>
           ) : (
             <div className="-mx-1 flex gap-4 overflow-x-auto overflow-y-visible pb-4 pt-1 [scrollbar-gutter:stable] snap-x snap-mandatory">
-              {board.picks.map((p) => (
+              {board.picks.map((p, i) => (
                 <div
                   key={p.pick_id}
                   className="w-[min(100vw-1.5rem,22rem)] shrink-0 snap-start"
@@ -299,134 +294,16 @@ export default function RunPicksPage() {
                   <PickTelegramCard
                     p={toCard(p)}
                     compact
+                    runDate={board.run.run_date}
+                    pickOrdinal={i + 1}
                     trackingSlot={
-                      <div className="grid gap-2 text-[11px]">
-                        <label className="grid grid-cols-[4rem_1fr] items-center gap-2">
-                          <span className="text-app-muted">Tomé</span>
-                          <select
-                            className="rounded border border-app-line bg-app-card px-2 py-1.5"
-                            value={
-                              p.user_taken === true
-                                ? 'yes'
-                                : p.user_taken === false
-                                  ? 'no'
-                                  : ''
-                            }
-                            onChange={(e) => {
-                              const v = e.target.value
-                              if (v === '') return
-                              savePickM.mutate({
-                                ...boardPickSaveBase(p),
-                                taken: v === 'yes',
-                              })
-                            }}
-                            disabled={savePickM.isPending}
-                          >
-                            <option value="">—</option>
-                            <option value="yes">Sí</option>
-                            <option value="no">No</option>
-                          </select>
-                        </label>
-                        <label className="grid grid-cols-[4rem_1fr] items-center gap-2">
-                          <span className="text-app-muted">Riesgo</span>
-                          <select
-                            className="rounded border border-app-line bg-app-card px-2 py-1.5"
-                            value={p.risk_category ?? ''}
-                            onChange={(e) => {
-                              savePickM.mutate({
-                                ...boardPickSaveBase(p),
-                                risk_category: e.target.value || null,
-                              })
-                            }}
-                            disabled={savePickM.isPending}
-                          >
-                            {RISK.map((x) => (
-                              <option key={x || 'empty'} value={x}>
-                                {x || '—'}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="grid grid-cols-[4rem_1fr] items-center gap-2">
-                          <span className="text-app-muted">Origen</span>
-                          <select
-                            className="rounded border border-app-line bg-app-card px-2 py-1.5"
-                            value={p.decision_origin ?? ''}
-                            onChange={(e) => {
-                              savePickM.mutate({
-                                ...boardPickSaveBase(p),
-                                decision_origin: e.target.value || null,
-                              })
-                            }}
-                            disabled={savePickM.isPending}
-                          >
-                            {ORIGIN.map((x) => (
-                              <option key={x || 'empty'} value={x}>
-                                {x || '—'}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="grid grid-cols-[4rem_1fr] items-center gap-2">
-                          <span className="text-app-muted">Stake</span>
-                          <input
-                            type="number"
-                            min={0}
-                            step={0.01}
-                            className="rounded border border-app-line bg-app-card px-2 py-1.5 font-mono tabular-nums"
-                            defaultValue={p.stake_amount ?? ''}
-                            key={`${p.pick_id}-${p.stake_amount}`}
-                            onBlur={(e) => {
-                              const raw = e.target.value
-                              const n =
-                                raw === '' ? null : Number.parseFloat(raw)
-                              if (
-                                raw !== '' &&
-                                (n === null || Number.isNaN(n))
-                              )
-                                return
-                              savePickM.mutate({
-                                ...boardPickSaveBase(p),
-                                stake_amount: n,
-                              })
-                            }}
-                            disabled={savePickM.isPending}
-                          />
-                        </label>
-                        <label className="grid grid-cols-[4rem_1fr] items-center gap-2">
-                          <span className="text-app-muted">Cierre</span>
-                          <select
-                            className="rounded border border-app-line bg-app-card px-2 py-1.5"
-                            value={
-                              p.user_outcome === 'win' ||
-                              p.user_outcome === 'loss' ||
-                              p.user_outcome === 'pending'
-                                ? p.user_outcome
-                                : 'auto'
-                            }
-                            onChange={(e) => {
-                              const v = e.target.value
-                              if (v === 'auto') {
-                                savePickM.mutate({
-                                  ...boardPickSaveBase(p),
-                                  userOutcome: 'auto',
-                                })
-                                return
-                              }
-                              savePickM.mutate({
-                                ...boardPickSaveBase(p),
-                                userOutcome: v as 'win' | 'loss' | 'pending',
-                              })
-                            }}
-                            disabled={savePickM.isPending}
-                          >
-                            <option value="auto">Solo auto (sin cierre manual)</option>
-                            <option value="win">Gané (yo)</option>
-                            <option value="loss">Perdí (yo)</option>
-                            <option value="pending">Pendiente (yo)</option>
-                          </select>
-                        </label>
-                      </div>
+                      <PickTrackingControls
+                        pick={p}
+                        userId={userId}
+                        bankrollCOP={bankrollCOP}
+                        disabled={savePickM.isPending}
+                        onSave={(payload) => savePickM.mutate(payload)}
+                      />
                     }
                   />
                 </div>
@@ -434,59 +311,75 @@ export default function RunPicksPage() {
             </div>
           )}
 
-          <h3 className="mb-2 mt-12 text-base font-semibold">
-            Combinaciones sugeridas
+          <h3 className="mb-1 mt-14 text-lg font-semibold tracking-tight text-violet-950">
+            Combinadas sugeridas
           </h3>
-          <p className="mb-4 text-xs text-app-muted">
-            Hasta 2 parlays · confianza en{' '}
-            <code className="rounded bg-neutral-100 px-1">odds_reference</code>
+          <p className="mb-5 max-w-xl text-xs leading-relaxed text-app-muted">
+            Parlays armados por el modelo. Cada pierna enlaza a su ficha; el tono
+            violeta / ámbar las distingue de los singles.
           </p>
           {board.suggested_combos.length === 0 ? (
             <p className="text-xs text-app-muted">
-              Pulsa «Regenerar combinaciones».
+              Pulsa «Regenerar combinadas».
             </p>
           ) : (
-            <ul className="space-y-4 text-xs">
+            <ul className="space-y-5">
               {board.suggested_combos.map((c) => (
-                <li
-                  key={c.suggested_combo_id}
-                  className="rounded-xl border border-app-line bg-app-card p-4"
-                >
-                  <div className="mb-2 flex flex-wrap items-center gap-3">
-                    <span className="text-app-muted">#{c.rank_order}</span>
-                    <span className="text-app-muted">Tomé</span>
-                    <select
-                      className="rounded border border-app-line bg-app-bg px-2 py-1"
-                      value={
-                        c.user_taken === true
-                          ? 'yes'
-                          : c.user_taken === false
-                            ? 'no'
-                            : ''
-                      }
-                      onChange={(e) => {
-                        const v = e.target.value
-                        if (v === '') return
-                        toggleComboM.mutate({
-                          comboId: c.suggested_combo_id,
-                          taken: v === 'yes',
-                        })
-                      }}
-                      disabled={toggleComboM.isPending}
-                    >
-                      <option value="">—</option>
-                      <option value="yes">Sí</option>
-                      <option value="no">No</option>
-                    </select>
+                <li key={c.suggested_combo_id} className="group relative">
+                  <div className="rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-amber-400 p-[2px] shadow-md">
+                    <div className="rounded-[14px] bg-app-card p-4">
+                      <div className="border-b border-violet-100 pb-3">
+                        <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-900">
+                          Combo #{c.rank_order}
+                        </span>
+                        <p className="mt-2 text-sm font-semibold text-app-fg">
+                          {c.legs.length} piernas · parlay sugerido
+                        </p>
+                        {c.strategy_note && (
+                          <p className="mt-1 text-xs leading-relaxed text-app-muted">
+                            {c.strategy_note}
+                          </p>
+                        )}
+                      </div>
+                      <ol className="mt-3 space-y-2">
+                        {c.legs.map((leg, idx) => (
+                          <li key={leg.pick_id}>
+                            <Link
+                              to={`/picks/${leg.pick_id}`}
+                              className="flex items-start gap-3 rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50/80 to-white px-3 py-2 text-xs transition-colors hover:border-sky-300 hover:from-sky-50"
+                            >
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-600 text-[10px] font-bold text-white">
+                                {idx + 1}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-mono text-[10px] text-app-muted">
+                                  pick {leg.pick_id} · event {leg.event_id}
+                                </p>
+                                <p className="mt-0.5 font-medium text-app-fg">
+                                  <span className="mr-1 rounded bg-violet-100 px-1 py-0.5 text-[10px] text-violet-900">
+                                    {leg.market}
+                                  </span>{' '}
+                                  {selectionShortLabel(
+                                    leg.market,
+                                    leg.selection,
+                                  )}
+                                </p>
+                              </div>
+                              <span className="shrink-0 text-[10px] font-semibold text-sky-700">
+                                Ficha →
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ol>
+                      <ComboTrackingControls
+                        combo={c}
+                        bankrollCOP={bankrollCOP}
+                        disabled={saveComboM.isPending}
+                        onSave={(payload) => saveComboM.mutate(payload)}
+                      />
+                    </div>
                   </div>
-                  <ul className="list-inside list-disc text-app-muted">
-                    {c.legs.map((leg) => (
-                      <li key={leg.pick_id}>
-                        pick {leg.pick_id} · event {leg.event_id} ·{' '}
-                        {leg.market} {leg.selection}
-                      </li>
-                    ))}
-                  </ul>
                 </li>
               ))}
             </ul>

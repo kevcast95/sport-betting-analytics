@@ -65,30 +65,102 @@ def _add_column(conn: sqlite3.Connection, table: str, ddl: str) -> None:
     conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
 
 
+def _backfill_bankroll_delta_applied_cop(conn: sqlite3.Connection) -> None:
+    """
+    Evita doble contabilidad: filas existentes quedan marcadas con el delta lógico
+    ya asumido antes de existir la columna (sin tocar users.bankroll_cop).
+    """
+    from db.repositories.dashboard_repo import _effective_outcome
+
+    rows = conn.execute(
+        """
+        SELECT d.user_id, d.pick_id, d.taken, d.stake_amount, d.user_outcome,
+               p.picked_value, pr.outcome AS pr_outcome
+        FROM user_pick_decisions d
+        JOIN picks p ON p.pick_id = d.pick_id
+        LEFT JOIN pick_results pr ON pr.pick_id = d.pick_id
+        """
+    ).fetchall()
+    for r in rows:
+        eff = _effective_outcome(r["user_outcome"], r["pr_outcome"])
+        taken = bool(r["taken"])
+        stake = r["stake_amount"]
+        odds = r["picked_value"]
+        desired = 0.0
+        if taken and stake is not None and float(stake) > 0:
+            sf = float(stake)
+            if eff == "win" and odds is not None:
+                o = float(odds)
+                if o > 1:
+                    desired = round(sf * (o - 1.0), 2)
+            elif eff == "loss":
+                desired = round(-sf, 2)
+        conn.execute(
+            """
+            UPDATE user_pick_decisions
+            SET bankroll_delta_applied_cop = ?
+            WHERE user_id = ? AND pick_id = ?
+            """,
+            (desired, int(r["user_id"]), int(r["pick_id"])),
+        )
+
+
 def apply_migrations(conn: sqlite3.Connection) -> list[str]:
     """Aplica migraciones pendientes. Retorna lista de descripciones aplicadas."""
     applied: list[str] = []
     if relax_picks_selection_constraint(conn):
         applied.append("picks.selection (relax CHECK)")
 
-    exists = conn.execute(
+    upd_exists = conn.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='user_pick_decisions'"
     ).fetchone()
-    if not exists:
-        return applied
-    if not _columns(conn, "user_pick_decisions"):
-        return applied
+    if upd_exists and _columns(conn, "user_pick_decisions"):
+        specs: Iterable[Tuple[str, str]] = (
+            ("risk_category", "risk_category TEXT"),
+            ("decision_origin", "decision_origin TEXT"),
+            ("stake_amount", "stake_amount REAL"),
+            ("user_outcome", "user_outcome TEXT"),
+            ("user_outcome_updated_at_utc", "user_outcome_updated_at_utc TEXT"),
+        )
+        existing = _columns(conn, "user_pick_decisions")
+        for name, ddl in specs:
+            if name not in existing:
+                _add_column(conn, "user_pick_decisions", ddl)
+                applied.append(f"user_pick_decisions.{name}")
 
-    specs: Iterable[Tuple[str, str]] = (
-        ("risk_category", "risk_category TEXT"),
-        ("decision_origin", "decision_origin TEXT"),
-        ("stake_amount", "stake_amount REAL"),
-        ("user_outcome", "user_outcome TEXT"),
-        ("user_outcome_updated_at_utc", "user_outcome_updated_at_utc TEXT"),
-    )
-    existing = _columns(conn, "user_pick_decisions")
-    for name, ddl in specs:
-        if name not in existing:
-            _add_column(conn, "user_pick_decisions", ddl)
-            applied.append(f"user_pick_decisions.{name}")
+        upd_cols = _columns(conn, "user_pick_decisions")
+        if "realized_return_cop" not in upd_cols:
+            _add_column(conn, "user_pick_decisions", "realized_return_cop REAL")
+            applied.append("user_pick_decisions.realized_return_cop")
+        if "bankroll_delta_applied_cop" not in upd_cols:
+            _add_column(
+                conn, "user_pick_decisions", "bankroll_delta_applied_cop REAL"
+            )
+            applied.append("user_pick_decisions.bankroll_delta_applied_cop")
+            _backfill_bankroll_delta_applied_cop(conn)
+            applied.append("user_pick_decisions.bankroll_delta_applied_cop (backfill)")
+
+    users_exists = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='users'"
+    ).fetchone()
+    if users_exists and _columns(conn, "users"):
+        uc = _columns(conn, "users")
+        if "bankroll_cop" not in uc:
+            _add_column(conn, "users", "bankroll_cop REAL")
+            applied.append("users.bankroll_cop")
+
+    combo_exists = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='user_combo_decisions'"
+    ).fetchone()
+    if combo_exists:
+        combo_cols = _columns(conn, "user_combo_decisions")
+        combo_specs: Iterable[Tuple[str, str]] = (
+            ("stake_amount", "stake_amount REAL"),
+            ("user_outcome", "user_outcome TEXT"),
+            ("user_outcome_updated_at_utc", "user_outcome_updated_at_utc TEXT"),
+        )
+        for name, ddl in combo_specs:
+            if name not in combo_cols:
+                _add_column(conn, "user_combo_decisions", ddl)
+                applied.append(f"user_combo_decisions.{name}")
     return applied

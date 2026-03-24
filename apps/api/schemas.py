@@ -53,12 +53,25 @@ class PickSummary(BaseModel):
         None,
         description="Cierre manual (omitir en PATCH parcial para conservar el valor guardado).",
     )
+    realized_return_cop: Optional[float] = Field(
+        None,
+        description="Ganancia bruta en COP persistida solo si el resultado efectivo es win.",
+    )
     event_label: Optional[str] = Field(
         None, description="Partido A vs B (desde event_features del run)"
     )
     league: Optional[str] = None
     kickoff_display: Optional[str] = Field(
-        None, description="Inicio en UTC (YYYY-MM-DD HH:MM UTC) si hay timestamp en features"
+        None,
+        description="Hora de inicio del partido en Colombia (p. ej. 18:30 · hora Colombia).",
+    )
+    kickoff_at_utc: Optional[str] = Field(
+        None,
+        description="Inicio del partido en ISO 8601 UTC (Z). Para bloquear edición de tomé/monto tras +100 min.",
+    )
+    run_date: Optional[str] = Field(
+        default=None,
+        description="YYYY-MM-DD del daily_run (día del análisis / listado).",
     )
 
 
@@ -110,6 +123,17 @@ class UserOut(BaseModel):
     slug: str
     display_name: str
     created_at_utc: str
+    bankroll_cop: Optional[float] = Field(
+        None, description="Bankroll de referencia en COP (persistido en servidor)."
+    )
+
+
+class UserBankrollBody(BaseModel):
+    bankroll_cop: Optional[float] = Field(
+        None,
+        description="Nuevo bankroll en COP; null borra el valor guardado.",
+        ge=0,
+    )
 
 
 class UserCreate(BaseModel):
@@ -137,6 +161,15 @@ class UserPickTakenBody(BaseModel):
 
 class UserComboTakenBody(BaseModel):
     taken: bool
+    stake_amount: Optional[float] = Field(None, ge=0)
+    user_outcome: Optional[Literal["win", "loss", "pending"]] = Field(
+        None,
+        description="Cierre manual de la combinada; omitir para no cambiar el guardado.",
+    )
+    user_outcome_auto: bool = Field(
+        False,
+        description="Si true, usa solo el resultado inferido de las piernas.",
+    )
 
 
 class ComboLegOut(BaseModel):
@@ -155,6 +188,20 @@ class SuggestedComboOut(BaseModel):
     strategy_note: Optional[str]
     legs: List[ComboLegOut]
     user_taken: Optional[bool] = None
+    user_stake_amount: Optional[float] = Field(
+        None, description="Monto en COP registrado para esta combinada."
+    )
+    user_outcome: Optional[Literal["win", "loss", "pending"]] = Field(
+        None, description="Cierre manual del usuario, si existe."
+    )
+    outcome_from_legs: Literal["win", "loss", "pending"] = Field(
+        ...,
+        description="Resultado lógico si todas las piernas ganan / alguna pierde / resto pendiente.",
+    )
+    outcome_effective: Literal["win", "loss", "pending"] = Field(
+        ...,
+        description="Prioriza user_outcome; si no, outcome_from_legs.",
+    )
 
 
 class DailyRunBoardOut(BaseModel):
@@ -194,6 +241,22 @@ class SignalCheckOut(BaseModel):
     check_id: int
 
 
+class DashboardPerformanceSplit(BaseModel):
+    """Conteos por resultado efectivo (prioriza cierre usuario + pick_results)."""
+
+    wins: int
+    losses: int
+    pending: int
+
+
+class DashboardPerformanceBlock(BaseModel):
+    """Todos los picks del día vs tomados vs no tomados (requiere usuario para el cruce)."""
+
+    totals: DashboardPerformanceSplit
+    taken: DashboardPerformanceSplit
+    not_taken: DashboardPerformanceSplit
+
+
 class DashboardSummaryBlock(BaseModel):
     run_date: str
     picks_total: int
@@ -204,6 +267,11 @@ class DashboardSummaryBlock(BaseModel):
     taken_outcome_wins: int = 0
     taken_outcome_losses: int = 0
     taken_outcome_pending: int = 0
+    performance: DashboardPerformanceBlock
+    bankroll_cop: Optional[float] = Field(
+        None,
+        description="Saldo en servidor (`users.bankroll_cop`); se ajusta con wins/loss de picks tomados.",
+    )
     net_pl_estimate: Optional[float] = None
     has_stake_data: bool = False
 
@@ -235,6 +303,7 @@ class DashboardRecentPick(BaseModel):
     event_label: Optional[str] = None
     league: Optional[str] = None
     kickoff_display: Optional[str] = None
+    kickoff_at_utc: Optional[str] = None
     selection_display: Optional[str] = None
     odds_reference: Optional[Any] = Field(
         None, description="Metadatos del modelo (edge, confianza, razón, etc.)"

@@ -18,6 +18,7 @@ from db.init_db import init_db  # noqa: E402
 from db.repositories.daily_runs_repo import get_daily_run  # noqa: E402
 from db.repositories.pick_results_repo import insert_pick_result  # noqa: E402
 from db.repositories.picks_repo import fetch_pending_picks_without_results, set_pick_status  # noqa: E402
+from db.repositories.tracking_repo import sync_realized_returns_for_pick  # noqa: E402
 
 
 async def _validate_one(event_id: int, selection: str) -> Any:
@@ -119,6 +120,8 @@ async def _run(args: argparse.Namespace) -> None:
             else:
                 set_pick_status(conn, pick_id=pick_id, status="pending")
                 pending_count += 1
+
+            sync_realized_returns_for_pick(conn, pick_id=pick_id)
 
     result = {
         "job": "validate_picks",

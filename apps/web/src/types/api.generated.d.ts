@@ -144,6 +144,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Api Get User */
+        get: operations["api_get_user_users__user_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{user_id}/bankroll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Api Put User Bankroll */
+        put: operations["api_put_user_bankroll_users__user_id__bankroll_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/bootstrap": {
         parameters: {
             query?: never;
@@ -345,6 +379,27 @@ export interface components {
             /** Recent */
             recent: components["schemas"]["DashboardRecentPick"][];
         };
+        /**
+         * DashboardPerformanceBlock
+         * @description Todos los picks del día vs tomados vs no tomados (requiere usuario para el cruce).
+         */
+        DashboardPerformanceBlock: {
+            totals: components["schemas"]["DashboardPerformanceSplit"];
+            taken: components["schemas"]["DashboardPerformanceSplit"];
+            not_taken: components["schemas"]["DashboardPerformanceSplit"];
+        };
+        /**
+         * DashboardPerformanceSplit
+         * @description Conteos por resultado efectivo (prioriza cierre usuario + pick_results).
+         */
+        DashboardPerformanceSplit: {
+            /** Wins */
+            wins: number;
+            /** Losses */
+            losses: number;
+            /** Pending */
+            pending: number;
+        };
         /** DashboardRecentPick */
         DashboardRecentPick: {
             /** Pick Id */
@@ -390,6 +445,8 @@ export interface components {
             league?: string | null;
             /** Kickoff Display */
             kickoff_display?: string | null;
+            /** Kickoff At Utc */
+            kickoff_at_utc?: string | null;
             /** Selection Display */
             selection_display?: string | null;
             /**
@@ -427,6 +484,12 @@ export interface components {
              * @default 0
              */
             taken_outcome_pending: number;
+            performance: components["schemas"]["DashboardPerformanceBlock"];
+            /**
+             * Bankroll Cop
+             * @description Saldo en servidor (`users.bankroll_cop`); se ajusta con wins/loss de picks tomados.
+             */
+            bankroll_cop?: number | null;
             /** Net Pl Estimate */
             net_pl_estimate?: number | null;
             /**
@@ -502,6 +565,11 @@ export interface components {
              */
             user_outcome?: ("win" | "loss" | "pending") | null;
             /**
+             * Realized Return Cop
+             * @description Ganancia bruta en COP persistida solo si el resultado efectivo es win.
+             */
+            realized_return_cop?: number | null;
+            /**
              * Event Label
              * @description Partido A vs B (desde event_features del run)
              */
@@ -510,9 +578,19 @@ export interface components {
             league?: string | null;
             /**
              * Kickoff Display
-             * @description Inicio en UTC (YYYY-MM-DD HH:MM UTC) si hay timestamp en features
+             * @description Hora de inicio del partido en Colombia (p. ej. 18:30 · hora Colombia).
              */
             kickoff_display?: string | null;
+            /**
+             * Kickoff At Utc
+             * @description Inicio del partido en ISO 8601 UTC (Z). Para bloquear edición de tomé/monto tras +100 min.
+             */
+            kickoff_at_utc?: string | null;
+            /**
+             * Run Date
+             * @description YYYY-MM-DD del daily_run (día del análisis / listado).
+             */
+            run_date?: string | null;
         };
         /** PickPage */
         PickPage: {
@@ -602,6 +680,11 @@ export interface components {
              */
             user_outcome?: ("win" | "loss" | "pending") | null;
             /**
+             * Realized Return Cop
+             * @description Ganancia bruta en COP persistida solo si el resultado efectivo es win.
+             */
+            realized_return_cop?: number | null;
+            /**
              * Event Label
              * @description Partido A vs B (desde event_features del run)
              */
@@ -610,9 +693,19 @@ export interface components {
             league?: string | null;
             /**
              * Kickoff Display
-             * @description Inicio en UTC (YYYY-MM-DD HH:MM UTC) si hay timestamp en features
+             * @description Hora de inicio del partido en Colombia (p. ej. 18:30 · hora Colombia).
              */
             kickoff_display?: string | null;
+            /**
+             * Kickoff At Utc
+             * @description Inicio del partido en ISO 8601 UTC (Z). Para bloquear edición de tomé/monto tras +100 min.
+             */
+            kickoff_at_utc?: string | null;
+            /**
+             * Run Date
+             * @description YYYY-MM-DD del daily_run (día del análisis / listado).
+             */
+            run_date?: string | null;
         };
         /** RegenerateCombosResponse */
         RegenerateCombosResponse: {
@@ -661,6 +754,28 @@ export interface components {
             legs: components["schemas"]["ComboLegOut"][];
             /** User Taken */
             user_taken?: boolean | null;
+            /**
+             * User Stake Amount
+             * @description Monto en COP registrado para esta combinada.
+             */
+            user_stake_amount?: number | null;
+            /**
+             * User Outcome
+             * @description Cierre manual del usuario, si existe.
+             */
+            user_outcome?: ("win" | "loss" | "pending") | null;
+            /**
+             * Outcome From Legs
+             * @description Resultado lógico si todas las piernas ganan / alguna pierde / resto pendiente.
+             * @enum {string}
+             */
+            outcome_from_legs: "win" | "loss" | "pending";
+            /**
+             * Outcome Effective
+             * @description Prioriza user_outcome; si no, outcome_from_legs.
+             * @enum {string}
+             */
+            outcome_effective: "win" | "loss" | "pending";
         };
         /** TrackingBoardOut */
         TrackingBoardOut: {
@@ -672,10 +787,31 @@ export interface components {
             /** Suggested Combos */
             suggested_combos: components["schemas"]["SuggestedComboOut"][];
         };
+        /** UserBankrollBody */
+        UserBankrollBody: {
+            /**
+             * Bankroll Cop
+             * @description Nuevo bankroll en COP; null borra el valor guardado.
+             */
+            bankroll_cop?: number | null;
+        };
         /** UserComboTakenBody */
         UserComboTakenBody: {
             /** Taken */
             taken: boolean;
+            /** Stake Amount */
+            stake_amount?: number | null;
+            /**
+             * User Outcome
+             * @description Cierre manual de la combinada; omitir para no cambiar el guardado.
+             */
+            user_outcome?: ("win" | "loss" | "pending") | null;
+            /**
+             * User Outcome Auto
+             * @description Si true, usa solo el resultado inferido de las piernas.
+             * @default false
+             */
+            user_outcome_auto: boolean;
         };
         /** UserCreate */
         UserCreate: {
@@ -694,6 +830,11 @@ export interface components {
             display_name: string;
             /** Created At Utc */
             created_at_utc: string;
+            /**
+             * Bankroll Cop
+             * @description Bankroll de referencia en COP (persistido en servidor).
+             */
+            bankroll_cop?: number | null;
         };
         /** UserPickTakenBody */
         UserPickTakenBody: {
@@ -1022,6 +1163,76 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UserCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    api_get_user_users__user_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Local-Api-Key"?: string | null;
+            };
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    api_put_user_bankroll_users__user_id__bankroll_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Local-Api-Key"?: string | null;
+            };
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserBankrollBody"];
             };
         };
         responses: {

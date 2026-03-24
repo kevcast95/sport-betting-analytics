@@ -21,6 +21,8 @@ from apps.api.schemas import (
     DailyRunOut,
     DailyRunPage,
     DashboardBundleOut,
+    DashboardPerformanceBlock,
+    DashboardPerformanceSplit,
     DashboardRecentPick,
     DashboardSummaryBlock,
     EnsureBaselinesResponse,
@@ -36,6 +38,7 @@ from apps.api.schemas import (
     SignalCheckOut,
     SuggestedComboOut,
     TrackingBoardOut,
+    UserBankrollBody,
     UserComboTakenBody,
     UserCreate,
     UserOut,
@@ -50,6 +53,7 @@ from db.repositories.dashboard_repo import (
     recent_picks_for_date,
 )
 from db.repositories.pick_event_meta_repo import (
+    is_stake_taken_locked_now,
     load_event_meta_for_daily_run,
     merge_meta_into_odds_ref,
 )
@@ -62,9 +66,10 @@ from db.repositories.suggest_combos_repo import (
 )
 from db.repositories.tracking_repo import (
     ensure_pick_baselines_for_run,
-    get_combo_decisions_for_run,
+    get_combo_decision_rows_for_run,
     get_pick_decision_rows_for_run,
     insert_signal_check,
+    sync_user_pick_realized_return,
     upsert_user_combo_decision,
     upsert_user_pick_decision,
 )
@@ -73,6 +78,7 @@ from db.repositories.users_repo import (
     get_user_by_id,
     insert_user,
     list_users,
+    set_user_bankroll_cop,
 )
 
 
@@ -88,6 +94,17 @@ async def _lifespan(app: FastAPI):
     finally:
         conn.close()
     yield
+
+
+def _user_out_from_row(r: sqlite3.Row) -> UserOut:
+    br = r["bankroll_cop"]
+    return UserOut(
+        user_id=int(r["user_id"]),
+        slug=str(r["slug"]),
+        display_name=str(r["display_name"]),
+        created_at_utc=str(r["created_at_utc"]),
+        bankroll_cop=float(br) if br is not None else None,
+    )
 
 
 app = FastAPI(
@@ -111,6 +128,16 @@ app.add_middleware(
 )
 
 _global_deps = [Depends(verify_local_api_key)]
+
+
+def _stake_amount_unchanged(
+    a: Optional[float], b: Optional[float]
+) -> bool:
+    if a is None and b is None:
+        return True
+    if a is None or b is None:
+        return False
+    return round(float(a), 2) == round(float(b), 2)
 
 
 @app.get("/health", response_model=HealthOut)
@@ -141,9 +168,12 @@ def api_dashboard(
             status_code=400,
             detail="only_taken requiere user_id",
         )
-    if user_id is not None and get_user_by_id(conn, user_id) is None:
+    urow = get_user_by_id(conn, user_id) if user_id is not None else None
+    if user_id is not None and urow is None:
         raise HTTPException(status_code=404, detail="user not found")
     s = daily_picks_summary(conn, run_date=rd, user_id=user_id)
+    br_dash = urow["bankroll_cop"] if urow is not None else None
+    bankroll_summary = float(br_dash) if br_dash is not None else None
     raw_recent = recent_picks_for_date(conn, run_date=rd, user_id=user_id, limit=40)
     recent: List[DashboardRecentPick] = []
     meta_cache: Dict[int, Dict[int, Dict[str, Optional[str]]]] = {}
@@ -189,6 +219,7 @@ def api_dashboard(
                 event_label=em.get("event_label") if em else None,
                 league=em.get("league") if em else None,
                 kickoff_display=em.get("kickoff_display") if em else None,
+                kickoff_at_utc=em.get("kickoff_at_utc") if em else None,
                 selection_display=sel_disp,
                 odds_reference=odds_parsed,
             )
@@ -204,6 +235,24 @@ def api_dashboard(
             taken_outcome_wins=int(s.get("taken_outcome_wins", 0)),
             taken_outcome_losses=int(s.get("taken_outcome_losses", 0)),
             taken_outcome_pending=int(s.get("taken_outcome_pending", 0)),
+            performance=DashboardPerformanceBlock(
+                totals=DashboardPerformanceSplit(
+                    wins=int(s["outcome_wins"]),
+                    losses=int(s["outcome_losses"]),
+                    pending=int(s["outcome_pending"]),
+                ),
+                taken=DashboardPerformanceSplit(
+                    wins=int(s.get("taken_outcome_wins", 0)),
+                    losses=int(s.get("taken_outcome_losses", 0)),
+                    pending=int(s.get("taken_outcome_pending", 0)),
+                ),
+                not_taken=DashboardPerformanceSplit(
+                    wins=int(s.get("not_taken_outcome_wins", 0)),
+                    losses=int(s.get("not_taken_outcome_losses", 0)),
+                    pending=int(s.get("not_taken_outcome_pending", 0)),
+                ),
+            ),
+            bankroll_cop=bankroll_summary,
             net_pl_estimate=s["net_pl_estimate"],
             has_stake_data=bool(s["has_stake_data"]),
         ),
@@ -282,6 +331,7 @@ def _apply_event_meta(
     d["event_label"] = meta.get("event_label")
     d["league"] = meta.get("league")
     d["kickoff_display"] = meta.get("kickoff_display")
+    d["kickoff_at_utc"] = meta.get("kickoff_at_utc")
     d["odds_reference"] = merge_meta_into_odds_ref(d.get("odds_reference"), meta)
     return PickSummary.model_validate(d)
 
@@ -299,6 +349,12 @@ def _pick_summary_from_join_row(r: sqlite3.Row) -> PickSummary:
                 str(r["pr_evidence_json"]) if r["pr_evidence_json"] is not None else None
             ),
         )
+    keys = r.keys()
+    run_date_v = (
+        str(r["run_date"])
+        if "run_date" in keys and r["run_date"] is not None
+        else None
+    )
     return PickSummary(
         pick_id=int(r["pick_id"]),
         daily_run_id=int(r["daily_run_id"]),
@@ -311,7 +367,31 @@ def _pick_summary_from_join_row(r: sqlite3.Row) -> PickSummary:
         created_at_utc=str(r["created_at_utc"]),
         idempotency_key=str(r["idempotency_key"]),
         result=result,
+        run_date=run_date_v,
     )
+
+
+def _pick_summary_effective_outcome(s: PickSummary) -> str:
+    if s.status == "void":
+        return "pending"
+    uo = s.user_outcome
+    pr_o = s.result.outcome if s.result else None
+    return _effective_outcome(uo, pr_o)
+
+
+def _combo_outcome_from_leg_picks(
+    picks_by_id: Dict[int, PickSummary],
+    leg_pick_ids: List[int],
+) -> str:
+    try:
+        outs = [_pick_summary_effective_outcome(picks_by_id[pid]) for pid in leg_pick_ids]
+    except KeyError:
+        return "pending"
+    if any(o == "loss" for o in outs):
+        return "loss"
+    if all(o == "win" for o in outs):
+        return "win"
+    return "pending"
 
 
 @app.get("/picks", response_model=PickPage, dependencies=_global_deps)
@@ -369,6 +449,7 @@ def get_pick(pick_id: int, conn: DbConn) -> PickDetail:
         SELECT
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection,
             p.picked_value, p.odds_reference, p.status, p.created_at_utc, p.idempotency_key,
+            dr.run_date AS run_date,
             pr.validated_at_utc AS pr_validated_at_utc,
             pr.home_score AS pr_home_score,
             pr.away_score AS pr_away_score,
@@ -376,6 +457,7 @@ def get_pick(pick_id: int, conn: DbConn) -> PickDetail:
             pr.outcome AS pr_outcome,
             pr.evidence_json AS pr_evidence_json
         FROM picks p
+        INNER JOIN daily_runs dr ON dr.daily_run_id = p.daily_run_id
         LEFT JOIN pick_results pr ON pr.pick_id = p.pick_id
         WHERE p.pick_id = ?
     """
@@ -470,15 +552,28 @@ def list_backtest_runs(
 @app.get("/users", response_model=List[UserOut], dependencies=_global_deps)
 def api_list_users(conn: DbConn) -> List[UserOut]:
     rows = list_users(conn)
-    return [
-        UserOut(
-            user_id=int(r["user_id"]),
-            slug=str(r["slug"]),
-            display_name=str(r["display_name"]),
-            created_at_utc=str(r["created_at_utc"]),
-        )
-        for r in rows
-    ]
+    return [_user_out_from_row(r) for r in rows]
+
+
+@app.get("/users/{user_id}", response_model=UserOut, dependencies=_global_deps)
+def api_get_user(user_id: int, conn: DbConn) -> UserOut:
+    row = get_user_by_id(conn, user_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    return _user_out_from_row(row)
+
+
+@app.put("/users/{user_id}/bankroll", response_model=UserOut, dependencies=_global_deps)
+def api_put_user_bankroll(
+    user_id: int, body: UserBankrollBody, conn: DbConn
+) -> UserOut:
+    if get_user_by_id(conn, user_id) is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    set_user_bankroll_cop(conn, user_id=user_id, bankroll_cop=body.bankroll_cop)
+    conn.commit()
+    row = get_user_by_id(conn, user_id)
+    assert row is not None
+    return _user_out_from_row(row)
 
 
 @app.post("/users", response_model=UserOut, dependencies=_global_deps)
@@ -490,27 +585,14 @@ def api_create_user(body: UserCreate, conn: DbConn) -> UserOut:
         raise HTTPException(status_code=409, detail="slug duplicado") from e
     row = get_user_by_id(conn, uid)
     assert row is not None
-    return UserOut(
-        user_id=int(row["user_id"]),
-        slug=str(row["slug"]),
-        display_name=str(row["display_name"]),
-        created_at_utc=str(row["created_at_utc"]),
-    )
+    return _user_out_from_row(row)
 
 
 @app.post("/users/bootstrap", response_model=List[UserOut], dependencies=_global_deps)
 def api_bootstrap_users(conn: DbConn) -> List[UserOut]:
     rows = ensure_default_test_users(conn)
     conn.commit()
-    return [
-        UserOut(
-            user_id=int(r["user_id"]),
-            slug=str(r["slug"]),
-            display_name=str(r["display_name"]),
-            created_at_utc=str(r["created_at_utc"]),
-        )
-        for r in rows
-    ]
+    return [_user_out_from_row(r) for r in rows]
 
 
 @app.get(
@@ -569,16 +651,25 @@ def api_tracking_board(
             dump["user_outcome"] = (
                 uox if uox in ("win", "loss", "pending") else None
             )
+            rr = dr["realized_return_cop"]
+            dump["realized_return_cop"] = (
+                float(rr) if rr is not None else None
+            )
         else:
             dump["user_taken"] = None
             dump["risk_category"] = None
             dump["decision_origin"] = None
             dump["stake_amount"] = None
             dump["user_outcome"] = None
+            dump["realized_return_cop"] = None
         picks_out.append(PickSummary.model_validate(dump))
 
+    picks_by_id: Dict[int, PickSummary] = {p.pick_id: p for p in picks_out}
+
     combo_rows = list_suggested_combos_with_legs(conn, daily_run_id=daily_run_id)
-    combo_decisions = get_combo_decisions_for_run(conn, user_id=user_id, daily_run_id=daily_run_id)
+    combo_rows_detail = get_combo_decision_rows_for_run(
+        conn, user_id=user_id, daily_run_id=daily_run_id
+    )
     combos_out: List[SuggestedComboOut] = []
     for c in combo_rows:
         cid = int(c["suggested_combo_id"])
@@ -593,7 +684,23 @@ def api_tracking_board(
             )
             for x in legs_raw
         ]
-        cd = combo_decisions.get(cid)
+        leg_ids = [int(x["pick_id"]) for x in legs_raw]
+        from_legs = _combo_outcome_from_leg_picks(picks_by_id, leg_ids)
+        ddr = combo_rows_detail.get(cid)
+        if ddr is not None:
+            u_taken = bool(ddr["taken"])
+            u_stake = (
+                float(ddr["stake_amount"])
+                if ddr["stake_amount"] is not None
+                else None
+            )
+            u_ox = ddr["user_outcome"]
+            u_out = u_ox if u_ox in ("win", "loss", "pending") else None
+        else:
+            u_taken = None
+            u_stake = None
+            u_out = None
+        eff = _effective_outcome(u_out, from_legs)
         combos_out.append(
             SuggestedComboOut(
                 suggested_combo_id=cid,
@@ -602,7 +709,11 @@ def api_tracking_board(
                 created_at_utc=str(c["created_at_utc"]),
                 strategy_note=c["strategy_note"],
                 legs=legs,
-                user_taken=cd if cid in combo_decisions else None,
+                user_taken=u_taken if ddr is not None else None,
+                user_stake_amount=u_stake,
+                user_outcome=u_out,  # type: ignore[arg-type]
+                outcome_from_legs=from_legs,  # type: ignore[arg-type]
+                outcome_effective=eff,  # type: ignore[arg-type]
             )
         )
 
@@ -629,19 +740,76 @@ def api_put_pick_taken(
     body: UserPickTakenBody,
     conn: DbConn,
 ) -> dict:
-    if get_user_by_id(conn, user_id) is None:
+    urow = get_user_by_id(conn, user_id)
+    if urow is None:
         raise HTTPException(status_code=404, detail="user not found")
-    pr = conn.execute("SELECT 1 FROM picks WHERE pick_id = ?", (pick_id,)).fetchone()
-    if pr is None:
+    pick_row = conn.execute(
+        "SELECT daily_run_id, event_id FROM picks WHERE pick_id = ?",
+        (pick_id,),
+    ).fetchone()
+    if pick_row is None:
         raise HTTPException(status_code=404, detail="pick not found")
+    daily_run_id = int(pick_row["daily_run_id"])
+    event_id = int(pick_row["event_id"])
     prev = conn.execute(
         """
-        SELECT user_outcome FROM user_pick_decisions
+        SELECT taken, user_outcome, stake_amount FROM user_pick_decisions
         WHERE user_id = ? AND pick_id = ?
         """,
         (user_id, pick_id),
     ).fetchone()
+    prev_taken_bool = bool(prev["taken"]) if prev else False
     prev_uo = prev["user_outcome"] if prev else None
+    prev_stake = (
+        float(prev["stake_amount"])
+        if prev and prev["stake_amount"] is not None
+        else None
+    )
+    if "stake_amount" in body.model_fields_set:
+        merged_stake_pick: Optional[float] = body.stake_amount
+    else:
+        merged_stake_pick = prev_stake
+
+    if is_stake_taken_locked_now(
+        conn, daily_run_id=daily_run_id, event_id=event_id
+    ):
+        if body.taken != prev_taken_bool:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Pasaron 100 minutos desde el inicio del partido: no se puede "
+                    "cambiar si tomaste el pick."
+                ),
+            )
+        if not _stake_amount_unchanged(merged_stake_pick, prev_stake):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Pasaron 100 minutos desde el inicio del partido: el monto "
+                    "ya no es editable."
+                ),
+            )
+
+    if body.taken and (merged_stake_pick is None or merged_stake_pick <= 0):
+        raise HTTPException(
+            status_code=400,
+            detail="Para marcar el pick como tomado hace falta un monto (stake) mayor a 0.",
+        )
+
+    br_raw = urow["bankroll_cop"]
+    bankroll = float(br_raw) if br_raw is not None else None
+    if body.taken and merged_stake_pick is not None and merged_stake_pick > 0:
+        if bankroll is None or bankroll <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Define tu bankroll en el usuario antes de marcar un pick tomado con monto.",
+            )
+        if merged_stake_pick > bankroll:
+            raise HTTPException(
+                status_code=400,
+                detail="El monto no puede superar tu bankroll.",
+            )
+
     if body.user_outcome_auto:
         merged_uo: Optional[str] = None
     elif "user_outcome" in body.model_fields_set:
@@ -657,9 +825,10 @@ def api_put_pick_taken(
         notes=body.notes,
         risk_category=body.risk_category,
         decision_origin=body.decision_origin,
-        stake_amount=body.stake_amount,
+        stake_amount=merged_stake_pick,
         user_outcome=merged_uo,
     )
+    sync_user_pick_realized_return(conn, user_id=user_id, pick_id=pick_id)
     conn.commit()
     return {"ok": True, "user_id": user_id, "pick_id": pick_id, "taken": body.taken}
 
@@ -674,7 +843,8 @@ def api_put_combo_taken(
     body: UserComboTakenBody,
     conn: DbConn,
 ) -> dict:
-    if get_user_by_id(conn, user_id) is None:
+    urow = get_user_by_id(conn, user_id)
+    if urow is None:
         raise HTTPException(status_code=404, detail="user not found")
     cr = conn.execute(
         "SELECT 1 FROM suggested_combos WHERE suggested_combo_id = ?",
@@ -682,8 +852,55 @@ def api_put_combo_taken(
     ).fetchone()
     if cr is None:
         raise HTTPException(status_code=404, detail="combo not found")
+    prev = conn.execute(
+        """
+        SELECT stake_amount, user_outcome FROM user_combo_decisions
+        WHERE user_id = ? AND suggested_combo_id = ?
+        """,
+        (user_id, combo_id),
+    ).fetchone()
+    prev_stake = float(prev["stake_amount"]) if prev and prev["stake_amount"] is not None else None
+    prev_uo = prev["user_outcome"] if prev else None
+
+    if "stake_amount" in body.model_fields_set:
+        merged_stake: Optional[float] = body.stake_amount
+    else:
+        merged_stake = prev_stake
+
+    if body.user_outcome_auto:
+        merged_uo: Optional[str] = None
+    elif "user_outcome" in body.model_fields_set:
+        merged_uo = body.user_outcome
+    else:
+        merged_uo = prev_uo if prev_uo in ("win", "loss", "pending") else None
+
+    if body.taken and (merged_stake is None or merged_stake <= 0):
+        raise HTTPException(
+            status_code=400,
+            detail="Para marcar la combinada como tomada hace falta un monto mayor a 0.",
+        )
+
+    br_raw = urow["bankroll_cop"]
+    bankroll = float(br_raw) if br_raw is not None else None
+    if body.taken and merged_stake is not None and merged_stake > 0:
+        if bankroll is None or bankroll <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Define tu bankroll en el usuario antes de marcar una combinada tomada con monto.",
+            )
+        if merged_stake > bankroll:
+            raise HTTPException(
+                status_code=400,
+                detail="El monto no puede superar tu bankroll.",
+            )
+
     upsert_user_combo_decision(
-        conn, user_id=user_id, suggested_combo_id=combo_id, taken=body.taken
+        conn,
+        user_id=user_id,
+        suggested_combo_id=combo_id,
+        taken=body.taken,
+        stake_amount=merged_stake,
+        user_outcome=merged_uo,
     )
     conn.commit()
     return {"ok": True, "user_id": user_id, "suggested_combo_id": combo_id, "taken": body.taken}

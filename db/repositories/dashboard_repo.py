@@ -82,6 +82,7 @@ def daily_picks_summary(
     wins = losses = pending = 0
     taken_ct = 0
     taken_wins = taken_losses = taken_pending = 0
+    not_taken_wins = not_taken_losses = not_taken_pending = 0
     net_pl = 0.0
     has_any_stake = False
 
@@ -115,6 +116,16 @@ def daily_picks_summary(
                     net_pl += stake_f * (odds_f - 1.0)
                 else:
                     net_pl -= stake_f
+        elif user_id is not None:
+            if eff == "win":
+                not_taken_wins += 1
+            elif eff == "loss":
+                not_taken_losses += 1
+            else:
+                not_taken_pending += 1
+
+    if user_id is None:
+        not_taken_wins, not_taken_losses, not_taken_pending = wins, losses, pending
 
     return {
         "run_date": run_date,
@@ -126,6 +137,9 @@ def daily_picks_summary(
         "taken_outcome_wins": taken_wins,
         "taken_outcome_losses": taken_losses,
         "taken_outcome_pending": taken_pending,
+        "not_taken_outcome_wins": not_taken_wins,
+        "not_taken_outcome_losses": not_taken_losses,
+        "not_taken_outcome_pending": not_taken_pending,
         "net_pl_estimate": round(net_pl, 2) if has_any_stake else None,
         "has_stake_data": has_any_stake,
     }
