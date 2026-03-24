@@ -75,12 +75,20 @@ export default function RunsPage() {
                   <td className="p-2">{r.sport}</td>
                   <td className="p-2">{r.status}</td>
                   <td className="p-2 text-right">
-                    <Link
-                      to={`/runs/${r.daily_run_id}/picks`}
-                      className="text-app-fg underline decoration-app-line underline-offset-4 hover:decoration-app-fg"
-                    >
-                      Picks
-                    </Link>
+                    <div className="inline-flex items-center gap-3">
+                      <Link
+                        to={`/runs/${r.daily_run_id}/events`}
+                        className="text-app-fg underline decoration-app-line underline-offset-4 hover:decoration-app-fg"
+                      >
+                        Eventos
+                      </Link>
+                      <Link
+                        to={`/runs/${r.daily_run_id}/picks`}
+                        className="text-app-fg underline decoration-app-line underline-offset-4 hover:decoration-app-fg"
+                      >
+                        Picks
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

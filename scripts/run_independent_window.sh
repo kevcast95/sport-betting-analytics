@@ -10,5 +10,5 @@ source .env
 set +a
 export TZ="${COPA_FOXKIDS_TZ:-America/Bogota}"
 DATE="${FECHA:-$(date +%Y-%m-%d)}"
-python3 jobs/independent_runner.py --mode window --slot "$SLOT" --date "$DATE"
+python3 jobs/independent_runner.py --mode window --slot "$SLOT" --date "$DATE" --persist-picks
 

@@ -288,6 +288,73 @@
         }
       }
     },
+    "/daily-runs/{daily_run_id}/events": {
+      "get": {
+        "summary": "Api Daily Run Events Inspect",
+        "operationId": "api_daily_run_events_inspect_daily_runs__daily_run_id__events_get",
+        "parameters": [
+          {
+            "name": "daily_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Daily Run Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyRunEventsInspectOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/picks": {
       "get": {
         "summary": "List Picks",
@@ -1394,6 +1461,149 @@
           "status"
         ],
         "title": "DailyRunBoardOut"
+      },
+      "DailyRunEventInspectOut": {
+        "properties": {
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "event_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Label"
+          },
+          "league": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League"
+          },
+          "h2h_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "H2H Summary"
+          },
+          "match_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match State"
+          },
+          "passed_candidate_filters": {
+            "type": "boolean",
+            "title": "Passed Candidate Filters"
+          },
+          "in_ds_input": {
+            "type": "boolean",
+            "title": "In Ds Input"
+          },
+          "reject_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reject Reason"
+          },
+          "selection_tier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Tier"
+          },
+          "event_context": {
+            "title": "Event Context"
+          },
+          "diagnostics": {
+            "title": "Diagnostics"
+          },
+          "processed": {
+            "title": "Processed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "daily_run_id",
+          "event_id",
+          "passed_candidate_filters",
+          "in_ds_input"
+        ],
+        "title": "DailyRunEventInspectOut"
+      },
+      "DailyRunEventsInspectOut": {
+        "properties": {
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "run_date": {
+            "type": "string",
+            "title": "Run Date"
+          },
+          "captured_at_utc": {
+            "type": "string",
+            "title": "Captured At Utc"
+          },
+          "total_events": {
+            "type": "integer",
+            "title": "Total Events"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DailyRunEventInspectOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "daily_run_id",
+          "run_date",
+          "captured_at_utc",
+          "total_events",
+          "items"
+        ],
+        "title": "DailyRunEventsInspectOut"
       },
       "DailyRunOut": {
         "properties": {

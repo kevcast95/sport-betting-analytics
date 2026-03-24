@@ -100,7 +100,8 @@ def _render(data: Dict[str, Any]) -> str:
             lines.append(f"🎯 **MARKET**: {p.get('market', '')}")
             lines.append(f"✅ **SELECTION**: {p.get('selection', '')}")
             if p.get("odds") is not None:
-                lines.append(f"💰 **ODDS**: {p['odds']}")
+                tag = " (SofaScore)" if p.get("odds_source") == "scraped_sofascore" else ""
+                lines.append(f"💰 **ODDS**: {p['odds']}{tag}")
             if p.get("edge_pct") is not None:
                 lines.append(f"📈 **EDGE**: {p['edge_pct']}%")
             lines.append(f"📊 **CONFIANZA**: {p.get('confianza', '')}")

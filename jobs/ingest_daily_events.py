@@ -3,6 +3,7 @@ import asyncio
 import json
 import os
 import sys
+import time
 import urllib.request
 from datetime import datetime
 from typing import Any, List, Optional
@@ -121,17 +122,20 @@ async def _run(args: argparse.Namespace) -> None:
         if not event_ids:
             raise RuntimeError("No eventIds returned by scheduled-events endpoint.")
 
-        print("\n=== INGEST_DAILY_EVENTS ===")
-        print(f"  daily_run_id: {daily_run_id}")
-        print(f"  run_date: {args.date}")
-        print(f"  sport: {args.sport}")
-        print(f"  event_ids_fetched: {len(event_ids)}")
-        print(f"  event_ids (primeros 10): {event_ids[:10]}")
-        print(f"  captured_at_utc: {captured_at_utc}")
-        print("  --- Persistiendo bundles ---")
+        print("\n=== INGEST_DAILY_EVENTS ===", flush=True)
+        print(f"  daily_run_id: {daily_run_id}", flush=True)
+        print(f"  run_date: {args.date}", flush=True)
+        print(f"  sport: {args.sport}", flush=True)
+        print(f"  event_ids_fetched: {len(event_ids)}", flush=True)
+        print(f"  event_ids (primeros 10): {event_ids[:10]}", flush=True)
+        print(f"  captured_at_utc: {captured_at_utc}", flush=True)
+        print("  --- Persistiendo bundles ---", flush=True)
         persisted = 0
         skipped = 0
-        for event_id in event_ids:
+        t0 = time.monotonic()
+        total = len(event_ids)
+        for i, event_id in enumerate(event_ids, start=1):
+            print(f"    [{i}/{total}] event_id={event_id} ...", flush=True)
             ok = await persist_event_bundle(
                 event_id=event_id,
                 conn=conn,
@@ -139,8 +143,15 @@ async def _run(args: argparse.Namespace) -> None:
             )
             if ok:
                 persisted += 1
+                state = "persisted"
             else:
                 skipped += 1
+                state = "skipped"
+            elapsed = time.monotonic() - t0
+            print(
+                f"      -> {state} | persisted={persisted} skipped={skipped} elapsed={elapsed:.1f}s",
+                flush=True,
+            )
 
         update_status(conn, daily_run_id, "complete")
 
@@ -152,9 +163,9 @@ async def _run(args: argparse.Namespace) -> None:
             "events_skipped_finished": skipped,
             "status": "complete",
         }
-        print("\n  --- RESULT ---")
-        print(json.dumps(result, indent=2, ensure_ascii=False))
-        print("=== OK INGEST ===\n")
+        print("\n  --- RESULT ---", flush=True)
+        print(json.dumps(result, indent=2, ensure_ascii=False), flush=True)
+        print("=== OK INGEST ===\n", flush=True)
     except Exception as e:
         update_status(conn, daily_run_id, "failed")
         raise e

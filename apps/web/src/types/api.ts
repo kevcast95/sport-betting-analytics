@@ -24,3 +24,7 @@ export type DashboardPerformanceBlock =
   components['schemas']['DashboardPerformanceBlock']
 export type EffectivenessReportStatusOut =
   components['schemas']['EffectivenessReportStatusOut']
+export type DailyRunEventInspectOut =
+  components['schemas']['DailyRunEventInspectOut']
+export type DailyRunEventsInspectOut =
+  components['schemas']['DailyRunEventsInspectOut']

@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/daily-runs/{daily_run_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Api Daily Run Events Inspect */
+        get: operations["api_daily_run_events_inspect_daily_runs__daily_run_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/picks": {
         parameters: {
             query?: never;
@@ -363,6 +380,48 @@ export interface components {
             sport: string;
             /** Status */
             status: string;
+        };
+        /** DailyRunEventInspectOut */
+        DailyRunEventInspectOut: {
+            /** Daily Run Id */
+            daily_run_id: number;
+            /** Event Id */
+            event_id: number;
+            /** Event Label */
+            event_label?: string | null;
+            /** League */
+            league?: string | null;
+            /** H2H Summary */
+            h2h_summary?: string | null;
+            /** Match State */
+            match_state?: string | null;
+            /** Passed Candidate Filters */
+            passed_candidate_filters: boolean;
+            /** In Ds Input */
+            in_ds_input: boolean;
+            /** Reject Reason */
+            reject_reason?: string | null;
+            /** Selection Tier */
+            selection_tier?: ("A" | "B") | null;
+            /** Event Context */
+            event_context?: unknown;
+            /** Diagnostics */
+            diagnostics?: unknown;
+            /** Processed */
+            processed?: unknown;
+        };
+        /** DailyRunEventsInspectOut */
+        DailyRunEventsInspectOut: {
+            /** Daily Run Id */
+            daily_run_id: number;
+            /** Run Date */
+            run_date: string;
+            /** Captured At Utc */
+            captured_at_utc: string;
+            /** Total Events */
+            total_events: number;
+            /** Items */
+            items: components["schemas"]["DailyRunEventInspectOut"][];
         };
         /** DailyRunOut */
         DailyRunOut: {
@@ -1078,6 +1137,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DailyRunPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    api_daily_run_events_inspect_daily_runs__daily_run_id__events_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                "X-Local-Api-Key"?: string | null;
+            };
+            path: {
+                daily_run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailyRunEventsInspectOut"];
                 };
             };
             /** @description Validation Error */

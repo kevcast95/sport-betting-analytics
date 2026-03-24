@@ -337,3 +337,27 @@ class EffectivenessReportStatusOut(BaseModel):
     settled: Optional[int] = None
     win_rate: Optional[float] = None
     roi_unit: Optional[float] = None
+
+
+class DailyRunEventInspectOut(BaseModel):
+    daily_run_id: int
+    event_id: int
+    event_label: Optional[str] = None
+    league: Optional[str] = None
+    h2h_summary: Optional[str] = None
+    match_state: Optional[str] = None
+    passed_candidate_filters: bool
+    in_ds_input: bool
+    reject_reason: Optional[str] = None
+    selection_tier: Optional[Literal["A", "B"]] = None
+    event_context: Any = None
+    diagnostics: Any = None
+    processed: Any = None
+
+
+class DailyRunEventsInspectOut(BaseModel):
+    daily_run_id: int
+    run_date: str
+    captured_at_utc: str
+    total_events: int
+    items: List[DailyRunEventInspectOut]

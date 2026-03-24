@@ -177,7 +177,7 @@ export function OutcomeFeedbackBlock({
           Resultado: sin datos aún
         </p>
         <p className="mt-1 text-[10px] leading-relaxed text-app-muted">
-          Puedes decir tú si ganaste, perdiste o sigue pendiente en «Tu seguimiento».
+          Puedes marcar en «Tu seguimiento» si quedó ganada, perdida o pendiente.
           {isMarket1x2(p.market)
             ? ' En apuestas al resultado del partido (1-X-2) el sistema a veces puede cerrarlo solo cuando hay marcador final.'
             : ' En mercados distintos al marcador final suele tocarse a mano.'}
@@ -303,6 +303,7 @@ export function PickTelegramCard({
   const razon = refStr(ref, 'razon')
   const conf = refStr(ref, 'confianza')
   const edge = refNum(ref, 'edge_pct')
+  const oddsSource = refStr(ref, 'odds_source')
   const tier = confidenceTierFromLabel(conf)
   const confChipText =
     conf?.trim() && conf.trim().length > 0
@@ -390,6 +391,11 @@ export function PickTelegramCard({
           <p className="mt-0.5 font-mono tabular-nums">
             <span className="text-app-muted">Cuota (pago si aciertas):</span>{' '}
             <span className="text-app-fg">{p.picked_value}</span>
+            {oddsSource === 'scraped_sofascore' ? (
+              <span className="ml-1 font-sans text-[9px] font-normal text-app-muted">
+                · snapshot SofaScore (ingesta)
+              </span>
+            ) : null}
           </p>
         )}
         {((conf?.trim() || tier !== 'unknown') || edge != null) && (

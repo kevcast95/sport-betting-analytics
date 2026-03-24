@@ -5,6 +5,7 @@ report_effectiveness.py
 Reporte de efectividad para picks persistidos/validados:
 - Win rate y ROI unitario
 - Desglose por fecha (run_date), mercado y franja (slot inferido)
+- Desglose por confianza del modelo (odds_reference.confianza) y por mercado+confianza
 - Salidas JSON + CSV para análisis semanal
 
 Convenciones:
@@ -106,6 +107,51 @@ def _date_range(end_date: str, days: int) -> tuple[str, str]:
     return start_dt.isoformat(), end_dt.isoformat()
 
 
+def _confidence_bucket(odds_reference_raw: Any) -> str:
+    """Etiqueta de confianza del modelo (odds_reference.confianza), o sin_confianza."""
+    if odds_reference_raw is None:
+        return "sin_confianza"
+    ref: Any
+    if isinstance(odds_reference_raw, dict):
+        ref = odds_reference_raw
+    elif isinstance(odds_reference_raw, str):
+        try:
+            ref = json.loads(odds_reference_raw)
+        except json.JSONDecodeError:
+            return "sin_confianza"
+    else:
+        return "sin_confianza"
+    if not isinstance(ref, dict):
+        return "sin_confianza"
+    c = ref.get("confianza")
+    if c is None:
+        return "sin_confianza"
+    s = str(c).strip()
+    if not s:
+        return "sin_confianza"
+    sl = s.lower().replace(" ", "").replace("_", "-")
+    if sl == "alta":
+        return "Alta"
+    if sl in ("media-alta", "mediaalta"):
+        return "Media-Alta"
+    if sl == "media":
+        return "Media"
+    if sl == "baja":
+        return "Baja"
+    return s
+
+
+def _confidence_sort_key(bucket: str) -> tuple[int, str]:
+    order = {
+        "Alta": 0,
+        "Media-Alta": 1,
+        "Media": 2,
+        "Baja": 3,
+        "sin_confianza": 9,
+    }
+    return (order.get(bucket, 5), bucket)
+
+
 def _fetch_rows(conn: sqlite3.Connection, start_date: str, end_date: str) -> Iterable[sqlite3.Row]:
     cur = conn.execute(
         """
@@ -114,6 +160,7 @@ def _fetch_rows(conn: sqlite3.Connection, start_date: str, end_date: str) -> Ite
             p.market,
             p.picked_value,
             p.created_at_utc,
+            p.odds_reference,
             pr.outcome
         FROM picks p
         JOIN daily_runs dr ON dr.daily_run_id = p.daily_run_id
@@ -160,6 +207,8 @@ def main() -> None:
     by_slot: Dict[str, Agg] = {}
     by_day_market: Dict[str, Agg] = {}
     by_day_slot: Dict[str, Agg] = {}
+    by_confidence: Dict[str, Agg] = {}
+    by_market_confidence: Dict[str, Agg] = {}
 
     for r in rows:
         run_date = str(r["run_date"])
@@ -168,6 +217,7 @@ def main() -> None:
         slot = _slot_from_created_at(created, args.timezone)
         outcome = r["outcome"]
         picked_value = float(r["picked_value"]) if r["picked_value"] is not None else None
+        conf = _confidence_bucket(r["odds_reference"])
 
         total.add(outcome, picked_value)
 
@@ -176,6 +226,11 @@ def main() -> None:
         by_slot.setdefault(slot, Agg()).add(outcome, picked_value)
         by_day_market.setdefault(f"{run_date}|{market}", Agg()).add(outcome, picked_value)
         by_day_slot.setdefault(f"{run_date}|{slot}", Agg()).add(outcome, picked_value)
+        by_confidence.setdefault(conf, Agg()).add(outcome, picked_value)
+        by_market_confidence.setdefault(f"{market}|{conf}", Agg()).add(outcome, picked_value)
+
+    by_conf_sorted = sorted(by_confidence.items(), key=lambda kv: _confidence_sort_key(kv[0]))
+    by_mc_sorted = sorted(by_market_confidence.items())
 
     report: Dict[str, Any] = {
         "job": "report_effectiveness",
@@ -190,6 +245,12 @@ def main() -> None:
         "by_slot": {k: _agg_to_row("slot", k, v) for k, v in sorted(by_slot.items())},
         "by_day_market": {k: _agg_to_row("day_market", k, v) for k, v in sorted(by_day_market.items())},
         "by_day_slot": {k: _agg_to_row("day_slot", k, v) for k, v in sorted(by_day_slot.items())},
+        "by_confidence": {
+            k: _agg_to_row("confidence", k, v) for k, v in by_conf_sorted
+        },
+        "by_market_confidence": {
+            k: _agg_to_row("market_confidence", k, v) for k, v in by_mc_sorted
+        },
     }
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -210,6 +271,8 @@ def main() -> None:
     rows_csv.extend(report["by_slot"].values())
     rows_csv.extend(report["by_day_market"].values())
     rows_csv.extend(report["by_day_slot"].values())
+    rows_csv.extend(report["by_confidence"].values())
+    rows_csv.extend(report["by_market_confidence"].values())
 
     fieldnames = ["scope", "key", "issued", "settled", "wins", "losses", "pending", "profit_unit", "win_rate", "roi_unit"]
     for out in (csv_path, latest_csv):

@@ -397,9 +397,9 @@ export function PickTrackingControls({
           disabled={disabled}
         >
           <option value="auto">Solo auto (sin cierre manual)</option>
-          <option value="win">Gané (yo)</option>
-          <option value="loss">Perdí (yo)</option>
-          <option value="pending">Pendiente (yo)</option>
+          <option value="win">Ganada</option>
+          <option value="loss">Perdida</option>
+          <option value="pending">Pendiente</option>
         </select>
       </label>
     </div>

@@ -35,7 +35,7 @@ cat > "$PLIST" <<EOF
   <key>StartInterval</key>
   <integer>60</integer>
   <key>KeepAlive</key>
-  <true/>
+  <false/>
 
   <key>StandardOutPath</key>
   <string>$LOG_DIR/launchd_runner.out.log</string>

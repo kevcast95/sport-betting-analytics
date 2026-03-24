@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import BacktestsPage from '@/pages/BacktestsPage'
+import ApiReadinessPage from '@/pages/ApiReadinessPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PickDetailPage from '@/pages/PickDetailPage'
+import RunEventsPage from '@/pages/RunEventsPage'
 import RunPicksPage from '@/pages/RunPicksPage'
 import RunsPage from '@/pages/RunsPage'
 import { fetchJson } from '@/lib/api'
@@ -226,6 +228,13 @@ function AppLayout() {
             >
               Backtests
             </NavLink>
+            <NavLink
+              to="/api-readiness"
+              className={({ isActive }) => navClass(isActive)}
+              onClick={closeMenu}
+            >
+              API Readiness
+            </NavLink>
           </nav>
           <div className="px-3 pb-6">
             {notificationPermission === 'default' && (
@@ -270,8 +279,10 @@ function AppLayout() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/runs" element={<RunsPage />} />
               <Route path="/runs/:dailyRunId/picks" element={<RunPicksPage />} />
+              <Route path="/runs/:dailyRunId/events" element={<RunEventsPage />} />
               <Route path="/picks/:pickId" element={<PickDetailPage />} />
               <Route path="/backtests" element={<BacktestsPage />} />
+              <Route path="/api-readiness" element={<ApiReadinessPage />} />
             </Routes>
           </main>
         </div>

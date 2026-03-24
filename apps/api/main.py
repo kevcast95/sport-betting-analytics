@@ -27,6 +27,8 @@ from apps.api.schemas import (
     DashboardPerformanceSplit,
     DashboardRecentPick,
     DashboardSummaryBlock,
+    DailyRunEventInspectOut,
+    DailyRunEventsInspectOut,
     EnsureBaselinesResponse,
     EffectivenessReportStatusOut,
     HealthOut,
@@ -131,6 +133,69 @@ app.add_middleware(
 )
 
 _global_deps = [Depends(verify_local_api_key)]
+
+
+def _diag_flags_from_any(d: Any) -> Dict[str, bool]:
+    base = d if isinstance(d, dict) else {}
+    return {
+        "event_ok": bool(base.get("event_ok")),
+        "lineups_ok": bool(base.get("lineups_ok")),
+        "statistics_ok": bool(base.get("statistics_ok")),
+        "h2h_ok": bool(base.get("h2h_ok")),
+        "team_streaks_ok": bool(base.get("team_streaks_ok")),
+        "odds_all_ok": bool(base.get("odds_all_ok")),
+        "odds_featured_ok": bool(base.get("odds_featured_ok")),
+    }
+
+
+def _base_contract_ok(flags: Dict[str, bool]) -> bool:
+    return (
+        flags["event_ok"]
+        and flags["lineups_ok"]
+        and flags["h2h_ok"]
+        and flags["team_streaks_ok"]
+        and (flags["odds_all_ok"] or flags["odds_featured_ok"])
+    )
+
+
+def _tier_from_flags(flags: Dict[str, bool]) -> Optional[str]:
+    if not _base_contract_ok(flags):
+        return None
+    return "A" if flags["statistics_ok"] else "B"
+
+
+def _reject_reason_from_flags(flags: Dict[str, bool], match_state: str) -> Optional[str]:
+    if match_state == "finished":
+        return "match_finished"
+    if not flags["event_ok"]:
+        return "event_not_ok"
+    if not flags["lineups_ok"]:
+        return "lineups_not_ok"
+    if not flags["h2h_ok"]:
+        return "h2h_not_ok"
+    if not flags["team_streaks_ok"]:
+        return "team_streaks_not_ok"
+    if not (flags["odds_all_ok"] or flags["odds_featured_ok"]):
+        return "no_odds"
+    return None
+
+
+def _h2h_summary_from_processed(processed: Any) -> Optional[str]:
+    if not isinstance(processed, dict):
+        return None
+    h2h = processed.get("h2h")
+    if not isinstance(h2h, dict):
+        return None
+    duel = h2h.get("team_duel")
+    if not isinstance(duel, dict):
+        return None
+    try:
+        hw = int(duel.get("home_wins"))
+        dr = int(duel.get("draws"))
+        aw = int(duel.get("away_wins"))
+    except (TypeError, ValueError):
+        return None
+    return f"H2H {hw}-{dr}-{aw} (home-draw-away)"
 
 
 def _latest_effectiveness_report_path() -> str:
@@ -366,6 +431,88 @@ def list_daily_runs(
     ]
     next_cursor = int(rows[limit]["daily_run_id"]) if has_more else None
     return DailyRunPage(items=items, next_cursor=next_cursor)
+
+
+@app.get(
+    "/daily-runs/{daily_run_id}/events",
+    response_model=DailyRunEventsInspectOut,
+    dependencies=_global_deps,
+)
+def api_daily_run_events_inspect(
+    daily_run_id: int,
+    conn: DbConn,
+    limit: int = Query(500, ge=1, le=2000),
+) -> DailyRunEventsInspectOut:
+    run = conn.execute(
+        "SELECT daily_run_id, run_date, created_at_utc FROM daily_runs WHERE daily_run_id = ?",
+        (daily_run_id,),
+    ).fetchone()
+    if run is None:
+        raise HTTPException(status_code=404, detail="daily_run not found")
+
+    feature_rows = conn.execute(
+        """
+        SELECT event_id, features_json
+        FROM event_features
+        WHERE captured_at_utc = ?
+        ORDER BY event_id ASC
+        LIMIT ?
+        """,
+        (str(run["created_at_utc"]), int(limit)),
+    ).fetchall()
+
+    selected_event_ids = {
+        int(r["event_id"])
+        for r in conn.execute(
+            "SELECT DISTINCT event_id FROM picks WHERE daily_run_id = ?",
+            (daily_run_id,),
+        ).fetchall()
+    }
+
+    items: List[DailyRunEventInspectOut] = []
+    for r in feature_rows:
+        raw = parse_json_field(r["features_json"])
+        feat = raw if isinstance(raw, dict) else {}
+        event_context = feat.get("event_context") if isinstance(feat.get("event_context"), dict) else {}
+        diagnostics = feat.get("diagnostics") if isinstance(feat.get("diagnostics"), dict) else {}
+        processed = feat.get("processed") if isinstance(feat.get("processed"), dict) else feat.get("processed")
+        match_state = str(event_context.get("match_state") or "").lower()
+        flags = _diag_flags_from_any(diagnostics)
+        tier = _tier_from_flags(flags)
+        passed = _base_contract_ok(flags) and match_state != "finished"
+        reject_reason = None if passed else _reject_reason_from_flags(flags, match_state)
+        eid = int(r["event_id"])
+        items.append(
+            DailyRunEventInspectOut(
+                daily_run_id=int(daily_run_id),
+                event_id=eid,
+                event_label=(
+                    f"{event_context.get('home_team') or '?'} vs {event_context.get('away_team') or '?'}"
+                ),
+                league=(
+                    str(event_context.get("tournament"))
+                    if event_context.get("tournament") is not None
+                    else None
+                ),
+                h2h_summary=_h2h_summary_from_processed(processed),
+                match_state=match_state or None,
+                passed_candidate_filters=passed,
+                in_ds_input=eid in selected_event_ids,
+                reject_reason=reject_reason,
+                selection_tier=tier if tier in ("A", "B") else None,
+                event_context=event_context,
+                diagnostics=diagnostics,
+                processed=processed,
+            )
+        )
+
+    return DailyRunEventsInspectOut(
+        daily_run_id=int(run["daily_run_id"]),
+        run_date=str(run["run_date"]),
+        captured_at_utc=str(run["created_at_utc"]),
+        total_events=len(items),
+        items=items,
+    )
 
 
 def _selection_display_from_odds_ref(odds_reference: Any) -> Optional[str]:

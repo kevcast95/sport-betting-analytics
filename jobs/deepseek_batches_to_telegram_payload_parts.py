@@ -29,6 +29,16 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+from core.scraped_odds_anchor import (  # noqa: E402
+    confianza_from_edge,
+    recompute_edge_pct_at_new_odds,
+    scraped_decimal_odds_for_pick,
+)
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="DeepSeek batch analysis -> telegram_payload parts")
@@ -298,6 +308,7 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         eid = int(ev.get("event_id"))
         ec = ev.get("event_context") or {}
         schedule_display = ev.get("schedule_display") or {}
+        processed = ev.get("processed") or {}
         picks_raw = picks_map.get(eid) or []
 
         picks_payload: List[Dict[str, Any]] = []
@@ -316,14 +327,53 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             # Render expects selection string.
             selection_display = _selection_display(str(market), str(selection_code), ec)
 
+            model_odds = odds if isinstance(odds, (int, float)) else None
+            scraped_odds = scraped_decimal_odds_for_pick(
+                processed,
+                market=str(market),
+                selection_code=str(selection_code),
+            )
+            if scraped_odds is not None:
+                final_odds: Optional[float] = scraped_odds
+                odds_source = "scraped_sofascore"
+            elif model_odds is not None and model_odds > 1.0:
+                final_odds = float(model_odds)
+                odds_source = "model"
+            else:
+                final_odds = None
+                odds_source = "model"
+
+            edge_pct_out: Optional[float] = (
+                float(edge_pct) if isinstance(edge_pct, (int, float)) else None
+            )
+            confianza_out = str(confianza) if confianza is not None else ""
+            if (
+                odds_source == "scraped_sofascore"
+                and final_odds is not None
+                and isinstance(edge_pct, (int, float))
+                and isinstance(model_odds, (int, float))
+                and model_odds > 1.0
+            ):
+                rec = recompute_edge_pct_at_new_odds(
+                    model_odds=float(model_odds),
+                    edge_pct_model=float(edge_pct),
+                    new_odds=float(final_odds),
+                )
+                if rec is not None:
+                    edge_pct_out = rec
+                    confianza_out = confianza_from_edge(rec)
+
             picks_payload.append(
                 {
                     "market": str(market),
                     "selection": selection_display,
-                    "odds": odds if isinstance(odds, (int, float)) else None,
-                    "edge_pct": edge_pct if isinstance(edge_pct, (int, float)) else None,
-                    "confianza": confianza if confianza is not None else "",
+                    "odds": final_odds,
+                    "edge_pct": edge_pct_out,
+                    "confianza": confianza_out,
                     "razon": razon if razon is not None else "",
+                    "odds_source": odds_source,
+                    "model_odds": model_odds,
+                    "scraped_odds": scraped_odds,
                 }
             )
         pick_count += len(picks_payload)
