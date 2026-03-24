@@ -16,7 +16,7 @@ Uso:
   ./run.sh logs       # ver logs live del runner
   ./run.sh reset      # limpieza total + reset DB (fresh start)
   ./run.sh tick       # ejecuta un tick manual ahora
-  ./run.sh run-now <midnight|morning|afternoon|report>
+  ./run.sh run-now <midnight|morning|afternoon|full_day|report>
   ./run.sh scrape ... # modo legado: event_bundle_scraper.py
 
 Tip alias:
@@ -94,8 +94,11 @@ case "$cmd" in
       report)
         DAYS="${3:-7}" ./scripts/run_effectiveness_report.sh
         ;;
+      full_day)
+        FECHA="$date_arg" ./scripts/run_independent_full_day.sh
+        ;;
       *)
-        echo "Uso: ./run.sh run-now <midnight|morning|afternoon|report> [YYYY-MM-DD] [days]"
+        echo "Uso: ./run.sh run-now <midnight|morning|afternoon|full_day|report> [YYYY-MM-DD] [days]"
         exit 1
         ;;
     esac

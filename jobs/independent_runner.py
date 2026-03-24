@@ -5,6 +5,7 @@ independent_runner.py
 Orquestador local (sin OpenClaw/Gateway) para ejecutar:
   - Midnight: ingest + select + aviso Telegram de conteo.
   - Window: event_splitter + split batches + DeepSeek + merge + render + Telegram.
+  - full_day: mismos pasos que window pero --slot full_day (todos los candidatos del día) y persiste picks en DB.
 
 Pensado para cron diario en America/Bogota.
 """
@@ -88,8 +89,23 @@ def _read_json(path: str) -> dict:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Runner independiente DeepSeek+Telegram (sin OpenClaw).")
-    p.add_argument("--mode", choices=["midnight", "window"], required=True)
-    p.add_argument("--slot", choices=["morning", "afternoon"], default=None, help="Requerido en mode=window")
+    p.add_argument("--mode", choices=["midnight", "window", "full_day"], required=True)
+    p.add_argument(
+        "--slot",
+        choices=["morning", "afternoon"],
+        default=None,
+        help="Requerido en mode=window",
+    )
+    p.add_argument(
+        "--persist-picks",
+        action="store_true",
+        help="Tras el merge, persistir picks desde telegram_payload.json (modo window; full_day lo hace por defecto).",
+    )
+    p.add_argument(
+        "--skip-persist",
+        action="store_true",
+        help="En full_day: no escribir picks en SQLite.",
+    )
     p.add_argument("--date", default=None, help="YYYY-MM-DD (default: hoy en --timezone)")
     p.add_argument("--timezone", default=os.environ.get("COPA_FOXKIDS_TZ", "America/Bogota"))
     p.add_argument("--sport", default="football")
@@ -106,7 +122,12 @@ def parse_args() -> argparse.Namespace:
         default=os.environ.get("DS_ANALYSIS_MODEL", os.environ.get("DS_MODEL", "deepseek-reasoner")),
     )
     p.add_argument("--ds-max-tokens", type=int, default=int(os.environ.get("DS_MAX_TOKENS", "1200")))
-    p.add_argument("--ds-timeout-sec", type=int, default=int(os.environ.get("DS_TIMEOUT_SEC", "180")))
+    p.add_argument(
+        "--ds-timeout-sec",
+        type=int,
+        default=int(os.environ.get("DS_TIMEOUT_SEC", "420")),
+        help="Por defecto 420s: deepseek-reasoner suele superar 180s por lote.",
+    )
     p.add_argument("--ds-max-retries", type=int, default=int(os.environ.get("DS_MAX_RETRIES", "1")))
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--skip-telegram", action="store_true")
@@ -174,12 +195,17 @@ def _midnight(args: argparse.Namespace, *, repo: str, db: str, date_str: str) ->
         )
 
 
-def _window(args: argparse.Namespace, *, repo: str, db: str, date_str: str) -> None:
-    if not args.slot:
-        raise RuntimeError("mode=window requiere --slot morning|afternoon")
-    exec_id = "exec_08h" if args.slot == "morning" else "exec_16h"
-    block_label = "Bloque 1 (08:00)" if args.slot == "morning" else "Bloque 2 (16:00)"
-
+def _run_windowed_analysis(
+    args: argparse.Namespace,
+    *,
+    repo: str,
+    db: str,
+    date_str: str,
+    splitter_slot: str,
+    exec_id: str,
+    block_label: str,
+    persist_picks: bool,
+) -> None:
     select_in = os.path.join(repo, "out", f"candidates_{date_str}_select.json")
     split_out = os.path.join(repo, "out", f"candidates_{date_str}_{exec_id}.json")
     _run(
@@ -193,7 +219,7 @@ def _window(args: argparse.Namespace, *, repo: str, db: str, date_str: str) -> N
             "--date",
             date_str,
             "--slot",
-            args.slot,
+            splitter_slot,
             "--timezone",
             args.timezone,
         ],
@@ -217,7 +243,7 @@ def _window(args: argparse.Namespace, *, repo: str, db: str, date_str: str) -> N
     )
 
     if args.dry_run:
-        print("DRY RUN: omitiendo llamadas a DeepSeek/merge/render/telegram.")
+        print("DRY RUN: omitiendo llamadas a DeepSeek/merge/render/telegram/persist.")
         return
 
     batch_glob = f"{batch_prefix}_batch*.json"
@@ -291,6 +317,19 @@ def _window(args: argparse.Namespace, *, repo: str, db: str, date_str: str) -> N
         dry_run=False,
     )
 
+    if persist_picks:
+        _run(
+            [
+                sys.executable,
+                os.path.join(repo, "jobs", "persist_picks.py"),
+                "--db",
+                db,
+                "--telegram-payload",
+                telegram_payload,
+            ],
+            dry_run=False,
+        )
+
     # Si el análisis no produjo picks, enviamos mensaje corto de estado del bloque
     payload = _read_json(telegram_payload)
     header = payload.get("header") or {}
@@ -314,6 +353,37 @@ def _window(args: argparse.Namespace, *, repo: str, db: str, date_str: str) -> N
         )
 
 
+def _window(args: argparse.Namespace, *, repo: str, db: str, date_str: str) -> None:
+    if not args.slot:
+        raise RuntimeError("mode=window requiere --slot morning|afternoon")
+    exec_id = "exec_08h" if args.slot == "morning" else "exec_16h"
+    block_label = "Bloque 1 (08:00)" if args.slot == "morning" else "Bloque 2 (16:00)"
+    _run_windowed_analysis(
+        args,
+        repo=repo,
+        db=db,
+        date_str=date_str,
+        splitter_slot=args.slot,
+        exec_id=exec_id,
+        block_label=block_label,
+        persist_picks=bool(args.persist_picks),
+    )
+
+
+def _full_day(args: argparse.Namespace, *, repo: str, db: str, date_str: str) -> None:
+    persist = not bool(args.skip_persist)
+    _run_windowed_analysis(
+        args,
+        repo=repo,
+        db=db,
+        date_str=date_str,
+        splitter_slot="full_day",
+        exec_id="exec_full_day",
+        block_label="Día completo (análisis)",
+        persist_picks=persist,
+    )
+
+
 def main() -> None:
     args = parse_args()
     repo = _repo_root()
@@ -322,8 +392,10 @@ def main() -> None:
 
     if args.mode == "midnight":
         _midnight(args, repo=repo, db=db, date_str=date_str)
-    else:
+    elif args.mode == "window":
         _window(args, repo=repo, db=db, date_str=date_str)
+    else:
+        _full_day(args, repo=repo, db=db, date_str=date_str)
 
 
 if __name__ == "__main__":

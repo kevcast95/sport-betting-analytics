@@ -13,6 +13,7 @@ def connect(db_path: str) -> sqlite3.Connection:
     # WAL permite concurrente: lectores + escritor (muy útil si DB Browser está abierto)
     conn.execute("PRAGMA journal_mode = WAL;")
     conn.execute("PRAGMA synchronous = NORMAL;")
+    conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
 

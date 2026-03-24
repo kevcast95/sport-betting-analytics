@@ -1,0 +1,12 @@
+{
+  "name": "scrapper-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm run dev --prefix apps/web",
+    "dev:api": "bash -c 'export PYTHONPATH=\"${PWD}\" && cd \"${PWD}\" && python3 -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000 --reload'"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

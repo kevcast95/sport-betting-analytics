@@ -72,7 +72,23 @@ async def _run(args: argparse.Namespace) -> None:
             first_time_count += 1
         pick_id = int(row["pick_id"])
         event_id = int(row["event_id"])
+        market = str(row["market"] or "")
         selection = str(row["selection"])
+
+        if market.strip().upper() != "1X2":
+            print(
+                json.dumps(
+                    {
+                        "pick_id": pick_id,
+                        "skipped": True,
+                        "reason": "validate_picks solo soporta mercado 1X2",
+                        "market": market,
+                    },
+                    ensure_ascii=False,
+                ),
+                file=sys.stderr,
+            )
+            continue
 
         res = await _validate_one(event_id, selection)
         outcome = str(res.get("outcome") or "pending")

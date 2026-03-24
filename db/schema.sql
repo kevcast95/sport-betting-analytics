@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS picks (
   daily_run_id INTEGER NOT NULL,
   event_id INTEGER NOT NULL,
   market TEXT NOT NULL, -- e.g. 1X2
-  selection TEXT NOT NULL CHECK (selection IN ('1','X','2')),
+  selection TEXT NOT NULL, -- 1/X/2 u otras (Over 2.5, 1X, etc.)
   picked_value REAL, -- decimal odds or similar
   odds_reference TEXT, -- JSON
   status TEXT NOT NULL CHECK (status IN ('pending','validated','void')),
@@ -68,4 +68,82 @@ CREATE TABLE IF NOT EXISTS backtest_metrics (
   created_at_utc TEXT NOT NULL,
   FOREIGN KEY (backtest_run_id) REFERENCES backtest_runs(backtest_run_id)
 );
+
+-- --- Tracking usuarios / toma de picks / combinaciones sugeridas ---
+
+CREATE TABLE IF NOT EXISTS users (
+  user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  created_at_utc TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_pick_decisions (
+  user_id INTEGER NOT NULL,
+  pick_id INTEGER NOT NULL,
+  taken INTEGER NOT NULL CHECK (taken IN (0, 1)),
+  updated_at_utc TEXT NOT NULL,
+  notes TEXT,
+  risk_category TEXT,
+  decision_origin TEXT,
+  stake_amount REAL,
+  user_outcome TEXT CHECK (user_outcome IN ('win','loss','pending') OR user_outcome IS NULL),
+  user_outcome_updated_at_utc TEXT,
+  PRIMARY KEY (user_id, pick_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (pick_id) REFERENCES picks(pick_id)
+);
+
+CREATE TABLE IF NOT EXISTS suggested_combos (
+  suggested_combo_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  daily_run_id INTEGER NOT NULL,
+  rank_order INTEGER NOT NULL CHECK (rank_order IN (1, 2)),
+  created_at_utc TEXT NOT NULL,
+  strategy_note TEXT,
+  UNIQUE (daily_run_id, rank_order),
+  FOREIGN KEY (daily_run_id) REFERENCES daily_runs(daily_run_id)
+);
+
+CREATE TABLE IF NOT EXISTS suggested_combo_legs (
+  suggested_combo_id INTEGER NOT NULL,
+  pick_id INTEGER NOT NULL,
+  leg_order INTEGER NOT NULL,
+  PRIMARY KEY (suggested_combo_id, pick_id),
+  FOREIGN KEY (suggested_combo_id) REFERENCES suggested_combos(suggested_combo_id) ON DELETE CASCADE,
+  FOREIGN KEY (pick_id) REFERENCES picks(pick_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_combo_decisions (
+  user_id INTEGER NOT NULL,
+  suggested_combo_id INTEGER NOT NULL,
+  taken INTEGER NOT NULL CHECK (taken IN (0, 1)),
+  updated_at_utc TEXT NOT NULL,
+  PRIMARY KEY (user_id, suggested_combo_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (suggested_combo_id) REFERENCES suggested_combos(suggested_combo_id) ON DELETE CASCADE
+);
+
+
+-- Snapshot al momento de generación del pick (criterio “hechos del inicio del día”)
+CREATE TABLE IF NOT EXISTS pick_baseline_snapshots (
+  pick_id INTEGER PRIMARY KEY,
+  captured_at_utc TEXT NOT NULL,
+  baseline_json TEXT NOT NULL,
+  FOREIGN KEY (pick_id) REFERENCES picks(pick_id)
+);
+
+-- Chequeos opcionales por franja / manual (señal ok vs degradada)
+CREATE TABLE IF NOT EXISTS pick_signal_checks (
+  check_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pick_id INTEGER NOT NULL,
+  slot TEXT NOT NULL,
+  checked_at_utc TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('ok', 'degraded', 'unknown')),
+  detail_json TEXT,
+  FOREIGN KEY (pick_id) REFERENCES picks(pick_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_pick_decisions_pick ON user_pick_decisions(pick_id);
+CREATE INDEX IF NOT EXISTS idx_suggested_combos_run ON suggested_combos(daily_run_id);
+CREATE INDEX IF NOT EXISTS idx_pick_signal_checks_pick ON pick_signal_checks(pick_id);
 

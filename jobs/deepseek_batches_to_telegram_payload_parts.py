@@ -366,6 +366,16 @@ def main() -> None:
         retries = 0
         last_err: Optional[Exception] = None
 
+        reasoner_hint = ""
+        if "reasoner" in str(args.model).lower():
+            reasoner_hint = " (reasoner: a menudo 3–10 min por lote)"
+        print(
+            f"⏳ DeepSeek lote {idx}/{len(files)} modelo={args.model!r} timeout={args.timeout_sec}s{reasoner_hint} — "
+            "esperando respuesta…",
+            file=sys.stderr,
+            flush=True,
+        )
+
         while retries <= args.max_retries:
             try:
                 resp = _call_deepseek_chat(

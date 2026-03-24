@@ -1,0 +1,100 @@
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import { fetchJson } from '@/lib/api'
+import type { DailyRunPage } from '@/types/api'
+
+const PAGE = 20
+
+export default function RunsPage() {
+  const q = useInfiniteQuery({
+    queryKey: ['daily-runs'],
+    initialPageParam: undefined as number | undefined,
+    queryFn: async ({ pageParam }) => {
+      const sp = new URLSearchParams({ limit: String(PAGE) })
+      if (pageParam != null) sp.set('cursor', String(pageParam))
+      return fetchJson<DailyRunPage>(`/daily-runs?${sp}`)
+    },
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+  })
+
+  const rows = q.data?.pages.flatMap((p) => p.items) ?? []
+
+  return (
+    <div>
+      <h2 className="mb-1 text-xl font-semibold tracking-tight">Daily runs</h2>
+      <p className="mb-6 text-sm text-app-muted">
+        Paginación por cursor (keyset{' '}
+        <code className="rounded bg-neutral-100 px-1 font-mono text-xs">
+          daily_run_id
+        </code>
+        ).
+      </p>
+
+      {q.isError && (
+        <p className="text-sm text-app-danger">
+          {(q.error as Error).message}
+        </p>
+      )}
+
+      <div className="overflow-x-auto rounded-xl border border-app-line bg-app-card shadow-sm">
+        <table className="w-full border-collapse text-xs">
+          <thead>
+            <tr className="border-b border-app-line text-left text-app-muted">
+              <th className="p-2 font-normal">ID</th>
+              <th className="p-2 font-normal">Fecha</th>
+              <th className="p-2 font-normal">Deporte</th>
+              <th className="p-2 font-normal">Estado</th>
+              <th className="p-2 font-normal"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {q.isLoading && (
+              <tr>
+                <td colSpan={5} className="p-4 text-app-muted">
+                  Cargando…
+                </td>
+              </tr>
+            )}
+            {!q.isLoading &&
+              rows.map((r) => (
+                <tr
+                  key={r.daily_run_id}
+                  className="border-b border-app-line/80 hover:bg-neutral-50/80"
+                >
+                  <td className="p-2">{r.daily_run_id}</td>
+                  <td className="p-2 font-mono tabular-nums text-app-fg">
+                    {r.run_date}
+                  </td>
+                  <td className="p-2">{r.sport}</td>
+                  <td className="p-2">{r.status}</td>
+                  <td className="p-2 text-right">
+                    <Link
+                      to={`/runs/${r.daily_run_id}/picks`}
+                      className="text-app-fg underline decoration-app-line underline-offset-4 hover:decoration-app-fg"
+                    >
+                      Picks
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-4">
+        <button
+          type="button"
+          disabled={!q.hasNextPage || q.isFetchingNextPage}
+          onClick={() => q.fetchNextPage()}
+          className="rounded-lg border border-app-line bg-app-card px-4 py-2 text-xs font-medium text-app-fg disabled:opacity-40"
+        >
+          {q.isFetchingNextPage
+            ? 'Cargando…'
+            : q.hasNextPage
+              ? 'Cargar más'
+              : 'No hay más'}
+        </button>
+      </div>
+    </div>
+  )
+}

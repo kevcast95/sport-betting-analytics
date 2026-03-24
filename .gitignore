@@ -27,3 +27,10 @@ candidates_*.json
 
 # Secrets / entorno local
 .env
+
+# Node — monorepo (raíz + apps/web)
+node_modules/
+apps/web/node_modules/
+apps/web/dist/
+apps/web/.env
+apps/web/.env.local

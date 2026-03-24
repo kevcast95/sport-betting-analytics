@@ -11,6 +11,7 @@ Salida: mismo esquema reducido a eventos cuyo start_timestamp cae en [inicio, fi
 Slots predefinidos (2 ventanas al día, alineadas a cron 08:00 y 16:00 CO):
   --slot morning   → kickoff local [00:00, 16:00) en --date
   --slot afternoon → kickoff local [16:00, 24:00) en --date
+  --slot full_day  → todo el día calendario --date en --timezone (sin franjas)
 
 Uso típico tras select_candidates (convención out/ — ver openclaw/NAMING_ARTIFACTS.md):
   python3 jobs/event_splitter.py -i out/candidates_2026-03-22_select.json \\
@@ -57,7 +58,12 @@ def _window_for_slot(
         return ("[00:00, 16:00)", time(0, 0), time(16, 0), False)
     if s in ("2", "afternoon", "pm", "p", "tarde"):
         return ("[16:00, 24:00)", time(16, 0), None, True)
-    raise ValueError(f"slot desconocido: {slot!r}; use morning|afternoon o 1|2")
+    if s in ("full_day", "fullday", "full", "all", "day", "dia", "día"):
+        # Mismo día local: [00:00, 24:00) vía open_ended desde medianoche.
+        return ("[00:00, 24:00) día completo", time(0, 0), None, True)
+    raise ValueError(
+        f"slot desconocido: {slot!r}; use morning|afternoon|full_day o 1|2"
+    )
 
 
 def _in_window(
@@ -98,7 +104,7 @@ def parse_args() -> argparse.Namespace:
         "--slot",
         type=str,
         default=None,
-        help="morning (=00:00-16:00) o afternoon (=16:00-fin día) en --date",
+        help="morning | afternoon | full_day (día completo, análisis sin franjas)",
     )
     p.add_argument("--local-start", type=str, default=None, help="HH:MM inicio (con --local-end)")
     p.add_argument("--local-end", type=str, default=None, help="HH:MM fin exclusivo (con --local-start)")

@@ -12,6 +12,7 @@ import argparse
 import asyncio
 import json
 import os
+import re
 from typing import Any, Dict, Optional
 
 from playwright.async_api import async_playwright
@@ -107,15 +108,22 @@ async def _fetch_event(context, event_id: int) -> Dict[str, Any]:
 
 
 def _normalize_selection(sel: str) -> Optional[str]:
-    s = str(sel).strip().upper()
+    s_raw = str(sel).strip()
+    if not s_raw:
+        return None
+    s = s_raw.upper()
     if s in ("1", "X", "2"):
-        return s
+        return "1" if s == "1" else ("2" if s == "2" else "X")
     if s in ("HOME", "HOME_WIN", "H"):
         return "1"
     if s in ("AWAY", "AWAY_WIN", "A"):
         return "2"
     if s in ("DRAW", "D"):
         return "X"
+    m = re.match(r"^([12xX])(\s|\(|$)", s_raw, flags=re.IGNORECASE)
+    if m:
+        ch = m.group(1).upper()
+        return "X" if ch == "X" else ch
     return None
 
 
