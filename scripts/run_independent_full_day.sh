@@ -10,4 +10,9 @@ source .env
 set +a
 export TZ="${COPA_FOXKIDS_TZ:-America/Bogota}"
 DATE="${FECHA:-$(date +%Y-%m-%d)}"
-python3 jobs/independent_runner.py --mode full_day --date "$DATE" "$@"
+SPORT="football"
+if [[ "${1:-}" == "football" || "${1:-}" == "tennis" ]]; then
+  SPORT="$1"
+  shift || true
+fi
+python3 jobs/independent_runner.py --mode full_day --sport "$SPORT" --date "$DATE" "$@"

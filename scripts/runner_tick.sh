@@ -43,11 +43,11 @@ run_once_per_day() {
 }
 
 if [[ "$HM" == "$SLOT_MIDNIGHT" ]]; then
-  run_once_per_day "midnight" "FECHA=\"$DATE\" ./scripts/run_independent_midnight.sh"
+  run_once_per_day "midnight" "FECHA=\"$DATE\" ./scripts/run_independent_midnight.sh football && FECHA=\"$DATE\" ./scripts/run_independent_midnight.sh tennis"
 elif [[ "$HM" == "$SLOT_MORNING" ]]; then
-  run_once_per_day "08h" "FECHA=\"$DATE\" ./scripts/run_independent_window.sh morning"
+  run_once_per_day "08h" "FECHA=\"$DATE\" ./scripts/run_independent_window.sh morning football && FECHA=\"$DATE\" ./scripts/run_independent_window.sh morning tennis"
 elif [[ "$HM" == "$SLOT_AFTERNOON" ]]; then
-  run_once_per_day "16h" "FECHA=\"$DATE\" ./scripts/run_independent_window.sh afternoon"
+  run_once_per_day "16h" "FECHA=\"$DATE\" ./scripts/run_independent_window.sh afternoon football && FECHA=\"$DATE\" ./scripts/run_independent_window.sh afternoon tennis"
 elif [[ "$HM" == "$SLOT_REPORT" ]]; then
   run_once_per_day "report" "DAYS=7 ./scripts/run_effectiveness_report.sh"
 fi

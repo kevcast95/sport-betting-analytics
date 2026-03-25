@@ -21,9 +21,9 @@ Documento para **dueño de producto y operadores**: qué es el sistema, cómo es
 | Fila en `daily_runs` | `(run_date, sport='football')` | `(run_date, sport='tennis')` — **otra fila el mismo día** |
 | Ingesta | `ingest_daily_events.py --sport football` → API scheduled-events | `ingest_daily_events.py --sport tennis` → lógica en `core/tennis_daily_schedule.py` |
 | Artefactos `out/` | `candidates_{FECHA}_select.json`, etc. | Mismo patrón pero con sufijo **`_tennis`** (p. ej. `candidates_2026-03-25_tennis_select.json`) para no pisar fútbol |
-| Cron / `runner_tick.sh` | Llama `independent_runner.py` **sin** `--sport` → **solo `football`** | Hay que invocar explícitamente `--sport tennis` (mismo `independent_runner.py`) en otro horario o script |
+| Cron / `runner_tick.sh` | Ejecuta `midnight` + `morning` + `afternoon` para `football` | Ejecuta los mismos slots pero con `--sport tennis` (pipeline paralelo por `daily_run_id`) |
 
-Conclusión: en la **máquina con launchd** tal como está el repo, solo corre el pipeline **fútbol**. Tenis es **paralelo en datos** pero **manual o con cron adicional** que pases `--sport tennis`.
+Conclusión: con el `runner_tick.sh` actualizado, tanto **fútbol** como **tenis** se corren en los slots configurados (separados por `sport` en la DB).
 
 ---
 
@@ -265,6 +265,6 @@ Archivos en `out/state/`: `last_midnight.txt`, `last_08h.txt`, `last_16h.txt` (c
 ## 11. Inconsistencias a tener en cuenta
 
 - La documentación histórica cita `db/sport-tracker.sqlite3`; tu entorno puede usar **`db/app.sqlite`**. Lo importante es **una sola ruta** para jobs, API y web.
-- El **cron documentado en `openclaw/CRON_COLOMBIA.md`** es conceptual; la implementación local concreta es **`runner_tick.sh` + `independent_runner.py`** (solo fútbol salvo que añadas líneas para tenis).
+- El **cron documentado en `openclaw/CRON_COLOMBIA.md`** es conceptual; la implementación local concreta es **`runner_tick.sh` + `independent_runner.py`**. En esta rama, `runner_tick.sh` dispara también `--sport tennis`.
 
-Si quieres un siguiente paso de producto, lo más útil suele ser: **duplicar en `runner_tick.sh` (o un segundo plist) las dos ventanas para `--sport tennis`**, con los mismos horarios o otros acordados.
+Si quieres el siguiente paso de producto: separar tenis y fútbol en **plists** distintos (o ralentizar uno) para que un fallo puntual o coste extra no afecte el otro.
