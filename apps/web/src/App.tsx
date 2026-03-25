@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
+import {
+  BrowserRouter,
+  NavLink,
+  Route,
+  Routes,
+  useMatch,
+  useSearchParams,
+} from 'react-router-dom'
+import { DashboardChrome } from '@/components/DashboardChrome'
 import BacktestsPage from '@/pages/BacktestsPage'
 import ApiReadinessPage from '@/pages/ApiReadinessPage'
 import DashboardPage from '@/pages/DashboardPage'
@@ -27,10 +35,6 @@ function BankrollSidebar() {
   const [draft, setDraft] = useState(() =>
     bankrollCOP != null ? String(Math.round(bankrollCOP)) : '',
   )
-
-  useEffect(() => {
-    setDraft(bankrollCOP != null ? String(Math.round(bankrollCOP)) : '')
-  }, [bankrollCOP])
 
   return (
     <div className="mt-6 border-t border-app-line px-2 pt-5">
@@ -81,6 +85,9 @@ function BankrollSidebar() {
 }
 
 function AppLayout() {
+  const { userId } = useTrackingUser()
+  const { bankrollCOP } = useBankrollCOP(userId)
+  const bankrollSidebarKey = `${userId ?? 'none'}:${bankrollCOP ?? 'na'}`
   const [menuOpen, setMenuOpen] = useState(false)
   const [reportNotice, setReportNotice] = useState<string | null>(null)
   const [notificationPermission, setNotificationPermission] = useState<
@@ -140,6 +147,10 @@ function AppLayout() {
   }, [])
 
   const closeMenu = () => setMenuOpen(false)
+  const isDashboardHome = useMatch({ path: '/', end: true })
+  const [navSearch] = useSearchParams()
+  const runsListHref =
+    navSearch.get('sport') === 'tennis' ? '/runs?sport=tennis' : '/runs'
 
   return (
     <div className="flex min-h-dvh flex-col bg-app-bg text-app-fg">
@@ -215,11 +226,11 @@ function AppLayout() {
               Dashboard
             </NavLink>
             <NavLink
-              to="/runs"
+              to={runsListHref}
               className={({ isActive }) => navClass(isActive)}
               onClick={closeMenu}
             >
-              Picks por run
+              Ejecuciones
             </NavLink>
             <NavLink
               to="/backtests"
@@ -255,12 +266,13 @@ function AppLayout() {
                 </button>
               </div>
             )}
-            <BankrollSidebar />
+            <BankrollSidebar key={bankrollSidebarKey} />
           </div>
         </aside>
 
-        <div className="min-w-0 flex-1 md:overflow-y-auto">
-          <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 md:px-8 md:py-8">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col md:overflow-y-auto">
+          {isDashboardHome && <DashboardChrome />}
+          <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-4 sm:px-4 md:px-8 md:py-8">
             {reportNotice && (
               <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-app-line bg-app-card px-3 py-2 text-xs text-app-fg">
                 <span>{reportNotice}</span>

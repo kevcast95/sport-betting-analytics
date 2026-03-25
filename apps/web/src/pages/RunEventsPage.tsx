@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { fetchJson } from '@/lib/api'
 import type { DailyRunEventsInspectOut } from '@/types/api'
 
@@ -24,19 +24,12 @@ export default function RunEventsPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Inspector de eventos</h2>
-          <p className="text-sm text-app-muted">
-            Snapshot por evento del run: contexto, diagnósticos y datos procesados.
-          </p>
-        </div>
-        <Link
-          to={`/runs/${runId}/picks`}
-          className="text-xs font-medium text-app-fg underline decoration-app-line underline-offset-2"
-        >
-          Ir a picks del run →
-        </Link>
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold tracking-tight">Eventos del run</h2>
+        <p className="mt-1 max-w-xl text-sm text-app-muted">
+          Inspector técnico: contexto, diagnósticos y snapshot procesado por
+          evento.
+        </p>
       </div>
 
       {q.isLoading && <p className="text-sm text-app-muted">Cargando eventos…</p>}
@@ -44,10 +37,10 @@ export default function RunEventsPage() {
 
       {q.data && (
         <>
-          <div className="mb-4 rounded-lg border border-app-line bg-app-card p-3 text-xs text-app-muted">
-            <span className="font-mono text-app-fg">run {q.data.daily_run_id}</span> ·{' '}
-            {q.data.run_date} · {q.data.total_events} eventos
-          </div>
+          <p className="mb-4 text-xs text-app-muted">
+            <span className="font-mono text-app-fg">{q.data.total_events}</span>{' '}
+            eventos en este run.
+          </p>
 
           <div className="space-y-3">
             {q.data.items.map((e) => (

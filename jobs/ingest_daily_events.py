@@ -5,7 +5,7 @@ import os
 import sys
 import time
 import urllib.request
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import Any, List, Optional
 
 
@@ -35,10 +35,24 @@ def _validate_run_date(date_str: str) -> None:
         )
         sys.exit(2)
     try:
-        datetime.strptime(s, "%Y-%m-%d")
+        parsed = datetime.strptime(s, "%Y-%m-%d").date()
     except ValueError:
         print(f"Error: --date inválida {date_str!r}; usa formato YYYY-MM-DD.", file=sys.stderr)
         sys.exit(2)
+    # Evita typos tipo 2016 en lugar de 2026 (run huérfano: dashboard no lo ve con la fecha real).
+    if os.environ.get("ALTEA_ALLOW_DIVERGENT_INGEST_DATE", "").lower() not in (
+        "1",
+        "true",
+        "yes",
+    ):
+        today = date.today()
+        if abs(parsed - today) > timedelta(days=400):
+            print(
+                f"Error: --date={date_str} está a más de ~400 días de hoy ({today.isoformat()}). "
+                "¿Typo de año? Para forzar, exporta ALTEA_ALLOW_DIVERGENT_INGEST_DATE=1.",
+                file=sys.stderr,
+            )
+            sys.exit(2)
 
 
 def parse_args() -> argparse.Namespace:

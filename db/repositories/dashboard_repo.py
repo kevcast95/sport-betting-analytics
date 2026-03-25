@@ -19,11 +19,21 @@ def _effective_outcome(u_outcome: Any, pr_outcome: Any) -> str:
     return "pending"
 
 
-def _selection_stats_from_artifact(run_date: str) -> Dict[str, Any]:
+def _selection_stats_from_artifact(
+    run_date: str, sport: Optional[str] = None
+) -> Dict[str, Any]:
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    p = os.path.join(repo_root, "out", f"candidates_{run_date}_select.json")
-    if not os.path.exists(p):
-        return {}
+    s = str(sport).strip().lower() if sport else ""
+    if s and s != "football":
+        p = os.path.join(
+            repo_root, "out", f"candidates_{run_date}_select_{s}.json"
+        )
+        if not os.path.exists(p):
+            return {}
+    else:
+        p = os.path.join(repo_root, "out", f"candidates_{run_date}_select.json")
+        if not os.path.exists(p):
+            return {}
     try:
         with open(p, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -61,9 +71,16 @@ def _rows_for_date(
     *,
     run_date: str,
     user_id: Optional[int],
+    sport: Optional[str] = None,
 ) -> List[sqlite3.Row]:
+    sport_clause = ""
+    sport_norm: Optional[str] = None
+    if sport is not None and str(sport).strip() != "":
+        sport_norm = str(sport).strip().lower()
+        sport_clause = " AND LOWER(TRIM(dr.sport)) = ?"
+
     if user_id is None:
-        sql = """
+        sql = f"""
             SELECT
                 p.pick_id,
                 p.daily_run_id,
@@ -82,10 +99,13 @@ def _rows_for_date(
             FROM picks p
             INNER JOIN daily_runs dr ON dr.daily_run_id = p.daily_run_id
             LEFT JOIN pick_results pr ON pr.pick_id = p.pick_id
-            WHERE dr.run_date = ?
+            WHERE dr.run_date = ?{sport_clause}
         """
-        return list(conn.execute(sql, (run_date,)).fetchall())
-    sql = """
+        params: List[Any] = [run_date]
+        if sport_norm is not None:
+            params.append(sport_norm)
+        return list(conn.execute(sql, tuple(params)).fetchall())
+    sql = f"""
         SELECT
             p.pick_id,
             p.daily_run_id,
@@ -105,9 +125,12 @@ def _rows_for_date(
         INNER JOIN daily_runs dr ON dr.daily_run_id = p.daily_run_id
         LEFT JOIN pick_results pr ON pr.pick_id = p.pick_id
         LEFT JOIN user_pick_decisions d ON d.pick_id = p.pick_id AND d.user_id = ?
-        WHERE dr.run_date = ?
+        WHERE dr.run_date = ?{sport_clause}
     """
-    return list(conn.execute(sql, (user_id, run_date)).fetchall())
+    params2: List[Any] = [user_id, run_date]
+    if sport_norm is not None:
+        params2.append(sport_norm)
+    return list(conn.execute(sql, tuple(params2)).fetchall())
 
 
 def daily_picks_summary(
@@ -115,20 +138,69 @@ def daily_picks_summary(
     *,
     run_date: str,
     user_id: Optional[int] = None,
+    sport: Optional[str] = None,
 ) -> Dict[str, Any]:
-    selection = _selection_stats_from_artifact(run_date)
-    rows = _rows_for_date(conn, run_date=run_date, user_id=user_id)
-    events_row = conn.execute(
-        """
-        SELECT COUNT(DISTINCT ef.event_id) AS n
-        FROM daily_runs dr
-        INNER JOIN event_features ef
-          ON ef.captured_at_utc = dr.created_at_utc
-        WHERE dr.run_date = ?
-        """,
-        (run_date,),
-    ).fetchone()
-    events_total = int(events_row["n"]) if events_row and events_row["n"] is not None else 0
+    sport_f = (
+        str(sport).strip().lower()
+        if sport is not None and str(sport).strip()
+        else None
+    )
+    selection = _selection_stats_from_artifact(run_date, sport=sport_f)
+    rows = _rows_for_date(
+        conn, run_date=run_date, user_id=user_id, sport=sport_f
+    )
+    if sport_f:
+        events_row = conn.execute(
+            """
+            SELECT COUNT(DISTINCT ef.event_id) AS n
+            FROM daily_runs dr
+            INNER JOIN event_features ef
+              ON ef.captured_at_utc = dr.created_at_utc
+            WHERE dr.run_date = ? AND LOWER(TRIM(dr.sport)) = ?
+            """,
+            (run_date, sport_f),
+        ).fetchone()
+        run_id_row = conn.execute(
+            """
+            SELECT daily_run_id
+            FROM daily_runs
+            WHERE run_date = ? AND LOWER(TRIM(sport)) = ?
+            ORDER BY daily_run_id DESC
+            LIMIT 1
+            """,
+            (run_date, sport_f),
+        ).fetchone()
+    else:
+        events_row = conn.execute(
+            """
+            SELECT COUNT(DISTINCT ef.event_id) AS n
+            FROM daily_runs dr
+            INNER JOIN event_features ef
+              ON ef.captured_at_utc = dr.created_at_utc
+            WHERE dr.run_date = ?
+            """,
+            (run_date,),
+        ).fetchone()
+        run_id_row = conn.execute(
+            """
+            SELECT daily_run_id
+            FROM daily_runs
+            WHERE run_date = ?
+            ORDER BY daily_run_id DESC
+            LIMIT 1
+            """,
+            (run_date,),
+        ).fetchone()
+    events_total = (
+        int(events_row["n"])
+        if events_row and events_row["n"] is not None
+        else 0
+    )
+    primary_daily_run_id = (
+        int(run_id_row["daily_run_id"])
+        if run_id_row and run_id_row["daily_run_id"] is not None
+        else None
+    )
     total = len(rows)
     wins = losses = pending = 0
     taken_ct = 0
@@ -180,6 +252,8 @@ def daily_picks_summary(
 
     return {
         "run_date": run_date,
+        "sport": sport_f,
+        "primary_daily_run_id": primary_daily_run_id,
         "events_total": events_total,
         "selection_total_events": int(selection.get("selection_total_events") or 0),
         "selection_passed_filters": int(selection.get("selection_passed_filters") or 0),
@@ -215,8 +289,16 @@ def recent_picks_for_date(
     run_date: str,
     user_id: Optional[int],
     limit: int = 12,
+    sport: Optional[str] = None,
 ) -> List[sqlite3.Row]:
-    rows = _rows_for_date(conn, run_date=run_date, user_id=user_id)
+    sport_f = (
+        str(sport).strip().lower()
+        if sport is not None and str(sport).strip()
+        else None
+    )
+    rows = _rows_for_date(
+        conn, run_date=run_date, user_id=user_id, sport=sport_f
+    )
     # ya ordenados por created_at desc en query — re-sort por si acaso
     sorted_rows = sorted(
         rows,

@@ -9,6 +9,7 @@ import {
   describeMarketKind,
   describeSelectionPlain,
 } from '@/lib/marketCopy'
+import { effectivePickOutcome } from '@/lib/pickOutcome'
 import {
   confidenceTierFromLabel,
   tierLabelEs,
@@ -66,17 +67,6 @@ export type PickCardData = {
   system_outcome?: 'win' | 'loss' | 'pending' | null
   /** Dashboard: texto legible de selección desde odds_reference */
   selection_display?: string | null
-}
-
-/** Resultado mostrado en UI y P/L: primero el usuario, luego sistema. */
-export function effectivePickOutcome(
-  p: PickCardData,
-): 'win' | 'loss' | 'pending' | null {
-  const u = p.user_outcome
-  if (u === 'win' || u === 'loss' || u === 'pending') return u
-  const s = p.system_outcome ?? p.result?.outcome
-  if (s === 'win' || s === 'loss' || s === 'pending') return s
-  return null
 }
 
 function systemOutcomeRaw(p: PickCardData): 'win' | 'loss' | 'pending' | null {

@@ -263,6 +263,14 @@ class DashboardPerformanceBlock(BaseModel):
 
 class DashboardSummaryBlock(BaseModel):
     run_date: str
+    sport: Optional[str] = Field(
+        None,
+        description="Deporte usado para filtrar picks y run (ej. football, tennis).",
+    )
+    primary_daily_run_id: Optional[int] = Field(
+        None,
+        description="Último daily_run_id del día (misma run_date); enlaces directos a tablero / inspector.",
+    )
     events_total: int = 0
     selection_passed_filters: int = 0
     selection_rejected: int = 0
