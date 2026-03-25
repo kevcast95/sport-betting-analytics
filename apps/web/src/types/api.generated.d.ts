@@ -538,6 +538,16 @@ export interface components {
             /** Run Date */
             run_date: string;
             /**
+             * Sport
+             * @description Deporte usado para filtrar picks y run (ej. football, tennis).
+             */
+            sport?: string | null;
+            /**
+             * Primary Daily Run Id
+             * @description Último daily_run_id del día (misma run_date); enlaces directos a tablero / inspector.
+             */
+            primary_daily_run_id?: number | null;
+            /**
              * Events Total
              * @default 0
              */
@@ -1083,6 +1093,8 @@ export interface operations {
                 user_id?: number | null;
                 /** @description Si true, la lista reciente solo incluye picks marcados como tomados */
                 only_taken?: boolean;
+                /** @description Filtra por `daily_runs.sport` (ej. football, tennis). */
+                sport?: string;
             };
             header?: {
                 "X-Local-Api-Key"?: string | null;

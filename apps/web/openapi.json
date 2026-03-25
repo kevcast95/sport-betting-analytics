@@ -124,6 +124,18 @@
             "description": "Si true, la lista reciente solo incluye picks marcados como tomados"
           },
           {
+            "name": "sport",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Filtra por `daily_runs.sport` (ej. football, tennis).",
+              "default": "football",
+              "title": "Sport"
+            },
+            "description": "Filtra por `daily_runs.sport` (ej. football, tennis)."
+          },
+          {
             "name": "X-Local-Api-Key",
             "in": "header",
             "required": false,
@@ -1962,6 +1974,30 @@
           "run_date": {
             "type": "string",
             "title": "Run Date"
+          },
+          "sport": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sport",
+            "description": "Deporte usado para filtrar picks y run (ej. football, tennis)."
+          },
+          "primary_daily_run_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Daily Run Id",
+            "description": "\u00daltimo daily_run_id del d\u00eda (misma run_date); enlaces directos a tablero / inspector."
           },
           "events_total": {
             "type": "integer",

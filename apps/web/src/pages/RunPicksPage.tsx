@@ -1,15 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { PickTelegramCard, type PickCardData } from '@/components/PickTelegramCard'
 import {
   ComboTrackingControls,
   type ComboSavePayload,
 } from '@/components/ComboTrackingControls'
-import {
-  PickTrackingControls,
-  type PickSavePayload,
-} from '@/components/PickTrackingControls'
+import { PickInboxRow } from '@/components/PickInboxRow'
 import { fetchJson } from '@/lib/api'
 import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
@@ -19,29 +15,12 @@ import type { TrackingBoardOut, UserOut } from '@/types/api'
 
 type BoardPick = TrackingBoardOut['picks'][number]
 
-function toCard(p: BoardPick): PickCardData {
+function effectiveOutcome(p: BoardPick): 'win' | 'loss' | 'pending' | null {
+  const u = p.user_outcome
+  if (u === 'win' || u === 'loss' || u === 'pending') return u
   const ro = p.result?.outcome
-  return {
-    pick_id: p.pick_id,
-    daily_run_id: p.daily_run_id,
-    event_id: p.event_id,
-    market: p.market,
-    selection: p.selection,
-    picked_value: p.picked_value,
-    odds_reference: p.odds_reference,
-    event_label: p.event_label,
-    league: p.league,
-    kickoff_display: p.kickoff_display,
-    kickoff_at_utc: p.kickoff_at_utc,
-    created_at_utc: p.created_at_utc,
-    result: p.result,
-    user_outcome: p.user_outcome ?? undefined,
-    system_outcome:
-      ro === 'win' || ro === 'loss' || ro === 'pending' ? ro : undefined,
-    user_taken: p.user_taken,
-    decision_origin: p.decision_origin,
-    stake_amount: p.stake_amount,
-  }
+  if (ro === 'win' || ro === 'loss' || ro === 'pending') return ro
+  return null
 }
 
 export default function RunPicksPage() {
@@ -78,35 +57,6 @@ export default function RunPicksPage() {
     mutationFn: () => fetchJson<UserOut[]>('/users/bootstrap', { method: 'POST' }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['users'] })
-    },
-  })
-
-  const savePickM = useMutation({
-    mutationFn: async (payload: PickSavePayload) => {
-      if (userId == null) throw new Error('user')
-      const body: Record<string, unknown> = { taken: payload.taken }
-      if (payload.decision_origin !== undefined)
-        body.decision_origin = payload.decision_origin || null
-      if (payload.stake_amount !== undefined)
-        body.stake_amount = payload.stake_amount
-      if (payload.userOutcome === 'auto') body.user_outcome_auto = true
-      else if (
-        payload.userOutcome === 'win' ||
-        payload.userOutcome === 'loss' ||
-        payload.userOutcome === 'pending'
-      ) {
-        body.user_outcome = payload.userOutcome
-      }
-      return fetchJson(`/users/${userId}/picks/${payload.pickId}/taken`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-    },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['board', runId, userId] })
-      void qc.invalidateQueries({ queryKey: ['dashboard'] })
-      void qc.invalidateQueries({ queryKey: ['user', userId] })
     },
   })
 
@@ -168,28 +118,15 @@ export default function RunPicksPage() {
 
   return (
     <div>
-      <p className="mb-4 text-xs text-app-muted">
-        <Link
-          to="/runs"
-          className="font-medium text-violet-800 underline decoration-violet-200 underline-offset-2"
-        >
-          ← Runs
-        </Link>
-        <span className="mx-2 text-app-line">/</span>
-        <span className="font-mono">run {runId}</span>
-      </p>
       <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-app-fg">
-            Picks y tracking
+            Picks del run
           </h2>
-          {board && (
-            <p className="mt-1 font-mono text-sm text-app-muted tabular-nums">
-              Fecha run <span className="text-violet-900">{board.run.run_date}</span>
-              {' · '}
-              <span className="text-sky-900">{board.run.sport}</span>
-            </p>
-          )}
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-app-muted">
+            Lista compacta: abre la ficha para ver la tarjeta completa, cuotas y
+            tu seguimiento (tomé, monto, resultado).
+          </p>
         </div>
       </div>
 
@@ -276,38 +213,26 @@ export default function RunPicksPage() {
             )}
           </div>
 
-          <p className="mb-3 text-xs text-app-muted">
-            Desliza horizontalmente · análisis y tu seguimiento van en la misma tarjeta.
-          </p>
-
           {board.picks.length === 0 ? (
             <p className="rounded-xl border border-dashed border-app-line bg-app-card p-8 text-center text-sm text-app-muted">
               Sin picks en este run (ejecuta persist_picks tras el análisis).
             </p>
           ) : (
-            <div className="-mx-1 flex gap-4 overflow-x-auto overflow-y-visible pb-4 pt-1 [scrollbar-gutter:stable] snap-x snap-mandatory">
+            <div className="overflow-hidden rounded-xl border border-app-line bg-app-card shadow-sm">
               {board.picks.map((p, i) => (
-                <div
+                <PickInboxRow
                   key={p.pick_id}
-                  className="w-[min(100vw-1.5rem,22rem)] shrink-0 snap-start"
-                >
-                  <PickTelegramCard
-                    p={toCard(p)}
-                    compact
-                    runDate={board.run.run_date}
-                    pickOrdinal={i + 1}
-                    trackingSlot={
-                      <PickTrackingControls
-                        key={`${p.pick_id}-${p.stake_amount ?? ''}`}
-                        pick={p}
-                        userId={userId}
-                        bankrollCOP={bankrollCOP}
-                        disabled={savePickM.isPending}
-                        onSave={(payload) => savePickM.mutate(payload)}
-                      />
-                    }
-                  />
-                </div>
+                  pickId={p.pick_id}
+                  href={`/picks/${p.pick_id}`}
+                  eventLabel={p.event_label}
+                  league={p.league}
+                  market={p.market}
+                  selection={p.selection}
+                  pickedValue={p.picked_value}
+                  outcome={effectiveOutcome(p)}
+                  userTaken={p.user_taken}
+                  ordinal={i + 1}
+                />
               ))}
             </div>
           )}

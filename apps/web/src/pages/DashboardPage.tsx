@@ -1,75 +1,40 @@
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { DashboardPerformanceChart } from '@/components/DashboardPerformanceChart'
-import { PickTelegramCard, type PickCardData } from '@/components/PickTelegramCard'
+import { PickInboxRow } from '@/components/PickInboxRow'
 import { fetchJson } from '@/lib/api'
+import { useBarDailyRunId } from '@/hooks/useBarDailyRunId'
+import { useDashboardUrlState } from '@/hooks/useDashboardUrlState'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
 import { useUsersQuery } from '@/hooks/useUsersQuery'
-import type { DashboardBundleOut, DashboardRecentPick } from '@/types/api'
-import { formatCalendarDateEs, formatCOP } from '@/lib/formatDateTime'
-
-function todayISO() {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-function recentToCard(r: DashboardRecentPick): PickCardData {
-  return {
-    pick_id: r.pick_id,
-    daily_run_id: r.daily_run_id,
-    event_id: r.event_id,
-    market: r.market,
-    selection: r.selection,
-    picked_value: r.picked_value,
-    odds_reference: r.odds_reference,
-    event_label: r.event_label,
-    league: r.league,
-    kickoff_display: r.kickoff_display,
-    kickoff_at_utc: r.kickoff_at_utc,
-    created_at_utc: r.created_at_utc,
-    user_outcome: r.user_outcome ?? undefined,
-    system_outcome: r.outcome_system ?? undefined,
-    result: null,
-    user_taken: r.user_taken,
-    decision_origin: r.decision_origin,
-    stake_amount: r.stake_amount,
-    selection_display: r.selection_display ?? undefined,
-  }
-}
-
-function rejectReasonLabelEs(reason: string | null | undefined): string {
-  const x = String(reason ?? '').trim().toLowerCase()
-  if (x === 'lineups_not_ok') return 'alineaciones o datos base incompletos'
-  if (x === 'h2h_not_ok') return 'historial H2H insuficiente'
-  if (x === 'match_finished') return 'partido ya finalizado'
-  return x ? `criterio técnico (${x})` : 'criterios técnicos'
-}
+import type { DashboardBundleOut } from '@/types/api'
+import { formatCOP } from '@/lib/formatDateTime'
 
 export default function DashboardPage() {
   const { userId, setUserId } = useTrackingUser()
+  const { runDate, setRunDate, onlyTaken, setOnlyTaken, sport } =
+    useDashboardUrlState()
   const usersQ = useUsersQuery()
   const users = useMemo(() => usersQ.data ?? [], [usersQ.data])
-  const [runDate, setRunDate] = useState(todayISO)
-  const [onlyTaken, setOnlyTaken] = useState(false)
-  if (userId == null && onlyTaken) {
-    setOnlyTaken(false)
-  }
+  const onlyTakenForQuery = userId != null && onlyTaken
 
   const dashQ = useQuery({
-    queryKey: ['dashboard', runDate, userId, onlyTaken],
+    queryKey: ['dashboard', runDate, userId, onlyTakenForQuery, sport],
     queryFn: async () => {
-      const sp = new URLSearchParams({ run_date: runDate })
+      const sp = new URLSearchParams({ run_date: runDate, sport })
       if (userId != null) sp.set('user_id', String(userId))
-      if (onlyTaken) sp.set('only_taken', 'true')
+      if (onlyTakenForQuery) sp.set('only_taken', 'true')
       return fetchJson<DashboardBundleOut>(`/dashboard?${sp}`)
     },
   })
 
   const s = dashQ.data?.summary
+  const { barRunId } = useBarDailyRunId({
+    runDate,
+    sport,
+    primaryDailyRunId: s?.primary_daily_run_id,
+  })
 
   useEffect(() => {
     if (users.length === 0) return
@@ -79,46 +44,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-app-fg md:text-3xl">
-            Dashboard
-          </h1>
-          <p className="mt-1 max-w-xl text-sm text-app-muted">
-            <span className="font-medium text-violet-900">
-              {formatCalendarDateEs(runDate)}
-            </span>
-            <span className="mx-1 text-app-line">·</span>
-            <span className="font-mono text-xs tabular-nums">{runDate}</span>
-            {' — '}
-            {s
-              ? `${s.events_total} eventos totales · ${s.picks_total} picks del modelo`
-              : 'eventos y picks del modelo'}
-          </p>
-          {s && (s.selection_passed_filters > 0 || s.selection_rejected > 0) && (
-            <div className="mt-2 space-y-1 text-xs text-app-muted">
-              <p>
-                • <span className="text-app-fg">{s.selection_rejected}</span> eventos
-                se descartaron por filtros previos (principalmente{' '}
-                {rejectReasonLabelEs(s.selection_top_reject_reason)}).
-              </p>
-              <p>
-                • <span className="text-app-fg">{s.selection_analyzed_without_pick}</span>{' '}
-                eventos sí pasaron análisis, pero no terminaron en pick por falta de
-                valor suficiente.
-              </p>
-            </div>
-          )}
-        </div>
-        <Link
-          to="/runs"
-          className="inline-flex shrink-0 items-center justify-center rounded-lg bg-app-accent px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-90"
-        >
-          Ver runs
-        </Link>
-      </div>
-
-      <div className="mb-8 mt-6 flex flex-wrap items-start gap-4 border-b border-app-line pb-6">
+      <div className="mb-8 flex flex-wrap items-start gap-4 border-b border-app-line pb-6">
         <label className="flex flex-col gap-1 text-xs text-app-muted">
           Fecha del run (picks con este día)
           <input
@@ -264,7 +190,8 @@ export default function DashboardPage() {
               <div>
                 <h2 className="text-sm font-semibold">Picks del día</h2>
                 <p className="text-xs text-app-muted">
-                  Tarjetas alineadas al mensaje de Telegram · desliza en móvil
+                  Vista bandeja: toca una fila para abrir la ficha con detalle,
+                  Telegram-style y seguimiento.
                 </p>
                 {userId != null && s.bankroll_cop != null && (
                   <p className="mt-1 font-mono text-[11px] font-semibold tabular-nums text-violet-900">
@@ -272,12 +199,12 @@ export default function DashboardPage() {
                   </p>
                 )}
               </div>
-              {dashQ.data?.recent[0] && (
+              {barRunId != null && (
                 <Link
-                  to={`/runs/${dashQ.data.recent[0].daily_run_id}/picks`}
+                  to={`/runs/${barRunId}/picks`}
                   className="text-xs font-medium text-app-fg underline decoration-app-line underline-offset-2"
                 >
-                  Abrir tablero del run →
+                  Abrir tablero completo del run →
                 </Link>
               )}
             </div>
@@ -285,17 +212,24 @@ export default function DashboardPage() {
             {dashQ.data?.recent.length === 0 ? (
               <p className="rounded-xl border border-dashed border-app-line bg-app-card p-8 text-center text-sm text-app-muted">
                 No hay picks para esta fecha
-                {onlyTaken ? ' (con filtro «solo tomados»)' : ''}.
+                {onlyTakenForQuery ? ' (con filtro «solo tomados»)' : ''}.
               </p>
             ) : (
-              <div className="-mx-1 flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory">
+              <div className="overflow-hidden rounded-xl border border-app-line bg-app-card shadow-sm">
                 {dashQ.data?.recent.map((r, i) => (
-                  <PickTelegramCard
+                  <PickInboxRow
                     key={r.pick_id}
-                    p={recentToCard(r)}
-                    runDate={runDate}
-                    pickOrdinal={i + 1}
-                    detailHref={`/picks/${r.pick_id}`}
+                    pickId={r.pick_id}
+                    href={`/picks/${r.pick_id}`}
+                    eventLabel={r.event_label}
+                    league={r.league}
+                    market={r.market}
+                    selection={r.selection}
+                    selectionDisplay={r.selection_display}
+                    pickedValue={r.picked_value}
+                    outcome={r.outcome}
+                    userTaken={r.user_taken}
+                    ordinal={i + 1}
                   />
                 ))}
               </div>

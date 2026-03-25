@@ -229,8 +229,15 @@ def api_dashboard(
         False,
         description="Si true, la lista reciente solo incluye picks marcados como tomados",
     ),
+    sport: str = Query(
+        "football",
+        description="Filtra por `daily_runs.sport` (ej. football, tennis).",
+    ),
 ) -> DashboardBundleOut:
     rd = run_date or date.today().isoformat()
+    se = str(sport or "football").strip().lower()
+    if se not in ("football", "tennis"):
+        se = "football"
     if only_taken and user_id is None:
         raise HTTPException(
             status_code=400,
@@ -239,10 +246,12 @@ def api_dashboard(
     urow = get_user_by_id(conn, user_id) if user_id is not None else None
     if user_id is not None and urow is None:
         raise HTTPException(status_code=404, detail="user not found")
-    s = daily_picks_summary(conn, run_date=rd, user_id=user_id)
+    s = daily_picks_summary(conn, run_date=rd, user_id=user_id, sport=se)
     br_dash = urow["bankroll_cop"] if urow is not None else None
     bankroll_summary = float(br_dash) if br_dash is not None else None
-    raw_recent = recent_picks_for_date(conn, run_date=rd, user_id=user_id, limit=40)
+    raw_recent = recent_picks_for_date(
+        conn, run_date=rd, user_id=user_id, limit=40, sport=se
+    )
     recent: List[DashboardRecentPick] = []
     meta_cache: Dict[int, Dict[int, Dict[str, Optional[str]]]] = {}
     for r in raw_recent:
@@ -296,6 +305,8 @@ def api_dashboard(
     return DashboardBundleOut(
         summary=DashboardSummaryBlock(
             run_date=str(s["run_date"]),
+            sport=s.get("sport"),
+            primary_daily_run_id=s.get("primary_daily_run_id"),
             events_total=int(s.get("events_total", 0)),
             selection_passed_filters=int(s.get("selection_passed_filters", 0)),
             selection_rejected=int(s.get("selection_rejected", 0)),
@@ -362,8 +373,8 @@ def list_daily_runs(
         where.append("run_date = ?")
         params.append(run_date)
     if sport is not None:
-        where.append("sport = ?")
-        params.append(sport)
+        where.append("LOWER(TRIM(sport)) = ?")
+        params.append(str(sport).strip().lower())
     if status is not None:
         where.append("status = ?")
         params.append(status)
