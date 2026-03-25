@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   ComboTrackingControls,
@@ -11,9 +11,19 @@ import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
 import { useUsersQuery } from '@/hooks/useUsersQuery'
 import { selectionShortLabel } from '@/lib/marketCopy'
+import { confidenceTierFromLabel } from '@/lib/stakeSuggestion'
 import type { TrackingBoardOut, UserOut } from '@/types/api'
 
 type BoardPick = TrackingBoardOut['picks'][number]
+
+type OddsRef = Record<string, unknown> | null | undefined
+
+function refStr(ref: OddsRef, key: string): string | undefined {
+  if (!ref || typeof ref !== 'object') return undefined
+  const v = (ref as Record<string, unknown>)[key]
+  if (v == null) return undefined
+  return String(v)
+}
 
 function effectiveOutcome(p: BoardPick): 'win' | 'loss' | 'pending' | null {
   const u = p.user_outcome
@@ -30,6 +40,9 @@ export default function RunPicksPage() {
   const { userId, setUserId } = useTrackingUser()
   const { bankrollCOP } = useBankrollCOP(userId)
   const qc = useQueryClient()
+  const [pickQuery, setPickQuery] = useState('')
+  /** '' = todas; valor exacto del modelo; '__sin__' = sin campo confianza */
+  const [confidenceFilter, setConfidenceFilter] = useState('')
 
   const usersQ = useUsersQuery()
   const users = useMemo(() => usersQ.data ?? [], [usersQ.data])
@@ -110,11 +123,61 @@ export default function RunPicksPage() {
     },
   })
 
+  const board = boardQ.data
+
+  const picksOrdered = useMemo(() => {
+    if (!board) return []
+    const score: Record<'high' | 'medium' | 'low' | 'unknown', number> = {
+      high: 3,
+      medium: 2,
+      low: 1,
+      unknown: 0,
+    }
+    const tierOf = (p: BoardPick) => {
+      const conf = refStr(p.odds_reference as OddsRef, 'confianza')
+      return confidenceTierFromLabel(conf)
+    }
+    return [...board.picks].sort((a, b) => {
+      const tA = tierOf(a)
+      const tB = tierOf(b)
+      const d = score[tB] - score[tA]
+      if (d !== 0) return d
+      // fallback estable: pick_id desc como viene del API
+      return b.pick_id - a.pick_id
+    })
+  }, [board])
+
+  const picksFiltered = useMemo(() => {
+    const q = pickQuery.trim().toLowerCase()
+    return picksOrdered.filter((p) => {
+      const confRaw = refStr(p.odds_reference as OddsRef, 'confianza')
+      const confTrim = confRaw?.trim() ?? ''
+
+      if (confidenceFilter === '__sin__') {
+        if (confTrim.length > 0) return false
+      } else if (confidenceFilter !== '') {
+        if (confTrim !== confidenceFilter) return false
+      }
+
+      if (!q) return true
+      const haystack = [
+        String(p.pick_id),
+        String(p.event_id),
+        p.event_label ?? '',
+        p.league ?? '',
+        p.market ?? '',
+        p.selection ?? '',
+        confTrim,
+      ]
+        .join(' ')
+        .toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [picksOrdered, pickQuery, confidenceFilter])
+
   if (invalid) {
     return <p className="text-sm text-app-muted">Run inválido.</p>
   }
-
-  const board = boardQ.data
 
   return (
     <div>
@@ -218,8 +281,40 @@ export default function RunPicksPage() {
               Sin picks en este run (ejecuta persist_picks tras el análisis).
             </p>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-app-line bg-app-card shadow-sm">
-              {board.picks.map((p, i) => (
+            <>
+              <div className="mb-2 grid gap-3 sm:grid-cols-[1fr_minmax(11rem,auto)] sm:items-end">
+                <label className="block text-xs text-app-muted">
+                  Buscar pick
+                  <input
+                    type="text"
+                    value={pickQuery}
+                    onChange={(e) => setPickQuery(e.target.value)}
+                    placeholder="pick_id, event_id, jugador, mercado, confianza..."
+                    className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
+                  />
+                </label>
+                <label className="block text-xs text-app-muted">
+                  Confianza del modelo
+                  <select
+                    value={confidenceFilter}
+                    onChange={(e) => setConfidenceFilter(e.target.value)}
+                    className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
+                  >
+                    <option value="">Todas</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Media-Alta">Media-Alta</option>
+                    <option value="Media">Media</option>
+                    <option value="Baja">Baja</option>
+                    <option value="__sin__">Sin etiqueta</option>
+                  </select>
+                </label>
+              </div>
+              <p className="mb-2 text-[11px] text-app-muted">
+                Mostrando <span className="font-mono text-app-fg">{picksFiltered.length}</span>{' '}
+                de <span className="font-mono text-app-fg">{picksOrdered.length}</span> picks.
+              </p>
+              <div className="overflow-hidden rounded-xl border border-app-line bg-app-card shadow-sm">
+                {picksFiltered.map((p, i) => (
                 <PickInboxRow
                   key={p.pick_id}
                   pickId={p.pick_id}
@@ -229,12 +324,15 @@ export default function RunPicksPage() {
                   market={p.market}
                   selection={p.selection}
                   pickedValue={p.picked_value}
+                  kickoffDisplay={p.kickoff_display ?? null}
+                  confidence={refStr(p.odds_reference as OddsRef, 'confianza') ?? null}
                   outcome={effectiveOutcome(p)}
                   userTaken={p.user_taken}
                   ordinal={i + 1}
                 />
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
 
           <h3 className="mb-1 mt-14 text-lg font-semibold tracking-tight text-violet-950">

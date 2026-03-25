@@ -5,6 +5,8 @@ event_bundle_scraper.py
 Pipeline unificado por eventId:
 - Descarga payloads crudos de SofaScore (event, lineups, statistics, h2h, team-streaks,
   odds/all, odds/featured, y estadísticas de temporada local/visitante en la misma liga)
+- Tenis (sport=tennis): además rankings por jugador, team-statistics/seasons, catálogo
+  categories/all + default-unique-tournaments (cache por proceso), y resumen statistics tenis.
 - Aplica processors puros
 - Entrega un JSON limpio y estable para consumo por agentes/LLMs
 """
@@ -28,6 +30,30 @@ from processors.statistics_processor import process_statistics
 from processors.team_season_stats_processor import process_team_season_stats
 from processors.team_streaks_processor import process_team_streaks
 from processors.tennis_odds_processor import process_tennis_odds_all
+from processors.tennis_rankings_processor import process_team_rankings
+from processors.tennis_registry_processor import (
+    summarize_default_unique_tournaments,
+    summarize_tennis_categories,
+)
+from processors.tennis_statistics_processor import process_tennis_event_statistics
+from processors.tennis_team_seasons_discovery_processor import process_team_statistics_seasons
+
+# Catálogo global (categories + default tournaments): 1 fetch por proceso salvo ALTEA_TENNIS_REGISTRY_CACHE=0
+_TENNIS_GLOBAL_REGISTRY: Optional[Dict[str, Any]] = None
+
+
+async def _ensure_tennis_global_registry(context: Any, base: str) -> None:
+    global _TENNIS_GLOBAL_REGISTRY
+    if _TENNIS_GLOBAL_REGISTRY is not None:
+        return
+    country = (os.environ.get("ALTEA_TENNIS_PRIORITY_COUNTRY") or "CO").strip().upper() or "CO"
+    raw_c = await _fetch_json(context, f"{base}/sport/tennis/categories/all")
+    raw_d = await _fetch_json(context, f"{base}/config/default-unique-tournaments/{country}/tennis")
+    _TENNIS_GLOBAL_REGISTRY = {
+        "categories_raw": raw_c,
+        "default_unique_tournaments_raw": raw_d,
+        "priority_country": country,
+    }
 
 
 def _utc_now_iso() -> str:
@@ -103,9 +129,12 @@ def _safe_event_meta(raw_event: Dict[str, Any]) -> Dict[str, Any]:
             derived_1x2 = "2"
         else:
             derived_1x2 = "X"
-    return {
+    out: Dict[str, Any] = {
         "event_id": event.get("id"),
         "sport": (event.get("sport") or {}).get("name") if isinstance(event.get("sport"), dict) else event.get("sport"),
+        "sport_slug": (event.get("sport") or {}).get("slug")
+        if isinstance(event.get("sport"), dict)
+        else None,
         "tournament": tournament.get("name"),
         "home_team": home.get("name"),
         "away_team": away.get("name"),
@@ -122,6 +151,20 @@ def _safe_event_meta(raw_event: Dict[str, Any]) -> Dict[str, Any]:
         # Veredicto 1X2 derivado del marcador final (solo cuando hay scores).
         "result_1x2": derived_1x2,
     }
+    if event.get("groundType") is not None:
+        out["ground_type"] = event.get("groundType")
+    ri = event.get("roundInfo")
+    if isinstance(ri, dict):
+        out["round_name"] = ri.get("name") or ri.get("round")
+        out["round_slug"] = ri.get("slug")
+    ef = event.get("eventFilters")
+    if isinstance(ef, dict):
+        out["event_filters"] = {
+            "category": ef.get("category"),
+            "level": ef.get("level"),
+            "gender": ef.get("gender"),
+        }
+    return out
 
 
 # Cabeceras tipo navegador: SofaScore suele devolver 403 en /statistics y /lineups
@@ -219,6 +262,10 @@ async def _fetch_json(context, url: str) -> Dict[str, Any]:
 
 
 async def fetch_event_bundle(event_id: int, *, sport: str = "football") -> Dict[str, Any]:
+    global _TENNIS_GLOBAL_REGISTRY
+    if os.environ.get("ALTEA_TENNIS_REGISTRY_CACHE", "1").lower() in ("0", "false", "no"):
+        _TENNIS_GLOBAL_REGISTRY = None
+
     sport_l = (sport or "football").strip().lower()
     base = "https://www.sofascore.com/api/v1"
     urls = {
@@ -233,6 +280,10 @@ async def fetch_event_bundle(event_id: int, *, sport: str = "football") -> Dict[
 
     raw_team_season_home: Dict[str, Any] = {}
     raw_team_season_away: Dict[str, Any] = {}
+    raw_rank_home: Dict[str, Any] = {}
+    raw_rank_away: Dict[str, Any] = {}
+    raw_tss_home: Dict[str, Any] = {}
+    raw_tss_away: Dict[str, Any] = {}
 
     async with async_playwright() as p:
         executable_path = _resolve_playwright_chrome_executable()
@@ -274,6 +325,16 @@ async def fetch_event_bundle(event_id: int, *, sport: str = "football") -> Dict[
                 ss_urls = _season_stats_urls(base, home_team_id=hid, away_team_id=aid, unique_tournament_id=utid, season_id=sid)
                 raw_team_season_home = await _fetch_json(context, ss_urls["team_season_home"])
                 raw_team_season_away = await _fetch_json(context, ss_urls["team_season_away"])
+                if sport_l == "tennis":
+                    await _ensure_tennis_global_registry(context, base)
+                    raw_rank_home = await _fetch_json(context, f"{base}/team/{hid}/rankings")
+                    raw_rank_away = await _fetch_json(context, f"{base}/team/{aid}/rankings")
+                    raw_tss_home = await _fetch_json(
+                        context, f"{base}/team/{hid}/team-statistics/seasons"
+                    )
+                    raw_tss_away = await _fetch_json(
+                        context, f"{base}/team/{aid}/team-statistics/seasons"
+                    )
             except (TypeError, ValueError):
                 raw_team_season_home = {"_error": True, "_status": 0, "_statusText": "missing_ids_for_season_stats", "_url": ""}
                 raw_team_season_away = {"_error": True, "_status": 0, "_statusText": "missing_ids_for_season_stats", "_url": ""}
@@ -307,6 +368,30 @@ async def fetch_event_bundle(event_id: int, *, sport: str = "football") -> Dict[
         processed["tennis_odds"] = process_tennis_odds_all(
             raw_odds_all if isinstance(raw_odds_all, dict) else {}
         )
+        processed["tennis_statistics"] = process_tennis_event_statistics(
+            raw_statistics if isinstance(raw_statistics, dict) else {}
+        )
+        rh = raw_rank_home if isinstance(raw_rank_home, dict) else {}
+        ra = raw_rank_away if isinstance(raw_rank_away, dict) else {}
+        processed["tennis_rankings"] = {
+            "home": process_team_rankings(rh),
+            "away": process_team_rankings(ra),
+        }
+        tsh = raw_tss_home if isinstance(raw_tss_home, dict) else {}
+        tsa = raw_tss_away if isinstance(raw_tss_away, dict) else {}
+        processed["tennis_team_statistics_seasons"] = {
+            "home": process_team_statistics_seasons(tsh),
+            "away": process_team_statistics_seasons(tsa),
+        }
+        if _TENNIS_GLOBAL_REGISTRY is not None:
+            gr = _TENNIS_GLOBAL_REGISTRY
+            processed["tennis_registry"] = {
+                "categories": summarize_tennis_categories(gr.get("categories_raw") or {}),
+                "default_unique_tournaments": summarize_default_unique_tournaments(
+                    gr.get("default_unique_tournaments_raw") or {}
+                ),
+                "priority_country": gr.get("priority_country"),
+            }
 
     h2h_ok = (not bool(raw_h2h_d.get("_error"))) and bool(proc_h2h.get("ok"))
     team_streaks_ok = (not bool(raw_streaks_d.get("_error"))) and bool(proc_streaks.get("ok"))
@@ -321,6 +406,23 @@ async def fetch_event_bundle(event_id: int, *, sport: str = "football") -> Dict[
         if t_odds.get("has_any_odds"):
             odds_all_ok = True
 
+    tr_home_ok = False
+    tr_away_ok = False
+    ts_tennis_ok = False
+    tss_h_ok = tss_a_ok = False
+    cat_ok = def_ut_ok = False
+    if sport_l == "tennis":
+        tr = processed.get("tennis_rankings") if isinstance(processed.get("tennis_rankings"), dict) else {}
+        tr_home_ok = bool((tr.get("home") or {}).get("ok"))
+        tr_away_ok = bool((tr.get("away") or {}).get("ok"))
+        ts_tennis_ok = bool((processed.get("tennis_statistics") or {}).get("ok"))
+        tss = processed.get("tennis_team_statistics_seasons") or {}
+        tss_h_ok = bool((tss.get("home") or {}).get("ok"))
+        tss_a_ok = bool((tss.get("away") or {}).get("ok"))
+        reg = processed.get("tennis_registry") or {}
+        cat_ok = bool((reg.get("categories") or {}).get("ok"))
+        def_ut_ok = bool((reg.get("default_unique_tournaments") or {}).get("ok"))
+
     diagnostics = {
         "event_ok": not bool(raw_event.get("_error")) if isinstance(raw_event, dict) else False,
         "lineups_ok": not bool(raw_lineups.get("_error")) if isinstance(raw_lineups, dict) else False,
@@ -332,6 +434,13 @@ async def fetch_event_bundle(event_id: int, *, sport: str = "football") -> Dict[
         "team_season_stats_away_ok": team_season_away_ok,
         "odds_all_ok": odds_all_ok,
         "odds_featured_ok": odds_featured_ok,
+        "tennis_rankings_home_ok": tr_home_ok,
+        "tennis_rankings_away_ok": tr_away_ok,
+        "tennis_event_statistics_ok": ts_tennis_ok,
+        "tennis_team_statistics_seasons_home_ok": tss_h_ok,
+        "tennis_team_statistics_seasons_away_ok": tss_a_ok,
+        "tennis_categories_catalog_ok": cat_ok,
+        "tennis_default_unique_tournaments_ok": def_ut_ok,
         # Solo entradas con fallo real (evita ruido en JSON)
         "fetch_errors": {
             k: v
@@ -345,6 +454,38 @@ async def fetch_event_bundle(event_id: int, *, sport: str = "football") -> Dict[
                 ("team_season_away", _fetch_failure_detail(r_tsa)),
                 ("odds_all", _fetch_failure_detail(raw_odds_all if isinstance(raw_odds_all, dict) else {})),
                 ("odds_featured", _fetch_failure_detail(raw_odds_featured if isinstance(raw_odds_featured, dict) else {})),
+                (
+                    "team_rankings_home",
+                    _fetch_failure_detail(raw_rank_home if isinstance(raw_rank_home, dict) else {}),
+                ),
+                (
+                    "team_rankings_away",
+                    _fetch_failure_detail(raw_rank_away if isinstance(raw_rank_away, dict) else {}),
+                ),
+                (
+                    "team_statistics_seasons_home",
+                    _fetch_failure_detail(raw_tss_home if isinstance(raw_tss_home, dict) else {}),
+                ),
+                (
+                    "team_statistics_seasons_away",
+                    _fetch_failure_detail(raw_tss_away if isinstance(raw_tss_away, dict) else {}),
+                ),
+                (
+                    "tennis_categories_all",
+                    _fetch_failure_detail(
+                        (_TENNIS_GLOBAL_REGISTRY or {}).get("categories_raw")
+                        if isinstance(_TENNIS_GLOBAL_REGISTRY, dict)
+                        else {}
+                    ),
+                ),
+                (
+                    "tennis_default_unique_tournaments",
+                    _fetch_failure_detail(
+                        (_TENNIS_GLOBAL_REGISTRY or {}).get("default_unique_tournaments_raw")
+                        if isinstance(_TENNIS_GLOBAL_REGISTRY, dict)
+                        else {}
+                    ),
+                ),
             )
             if v
         },

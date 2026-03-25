@@ -68,6 +68,18 @@ def scraped_decimal_odds_for_pick(
             return _positive_decimal(ou.get("under"))
         return None
 
+    to = (processed.get("tennis_odds") or {}).get("match_winner") or {}
+    by_slot = (to.get("by_slot") or {}) if isinstance(to, dict) else {}
+    if mk in ("Match winner", "Winner", "To win match"):
+        u = sel.strip().upper()
+        if u == "1":
+            return _positive_decimal(
+                by_slot.get("1") or by_slot.get("Home"))
+        if u == "2":
+            return _positive_decimal(
+                by_slot.get("2") or by_slot.get("Away"))
+        return None
+
     return None
 
 

@@ -30,6 +30,7 @@ def _slim(data: Dict[str, Any]) -> Dict[str, Any]:
     keys = (
         "job",
         "daily_run_id",
+        "sport",
         "captured_at_utc",
         "contract",
         "schedule_timezone",

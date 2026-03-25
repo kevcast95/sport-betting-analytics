@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { fetchJson } from '@/lib/api'
 import type { DailyRunEventsInspectOut } from '@/types/api'
@@ -14,6 +15,8 @@ function pretty(v: unknown): string {
 export default function RunEventsPage() {
   const { dailyRunId } = useParams()
   const runId = Number(dailyRunId)
+  const [eventQuery, setEventQuery] = useState('')
+  const [pickQuery, setPickQuery] = useState('')
 
   const q = useQuery({
     queryKey: ['run-events', runId],
@@ -21,6 +24,25 @@ export default function RunEventsPage() {
     queryFn: () =>
       fetchJson<DailyRunEventsInspectOut>(`/daily-runs/${runId}/events?limit=1000`),
   })
+
+  const filteredItems = useMemo(() => {
+    const items = q.data?.items ?? []
+    const eq = eventQuery.trim().toLowerCase()
+    const pq = pickQuery.trim().toLowerCase()
+    return items.filter((e) => {
+      const eventText = [
+        String(e.event_id),
+        e.event_label ?? '',
+        e.league ?? '',
+      ]
+        .join(' ')
+        .toLowerCase()
+      if (eq && !eventText.includes(eq)) return false
+      if (!pq) return true
+      if (!e.in_ds_input) return false
+      return eventText.includes(pq)
+    })
+  }, [q.data?.items, eventQuery, pickQuery])
 
   return (
     <div>
@@ -37,13 +59,36 @@ export default function RunEventsPage() {
 
       {q.data && (
         <>
+          <div className="mb-3 grid gap-2 sm:grid-cols-2">
+            <label className="text-xs text-app-muted">
+              Buscar evento
+              <input
+                type="text"
+                value={eventQuery}
+                onChange={(e) => setEventQuery(e.target.value)}
+                placeholder="event_id, jugador, torneo..."
+                className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
+              />
+            </label>
+            <label className="text-xs text-app-muted">
+              Buscar en eventos con pick
+              <input
+                type="text"
+                value={pickQuery}
+                onChange={(e) => setPickQuery(e.target.value)}
+                placeholder="filtra solo en picks (evento/torneo)"
+                className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
+              />
+            </label>
+          </div>
           <p className="mb-4 text-xs text-app-muted">
-            <span className="font-mono text-app-fg">{q.data.total_events}</span>{' '}
-            eventos en este run.
+            <span className="font-mono text-app-fg">{q.data.total_events}</span> eventos en
+            este run · visibles:{' '}
+            <span className="font-mono text-app-fg">{filteredItems.length}</span>.
           </p>
 
           <div className="space-y-3">
-            {q.data.items.map((e) => (
+            {filteredItems.map((e) => (
               <div key={e.event_id} className="rounded-lg border border-app-line bg-app-card p-3">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="font-mono text-app-fg">event_id {e.event_id}</span>

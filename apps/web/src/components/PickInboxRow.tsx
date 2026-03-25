@@ -1,5 +1,23 @@
 import { Link } from 'react-router-dom'
 import { selectionShortLabel } from '@/lib/marketCopy'
+import { kickoffReadableCol } from '@/lib/formatDateTime'
+import {
+  confidenceTierFromLabel,
+  type ConfidenceTier,
+} from '@/lib/stakeSuggestion'
+
+function confTierBadgeClass(tier: ConfidenceTier) {
+  switch (tier) {
+    case 'high':
+      return 'border-emerald-200 bg-emerald-50 text-emerald-900'
+    case 'medium':
+      return 'border-sky-200 bg-sky-50 text-sky-950'
+    case 'low':
+      return 'border-amber-200 bg-amber-50 text-amber-950'
+    default:
+      return 'border-neutral-200 bg-neutral-100 text-neutral-700'
+  }
+}
 
 function outcomePill(outcome: 'win' | 'loss' | 'pending' | null | undefined) {
   if (outcome === 'win')
@@ -30,6 +48,8 @@ export type PickInboxRowProps = {
   selection: string
   selectionDisplay?: string | null
   pickedValue?: number | null
+  kickoffDisplay?: string | null
+  confidence?: string | null
   /** Resultado ya efectivo (usuario > sistema), como en el dashboard. */
   outcome?: 'win' | 'loss' | 'pending' | null
   userTaken?: boolean | null
@@ -45,6 +65,8 @@ export function PickInboxRow({
   selection,
   selectionDisplay,
   pickedValue,
+  kickoffDisplay,
+  confidence,
   outcome,
   userTaken,
   ordinal,
@@ -53,6 +75,8 @@ export function PickInboxRow({
     selectionDisplay?.trim() ||
     selectionShortLabel(market, selection)
   const title = eventLabel?.trim() || `Pick ${pickId}`
+  const kickoffCol = kickoffReadableCol(kickoffDisplay ?? null)
+  const tier = confidenceTierFromLabel(confidence ?? null)
 
   return (
     <Link
@@ -80,6 +104,24 @@ export function PickInboxRow({
           </p>
           {league?.trim() && (
             <p className="mt-1 truncate text-[10px] text-app-muted">{league}</p>
+          )}
+          {(kickoffCol || confidence) && (
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              {kickoffCol && (
+                <span className="font-mono text-[10px] tabular-nums text-app-muted">
+                  ⏰ {kickoffCol}
+                </span>
+              )}
+              {confidence && confidence.trim().length > 0 && (
+                <span
+                  className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${confTierBadgeClass(
+                    tier,
+                  )}`}
+                >
+                  {`Confianza: ${confidence.trim()}`}
+                </span>
+              )}
+            </div>
           )}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">

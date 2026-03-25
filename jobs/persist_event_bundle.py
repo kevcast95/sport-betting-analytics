@@ -50,6 +50,18 @@ def _processor_versions_json(repo_root: str) -> Dict[str, Any]:
         "processors.odds_feature_processor": os.path.join(repo_root, "processors", "odds_feature_processor.py"),
         "processors.team_season_stats_processor": os.path.join(repo_root, "processors", "team_season_stats_processor.py"),
         "processors.tennis_odds_processor": os.path.join(repo_root, "processors", "tennis_odds_processor.py"),
+        "processors.tennis_rankings_processor": os.path.join(
+            repo_root, "processors", "tennis_rankings_processor.py"
+        ),
+        "processors.tennis_registry_processor": os.path.join(
+            repo_root, "processors", "tennis_registry_processor.py"
+        ),
+        "processors.tennis_team_seasons_discovery_processor": os.path.join(
+            repo_root, "processors", "tennis_team_seasons_discovery_processor.py"
+        ),
+        "processors.tennis_statistics_processor": os.path.join(
+            repo_root, "processors", "tennis_statistics_processor.py"
+        ),
     }
     return {k: _sha256_file(v) for k, v in paths.items()}
 

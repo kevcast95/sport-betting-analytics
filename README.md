@@ -2,6 +2,8 @@
 
 Persistencia determinista para el pipeline Copa Foxkids y el agente **juapi-tartara** (SQLite + jobs CLI).
 
+**Guía amplia (propósito, arquitectura, ejecución, parámetros, auditoría SQL, fútbol vs tenis):** [`docs/GUIA_OPERACION_Y_ARQUITECTURA.md`](docs/GUIA_OPERACION_Y_ARQUITECTURA.md).
+
 **OpenClaw / agentes:** el **contrato** está en **`openclaw.md`** (raíz). El **heartbeat** (pulso, plantilla, qué es) **vive en OC** y en el repo se versiona en **`openclaw/heartbeat.md`** — cárgalo en el contexto/reglas de OpenClaw; valores en vivo en `out/heartbeat.md`. Guardrails de evidencia y coste: **`openclaw/PROMPT_ANTI_ALUCINACION_COSTOS.md`**. Índice: **`openclaw/README.md`**.
 
 ## Requisitos

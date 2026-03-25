@@ -1,5 +1,14 @@
 # Tennis Endpoints Roadmap (SofaScore)
 
+## Tabla de contenidos
+
+- [Objetivo](#objetivo)
+- [Endpoints revisados y prioridad](#endpoints-revisados-y-prioridad)
+- [MVP tenis v1 (tabla ejecutiva)](#mvp-tenis-v1-tabla-ejecutiva)
+- [Plan ejecutable en el repo](#plan-ejecutable-en-el-repo)
+
+---
+
 ## Objetivo
 Definir una hoja de ruta clara para integrar tenis con el mismo enfoque operativo del brazo de futbol, priorizando endpoints por impacto real en:
 
@@ -331,4 +340,116 @@ Implementar primero solo este bloque para evitar desvio de alcance:
 
 Mantener **misma DB y esquema compartido multi-deporte**, extendiendo por `sport` y mapeadores por deporte.
 Evitar duplicar tablas completas por tenis salvo necesidad puntual de extension.
+
+---
+
+## Plan ejecutable en el repo
+
+Esta sección enlaza el **MVP** con el código real: qué ya corre, qué falta y en qué orden tocarlo.
+
+### Aclaración: endpoints del roadmap vs código actual
+
+**No** está integrada una llamada HTTP **por cada fila** del inventario P0/P1 del documento anterior. Lo que hay hoy es:
+
+| Tema | Realidad en el repo |
+|------|---------------------|
+| **Descubrimiento diario tenis** | Sí: `scheduled-tournaments` → `unique-tournament/…/scheduled-events` + fallback `scheduled-events` (`core/tennis_daily_schedule.py`). |
+| **Por cada `event_id`** | Un solo pipeline Playwright: `core/event_bundle_scraper.py` pide las URLs **compartidas** con fútbol (`/event/{id}`, `/odds/1/all`, `/odds/1/featured`, `/h2h`, `/statistics`, `lineups`, `team-streaks`, stats de temporada vía IDs del evento). |
+| **P1 extra del roadmap** | **No** hay fetches dedicados a `team/{playerId}/rankings`, `categories/all`, `default-unique-tournaments`, `…/statistics/overall` como rutas aparte; parte de eso puede solaparse con lo que ya trae `event/{id}`, pero **no** está el árbol completo del roadmap. |
+| **Parsers** | Cuotas amplias: `processors/tennis_odds_processor.py` → `processed.tennis_odds`. Resto de `processed.*` sigue pensado sobre todo para fútbol (p. ej. `process_statistics`); en tenis puede venir vacío o poco útil sin trabajo adicional. |
+
+### Contrato candidato → DeepSeek (cómo fluye)
+
+1. **`select_candidates`** (`jobs/select_candidates.py`) lee `daily_runs.sport` y las filas `event_features` del `captured_at_utc` del run (con `sport` alineado).
+2. **`core/candidate_contract.py`** aplica reglas **distintas para tenis**:
+   - **Base:** `event_ok` + (`odds_all_ok` **o** `odds_featured_ok`). **No** exige `lineups_ok`, `h2h_ok` ni `team_streaks_ok` (en fútbol sí).
+   - **Tier A:** base + (`statistics_ok` **o** `h2h_ok`). **Tier B:** solo base si no hay stats ni h2h útiles.
+3. El JSON de salida incluye **`ds_input`**: por evento seleccionado, un objeto con `event_context`, `processed` (incluye `tennis_odds` si el bundle fue tenis), `diagnostics`, `selection_tier`, `schedule_display`.
+4. **`split_ds_batches`** trocea ese JSON en lotes.
+5. **`deepseek_batches_to_telegram_payload_parts`** envía cada lote a la API DeepSeek (OpenAI-compatible) y genera las partes del payload Telegram / picks.
+
+El modelo **no** recibe URLs de SofaScore: recibe el **bundle ya procesado** en JSON. El recordatorio en consola de `select_candidates` para tenis es: **1 = home (jugador local), 2 = away**; mercado típico no es 1X2 con empate.
+
+### Mapa rápido: MVP ↔ código
+
+| Área MVP | Qué hace el repo hoy | Siguiente mejora lógica |
+|----------|----------------------|-------------------------|
+| P0 ingesta diaria (torneos → eventos) | `core/tennis_daily_schedule.py` + rama `--sport tennis` en `jobs/ingest_daily_events.py` | Afinar parsing si SofaScore cambia forma de `groups`; tuneo de paginación `max_tournament_pages` |
+| P0 `event/{id}` + cuotas | `core/event_bundle_scraper.py` (`fetch_event_bundle`, mismas URLs que fútbol) | Marcar en diagnósticos qué datasets son “soft fail” en tenis (p. ej. lineups vacíos) |
+| Cuotas tenis (`odds/1/all`) | `processors/tennis_odds_processor.py` → `processed.tennis_odds` | Ampliar mercados ancla según picks que quieras emitir |
+| Contrato / prompts | `core/candidate_contract.py`, `jobs/select_candidates.py` | Mantener 1=home / 2=away explícito en copy |
+| Dashboard / runs | Web: `sport=tennis`, `useBarDailyRunId`, API `LOWER(TRIM(sport))` | — |
+| Validación fecha ingesta | `ALTEA_ALLOW_DIVERGENT_INGEST_DATE`, chequeo ±400 días en `ingest_daily_events` | — |
+
+### Variables de entorno (tenis)
+
+| Variable | Efecto |
+|----------|--------|
+| `ALTEA_TENNIS_MVP_FILTER` | `1` (default): solo eventos con filtros MVP (`singles` + `pro`, sin `virtual`/`simulated` en category). `0`: desactiva el filtro (útil para depurar). |
+| `ALTEA_ALLOW_DIVERGENT_INGEST_DATE=1` | Permite `--date` muy lejana de hoy (ingesta histórica / typo a propósito). |
+| `INCLUDE_FINISHED=1` o `--include-finished` | Persiste bundles de partidos ya `finished` (backtest). |
+
+### Fase 0 — Comprobar entorno
+
+1. Python 3 con `PYTHONPATH=.` en la raíz del repo.
+2. Playwright/Chromium operativo para `persist_event_bundle` (misma pista que fútbol).
+3. Base SQLite inicializada (`db/init_db` vía job o API).
+
+### Fase 1 — Ingesta diaria P0 (listo para ejecutar)
+
+**Objetivo:** obtener `event_id` del día con la ruta canónica del roadmap y persistir features.
+
+```bash
+# Sustituye DB y fecha
+PYTHONPATH=. python3 jobs/ingest_daily_events.py --sport tennis --date YYYY-MM-DD --db db/sport-tracker.sqlite3 --limit 5
+```
+
+Comportamiento:
+
+1. Intenta **scheduled-tournaments** por página → **unique-tournament/…/scheduled-events** (fan-out).
+2. Si no obtiene IDs, hace **fallback** a `sport/tennis/scheduled-events/{date}` (comportamiento previo).
+3. Cada id pasa por `persist_event_bundle` con `--sport tennis` (cuotas enriquecidas con `tennis_odds`).
+
+**Checklist**
+
+- [ ] El job imprime `schedule_source: tennis P0 …` y `event_ids_fetched > 0` en un día con ATP/WTA.
+- [ ] En SQLite, `event_features.sport = 'tennis'` y `daily_runs.sport = 'tennis'` para ese run.
+- [ ] Si el filtro MVP deja 0 eventos, probar `ALTEA_TENNIS_MVP_FILTER=0` un momento para ver si el problema es filtro o API vacía.
+
+### Fase 2 — Selección / modelo (`select_candidates` + DeepSeek)
+
+**Objetivo:** generar `out/candidates_{date}_select_tennis.json` alineado al contrato tenis.
+
+- Ejecutar el pipeline que ya usáis para fútbol adaptando `daily_run_id` y artefactos `_tennis`.
+- Validar en UI: dashboard pestaña Tenis, enlaces a eventos/picks del run.
+
+**Checklist**
+
+- [ ] Artefacto `select_tennis` presente para la fecha.
+- [ ] Números del dashboard (eventos / picks) coherentes con DB.
+
+### Fase 3 — P1 / confianza (sin bloquear v1)
+
+Activar de forma **opcional** y con `*_ok=false` tolerado:
+
+- `event/{id}/statistics` (parser tenis dedicado cuando toque).
+- `team/{playerId}/rankings` y cadena season/overall con caché.
+- `categories/all` como whitelist offline (JSON en repo o env).
+
+### Fase 4 — Telegram / persist picks
+
+Mismo flujo que fútbol: payload merge → `persist_picks` → tablero web.
+
+### Comando de referencia (cadena mínima)
+
+```text
+ingest_daily_events (tennis) → select_candidates (tennis) → batches DeepSeek → merge payload → persist_picks
+```
+
+Ajusta nombres de scripts y flags a los que tengáis en `jobs/` y en el runner nocturno (`independent_runner` / cron).
+
+### Notas anti-alucinación
+
+- La API de SofaScore **no está documentada oficialmente**; si un endpoint devuelve `403` desde datacenters o bots, el navegador Playwright sigue siendo la fuente de verdad para el bundle completo.
+- Si el JSON de **scheduled-tournaments** cambia de forma, actualizar solo `core/tennis_daily_schedule.py` (extractores), no el resto del pipeline.
 

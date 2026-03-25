@@ -16,15 +16,17 @@ Scoring: cuenta endpoints OK en diagnostics (0–7).
 
 Exclusión partido terminado (operativo):
   Por defecto se rechazan eventos con match_state finished o status típico de FT (ended, full time, …).
+  Tenis además: match_state live (el API ya sabe que va en curso; evita huecos si startTimestamp va desfasado).
   Para evaluar picks sobre datos post-partido: usar --allow-finished.
 """
 
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from zoneinfo import ZoneInfo
 
 
@@ -84,6 +86,8 @@ def _is_terminal_match(event_context: Dict[str, Any]) -> bool:
     st_raw = event_context.get("status")
     if isinstance(st_raw, int) and st_raw == 100:
         return True
+    if isinstance(st_raw, str) and st_raw.strip() == "100":
+        return True
     st = str(st_raw or "").lower()
     for hint in (
         "finished",
@@ -91,6 +95,15 @@ def _is_terminal_match(event_context: Dict[str, Any]) -> bool:
         "after penalt",
         "after extra time",
         "ended",
+        # Tenis / estados finales habituales en SofaScore
+        "walkover",
+        "w/o",
+        "retired",
+        "ret.",
+        "awarded",
+        "abandoned",
+        "cancelled",
+        "canceled",
     ):
         if hint in st:
             return True
@@ -100,6 +113,77 @@ def _is_terminal_match(event_context: Dict[str, Any]) -> bool:
 def _quality_score(flags: Dict[str, bool]) -> int:
     """Cuantos flags OK (0-8). team_season_stats_ok es respaldo opcional, no filtro duro."""
     return sum(1 for v in flags.values() if v)
+
+
+def _parse_analysis_reference_utc(raw: Optional[str]) -> datetime:
+    if raw is None or not str(raw).strip():
+        return datetime.now(timezone.utc)
+    text = str(raw).strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    dt = datetime.fromisoformat(text)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _event_has_started(event_context: Dict[str, Any], *, ref_utc: datetime) -> bool:
+    raw_ts = event_context.get("start_timestamp")
+    try:
+        ts = int(raw_ts)
+    except (TypeError, ValueError):
+        return False
+    start_utc = datetime.fromtimestamp(ts, tz=timezone.utc)
+    return start_utc <= ref_utc
+
+
+def _min_lead_minutes() -> int:
+    raw = os.environ.get("ALTEA_TENNIS_MIN_LEAD_MINUTES", "45").strip()
+    try:
+        v = int(raw)
+    except ValueError:
+        return 45
+    return max(0, v)
+
+
+def _event_starts_too_soon(
+    event_context: Dict[str, Any], *, ref_utc: datetime, min_lead_minutes: int
+) -> bool:
+    raw_ts = event_context.get("start_timestamp")
+    try:
+        ts = int(raw_ts)
+    except (TypeError, ValueError):
+        return False
+    start_utc = datetime.fromtimestamp(ts, tz=timezone.utc)
+    delta_sec = (start_utc - ref_utc).total_seconds()
+    return delta_sec < (min_lead_minutes * 60)
+
+
+def _tennis_low_itf_filter_enabled() -> bool:
+    return os.environ.get("ALTEA_TENNIS_EXCLUDE_LOW_ITF", "1").lower() not in (
+        "0",
+        "false",
+        "no",
+    )
+
+
+def _is_low_itf_tournament(event_context: Dict[str, Any]) -> bool:
+    """
+    Filtro operativo para evitar torneos con baja disponibilidad en casas locales.
+    Se puede ajustar por regex vía env sin tocar código.
+    """
+    tournament = str(event_context.get("tournament") or "").strip()
+    if not tournament:
+        return False
+    rx = os.environ.get(
+        "ALTEA_TENNIS_EXCLUDE_TOURNAMENT_REGEX",
+        r"\bITF\s+W(?:15|25)\b",
+    )
+    try:
+        return re.search(rx, tournament, flags=re.IGNORECASE) is not None
+    except re.error:
+        # Si regex inválida por env, no bloquear el pipeline.
+        return False
 
 
 def parse_args() -> argparse.Namespace:
@@ -115,6 +199,17 @@ def parse_args() -> argparse.Namespace:
         "--allow-finished",
         action="store_true",
         help="Incluye partidos terminados (solo backtesting; operativo debe omitirlo).",
+    )
+    p.add_argument(
+        "--allow-started",
+        action="store_true",
+        help="Incluye partidos ya iniciados (por defecto se excluyen para ahorrar tokens).",
+    )
+    p.add_argument(
+        "--analysis-at-utc",
+        type=str,
+        default=None,
+        help="Referencia ISO UTC para filtrar eventos iniciados (default: now UTC).",
     )
     p.add_argument(
         "--timezone",
@@ -135,6 +230,8 @@ def run(args: argparse.Namespace) -> None:
     sport = normalize_sport(daily["sport"])
 
     rows = fetch_event_features_by_captured_at(conn, captured_at_utc, sport=sport)
+    analysis_ref_utc = _parse_analysis_reference_utc(args.analysis_at_utc)
+    lead_minutes = _min_lead_minutes()
 
     candidates: List[Dict[str, Any]] = []
     rejected: List[Dict[str, Any]] = []
@@ -147,6 +244,84 @@ def run(args: argparse.Namespace) -> None:
 
         event_context = features.get("event_context") or {}
         match_state = str(event_context.get("match_state") or "").lower()
+        if not args.allow_started and _event_has_started(
+            event_context, ref_utc=analysis_ref_utc
+        ):
+            reasons["match_started"] = reasons.get("match_started", 0) + 1
+            rejected_reason_by_event[event_id] = "match_started"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "match_started",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "start_timestamp": event_context.get("start_timestamp"),
+                    "analysis_ref_utc": analysis_ref_utc.isoformat(),
+                }
+            )
+            continue
+        if (
+            sport == "tennis"
+            and not args.allow_started
+            and _event_starts_too_soon(
+                event_context,
+                ref_utc=analysis_ref_utc,
+                min_lead_minutes=lead_minutes,
+            )
+        ):
+            reasons["match_start_too_soon"] = reasons.get("match_start_too_soon", 0) + 1
+            rejected_reason_by_event[event_id] = "match_start_too_soon"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "match_start_too_soon",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "start_timestamp": event_context.get("start_timestamp"),
+                    "analysis_ref_utc": analysis_ref_utc.isoformat(),
+                    "min_lead_minutes": lead_minutes,
+                }
+            )
+            continue
+        # Tenis: si el API ya marca en vivo, descartar aunque startTimestamp esté mal
+        # (evita picks cuando el reloj de programación no coincide con la realidad).
+        if (
+            sport == "tennis"
+            and not args.allow_started
+            and match_state == "live"
+        ):
+            reasons["match_live"] = reasons.get("match_live", 0) + 1
+            rejected_reason_by_event[event_id] = "match_live"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "match_live",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "start_timestamp": event_context.get("start_timestamp"),
+                    "status": event_context.get("status"),
+                }
+            )
+            continue
+        if (
+            sport == "tennis"
+            and _tennis_low_itf_filter_enabled()
+            and _is_low_itf_tournament(event_context)
+        ):
+            reasons["tournament_not_operable_book"] = (
+                reasons.get("tournament_not_operable_book", 0) + 1
+            )
+            rejected_reason_by_event[event_id] = "tournament_not_operable_book"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "tournament_not_operable_book",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "tournament": event_context.get("tournament"),
+                }
+            )
+            continue
         if not args.allow_finished and _is_terminal_match(event_context):
             reasons["match_finished"] = reasons.get("match_finished", 0) + 1
             rejected_reason_by_event[event_id] = "match_finished"
@@ -246,6 +421,7 @@ def run(args: argparse.Namespace) -> None:
             ds_input.append(
                 {
                     "event_id": eid,
+                    "sport": sport,
                     "selection_tier": tier_by_id.get(eid),
                     "schedule_display": _schedule_display(ec, tz),
                     "event_context": ec,

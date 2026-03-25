@@ -49,6 +49,12 @@ def _choice_by_names(market: Dict[str, Any], names: List[str]) -> Dict[str, Opti
     return out
 
 
+def _choice_decimal(ch: Any) -> Optional[float]:
+    if not isinstance(ch, dict):
+        return None
+    return _fractional_to_decimal(ch.get("fractionalValue"))
+
+
 def _find_market_by_keywords(markets: List[Any], keywords: tuple[str, ...]) -> Optional[Dict[str, Any]]:
     for m in markets:
         if not isinstance(m, dict):
@@ -81,6 +87,7 @@ def process_tennis_odds_all(raw: Dict[str, Any]) -> Dict[str, Any]:
     mw = (
         _find_market_by_keywords(markets, ("match", "winner"))
         or _find_market_by_keywords(markets, ("win", "match"))
+        or _find_market_by_keywords(markets, ("full", "time"))
         or _find_market_by_keywords(markets, ("winner",))
     )
 
@@ -90,9 +97,18 @@ def process_tennis_odds_all(raw: Dict[str, Any]) -> Dict[str, Any]:
         c1 = _choice_by_names(mw, ["1", "Home"])
         c2 = _choice_by_names(mw, ["2", "Away"])
         choices = mw.get("choices") or []
+        by_slot: Dict[str, Optional[float]] = {**c1, **c2}
+        # Fallback robusto: si la casa no expone Home/Away ni 1/2, usar orden de choices.
+        # En SofaScore para mercados de ganador en tenis suele ser [home, away].
+        if isinstance(choices, list) and len(choices) >= 2:
+            if not by_slot.get("1"):
+                by_slot["1"] = _choice_decimal(choices[0])
+            if not by_slot.get("2"):
+                by_slot["2"] = _choice_decimal(choices[1])
+
         player_odds: List[Dict[str, Any]] = []
         if isinstance(choices, list):
-            for ch in choices[:3]:
+            for ch in choices[:4]:
                 if not isinstance(ch, dict):
                     continue
                 nm = str(ch.get("name", "")).strip()
@@ -106,7 +122,7 @@ def process_tennis_odds_all(raw: Dict[str, Any]) -> Dict[str, Any]:
                 )
         match_winner = {
             "market_name": mw.get("marketName"),
-            "by_slot": {**c1, **c2},
+            "by_slot": by_slot,
             "players": player_odds,
         }
 
