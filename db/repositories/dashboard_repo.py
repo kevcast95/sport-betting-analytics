@@ -350,9 +350,11 @@ def recent_picks_for_date(
     *,
     run_date: str,
     user_id: Optional[int],
-    limit: int = 12,
+    offset: int = 0,
+    limit: int = 10,
+    only_taken: bool = False,
     sport: Optional[str] = None,
-) -> List[sqlite3.Row]:
+) -> tuple[List[sqlite3.Row], int]:
     sport_f = (
         str(sport).strip().lower()
         if sport is not None and str(sport).strip()
@@ -361,10 +363,15 @@ def recent_picks_for_date(
     rows = _rows_for_date(
         conn, run_date=run_date, user_id=user_id, sport=sport_f
     )
-    # ya ordenados por created_at desc en query — re-sort por si acaso
     sorted_rows = sorted(
         rows,
         key=lambda x: str(x["created_at_utc"] or ""),
         reverse=True,
     )
-    return sorted_rows[:limit]
+    if only_taken:
+        filtered = [r for r in sorted_rows if r["u_taken"] == 1]
+    else:
+        filtered = sorted_rows
+    total = len(filtered)
+    page_rows = filtered[offset : offset + limit]
+    return page_rows, total

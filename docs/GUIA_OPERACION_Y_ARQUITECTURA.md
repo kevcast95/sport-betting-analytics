@@ -97,9 +97,32 @@ Auditar un día concreto: siempre identifica **`daily_run_id`** y **`sport`**.
 
 ### 5.3 Después (operación / cierre)
 
-- **`validate_picks.py`:** cuando el partido cerró, actualiza resultados.
-- **`suggest_combos_for_run.py`** o la API “regenerar combinadas”: parlays sugeridos.
-- **`report_effectiveness.py`:** métricas agregadas (el cron nocturne puede disparar `run_effectiveness_report.sh`).
+- **`validate_picks.py` — qué hace y cuándo corre**
+  - **Qué hace:** recorre picks en SQLite que están **`pending`** y **aún no tienen** fila en `pick_results`, consulta el **evento** en SofaScore (`core/validate_pick.py`) y liquida según mercado en **`processors/pick_settlement.py`**: **1X2**, **Match winner** / ML, **doble chance** (1X / X2 / 12), **ambos anotan (BTTS)**, **Over/Under goles** (línea en texto del mercado o `picked_value`), **First set winner** (si el JSON trae `period1` en `homeScore`/`awayScore`). Mercados no cubiertos quedan **`pending`** con detalle en `evidence_json.settlement`. Escribe `pick_results` y marca `validated` si hay **win/loss** claro.
+  - **Cuándo se ejecuta (launchd):** `scripts/runner_tick.sh` llama **`run_validate_picks_scheduled.sh` antes** del resto del slot (solo donde aplica):
+    - **`00:00`:** valida picks creados **ayer** en hora local **[16, 24)** → cohorte de la **corrida tarde** del día anterior (antes de ingest del día nuevo).
+    - **`16:00`:** valida picks creados **hoy** en hora local **[8, 16)** → cohorte de la **corrida mañana del mismo día** (antes del análisis tarde).
+    - **`08:00`:** **sin** validación programada (la mañana se valida a las **16:00**).
+    Criterio: **hora local de `picks.created_at_utc`**, no kickoff (si el job tarde, ajusta con env `ALTEA_VALIDATE_*` en el script).
+  - **Manual / otros casos:**
+    ```bash
+    python3 jobs/validate_picks.py --db "$DB" --daily-run-id N
+    ./scripts/run_validate_picks_scheduled.sh yesterday_evening  # como medianoche
+    ./scripts/run_validate_picks_scheduled.sh today_morning      # como antes de las 16:00
+    ```
+    Sin `--daily-run-id` ni filtros locales procesa **todos** los pendientes (útil para ponerse al día).
+  - **Criterio de datos:** muchos mercados **no** necesitan un campo específico “resultado BTTS” u “O/U” en la API; se calculan con **goles (o marcador final agregado) de local y visitante** una vez el partido está terminado. **Pending** solo cuando no se puede deducir (partido abierto, datos faltantes, push en O/U, o mercado que exige periodos no presentes en el JSON).
+  - **Limitaciones:** **Total games** tenis O/U no implementado; empate exacto en O/U (push) queda **pending**; primer set si no hay periodos en `homeScore`/`awayScore` → **pending**.
+
+- **`suggest_combos_for_run.py`** o la API “regenerar combinadas”: parlays sugeridos (no validan picks).
+
+- **`report_effectiveness.py` — qué mide y cuándo corre**
+  - **Qué mide:** lee **`picks`** + **`pick_results.outcome`** en un rango de fechas (`--days`, default 7). Agrega:
+    - totales: emitidos, liquidados (win+loss), pendientes, **win rate**, **ROI unitario** (asumiendo stake 1: beneficio en unidades = cuota−1 si win, −1 si loss).
+    - desgloses por **`run_date`**, **`market`**, **franja** (`exec_08h` / `exec_16h` inferida por hora local de `created_at_utc`), **confianza** (`odds_reference.confianza`), y cruces día×mercado, etc.
+    - salida: JSON y CSV bajo `out/reports/` (p. ej. `effectiveness_latest.json`).
+  - **Cuándo se ejecuta:** con launchd activo, el slot **`COPA_TICK_SLOT_REPORT`** (default **23:55**) ejecuta **`scripts/run_effectiveness_report.sh`**, que llama a este job. También: `./run.sh run-now report` o a mano el `.sh` / `python3 jobs/report_effectiveness.py ...`.
+  - **Nota:** si no has corrido **`validate_picks`**, muchos picks seguirán **`pending`** en el reporte (no cuentan como liquidados en win rate / ROI).
 
 ### 5.4 Modo manual útil en pruebas
 
@@ -114,8 +137,10 @@ Auditar un día concreto: siempre identifica **`daily_run_id`** y **`sport`**.
 
 - **`./run.sh start`** instala el servicio que cada minuto ejecuta **`scripts/runner_tick.sh`**.
 - A la hora configurada (por defecto **00:00**, **08:00**, **16:00**, **23:55** en `America/Bogota`):
-  - `00:00` → `run_independent_midnight.sh` → ingest + select + aviso (**fútbol**).
-  - `08:00` / `16:00` → `run_independent_window.sh` → ventana + DeepSeek + merge + render + persist + Telegram (**fútbol**, `--persist-picks`).
+  - `00:00` → **`validate_picks` (ayer 16:00–23:59 local)** → luego `midnight` **fútbol** y **tenis** (ingest + select + aviso por deporte).
+  - `08:00` → ventana mañana **fútbol** y **tenis** (sin validación previa).
+  - `16:00` → **`validate_picks` (hoy 08:00–15:59 local)** → ventana tarde **fútbol** y **tenis** (la franja tarde se valida en la **medianoche siguiente**).
+  - `23:55` → **`run_effectiveness_report.sh`** → `report_effectiveness.py` (métricas; no valida picks).
 - **Pruebas:** en `.env`, `COPA_TICK_SLOT_MIDNIGHT=09:05` (etc.) desplaza los disparos sin cambiar código.
 
 ### 6.2 Manual (una línea típica)
@@ -178,6 +203,17 @@ Ajusta `--db` si no usas la ruta por defecto (§7).
 | `ALTEA_TENNIS_MVP_FILTER` | Filtra eventos MVP en schedule tenis |
 | `ALTEA_TENNIS_PRIORITY_COUNTRY` | País para torneos por defecto en registry |
 | `ALTEA_TENNIS_REGISTRY_CACHE` | Cache del catálogo global |
+
+### 7.6 Validación programada (`run_validate_picks_scheduled.sh`)
+
+Argumentos: `yesterday_evening` (slot 00:00) y `today_morning` (slot 16:00).
+
+| Variable | Uso |
+|----------|-----|
+| `ALTEA_VALIDATE_AFTERNOON_HOUR_MIN` | Inicio hora local cohorte **ayer tarde** (default `16`) |
+| `ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL` | Fin exclusivo (default `24`) |
+| `ALTEA_VALIDATE_MORNING_HOUR_MIN` | Inicio hora local cohorte **hoy mañana** (default `8`) |
+| `ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL` | Fin exclusivo (default `16`) |
 
 Detalle de endpoints tenis: `openclaw/TENNIS_ENDPOINTS_ROADMAP.md`.
 

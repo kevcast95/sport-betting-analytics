@@ -4,11 +4,15 @@ Ejecutar desde la raíz del repo: PYTHONPATH=. uvicorn apps.api.main:app --reloa
 """
 
 import sqlite3
+import subprocess
+import sys
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, datetime, timezone
+from pathlib import Path
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +52,8 @@ from apps.api.schemas import (
     UserCreate,
     UserOut,
     UserPickTakenBody,
+    ValidatePicksRunResponse,
+    RevertRecentPickOutcomesResponse,
 )
 from db.config import get_db_config
 from db.db import connect as db_connect
@@ -74,6 +80,7 @@ from db.repositories.tracking_repo import (
     get_pick_decision_rows_for_run,
     insert_signal_check,
     sync_user_pick_realized_return,
+    revert_user_outcomes_auto_for_recent_picks,
     upsert_user_combo_decision,
     upsert_user_pick_decision,
 )
@@ -104,6 +111,44 @@ async def _lifespan(app: FastAPI):
     finally:
         conn.close()
     yield
+
+
+def _execution_slot_from_created_at_utc(created_at_utc: str) -> Tuple[str, str]:
+    """
+    Alineado con scripts/run_validate_picks_scheduled.sh (ventanas locales).
+    """
+    tz_name = os.environ.get("COPA_FOXKIDS_TZ", "America/Bogota")
+    tz = ZoneInfo(tz_name)
+    t = str(created_at_utc).strip()
+    if t.endswith("Z"):
+        t = t[:-1] + "+00:00"
+    dt = datetime.fromisoformat(t)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    local = dt.astimezone(tz)
+    h = local.hour
+    min_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MIN", "8"))
+    max_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL", "16"))
+    min_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MIN", "16"))
+    max_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL", "24"))
+    if min_m <= h < max_m:
+        return "morning", "mañana (08:00–15:59 hora CO)"
+    if min_e <= h < max_e:
+        return "evening", "tarde/noche (16:00–23:59 hora CO)"
+    return "night", "madrugada (00:00–07:59 hora CO)"
+
+
+def _parse_validate_picks_stdout(text: str) -> Optional[Dict[str, Any]]:
+    marker = "=== VALIDATE_PICKS ==="
+    if marker not in text:
+        return None
+    chunk = text.split(marker, 1)[1]
+    if "=== OK" in chunk:
+        chunk = chunk.split("=== OK", 1)[0]
+    try:
+        return json.loads(chunk.strip())
+    except json.JSONDecodeError:
+        return None
 
 
 def _user_out_from_row(r: sqlite3.Row) -> UserOut:
@@ -233,6 +278,17 @@ def api_dashboard(
         "football",
         description="Filtra por `daily_runs.sport` (ej. football, tennis).",
     ),
+    recent_limit: int = Query(
+        10,
+        ge=1,
+        le=100,
+        description="Tamaño de página para la lista reciente de picks.",
+    ),
+    recent_page: int = Query(
+        0,
+        ge=0,
+        description="Página 0-based de la lista reciente (con recent_limit).",
+    ),
 ) -> DashboardBundleOut:
     rd = run_date or date.today().isoformat()
     se = str(sport or "football").strip().lower()
@@ -249,16 +305,19 @@ def api_dashboard(
     s = daily_picks_summary(conn, run_date=rd, user_id=user_id, sport=se)
     br_dash = urow["bankroll_cop"] if urow is not None else None
     bankroll_summary = float(br_dash) if br_dash is not None else None
-    raw_recent = recent_picks_for_date(
-        conn, run_date=rd, user_id=user_id, limit=40, sport=se
+    off = int(recent_page) * int(recent_limit)
+    raw_recent, recent_total = recent_picks_for_date(
+        conn,
+        run_date=rd,
+        user_id=user_id,
+        offset=off,
+        limit=int(recent_limit),
+        only_taken=bool(only_taken),
+        sport=se,
     )
     recent: List[DashboardRecentPick] = []
     meta_cache: Dict[int, Dict[int, Dict[str, Optional[str]]]] = {}
     for r in raw_recent:
-        if only_taken and r["u_taken"] != 1:
-            continue
-        if len(recent) >= 15:
-            break
         pr_o = r["pr_outcome"]
         uo = r["u_outcome"]
         eff = _effective_outcome(uo, pr_o)
@@ -348,6 +407,7 @@ def api_dashboard(
             has_stake_data=bool(s["has_stake_data"]),
         ),
         recent=recent,
+        recent_total=int(recent_total),
     )
 
 
@@ -787,11 +847,15 @@ def api_tracking_board(
     if get_user_by_id(conn, user_id) is None:
         raise HTTPException(status_code=404, detail="user not found")
     run = conn.execute(
-        "SELECT daily_run_id, run_date, sport, status FROM daily_runs WHERE daily_run_id = ?",
+        """
+        SELECT daily_run_id, run_date, sport, status, created_at_utc
+        FROM daily_runs WHERE daily_run_id = ?
+        """,
         (daily_run_id,),
     ).fetchone()
     if run is None:
         raise HTTPException(status_code=404, detail="daily_run not found")
+    slot, slot_label = _execution_slot_from_created_at_utc(str(run["created_at_utc"]))
 
     sql = """
         SELECT
@@ -902,10 +966,126 @@ def api_tracking_board(
             run_date=str(run["run_date"]),
             sport=str(run["sport"]),
             status=str(run["status"]),
+            created_at_utc=str(run["created_at_utc"]),
+            execution_slot=slot,  # type: ignore[arg-type]
+            execution_slot_label_es=slot_label,
         ),
         user_id=user_id,
         picks=picks_out,
         suggested_combos=combos_out,
+    )
+
+
+@app.post(
+    "/daily-runs/{daily_run_id}/validate-picks",
+    response_model=ValidatePicksRunResponse,
+    dependencies=_global_deps,
+)
+def api_validate_picks_for_run(daily_run_id: int, conn: DbConn) -> ValidatePicksRunResponse:
+    """
+    Ejecuta jobs/validate_picks.py para este daily_run_id (SofaScore → pick_results).
+    La cohorte mañana/tarde en la etiqueta se infiere de created_at_utc del run.
+    """
+    row = conn.execute(
+        "SELECT daily_run_id, created_at_utc FROM daily_runs WHERE daily_run_id = ?",
+        (daily_run_id,),
+    ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="daily_run not found")
+    slot, slot_label = _execution_slot_from_created_at_utc(str(row["created_at_utc"]))
+    cfg = get_db_config()
+    repo_root = Path(__file__).resolve().parents[2]
+    script = repo_root / "jobs" / "validate_picks.py"
+    if not script.is_file():
+        raise HTTPException(status_code=500, detail="validate_picks.py no encontrado en el repo")
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--db",
+            cfg.path,
+            "--daily-run-id",
+            str(daily_run_id),
+        ],
+        cwd=str(repo_root),
+        capture_output=True,
+        text=True,
+        timeout=900,
+    )
+    combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
+    parsed = _parse_validate_picks_stdout(proc.stdout or "")
+    excerpt = combined[-4000:] if len(combined) > 4000 else combined
+
+    if proc.returncode != 0:
+        return ValidatePicksRunResponse(
+            ok=False,
+            daily_run_id=daily_run_id,
+            execution_slot=slot,  # type: ignore[arg-type]
+            execution_slot_label_es=slot_label,
+            subprocess_exit_code=proc.returncode,
+            log_excerpt=excerpt,
+            message=(proc.stderr or proc.stdout or "validate_picks terminó con error").strip()[:500],
+        )
+    if parsed is None:
+        return ValidatePicksRunResponse(
+            ok=False,
+            daily_run_id=daily_run_id,
+            execution_slot=slot,  # type: ignore[arg-type]
+            execution_slot_label_es=slot_label,
+            subprocess_exit_code=proc.returncode,
+            log_excerpt=excerpt,
+            message="No se pudo parsear la salida de validate_picks",
+        )
+
+    total_processed = int(parsed.get("total_processed") or 0)
+    return ValidatePicksRunResponse(
+        ok=True,
+        daily_run_id=daily_run_id,
+        execution_slot=slot,  # type: ignore[arg-type]
+        execution_slot_label_es=slot_label,
+        total_processed=total_processed,
+        validated=int(parsed.get("validated") or 0),
+        pending_outcomes=int(parsed.get("pending_outcomes") or 0),
+        pending_before_filter=int(parsed.get("pending_before_filter") or 0),
+        subprocess_exit_code=0,
+        message=parsed.get("message") if isinstance(parsed.get("message"), str) else None,
+    )
+
+
+@app.post(
+    "/users/{user_id}/picks/revert-recent-outcomes",
+    response_model=RevertRecentPickOutcomesResponse,
+    dependencies=_global_deps,
+)
+def api_revert_recent_pick_outcomes(
+    user_id: int,
+    conn: DbConn,
+    minutes: int = Query(90, ge=1, le=24 * 60),
+) -> RevertRecentPickOutcomesResponse:
+    """
+    Revertir el cierre manual del usuario (user_outcome) a "automático"
+    para picks modificados en los últimos `minutes`.
+
+    Criterio:
+      - user_outcome_updated_at_utc >= now - minutes
+      - user_outcome IN ('win','loss','pending')
+    """
+    urow = get_user_by_id(conn, user_id)
+    if urow is None:
+        raise HTTPException(status_code=404, detail="user not found")
+
+    res = revert_user_outcomes_auto_for_recent_picks(
+        conn,
+        user_id=user_id,
+        minutes=minutes,
+    )
+    conn.commit()
+    return RevertRecentPickOutcomesResponse(
+        ok=True,
+        user_id=user_id,
+        minutes=int(minutes),
+        affected_picks=int(res.get("affected_picks") or 0),
     )
 
 

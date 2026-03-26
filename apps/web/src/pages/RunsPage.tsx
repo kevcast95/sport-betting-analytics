@@ -28,13 +28,15 @@ export default function RunsPage() {
     <div>
       <SportPillTabs className="mb-4 max-w-md" />
       <h2 className="mb-1 text-xl font-semibold tracking-tight">
-        Ejecuciones diarias
+        Historial de ejecuciones
       </h2>
       <p className="mb-6 max-w-xl text-sm text-app-muted">
-        Cada fila es un run guardado en la base. Desde el{' '}
-        <span className="text-app-fg">dashboard</span> puedes saltar directo al
-        tablero o al inspector de eventos del día que estés viendo, sin pasar
-        obligatoriamente por aquí. Lista paginada por cursor (
+        Vista opcional por si necesitas un run concreto por ID. El flujo normal es el{' '}
+        <Link to="/" className="text-app-fg underline decoration-app-line underline-offset-2">
+          dashboard
+        </Link>
+        : eliges fecha, ves picks paginados y usas los botones del encabezado para ir a
+        picks o eventos del día. Esta tabla sigue el cursor (
         <code className="rounded bg-neutral-100 px-1 font-mono text-xs">
           daily_run_id
         </code>

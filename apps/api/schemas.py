@@ -213,6 +213,41 @@ class DailyRunBoardOut(BaseModel):
     run_date: str
     sport: str
     status: str
+    created_at_utc: str = Field(
+        ...,
+        description="Cuándo se creó el run en UTC (para inferir cohorte mañana/tarde).",
+    )
+    execution_slot: Literal["morning", "evening", "night"] = Field(
+        ...,
+        description="Cohorte horaria local (ALTEA_VALIDATE_* / COPA_FOXKIDS_TZ): morning=[8,16), evening=[16,24), night=resto.",
+    )
+    execution_slot_label_es: str = Field(
+        ...,
+        description="Etiqueta corta en español para UI (ej. mañana 08:00–15:59).",
+    )
+
+
+class ValidatePicksRunResponse(BaseModel):
+    ok: bool
+    daily_run_id: int
+    execution_slot: Literal["morning", "evening", "night"]
+    execution_slot_label_es: str
+    total_processed: int = 0
+    validated: int = 0
+    pending_outcomes: int = 0
+    pending_before_filter: int = 0
+    subprocess_exit_code: int = 0
+    message: Optional[str] = None
+    log_excerpt: Optional[str] = Field(
+        None, description="Fragmento de salida del job para depuración."
+    )
+
+
+class RevertRecentPickOutcomesResponse(BaseModel):
+    ok: bool
+    user_id: int
+    minutes: int
+    affected_picks: int
 
 
 class TrackingBoardOut(BaseModel):
@@ -333,6 +368,10 @@ class DashboardRecentPick(BaseModel):
 class DashboardBundleOut(BaseModel):
     summary: DashboardSummaryBlock
     recent: List[DashboardRecentPick]
+    recent_total: int = Field(
+        0,
+        description="Total de picks en la fecha (mismo criterio que la lista reciente: orden por created_at desc; respeta only_taken).",
+    )
 
 
 class EffectivenessReportStatusOut(BaseModel):

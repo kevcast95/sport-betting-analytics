@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { ListPagination } from '@/components/ListPagination'
 import { useParams } from 'react-router-dom'
+import { ViewContextBar } from '@/components/ViewContextBar'
 import { fetchJson } from '@/lib/api'
+import { useListPageSize } from '@/hooks/useListPageSize'
 import type { DailyRunEventsInspectOut } from '@/types/api'
 
 function pretty(v: unknown): string {
@@ -17,6 +20,13 @@ export default function RunEventsPage() {
   const runId = Number(dailyRunId)
   const [eventQuery, setEventQuery] = useState('')
   const [pickQuery, setPickQuery] = useState('')
+  const [eventListPage, setEventListPage] = useState(0)
+  const { pageSize: eventPageSize, setPageSize: setEventPageSize } =
+    useListPageSize()
+
+  useEffect(() => {
+    setEventListPage(0)
+  }, [eventQuery, pickQuery, eventPageSize])
 
   const q = useQuery({
     queryKey: ['run-events', runId],
@@ -44,8 +54,40 @@ export default function RunEventsPage() {
     })
   }, [q.data?.items, eventQuery, pickQuery])
 
+  const eventTotal = filteredItems.length
+
+  useEffect(() => {
+    const maxP =
+      eventTotal <= 0 ? 0 : Math.max(0, Math.ceil(eventTotal / eventPageSize) - 1)
+    if (eventListPage > maxP) setEventListPage(maxP)
+  }, [eventTotal, eventPageSize, eventListPage])
+
+  const eventPageSafe =
+    eventTotal <= 0
+      ? 0
+      : Math.min(
+          eventListPage,
+          Math.max(0, Math.ceil(eventTotal / eventPageSize) - 1),
+        )
+  const eventsPageSlice = useMemo(() => {
+    const start = eventPageSafe * eventPageSize
+    return filteredItems.slice(start, start + eventPageSize)
+  }, [filteredItems, eventPageSafe, eventPageSize])
+
   return (
     <div>
+      {q.data ? (
+        <ViewContextBar
+          crumbs={[
+            { label: 'Inicio', to: '/' },
+            {
+              label: `Ejecución ${q.data.run_date}`,
+              to: `/runs/${runId}/picks`,
+            },
+            { label: 'Eventos' },
+          ]}
+        />
+      ) : null}
       <div className="mb-4">
         <h2 className="text-xl font-semibold tracking-tight">Eventos del run</h2>
         <p className="mt-1 max-w-xl text-sm text-app-muted">
@@ -81,14 +123,23 @@ export default function RunEventsPage() {
               />
             </label>
           </div>
-          <p className="mb-4 text-xs text-app-muted">
+          <p className="mb-2 text-xs text-app-muted">
             <span className="font-mono text-app-fg">{q.data.total_events}</span> eventos en
-            este run · visibles:{' '}
+            este run · tras filtros:{' '}
             <span className="font-mono text-app-fg">{filteredItems.length}</span>.
           </p>
+          <ListPagination
+            className="mb-4"
+            idPrefix="run-events"
+            page={eventPageSafe}
+            pageSize={eventPageSize}
+            total={eventTotal}
+            onPageChange={setEventListPage}
+            onPageSizeChange={setEventPageSize}
+          />
 
           <div className="space-y-3">
-            {filteredItems.map((e) => (
+            {eventsPageSlice.map((e) => (
               <div key={e.event_id} className="rounded-lg border border-app-line bg-app-card p-3">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="font-mono text-app-fg">event_id {e.event_id}</span>

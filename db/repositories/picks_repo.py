@@ -121,6 +121,7 @@ def fetch_pending_picks_without_results(
     sql = """
         SELECT
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection, p.picked_value, p.odds_reference,
+            p.created_at_utc,
             (pr.pick_id IS NOT NULL AND pr.outcome = 'pending') AS is_revalidation
         FROM picks p
         LEFT JOIN pick_results pr ON pr.pick_id = p.pick_id

@@ -22,6 +22,8 @@ export function DashboardChrome() {
     queryKey: ['dashboard', runDate, userId, onlyTakenForQuery, sport],
     queryFn: async () => {
       const sp = new URLSearchParams({ run_date: runDate, sport })
+      sp.set('recent_limit', '1')
+      sp.set('recent_page', '0')
       if (userId != null) sp.set('user_id', String(userId))
       if (onlyTakenForQuery) sp.set('only_taken', 'true')
       return fetchJson<DashboardBundleOut>(`/dashboard?${sp}`)

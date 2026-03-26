@@ -246,6 +246,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/daily-runs/{daily_run_id}/validate-picks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Api Validate Picks For Run
+         * @description Ejecuta jobs/validate_picks.py para este daily_run_id (SofaScore → pick_results).
+         *     La cohorte mañana/tarde en la etiqueta se infiere de created_at_utc del run.
+         */
+        post: operations["api_validate_picks_for_run_daily_runs__daily_run_id__validate_picks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{user_id}/picks/revert-recent-outcomes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Api Revert Recent Pick Outcomes
+         * @description Revertir el cierre manual del usuario (user_outcome) a "automático"
+         *     para picks modificados en los últimos `minutes`.
+         *
+         *     Criterio:
+         *       - user_outcome_updated_at_utc >= now - minutes
+         *       - user_outcome IN ('win','loss','pending')
+         */
+        post: operations["api_revert_recent_pick_outcomes_users__user_id__picks_revert_recent_outcomes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/{user_id}/picks/{pick_id}/taken": {
         parameters: {
             query?: never;
@@ -380,6 +426,22 @@ export interface components {
             sport: string;
             /** Status */
             status: string;
+            /**
+             * Created At Utc
+             * @description Cuándo se creó el run en UTC (para inferir cohorte mañana/tarde).
+             */
+            created_at_utc: string;
+            /**
+             * Execution Slot
+             * @description Cohorte horaria local (ALTEA_VALIDATE_* / COPA_FOXKIDS_TZ): morning=[8,16), evening=[16,24), night=resto.
+             * @enum {string}
+             */
+            execution_slot: "morning" | "evening" | "night";
+            /**
+             * Execution Slot Label Es
+             * @description Etiqueta corta en español para UI (ej. mañana 08:00–15:59).
+             */
+            execution_slot_label_es: string;
         };
         /** DailyRunEventInspectOut */
         DailyRunEventInspectOut: {
@@ -454,6 +516,12 @@ export interface components {
             summary: components["schemas"]["DashboardSummaryBlock"];
             /** Recent */
             recent: components["schemas"]["DashboardRecentPick"][];
+            /**
+             * Recent Total
+             * @description Total de picks en la fecha (mismo criterio que la lista reciente: orden por created_at desc; respeta only_taken).
+             * @default 0
+             */
+            recent_total: number;
         };
         /**
          * DashboardPerformanceBlock
@@ -867,6 +935,17 @@ export interface components {
             /** Suggested Combo Ids */
             suggested_combo_ids: number[];
         };
+        /** RevertRecentPickOutcomesResponse */
+        RevertRecentPickOutcomesResponse: {
+            /** Ok */
+            ok: boolean;
+            /** User Id */
+            user_id: number;
+            /** Minutes */
+            minutes: number;
+            /** Affected Picks */
+            affected_picks: number;
+        };
         /** SignalCheckBody */
         SignalCheckBody: {
             /**
@@ -1011,6 +1090,52 @@ export interface components {
              */
             user_outcome_auto: boolean;
         };
+        /** ValidatePicksRunResponse */
+        ValidatePicksRunResponse: {
+            /** Ok */
+            ok: boolean;
+            /** Daily Run Id */
+            daily_run_id: number;
+            /**
+             * Execution Slot
+             * @enum {string}
+             */
+            execution_slot: "morning" | "evening" | "night";
+            /** Execution Slot Label Es */
+            execution_slot_label_es: string;
+            /**
+             * Total Processed
+             * @default 0
+             */
+            total_processed: number;
+            /**
+             * Validated
+             * @default 0
+             */
+            validated: number;
+            /**
+             * Pending Outcomes
+             * @default 0
+             */
+            pending_outcomes: number;
+            /**
+             * Pending Before Filter
+             * @default 0
+             */
+            pending_before_filter: number;
+            /**
+             * Subprocess Exit Code
+             * @default 0
+             */
+            subprocess_exit_code: number;
+            /** Message */
+            message?: string | null;
+            /**
+             * Log Excerpt
+             * @description Fragmento de salida del job para depuración.
+             */
+            log_excerpt?: string | null;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1095,6 +1220,10 @@ export interface operations {
                 only_taken?: boolean;
                 /** @description Filtra por `daily_runs.sport` (ej. football, tennis). */
                 sport?: string;
+                /** @description Tamaño de página para la lista reciente de picks. */
+                recent_limit?: number;
+                /** @description Página 0-based de la lista reciente (con recent_limit). */
+                recent_page?: number;
             };
             header?: {
                 "X-Local-Api-Key"?: string | null;
@@ -1529,6 +1658,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TrackingBoardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    api_validate_picks_for_run_daily_runs__daily_run_id__validate_picks_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Local-Api-Key"?: string | null;
+            };
+            path: {
+                daily_run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidatePicksRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    api_revert_recent_pick_outcomes_users__user_id__picks_revert_recent_outcomes_post: {
+        parameters: {
+            query?: {
+                minutes?: number;
+            };
+            header?: {
+                "X-Local-Api-Key"?: string | null;
+            };
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevertRecentPickOutcomesResponse"];
                 };
             };
             /** @description Validation Error */

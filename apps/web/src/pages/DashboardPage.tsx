@@ -1,28 +1,58 @@
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import { ListPagination } from '@/components/ListPagination'
 import { Link } from 'react-router-dom'
 import { DashboardPerformanceChart } from '@/components/DashboardPerformanceChart'
 import { PickInboxRow } from '@/components/PickInboxRow'
+import { ViewContextBar } from '@/components/ViewContextBar'
 import { fetchJson } from '@/lib/api'
+import { usePickOutcomeQuickMutation } from '@/hooks/usePickOutcomeQuickMutation'
+import { usePickOutcomeAutoQuickMutation } from '@/hooks/usePickOutcomeAutoQuickMutation'
 import { useBarDailyRunId } from '@/hooks/useBarDailyRunId'
 import { useDashboardUrlState } from '@/hooks/useDashboardUrlState'
+import { useListPageSize } from '@/hooks/useListPageSize'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
-import { useUsersQuery } from '@/hooks/useUsersQuery'
 import type { DashboardBundleOut } from '@/types/api'
 import { formatCOP } from '@/lib/formatDateTime'
 
+type OddsRef = Record<string, unknown> | null | undefined
+
+function refStr(ref: OddsRef, key: string): string | undefined {
+  if (!ref || typeof ref !== 'object') return undefined
+  const v = (ref as Record<string, unknown>)[key]
+  if (v == null) return undefined
+  return String(v)
+}
+
 export default function DashboardPage() {
-  const { userId, setUserId } = useTrackingUser()
+  const { userId } = useTrackingUser()
   const { runDate, setRunDate, onlyTaken, setOnlyTaken, sport } =
     useDashboardUrlState()
-  const usersQ = useUsersQuery()
-  const users = useMemo(() => usersQ.data ?? [], [usersQ.data])
   const onlyTakenForQuery = userId != null && onlyTaken
+  const quickOutcomeM = usePickOutcomeQuickMutation(userId)
+  const quickAutoOutcomeM = usePickOutcomeAutoQuickMutation(userId)
+  const [recentListPage, setRecentListPage] = useState(0)
+  const { pageSize: recentPageSize, setPageSize: setRecentPageSize } =
+    useListPageSize()
+
+  useEffect(() => {
+    setRecentListPage(0)
+  }, [runDate, onlyTakenForQuery, sport, userId, recentPageSize])
 
   const dashQ = useQuery({
-    queryKey: ['dashboard', runDate, userId, onlyTakenForQuery, sport],
+    queryKey: [
+      'dashboard',
+      runDate,
+      userId,
+      onlyTakenForQuery,
+      sport,
+      recentListPage,
+      recentPageSize,
+    ],
     queryFn: async () => {
       const sp = new URLSearchParams({ run_date: runDate, sport })
+      sp.set('recent_limit', String(recentPageSize))
+      sp.set('recent_page', String(recentListPage))
       if (userId != null) sp.set('user_id', String(userId))
       if (onlyTakenForQuery) sp.set('only_taken', 'true')
       return fetchJson<DashboardBundleOut>(`/dashboard?${sp}`)
@@ -30,20 +60,24 @@ export default function DashboardPage() {
   })
 
   const s = dashQ.data?.summary
+
+  useEffect(() => {
+    const t = dashQ.data?.recent_total
+    if (t === undefined) return
+    const maxP =
+      t <= 0 ? 0 : Math.max(0, Math.ceil(t / recentPageSize) - 1)
+    if (recentListPage > maxP) setRecentListPage(maxP)
+  }, [dashQ.data?.recent_total, recentPageSize, recentListPage])
+
   const { barRunId } = useBarDailyRunId({
     runDate,
     sport,
     primaryDailyRunId: s?.primary_daily_run_id,
   })
 
-  useEffect(() => {
-    if (users.length === 0) return
-    if (userId == null) setUserId(users[0].user_id)
-    else if (!users.some((u) => u.user_id === userId)) setUserId(users[0].user_id)
-  }, [users, userId, setUserId])
-
   return (
     <div>
+      <ViewContextBar crumbs={[{ label: 'Inicio', to: '/' }, { label: 'Dashboard' }]} />
       <div className="mb-8 flex flex-wrap items-start gap-4 border-b border-app-line pb-6">
         <label className="flex flex-col gap-1 text-xs text-app-muted">
           Fecha del run (picks con este día)
@@ -53,28 +87,6 @@ export default function DashboardPage() {
             onChange={(e) => setRunDate(e.target.value)}
             className="rounded-md border border-app-line bg-app-card px-3 py-2 text-sm text-app-fg"
           />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-app-muted">
-          Usuario
-          <select
-            className="min-w-[10rem] rounded-md border border-app-line bg-app-card px-3 py-2 text-sm text-app-fg"
-            value={userId != null ? String(userId) : ''}
-            onChange={(e) => {
-              const v = e.target.value
-              setUserId(v === '' ? null : Number(v))
-            }}
-            disabled={usersQ.isLoading || users.length === 0}
-          >
-            {users.length === 0 ? (
-              <option value="">{usersQ.isLoading ? 'Cargando…' : 'Sin usuarios'}</option>
-            ) : (
-              users.map((u) => (
-                <option key={u.user_id} value={String(u.user_id)}>
-                  {u.display_name}
-                </option>
-              ))
-            )}
-          </select>
         </label>
         {userId != null && (
           <label className="flex cursor-pointer items-center gap-2 text-xs text-app-fg">
@@ -188,10 +200,12 @@ export default function DashboardPage() {
           <div className="mt-10">
             <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-sm font-semibold">Picks del día</h2>
+                <h2 className="text-sm font-semibold">Picks del día (vista previa)</h2>
                 <p className="text-xs text-app-muted">
-                  Vista bandeja: toca una fila para abrir la ficha con detalle,
-                  Telegram-style y seguimiento.
+                  Misma fila que el tablero del run: a la derecha puedes marcar{' '}
+                  <strong className="text-app-fg">Gané / Perdí / Pend.</strong> sin abrir la ficha.
+                  Los botones del header (fecha) llevan a picks y eventos sin pasar por el historial
+                  de runs.
                 </p>
                 {userId != null && s.bankroll_cop != null && (
                   <p className="mt-1 font-mono text-[11px] font-semibold tabular-nums text-violet-900">
@@ -209,17 +223,28 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {dashQ.data?.recent.length === 0 ? (
+            {(dashQ.data?.recent_total ?? 0) === 0 ? (
               <p className="rounded-xl border border-dashed border-app-line bg-app-card p-8 text-center text-sm text-app-muted">
                 No hay picks para esta fecha
                 {onlyTakenForQuery ? ' (con filtro «solo tomados»)' : ''}.
               </p>
             ) : (
+              <>
+              <ListPagination
+                className="mb-2"
+                idPrefix="dash-recent"
+                page={recentListPage}
+                pageSize={recentPageSize}
+                total={dashQ.data?.recent_total ?? 0}
+                onPageChange={setRecentListPage}
+                onPageSizeChange={setRecentPageSize}
+              />
               <div className="overflow-hidden rounded-xl border border-app-line bg-app-card shadow-sm">
                 {dashQ.data?.recent.map((r, i) => (
                   <PickInboxRow
                     key={r.pick_id}
                     pickId={r.pick_id}
+                    eventId={r.event_id}
                     href={`/picks/${r.pick_id}`}
                     eventLabel={r.event_label}
                     league={r.league}
@@ -227,12 +252,44 @@ export default function DashboardPage() {
                     selection={r.selection}
                     selectionDisplay={r.selection_display}
                     pickedValue={r.picked_value}
+                    kickoffDisplay={r.kickoff_display ?? null}
+                    confidence={refStr(r.odds_reference as OddsRef, 'confianza') ?? null}
                     outcome={r.outcome}
                     userTaken={r.user_taken}
-                    ordinal={i + 1}
+                    ordinal={recentListPage * recentPageSize + i + 1}
+                    onQuickOutcome={
+                      userId != null
+                        ? (o) =>
+                            quickOutcomeM.mutate({
+                              pickId: r.pick_id,
+                              dailyRunId: r.daily_run_id,
+                              taken: r.user_taken ?? false,
+                              outcome: o,
+                            })
+                        : undefined
+                    }
+                    quickOutcomePending={
+                      quickOutcomeM.isPending &&
+                      quickOutcomeM.variables?.pickId === r.pick_id
+                    }
+                    onQuickAutoOutcome={
+                      userId != null
+                        ? () =>
+                            quickAutoOutcomeM.mutate({
+                              pickId: r.pick_id,
+                              dailyRunId: r.daily_run_id,
+                              taken: r.user_taken ?? false,
+                            })
+                        : undefined
+                    }
+                    quickAutoOutcomePending={
+                      quickAutoOutcomeM.isPending &&
+                      quickAutoOutcomeM.variables?.pickId === r.pick_id
+                    }
                   />
                 ))}
               </div>
+              </>
             )}
           </div>
         </>

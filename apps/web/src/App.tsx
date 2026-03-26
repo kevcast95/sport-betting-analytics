@@ -8,6 +8,7 @@ import {
   useSearchParams,
 } from 'react-router-dom'
 import { DashboardChrome } from '@/components/DashboardChrome'
+import { SidebarUserSection } from '@/components/SidebarUserSection'
 import BacktestsPage from '@/pages/BacktestsPage'
 import ApiReadinessPage from '@/pages/ApiReadinessPage'
 import DashboardPage from '@/pages/DashboardPage'
@@ -43,8 +44,8 @@ function BankrollSidebar() {
       </p>
       {userId == null ? (
         <p className="mt-2 text-[10px] leading-relaxed text-app-muted">
-          Elige un usuario en el dashboard o en un run; el bankroll se guarda
-          en el servidor por usuario.
+          Elige un usuario arriba en este menú; el bankroll se guarda en el
+          servidor por usuario.
         </p>
       ) : (
         <>
@@ -204,7 +205,10 @@ function AppLayout() {
             menuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
           ].join(' ')}
         >
-          <div className="flex items-center justify-between px-3 py-4 md:py-6">
+          <div className="border-b border-app-line px-3 py-4 md:py-5">
+            <SidebarUserSection />
+          </div>
+          <div className="flex items-center justify-between px-3 py-3 md:pt-4">
             <div className="px-2 text-xs font-semibold uppercase tracking-wide text-violet-900/80">
               Menú
             </div>
@@ -227,10 +231,11 @@ function AppLayout() {
             </NavLink>
             <NavLink
               to={runsListHref}
+              title="Opcional: buscar un run por ID o fecha en tabla"
               className={({ isActive }) => navClass(isActive)}
               onClick={closeMenu}
             >
-              Ejecuciones
+              Historial de runs
             </NavLink>
             <NavLink
               to="/backtests"
