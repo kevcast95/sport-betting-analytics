@@ -28,3 +28,5 @@ export type DailyRunEventInspectOut =
   components['schemas']['DailyRunEventInspectOut']
 export type DailyRunEventsInspectOut =
   components['schemas']['DailyRunEventsInspectOut']
+export type ValidatePicksRunResponse =
+  components['schemas']['ValidatePicksRunResponse']

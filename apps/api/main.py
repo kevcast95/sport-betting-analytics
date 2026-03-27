@@ -4,11 +4,15 @@ Ejecutar desde la raíz del repo: PYTHONPATH=. uvicorn apps.api.main:app --reloa
 """
 
 import sqlite3
+import subprocess
+import sys
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, datetime, timezone
+from pathlib import Path
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,12 +52,16 @@ from apps.api.schemas import (
     UserCreate,
     UserOut,
     UserPickTakenBody,
+    ValidatePicksRunResponse,
+    RevertRecentPickOutcomesResponse,
 )
 from db.config import get_db_config
 from db.db import connect as db_connect
 from db.init_db import init_db
 from db.repositories.dashboard_repo import (
     _effective_outcome,
+    _execution_slot_from_created_at_utc,
+    dashboard_insights,
     daily_picks_summary,
     recent_picks_for_date,
 )
@@ -62,7 +70,6 @@ from db.repositories.pick_event_meta_repo import (
     load_event_meta_for_daily_run,
     merge_meta_into_odds_ref,
 )
-from db.sqlite_migrate import apply_migrations
 from db.repositories.picks_repo import set_pick_status
 from db.repositories.suggest_combos_repo import (
     list_legs_for_combo,
@@ -75,6 +82,7 @@ from db.repositories.tracking_repo import (
     get_pick_decision_rows_for_run,
     insert_signal_check,
     sync_user_pick_realized_return,
+    revert_user_outcomes_auto_for_recent_picks,
     upsert_user_combo_decision,
     upsert_user_pick_decision,
 )
@@ -85,6 +93,13 @@ from db.repositories.users_repo import (
     list_users,
     set_user_bankroll_cop,
 )
+from core.candidate_contract import (
+    base_contract_ok,
+    classify_tier,
+    diagnostics_flags,
+    normalize_sport,
+    reject_reason as contract_reject_reason,
+)
 
 
 @asynccontextmanager
@@ -94,11 +109,48 @@ async def _lifespan(app: FastAPI):
     conn = db_connect(cfg.path)
     try:
         init_db(conn)
-        apply_migrations(conn)
         conn.commit()
     finally:
         conn.close()
     yield
+
+
+def _execution_slot_from_created_at_utc(created_at_utc: str) -> Tuple[str, str]:
+    """
+    Alineado con scripts/run_validate_picks_scheduled.sh (ventanas locales).
+    """
+    tz_name = os.environ.get("COPA_FOXKIDS_TZ", "America/Bogota")
+    tz = ZoneInfo(tz_name)
+    t = str(created_at_utc).strip()
+    if t.endswith("Z"):
+        t = t[:-1] + "+00:00"
+    dt = datetime.fromisoformat(t)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    local = dt.astimezone(tz)
+    h = local.hour
+    min_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MIN", "8"))
+    max_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL", "16"))
+    min_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MIN", "16"))
+    max_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL", "24"))
+    if min_m <= h < max_m:
+        return "morning", "mañana (08:00–15:59 hora CO)"
+    if min_e <= h < max_e:
+        return "evening", "tarde/noche (16:00–23:59 hora CO)"
+    return "night", "madrugada (00:00–07:59 hora CO)"
+
+
+def _parse_validate_picks_stdout(text: str) -> Optional[Dict[str, Any]]:
+    marker = "=== VALIDATE_PICKS ==="
+    if marker not in text:
+        return None
+    chunk = text.split(marker, 1)[1]
+    if "=== OK" in chunk:
+        chunk = chunk.split("=== OK", 1)[0]
+    try:
+        return json.loads(chunk.strip())
+    except json.JSONDecodeError:
+        return None
 
 
 def _user_out_from_row(r: sqlite3.Row) -> UserOut:
@@ -133,51 +185,6 @@ app.add_middleware(
 )
 
 _global_deps = [Depends(verify_local_api_key)]
-
-
-def _diag_flags_from_any(d: Any) -> Dict[str, bool]:
-    base = d if isinstance(d, dict) else {}
-    return {
-        "event_ok": bool(base.get("event_ok")),
-        "lineups_ok": bool(base.get("lineups_ok")),
-        "statistics_ok": bool(base.get("statistics_ok")),
-        "h2h_ok": bool(base.get("h2h_ok")),
-        "team_streaks_ok": bool(base.get("team_streaks_ok")),
-        "odds_all_ok": bool(base.get("odds_all_ok")),
-        "odds_featured_ok": bool(base.get("odds_featured_ok")),
-    }
-
-
-def _base_contract_ok(flags: Dict[str, bool]) -> bool:
-    return (
-        flags["event_ok"]
-        and flags["lineups_ok"]
-        and flags["h2h_ok"]
-        and flags["team_streaks_ok"]
-        and (flags["odds_all_ok"] or flags["odds_featured_ok"])
-    )
-
-
-def _tier_from_flags(flags: Dict[str, bool]) -> Optional[str]:
-    if not _base_contract_ok(flags):
-        return None
-    return "A" if flags["statistics_ok"] else "B"
-
-
-def _reject_reason_from_flags(flags: Dict[str, bool], match_state: str) -> Optional[str]:
-    if match_state == "finished":
-        return "match_finished"
-    if not flags["event_ok"]:
-        return "event_not_ok"
-    if not flags["lineups_ok"]:
-        return "lineups_not_ok"
-    if not flags["h2h_ok"]:
-        return "h2h_not_ok"
-    if not flags["team_streaks_ok"]:
-        return "team_streaks_not_ok"
-    if not (flags["odds_all_ok"] or flags["odds_featured_ok"]):
-        return "no_odds"
-    return None
 
 
 def _h2h_summary_from_processed(processed: Any) -> Optional[str]:
@@ -269,8 +276,26 @@ def api_dashboard(
         False,
         description="Si true, la lista reciente solo incluye picks marcados como tomados",
     ),
+    sport: str = Query(
+        "football",
+        description="Filtra por `daily_runs.sport` (ej. football, tennis).",
+    ),
+    recent_limit: int = Query(
+        10,
+        ge=1,
+        le=100,
+        description="Tamaño de página para la lista reciente de picks.",
+    ),
+    recent_page: int = Query(
+        0,
+        ge=0,
+        description="Página 0-based de la lista reciente (con recent_limit).",
+    ),
 ) -> DashboardBundleOut:
     rd = run_date or date.today().isoformat()
+    se = str(sport or "football").strip().lower()
+    if se not in ("football", "tennis"):
+        se = "football"
     if only_taken and user_id is None:
         raise HTTPException(
             status_code=400,
@@ -279,17 +304,23 @@ def api_dashboard(
     urow = get_user_by_id(conn, user_id) if user_id is not None else None
     if user_id is not None and urow is None:
         raise HTTPException(status_code=404, detail="user not found")
-    s = daily_picks_summary(conn, run_date=rd, user_id=user_id)
+    s = daily_picks_summary(conn, run_date=rd, user_id=user_id, sport=se)
+    ins = dashboard_insights(conn, run_date=rd, sport=se, user_id=user_id)
     br_dash = urow["bankroll_cop"] if urow is not None else None
     bankroll_summary = float(br_dash) if br_dash is not None else None
-    raw_recent = recent_picks_for_date(conn, run_date=rd, user_id=user_id, limit=40)
+    off = int(recent_page) * int(recent_limit)
+    raw_recent, recent_total = recent_picks_for_date(
+        conn,
+        run_date=rd,
+        user_id=user_id,
+        offset=off,
+        limit=int(recent_limit),
+        only_taken=bool(only_taken),
+        sport=se,
+    )
     recent: List[DashboardRecentPick] = []
     meta_cache: Dict[int, Dict[int, Dict[str, Optional[str]]]] = {}
     for r in raw_recent:
-        if only_taken and r["u_taken"] != 1:
-            continue
-        if len(recent) >= 15:
-            break
         pr_o = r["pr_outcome"]
         uo = r["u_outcome"]
         eff = _effective_outcome(uo, pr_o)
@@ -308,6 +339,7 @@ def api_dashboard(
             str(r["odds_reference"]) if r["odds_reference"] is not None else None
         )
         sel_disp = _selection_display_from_odds_ref(odds_parsed)
+        slot_v, slot_lbl = _execution_slot_from_created_at_utc(r["run_created_at_utc"])
         recent.append(
             DashboardRecentPick(
                 pick_id=int(r["pick_id"]),
@@ -329,6 +361,8 @@ def api_dashboard(
                 kickoff_display=em.get("kickoff_display") if em else None,
                 kickoff_at_utc=em.get("kickoff_at_utc") if em else None,
                 match_state=em.get("match_state") if em else None,
+                execution_slot=slot_v,  # type: ignore[arg-type]
+                execution_slot_label_es=slot_lbl,
                 selection_display=sel_disp,
                 odds_reference=odds_parsed,
             )
@@ -336,6 +370,8 @@ def api_dashboard(
     return DashboardBundleOut(
         summary=DashboardSummaryBlock(
             run_date=str(s["run_date"]),
+            sport=s.get("sport"),
+            primary_daily_run_id=s.get("primary_daily_run_id"),
             events_total=int(s.get("events_total", 0)),
             selection_passed_filters=int(s.get("selection_passed_filters", 0)),
             selection_rejected=int(s.get("selection_rejected", 0)),
@@ -351,6 +387,24 @@ def api_dashboard(
             outcome_wins=int(s["outcome_wins"]),
             outcome_losses=int(s["outcome_losses"]),
             outcome_pending=int(s["outcome_pending"]),
+            settled_count=int(s.get("settled_count", 0)),
+            roi_unit=(
+                float(s["roi_unit"])
+                if s.get("roi_unit") is not None
+                else None
+            ),
+            settled_count_tradable=int(s.get("settled_count_tradable", 0)),
+            settled_count_below_min_odds=int(s.get("settled_count_below_min_odds", 0)),
+            min_tradable_odds=(
+                float(s["min_tradable_odds"])
+                if s.get("min_tradable_odds") is not None
+                else None
+            ),
+            roi_unit_tradable=(
+                float(s["roi_unit_tradable"])
+                if s.get("roi_unit_tradable") is not None
+                else None
+            ),
             picks_taken_count=int(s["picks_taken_count"]),
             taken_outcome_wins=int(s.get("taken_outcome_wins", 0)),
             taken_outcome_losses=int(s.get("taken_outcome_losses", 0)),
@@ -377,6 +431,10 @@ def api_dashboard(
             has_stake_data=bool(s["has_stake_data"]),
         ),
         recent=recent,
+        issued_daily=ins.get("issued_daily") or [],
+        rolling_by_sport=ins.get("rolling_by_sport") or [],
+        calibration=ins.get("calibration"),
+        recent_total=int(recent_total),
     )
 
 
@@ -402,8 +460,8 @@ def list_daily_runs(
         where.append("run_date = ?")
         params.append(run_date)
     if sport is not None:
-        where.append("sport = ?")
-        params.append(sport)
+        where.append("LOWER(TRIM(sport)) = ?")
+        params.append(str(sport).strip().lower())
     if status is not None:
         where.append("status = ?")
         params.append(status)
@@ -444,21 +502,22 @@ def api_daily_run_events_inspect(
     limit: int = Query(500, ge=1, le=2000),
 ) -> DailyRunEventsInspectOut:
     run = conn.execute(
-        "SELECT daily_run_id, run_date, created_at_utc FROM daily_runs WHERE daily_run_id = ?",
+        "SELECT daily_run_id, run_date, created_at_utc, sport FROM daily_runs WHERE daily_run_id = ?",
         (daily_run_id,),
     ).fetchone()
     if run is None:
         raise HTTPException(status_code=404, detail="daily_run not found")
 
+    run_sport = normalize_sport(run["sport"])
     feature_rows = conn.execute(
         """
         SELECT event_id, features_json
         FROM event_features
-        WHERE captured_at_utc = ?
+        WHERE captured_at_utc = ? AND sport = ?
         ORDER BY event_id ASC
         LIMIT ?
         """,
-        (str(run["created_at_utc"]), int(limit)),
+        (str(run["created_at_utc"]), run_sport, int(limit)),
     ).fetchall()
 
     selected_event_ids = {
@@ -477,10 +536,14 @@ def api_daily_run_events_inspect(
         diagnostics = feat.get("diagnostics") if isinstance(feat.get("diagnostics"), dict) else {}
         processed = feat.get("processed") if isinstance(feat.get("processed"), dict) else feat.get("processed")
         match_state = str(event_context.get("match_state") or "").lower()
-        flags = _diag_flags_from_any(diagnostics)
-        tier = _tier_from_flags(flags)
-        passed = _base_contract_ok(flags) and match_state != "finished"
-        reject_reason = None if passed else _reject_reason_from_flags(flags, match_state)
+        flags = diagnostics_flags(diagnostics)
+        tier = classify_tier(flags, sport=run_sport)
+        passed = base_contract_ok(flags, sport=run_sport) and match_state != "finished"
+        reject_reason = (
+            None
+            if passed
+            else contract_reject_reason(flags, match_state, sport=run_sport)
+        )
         eid = int(r["event_id"])
         items.append(
             DailyRunEventInspectOut(
@@ -540,6 +603,9 @@ def _apply_event_meta(
 
 
 def _pick_summary_from_join_row(r: sqlite3.Row) -> PickSummary:
+    slot_v, slot_lbl = _execution_slot_from_created_at_utc(
+        r["run_created_at_utc"] if "run_created_at_utc" in r.keys() else None
+    )
     result = None
     if r["pr_validated_at_utc"] is not None:
         result = PickResultOut(
@@ -571,6 +637,8 @@ def _pick_summary_from_join_row(r: sqlite3.Row) -> PickSummary:
         idempotency_key=str(r["idempotency_key"]),
         result=result,
         run_date=run_date_v,
+        execution_slot=slot_v,  # type: ignore[arg-type]
+        execution_slot_label_es=slot_lbl,
     )
 
 
@@ -625,6 +693,7 @@ def list_picks(
         SELECT
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection,
             p.picked_value, p.odds_reference, p.status, p.created_at_utc, p.idempotency_key,
+            dr.created_at_utc AS run_created_at_utc,
             pr.validated_at_utc AS pr_validated_at_utc,
             pr.home_score AS pr_home_score,
             pr.away_score AS pr_away_score,
@@ -632,6 +701,7 @@ def list_picks(
             pr.outcome AS pr_outcome,
             pr.evidence_json AS pr_evidence_json
         FROM picks p
+        INNER JOIN daily_runs dr ON dr.daily_run_id = p.daily_run_id
         LEFT JOIN pick_results pr ON pr.pick_id = p.pick_id
         {wh}
         ORDER BY p.pick_id DESC
@@ -653,6 +723,7 @@ def get_pick(pick_id: int, conn: DbConn) -> PickDetail:
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection,
             p.picked_value, p.odds_reference, p.status, p.created_at_utc, p.idempotency_key,
             dr.run_date AS run_date,
+            dr.created_at_utc AS run_created_at_utc,
             pr.validated_at_utc AS pr_validated_at_utc,
             pr.home_score AS pr_home_score,
             pr.away_score AS pr_away_score,
@@ -811,16 +882,21 @@ def api_tracking_board(
     if get_user_by_id(conn, user_id) is None:
         raise HTTPException(status_code=404, detail="user not found")
     run = conn.execute(
-        "SELECT daily_run_id, run_date, sport, status FROM daily_runs WHERE daily_run_id = ?",
+        """
+        SELECT daily_run_id, run_date, sport, status, created_at_utc
+        FROM daily_runs WHERE daily_run_id = ?
+        """,
         (daily_run_id,),
     ).fetchone()
     if run is None:
         raise HTTPException(status_code=404, detail="daily_run not found")
+    slot, slot_label = _execution_slot_from_created_at_utc(str(run["created_at_utc"]))
 
     sql = """
         SELECT
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection,
             p.picked_value, p.odds_reference, p.status, p.created_at_utc, p.idempotency_key,
+            dr.created_at_utc AS run_created_at_utc,
             pr.validated_at_utc AS pr_validated_at_utc,
             pr.home_score AS pr_home_score,
             pr.away_score AS pr_away_score,
@@ -828,6 +904,7 @@ def api_tracking_board(
             pr.outcome AS pr_outcome,
             pr.evidence_json AS pr_evidence_json
         FROM picks p
+        INNER JOIN daily_runs dr ON dr.daily_run_id = p.daily_run_id
         LEFT JOIN pick_results pr ON pr.pick_id = p.pick_id
         WHERE p.daily_run_id = ?
         ORDER BY p.pick_id DESC
@@ -926,10 +1003,126 @@ def api_tracking_board(
             run_date=str(run["run_date"]),
             sport=str(run["sport"]),
             status=str(run["status"]),
+            created_at_utc=str(run["created_at_utc"]),
+            execution_slot=slot,  # type: ignore[arg-type]
+            execution_slot_label_es=slot_label,
         ),
         user_id=user_id,
         picks=picks_out,
         suggested_combos=combos_out,
+    )
+
+
+@app.post(
+    "/daily-runs/{daily_run_id}/validate-picks",
+    response_model=ValidatePicksRunResponse,
+    dependencies=_global_deps,
+)
+def api_validate_picks_for_run(daily_run_id: int, conn: DbConn) -> ValidatePicksRunResponse:
+    """
+    Ejecuta jobs/validate_picks.py para este daily_run_id (SofaScore → pick_results).
+    La cohorte mañana/tarde en la etiqueta se infiere de created_at_utc del run.
+    """
+    row = conn.execute(
+        "SELECT daily_run_id, created_at_utc FROM daily_runs WHERE daily_run_id = ?",
+        (daily_run_id,),
+    ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="daily_run not found")
+    slot, slot_label = _execution_slot_from_created_at_utc(str(row["created_at_utc"]))
+    cfg = get_db_config()
+    repo_root = Path(__file__).resolve().parents[2]
+    script = repo_root / "jobs" / "validate_picks.py"
+    if not script.is_file():
+        raise HTTPException(status_code=500, detail="validate_picks.py no encontrado en el repo")
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--db",
+            cfg.path,
+            "--daily-run-id",
+            str(daily_run_id),
+        ],
+        cwd=str(repo_root),
+        capture_output=True,
+        text=True,
+        timeout=900,
+    )
+    combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
+    parsed = _parse_validate_picks_stdout(proc.stdout or "")
+    excerpt = combined[-4000:] if len(combined) > 4000 else combined
+
+    if proc.returncode != 0:
+        return ValidatePicksRunResponse(
+            ok=False,
+            daily_run_id=daily_run_id,
+            execution_slot=slot,  # type: ignore[arg-type]
+            execution_slot_label_es=slot_label,
+            subprocess_exit_code=proc.returncode,
+            log_excerpt=excerpt,
+            message=(proc.stderr or proc.stdout or "validate_picks terminó con error").strip()[:500],
+        )
+    if parsed is None:
+        return ValidatePicksRunResponse(
+            ok=False,
+            daily_run_id=daily_run_id,
+            execution_slot=slot,  # type: ignore[arg-type]
+            execution_slot_label_es=slot_label,
+            subprocess_exit_code=proc.returncode,
+            log_excerpt=excerpt,
+            message="No se pudo parsear la salida de validate_picks",
+        )
+
+    total_processed = int(parsed.get("total_processed") or 0)
+    return ValidatePicksRunResponse(
+        ok=True,
+        daily_run_id=daily_run_id,
+        execution_slot=slot,  # type: ignore[arg-type]
+        execution_slot_label_es=slot_label,
+        total_processed=total_processed,
+        validated=int(parsed.get("validated") or 0),
+        pending_outcomes=int(parsed.get("pending_outcomes") or 0),
+        pending_before_filter=int(parsed.get("pending_before_filter") or 0),
+        subprocess_exit_code=0,
+        message=parsed.get("message") if isinstance(parsed.get("message"), str) else None,
+    )
+
+
+@app.post(
+    "/users/{user_id}/picks/revert-recent-outcomes",
+    response_model=RevertRecentPickOutcomesResponse,
+    dependencies=_global_deps,
+)
+def api_revert_recent_pick_outcomes(
+    user_id: int,
+    conn: DbConn,
+    minutes: int = Query(90, ge=1, le=24 * 60),
+) -> RevertRecentPickOutcomesResponse:
+    """
+    Revertir el cierre manual del usuario (user_outcome) a "automático"
+    para picks modificados en los últimos `minutes`.
+
+    Criterio:
+      - user_outcome_updated_at_utc >= now - minutes
+      - user_outcome IN ('win','loss','pending')
+    """
+    urow = get_user_by_id(conn, user_id)
+    if urow is None:
+        raise HTTPException(status_code=404, detail="user not found")
+
+    res = revert_user_outcomes_auto_for_recent_picks(
+        conn,
+        user_id=user_id,
+        minutes=minutes,
+    )
+    conn.commit()
+    return RevertRecentPickOutcomesResponse(
+        ok=True,
+        user_id=user_id,
+        minutes=int(minutes),
+        affected_picks=int(res.get("affected_picks") or 0),
     )
 
 

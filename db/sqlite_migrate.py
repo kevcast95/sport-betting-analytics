@@ -61,6 +61,70 @@ def _columns(conn: sqlite3.Connection, table: str) -> set[str]:
     return {str(r[1]) for r in cur.fetchall()}
 
 
+def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1",
+        (table,),
+    ).fetchone()
+    return row is not None
+
+
+def migrate_event_storage_add_sport(conn: sqlite3.Connection) -> bool:
+    """
+    Idempotencia multi-deporte: UNIQUE (sport, event_id, …) en snapshots/features.
+    Filas existentes (histórico fútbol) → sport='football'.
+    """
+    if not _table_exists(conn, "event_features"):
+        return False
+    if "sport" in _columns(conn, "event_features"):
+        return False
+    conn.execute("PRAGMA foreign_keys=OFF")
+    try:
+        conn.executescript(
+            """
+            BEGIN;
+            CREATE TABLE event_snapshots__m (
+              snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              sport TEXT NOT NULL DEFAULT 'football',
+              event_id INTEGER NOT NULL,
+              dataset TEXT NOT NULL,
+              captured_at_utc TEXT NOT NULL,
+              payload_raw TEXT NOT NULL,
+              source TEXT,
+              UNIQUE(sport, event_id, dataset, captured_at_utc)
+            );
+            INSERT INTO event_snapshots__m (
+              event_id, dataset, captured_at_utc, payload_raw, source, sport
+            )
+            SELECT event_id, dataset, captured_at_utc, payload_raw, source, 'football'
+            FROM event_snapshots;
+            DROP TABLE event_snapshots;
+            ALTER TABLE event_snapshots__m RENAME TO event_snapshots;
+
+            CREATE TABLE event_features__m (
+              feature_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              sport TEXT NOT NULL DEFAULT 'football',
+              event_id INTEGER NOT NULL,
+              captured_at_utc TEXT NOT NULL,
+              features_json TEXT NOT NULL,
+              processor_versions_json TEXT NOT NULL,
+              UNIQUE(sport, event_id, captured_at_utc)
+            );
+            INSERT INTO event_features__m (
+              event_id, captured_at_utc, features_json, processor_versions_json, sport
+            )
+            SELECT event_id, captured_at_utc, features_json, processor_versions_json, 'football'
+            FROM event_features;
+            DROP TABLE event_features;
+            ALTER TABLE event_features__m RENAME TO event_features;
+            COMMIT;
+            """
+        )
+    finally:
+        conn.execute("PRAGMA foreign_keys=ON")
+    return True
+
+
 def _add_column(conn: sqlite3.Connection, table: str, ddl: str) -> None:
     conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
 
@@ -108,6 +172,8 @@ def _backfill_bankroll_delta_applied_cop(conn: sqlite3.Connection) -> None:
 def apply_migrations(conn: sqlite3.Connection) -> list[str]:
     """Aplica migraciones pendientes. Retorna lista de descripciones aplicadas."""
     applied: list[str] = []
+    if migrate_event_storage_add_sport(conn):
+        applied.append("event_snapshots/event_features.sport + UNIQUE compuesto")
     if relax_picks_selection_constraint(conn):
         applied.append("picks.selection (relax CHECK)")
 

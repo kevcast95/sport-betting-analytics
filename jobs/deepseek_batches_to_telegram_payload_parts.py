@@ -38,6 +38,11 @@ from core.scraped_odds_anchor import (  # noqa: E402
     recompute_edge_pct_at_new_odds,
     scraped_decimal_odds_for_pick,
 )
+from core.tennis_deepseek_contract import (  # noqa: E402
+    TENNIS_SYSTEM_PROMPT,
+    build_tennis_user_prompt_instructions,
+    infer_sport_from_batch,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -92,6 +97,12 @@ def _selection_display(market: str, selection: str, ec: Dict[str, Any]) -> str:
     away = ec.get("away_team") or "Away"
     mk = str(market)
     sel = str(selection)
+    if mk in ("Match winner", "Winner", "To win match"):
+        if sel == "1":
+            return f"1 ({home})"
+        if sel == "2":
+            return f"2 ({away})"
+        return sel
     if mk == "1X2":
         if sel == "1":
             return f"1 ({home})"
@@ -103,7 +114,9 @@ def _selection_display(market: str, selection: str, ec: Dict[str, Any]) -> str:
     return sel
 
 
-def _build_system_prompt() -> str:
+def _build_system_prompt(*, sport: str) -> str:
+    if sport == "tennis":
+        return TENNIS_SYSTEM_PROMPT
     return (
         "Eres un analista de fútbol para apuestas. "
         "Debes producir SOLO JSON válido (sin markdown, sin texto adicional). "
@@ -112,8 +125,12 @@ def _build_system_prompt() -> str:
     )
 
 
-def _build_user_prompt(batch: Dict[str, Any], *, date_str: str) -> str:
-    # Nota: pedimos picks por evento; el runner completa label/league/local_time y la selección de 1X2 con paréntesis.
+def _build_user_prompt(batch: Dict[str, Any], *, date_str: str, sport: str) -> str:
+    if sport == "tennis":
+        return (
+            build_tennis_user_prompt_instructions(date_str=date_str)
+            + f"{json.dumps(batch, ensure_ascii=False)}\n"
+        )
     return (
         f"Fecha de referencia: {date_str}.\n"
         "Tarea: con el lote `batch` (campo ds_input), elige picks para cada evento.\n\n"
@@ -285,7 +302,30 @@ def _parse_model_output(content: str) -> Dict[str, Any]:
 def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], *, date_str: str, exec_id: str, title: str) -> Dict[str, Any]:
     ds_input: List[Dict[str, Any]] = list(batch.get("ds_input") or [])
     daily_run_id = batch.get("daily_run_id")
-    header = {"title": title, "date": date_str, "daily_run_id": daily_run_id, "pick_count": 0}
+    sport = infer_sport_from_batch(batch)
+    tennis_require_scraped = os.environ.get(
+        "ALTEA_TENNIS_REQUIRE_SCRAPED_ODDS", "1"
+    ).lower() not in ("0", "false", "no")
+    allowed_tennis_markets = {
+        x.strip().lower()
+        for x in os.environ.get(
+            "ALTEA_TENNIS_ALLOWED_MARKETS",
+            "Match winner,Winner,To win match",
+        ).split(",")
+        if x.strip()
+    }
+    raw_floor = os.environ.get("ALTEA_MIN_CANDIDATE_ODDS", "1.30").strip()
+    try:
+        min_candidate_odds = max(1.0, float(raw_floor))
+    except ValueError:
+        min_candidate_odds = 1.30
+    header = {
+        "title": title,
+        "date": date_str,
+        "daily_run_id": daily_run_id,
+        "pick_count": 0,
+        "min_candidate_odds": round(min_candidate_odds, 2),
+    }
 
     # Map event_id -> picks list
     picks_map: Dict[int, List[Dict[str, Any]]] = {}
@@ -304,6 +344,8 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
 
     events: List[Dict[str, Any]] = []
     pick_count = 0
+    tradable_pick_count = 0
+    non_tradable_pick_count = 0
     for ev in ds_input:
         eid = int(ev.get("event_id"))
         ec = ev.get("event_context") or {}
@@ -323,6 +365,10 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             razon = p.get("razon")
             if market is None or selection_code is None:
                 continue
+            if sport == "tennis":
+                mk_norm = str(market).strip().lower()
+                if mk_norm not in allowed_tennis_markets:
+                    continue
 
             # Render expects selection string.
             selection_display = _selection_display(str(market), str(selection_code), ec)
@@ -342,6 +388,18 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             else:
                 final_odds = None
                 odds_source = "model"
+
+            # Blindaje operativo tenis: evita publicar picks sin ancla de cuota scrapeada.
+            if sport == "tennis" and tennis_require_scraped and odds_source != "scraped_sofascore":
+                continue
+
+            is_tradable = bool(
+                final_odds is not None and float(final_odds) >= min_candidate_odds
+            )
+            if is_tradable:
+                tradable_pick_count += 1
+            else:
+                non_tradable_pick_count += 1
 
             edge_pct_out: Optional[float] = (
                 float(edge_pct) if isinstance(edge_pct, (int, float)) else None
@@ -374,6 +432,11 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
                     "odds_source": odds_source,
                     "model_odds": model_odds,
                     "scraped_odds": scraped_odds,
+                    "tradable": is_tradable,
+                    "tradable_min_odds": round(min_candidate_odds, 2),
+                    "tradable_exclusion_reason": (
+                        None if is_tradable else "below_min_odds"
+                    ),
                 }
             )
         pick_count += len(picks_payload)
@@ -389,6 +452,8 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         )
 
     header["pick_count"] = pick_count
+    header["tradable_pick_count"] = tradable_pick_count
+    header["non_tradable_pick_count"] = non_tradable_pick_count
     return {"header": header, "events": events}
 
 
@@ -399,7 +464,6 @@ def main() -> None:
         print(f"Error: falta env var {args.api_key_env}", file=sys.stderr)
         sys.exit(2)
 
-    system_prompt = _build_system_prompt()
     files = sorted(glob.glob(args.input_glob))
     if not files:
         print(f"Error: no se encontraron batches con glob: {args.input_glob}", file=sys.stderr)
@@ -412,7 +476,9 @@ def main() -> None:
         with open(path, "r", encoding="utf-8") as f:
             batch = json.load(f)
 
-        user_prompt = _build_user_prompt(batch, date_str=args.date)
+        sport = infer_sport_from_batch(batch)
+        system_prompt = _build_system_prompt(sport=sport)
+        user_prompt = _build_user_prompt(batch, date_str=args.date, sport=sport)
         retries = 0
         last_err: Optional[Exception] = None
 

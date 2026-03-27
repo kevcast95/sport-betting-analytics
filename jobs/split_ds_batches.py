@@ -30,6 +30,7 @@ def _slim(data: Dict[str, Any]) -> Dict[str, Any]:
     keys = (
         "job",
         "daily_run_id",
+        "sport",
         "captured_at_utc",
         "contract",
         "schedule_timezone",
@@ -69,7 +70,8 @@ def main() -> None:
     n = len(ds_in)
     if n == 0:
         print("ds_input vacío; no se generan lotes.", file=sys.stderr)
-        sys.exit(1)
+        # No es un error operativo: simplemente no hay eventos para analizar en esta ventana.
+        sys.exit(0)
 
     total_batches = math.ceil(n / chunk)
     prefix = Path(args.output_prefix)

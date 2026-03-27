@@ -4,8 +4,7 @@ import json
 import os
 import sys
 import time
-import urllib.request
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import Any, List, Optional
 
 
@@ -19,6 +18,10 @@ from db.repositories.daily_runs_repo import (
     get_daily_run,
     update_status,
 )  # noqa: E402
+
+from core.sofascore_http import sofascore_get_json  # noqa: E402
+from core.sofascore_payload_extract import extract_event_ids_from_scheduled_payload  # noqa: E402
+from core.tennis_daily_schedule import tennis_event_ids_for_date  # noqa: E402
 
 from jobs.persist_event_bundle import persist_event_bundle  # noqa: E402
 
@@ -35,10 +38,24 @@ def _validate_run_date(date_str: str) -> None:
         )
         sys.exit(2)
     try:
-        datetime.strptime(s, "%Y-%m-%d")
+        parsed = datetime.strptime(s, "%Y-%m-%d").date()
     except ValueError:
         print(f"Error: --date inválida {date_str!r}; usa formato YYYY-MM-DD.", file=sys.stderr)
         sys.exit(2)
+    # Evita typos tipo 2016 en lugar de 2026 (run huérfano: dashboard no lo ve con la fecha real).
+    if os.environ.get("ALTEA_ALLOW_DIVERGENT_INGEST_DATE", "").lower() not in (
+        "1",
+        "true",
+        "yes",
+    ):
+        today = date.today()
+        if abs(parsed - today) > timedelta(days=400):
+            print(
+                f"Error: --date={date_str} está a más de ~400 días de hoy ({today.isoformat()}). "
+                "¿Typo de año? Para forzar, exporta ALTEA_ALLOW_DIVERGENT_INGEST_DATE=1.",
+                file=sys.stderr,
+            )
+            sys.exit(2)
 
 
 def parse_args() -> argparse.Namespace:
@@ -55,44 +72,9 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def _extract_event_ids(payload: Any) -> List[int]:
-    # SofaScore suele devolver dict con array dentro, pero soportamos formas variadas.
-    if isinstance(payload, list):
-        ids = []
-        for it in payload:
-            if isinstance(it, dict) and "id" in it:
-                ids.append(int(it["id"]))
-            elif isinstance(it, int):
-                ids.append(it)
-        return ids
-
-    if isinstance(payload, dict):
-        for key in ("events", "scheduledEvents", "scheduled_events"):
-            if key in payload and isinstance(payload[key], list):
-                return _extract_event_ids(payload[key])
-        if "id" in payload:
-            try:
-                return [int(payload["id"])]
-            except Exception:
-                return []
-    return []
-
-
 def _fetch_scheduled_events(sport: str, date: str) -> Any:
     url = f"https://www.sofascore.com/api/v1/sport/{sport}/scheduled-events/{date}"
-    req = urllib.request.Request(
-        url,
-        headers={
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Referer": "https://www.sofascore.com/",
-            "Origin": "https://www.sofascore.com",
-            "User-Agent": "Mozilla/5.0",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        raw = resp.read().decode("utf-8")
-    return json.loads(raw)
+    return sofascore_get_json(url)
 
 
 async def _run(args: argparse.Namespace) -> None:
@@ -114,10 +96,17 @@ async def _run(args: argparse.Namespace) -> None:
         if args.include_finished:
             os.environ["INCLUDE_FINISHED"] = "true"
 
-        payload = _fetch_scheduled_events(args.sport, args.date)
-        event_ids = _extract_event_ids(payload)
-        if args.limit is not None:
-            event_ids = event_ids[: int(args.limit)]
+        sport_l = str(args.sport).strip().lower()
+        if sport_l == "tennis":
+            event_ids = tennis_event_ids_for_date(
+                args.date,
+                limit=args.limit,
+            )
+        else:
+            payload = _fetch_scheduled_events(args.sport, args.date)
+            event_ids = extract_event_ids_from_scheduled_payload(payload)
+            if args.limit is not None:
+                event_ids = event_ids[: int(args.limit)]
 
         if not event_ids:
             raise RuntimeError("No eventIds returned by scheduled-events endpoint.")
@@ -126,6 +115,12 @@ async def _run(args: argparse.Namespace) -> None:
         print(f"  daily_run_id: {daily_run_id}", flush=True)
         print(f"  run_date: {args.date}", flush=True)
         print(f"  sport: {args.sport}", flush=True)
+        if sport_l == "tennis":
+            print(
+                "  schedule_source: tennis P0 (scheduled-tournaments → unique-tournament/events), "
+                "fallback scheduled-events",
+                flush=True,
+            )
         print(f"  event_ids_fetched: {len(event_ids)}", flush=True)
         print(f"  event_ids (primeros 10): {event_ids[:10]}", flush=True)
         print(f"  captured_at_utc: {captured_at_utc}", flush=True)
@@ -140,6 +135,7 @@ async def _run(args: argparse.Namespace) -> None:
                 event_id=event_id,
                 conn=conn,
                 captured_at_utc=captured_at_utc,
+                sport=args.sport,
             )
             if ok:
                 persisted += 1

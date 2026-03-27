@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { ListPagination } from '@/components/ListPagination'
+import { useParams } from 'react-router-dom'
+import { ViewContextBar } from '@/components/ViewContextBar'
 import { fetchJson } from '@/lib/api'
+import { useListPageSize } from '@/hooks/useListPageSize'
 import type { DailyRunEventsInspectOut } from '@/types/api'
 
 function pretty(v: unknown): string {
@@ -14,6 +18,15 @@ function pretty(v: unknown): string {
 export default function RunEventsPage() {
   const { dailyRunId } = useParams()
   const runId = Number(dailyRunId)
+  const [eventQuery, setEventQuery] = useState('')
+  const [pickQuery, setPickQuery] = useState('')
+  const [eventListPage, setEventListPage] = useState(0)
+  const { pageSize: eventPageSize, setPageSize: setEventPageSize } =
+    useListPageSize()
+
+  useEffect(() => {
+    setEventListPage(0)
+  }, [eventQuery, pickQuery, eventPageSize])
 
   const q = useQuery({
     queryKey: ['run-events', runId],
@@ -22,21 +35,65 @@ export default function RunEventsPage() {
       fetchJson<DailyRunEventsInspectOut>(`/daily-runs/${runId}/events?limit=1000`),
   })
 
+  const filteredItems = useMemo(() => {
+    const items = q.data?.items ?? []
+    const eq = eventQuery.trim().toLowerCase()
+    const pq = pickQuery.trim().toLowerCase()
+    return items.filter((e) => {
+      const eventText = [
+        String(e.event_id),
+        e.event_label ?? '',
+        e.league ?? '',
+      ]
+        .join(' ')
+        .toLowerCase()
+      if (eq && !eventText.includes(eq)) return false
+      if (!pq) return true
+      if (!e.in_ds_input) return false
+      return eventText.includes(pq)
+    })
+  }, [q.data?.items, eventQuery, pickQuery])
+
+  const eventTotal = filteredItems.length
+
+  useEffect(() => {
+    const maxP =
+      eventTotal <= 0 ? 0 : Math.max(0, Math.ceil(eventTotal / eventPageSize) - 1)
+    if (eventListPage > maxP) setEventListPage(maxP)
+  }, [eventTotal, eventPageSize, eventListPage])
+
+  const eventPageSafe =
+    eventTotal <= 0
+      ? 0
+      : Math.min(
+          eventListPage,
+          Math.max(0, Math.ceil(eventTotal / eventPageSize) - 1),
+        )
+  const eventsPageSlice = useMemo(() => {
+    const start = eventPageSafe * eventPageSize
+    return filteredItems.slice(start, start + eventPageSize)
+  }, [filteredItems, eventPageSafe, eventPageSize])
+
   return (
     <div>
-      <div className="mb-4 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Inspector de eventos</h2>
-          <p className="text-sm text-app-muted">
-            Snapshot por evento del run: contexto, diagnósticos y datos procesados.
-          </p>
-        </div>
-        <Link
-          to={`/runs/${runId}/picks`}
-          className="text-xs font-medium text-app-fg underline decoration-app-line underline-offset-2"
-        >
-          Ir a picks del run →
-        </Link>
+      {q.data ? (
+        <ViewContextBar
+          crumbs={[
+            { label: 'Inicio', to: '/' },
+            {
+              label: `Ejecución ${q.data.run_date}`,
+              to: `/runs/${runId}/picks`,
+            },
+            { label: 'Eventos' },
+          ]}
+        />
+      ) : null}
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold tracking-tight">Eventos del run</h2>
+        <p className="mt-1 max-w-xl text-sm text-app-muted">
+          Inspector técnico: contexto, diagnósticos y snapshot procesado por
+          evento.
+        </p>
       </div>
 
       {q.isLoading && <p className="text-sm text-app-muted">Cargando eventos…</p>}
@@ -44,13 +101,45 @@ export default function RunEventsPage() {
 
       {q.data && (
         <>
-          <div className="mb-4 rounded-lg border border-app-line bg-app-card p-3 text-xs text-app-muted">
-            <span className="font-mono text-app-fg">run {q.data.daily_run_id}</span> ·{' '}
-            {q.data.run_date} · {q.data.total_events} eventos
+          <div className="mb-3 grid gap-2 sm:grid-cols-2">
+            <label className="text-xs text-app-muted">
+              Buscar evento
+              <input
+                type="text"
+                value={eventQuery}
+                onChange={(e) => setEventQuery(e.target.value)}
+                placeholder="event_id, jugador, torneo..."
+                className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
+              />
+            </label>
+            <label className="text-xs text-app-muted">
+              Buscar en eventos con pick
+              <input
+                type="text"
+                value={pickQuery}
+                onChange={(e) => setPickQuery(e.target.value)}
+                placeholder="filtra solo en picks (evento/torneo)"
+                className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
+              />
+            </label>
           </div>
+          <p className="mb-2 text-xs text-app-muted">
+            <span className="font-mono text-app-fg">{q.data.total_events}</span> eventos en
+            este run · tras filtros:{' '}
+            <span className="font-mono text-app-fg">{filteredItems.length}</span>.
+          </p>
+          <ListPagination
+            className="mb-4"
+            idPrefix="run-events"
+            page={eventPageSafe}
+            pageSize={eventPageSize}
+            total={eventTotal}
+            onPageChange={setEventListPage}
+            onPageSizeChange={setEventPageSize}
+          />
 
           <div className="space-y-3">
-            {q.data.items.map((e) => (
+            {eventsPageSlice.map((e) => (
               <div key={e.event_id} className="rounded-lg border border-app-line bg-app-card p-3">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="font-mono text-app-fg">event_id {e.event_id}</span>

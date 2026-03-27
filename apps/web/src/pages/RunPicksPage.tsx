@@ -1,69 +1,77 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { ListPagination } from '@/components/ListPagination'
 import { Link, useParams } from 'react-router-dom'
-import { PickTelegramCard, type PickCardData } from '@/components/PickTelegramCard'
 import {
   ComboTrackingControls,
   type ComboSavePayload,
 } from '@/components/ComboTrackingControls'
-import {
-  PickTrackingControls,
-  type PickSavePayload,
-} from '@/components/PickTrackingControls'
+import { PickInboxRow } from '@/components/PickInboxRow'
+import { ViewContextBar } from '@/components/ViewContextBar'
 import { fetchJson } from '@/lib/api'
+import { usePickOutcomeQuickMutation } from '@/hooks/usePickOutcomeQuickMutation'
+import { usePickOutcomeAutoQuickMutation } from '@/hooks/usePickOutcomeAutoQuickMutation'
 import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
-import { useUsersQuery } from '@/hooks/useUsersQuery'
+import { useListPageSize } from '@/hooks/useListPageSize'
 import { selectionShortLabel } from '@/lib/marketCopy'
-import type { TrackingBoardOut, UserOut } from '@/types/api'
+import { confidenceTierFromLabel } from '@/lib/stakeSuggestion'
+import type { TrackingBoardOut, ValidatePicksRunResponse } from '@/types/api'
 
 type BoardPick = TrackingBoardOut['picks'][number]
 
-function toCard(p: BoardPick): PickCardData {
-  const ro = p.result?.outcome
-  return {
-    pick_id: p.pick_id,
-    daily_run_id: p.daily_run_id,
-    event_id: p.event_id,
-    market: p.market,
-    selection: p.selection,
-    picked_value: p.picked_value,
-    odds_reference: p.odds_reference,
-    event_label: p.event_label,
-    league: p.league,
-    kickoff_display: p.kickoff_display,
-    kickoff_at_utc: p.kickoff_at_utc,
-    created_at_utc: p.created_at_utc,
-    result: p.result,
-    user_outcome: p.user_outcome ?? undefined,
-    system_outcome:
-      ro === 'win' || ro === 'loss' || ro === 'pending' ? ro : undefined,
-    user_taken: p.user_taken,
-    decision_origin: p.decision_origin,
-    stake_amount: p.stake_amount,
+type OddsRef = Record<string, unknown> | null | undefined
+
+function refStr(ref: OddsRef, key: string): string | undefined {
+  if (!ref || typeof ref !== 'object') return undefined
+  const v = (ref as Record<string, unknown>)[key]
+  if (v == null) return undefined
+  return String(v)
+}
+
+type PickSortMode = 'confidence' | 'kickoff'
+
+function kickoffMs(p: BoardPick): number {
+  const k = p.kickoff_at_utc
+  if (k) {
+    const t = Date.parse(k)
+    if (!Number.isNaN(t)) return t
   }
+  return Number.MAX_SAFE_INTEGER
+}
+
+function effectiveOutcome(p: BoardPick): 'win' | 'loss' | 'pending' | null {
+  const u = p.user_outcome
+  if (u === 'win' || u === 'loss' || u === 'pending') return u
+  const ro = p.result?.outcome
+  if (ro === 'win' || ro === 'loss' || ro === 'pending') return ro
+  return null
 }
 
 export default function RunPicksPage() {
   const { dailyRunId } = useParams<{ dailyRunId: string }>()
   const runId = Number(dailyRunId)
   const invalid = Number.isNaN(runId)
-  const { userId, setUserId } = useTrackingUser()
+  const { userId } = useTrackingUser()
   const { bankrollCOP } = useBankrollCOP(userId)
   const qc = useQueryClient()
-
-  const usersQ = useUsersQuery()
-  const users = useMemo(() => usersQ.data ?? [], [usersQ.data])
+  const [pickQuery, setPickQuery] = useState('')
+  /** '' = todas; valor exacto del modelo; '__sin__' = sin campo confianza */
+  const [confidenceFilter, setConfidenceFilter] = useState('')
+  const [outcomeFilter, setOutcomeFilter] = useState<
+    'all' | 'win' | 'loss' | 'pending'
+  >('all')
+  const [pickListPage, setPickListPage] = useState(0)
+  const [pickSortMode, setPickSortMode] = useState<PickSortMode>('confidence')
+  const [validateFlash, setValidateFlash] = useState<string | null>(null)
+  const { pageSize: pickPageSize, setPageSize: setPickPageSize } =
+    useListPageSize()
+  const quickOutcomeM = usePickOutcomeQuickMutation(userId)
+  const quickAutoOutcomeM = usePickOutcomeAutoQuickMutation(userId)
 
   useEffect(() => {
-    if (users.length === 0) return
-    if (userId == null) {
-      setUserId(users[0].user_id)
-      return
-    }
-    const ok = users.some((u) => u.user_id === userId)
-    if (!ok) setUserId(users[0].user_id)
-  }, [users, userId, setUserId])
+    setPickListPage(0)
+  }, [pickQuery, confidenceFilter, outcomeFilter, pickPageSize, pickSortMode])
 
   const boardQ = useQuery({
     queryKey: ['board', runId, userId],
@@ -72,42 +80,6 @@ export default function RunPicksPage() {
       fetchJson<TrackingBoardOut>(
         `/daily-runs/${runId}/board?user_id=${userId}`,
       ),
-  })
-
-  const bootstrapM = useMutation({
-    mutationFn: () => fetchJson<UserOut[]>('/users/bootstrap', { method: 'POST' }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['users'] })
-    },
-  })
-
-  const savePickM = useMutation({
-    mutationFn: async (payload: PickSavePayload) => {
-      if (userId == null) throw new Error('user')
-      const body: Record<string, unknown> = { taken: payload.taken }
-      if (payload.decision_origin !== undefined)
-        body.decision_origin = payload.decision_origin || null
-      if (payload.stake_amount !== undefined)
-        body.stake_amount = payload.stake_amount
-      if (payload.userOutcome === 'auto') body.user_outcome_auto = true
-      else if (
-        payload.userOutcome === 'win' ||
-        payload.userOutcome === 'loss' ||
-        payload.userOutcome === 'pending'
-      ) {
-        body.user_outcome = payload.userOutcome
-      }
-      return fetchJson(`/users/${userId}/picks/${payload.pickId}/taken`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-    },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['board', runId, userId] })
-      void qc.invalidateQueries({ queryKey: ['dashboard'] })
-      void qc.invalidateQueries({ queryKey: ['user', userId] })
-    },
   })
 
   const saveComboM = useMutation({
@@ -160,84 +132,159 @@ export default function RunPicksPage() {
     },
   })
 
+  const validatePicksM = useMutation({
+    mutationFn: () =>
+      fetchJson<ValidatePicksRunResponse>(
+        `/daily-runs/${runId}/validate-picks`,
+        { method: 'POST' },
+      ),
+    onSuccess: (data) => {
+      void qc.invalidateQueries({ queryKey: ['board', runId, userId] })
+      void qc.invalidateQueries({ queryKey: ['dashboard'] })
+      void qc.invalidateQueries({ queryKey: ['pick'] })
+      void qc.invalidateQueries({ queryKey: ['picks'] })
+      if (data.ok) {
+        setValidateFlash(
+          `Listo: ${data.validated} liquidados (win/loss), ${data.pending_outcomes} siguen pendientes · procesados ${data.total_processed}.`,
+        )
+      } else {
+        setValidateFlash(
+          data.message ??
+            `Falló la validación (código ${data.subprocess_exit_code}). Revisa el API / logs.`,
+        )
+      }
+    },
+    onError: (e) => {
+      setValidateFlash((e as Error).message)
+    },
+  })
+
+  const board = boardQ.data
+
+  const picksOrdered = useMemo(() => {
+    if (!board) return []
+    const score: Record<'high' | 'medium' | 'low' | 'unknown', number> = {
+      high: 3,
+      medium: 2,
+      low: 1,
+      unknown: 0,
+    }
+    const tierOf = (p: BoardPick) => {
+      const conf = refStr(p.odds_reference as OddsRef, 'confianza')
+      return confidenceTierFromLabel(conf)
+    }
+    const list = [...board.picks]
+    if (pickSortMode === 'kickoff') {
+      list.sort((a, b) => {
+        const d = kickoffMs(a) - kickoffMs(b)
+        if (d !== 0) return d
+        return b.pick_id - a.pick_id
+      })
+      return list
+    }
+    return list.sort((a, b) => {
+      const tA = tierOf(a)
+      const tB = tierOf(b)
+      const d = score[tB] - score[tA]
+      if (d !== 0) return d
+      return b.pick_id - a.pick_id
+    })
+  }, [board, pickSortMode])
+
+  const picksFiltered = useMemo(() => {
+    const q = pickQuery.trim().toLowerCase()
+    return picksOrdered.filter((p) => {
+      const confRaw = refStr(p.odds_reference as OddsRef, 'confianza')
+      const confTrim = confRaw?.trim() ?? ''
+
+      if (confidenceFilter === '__sin__') {
+        if (confTrim.length > 0) return false
+      } else if (confidenceFilter !== '') {
+        if (confTrim !== confidenceFilter) return false
+      }
+
+      const eff = effectiveOutcome(p)
+      if (outcomeFilter === 'win') {
+        if (eff !== 'win') return false
+      } else if (outcomeFilter === 'loss') {
+        if (eff !== 'loss') return false
+      } else if (outcomeFilter === 'pending') {
+        // `effectiveOutcome()` devuelve `null` si aún no hay información => en la UI ya se pinta como pendiente.
+        if (eff !== 'pending' && eff !== null) return false
+      }
+
+      if (!q) return true
+      const haystack = [
+        String(p.pick_id),
+        String(p.event_id),
+        p.event_label ?? '',
+        p.league ?? '',
+        p.market ?? '',
+        p.selection ?? '',
+        confTrim,
+      ]
+        .join(' ')
+        .toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [picksOrdered, pickQuery, confidenceFilter, outcomeFilter])
+
+  const pickTotal = picksFiltered.length
+
+  useEffect(() => {
+    const maxP =
+      pickTotal <= 0 ? 0 : Math.max(0, Math.ceil(pickTotal / pickPageSize) - 1)
+    if (pickListPage > maxP) setPickListPage(maxP)
+  }, [pickTotal, pickPageSize, pickListPage])
+
+  const pickPageSafe =
+    pickTotal <= 0
+      ? 0
+      : Math.min(
+          pickListPage,
+          Math.max(0, Math.ceil(pickTotal / pickPageSize) - 1),
+        )
+  const picksPageSlice = useMemo(() => {
+    const start = pickPageSafe * pickPageSize
+    return picksFiltered.slice(start, start + pickPageSize)
+  }, [picksFiltered, pickPageSafe, pickPageSize])
+
   if (invalid) {
     return <p className="text-sm text-app-muted">Run inválido.</p>
   }
 
-  const board = boardQ.data
+  const run = boardQ.data?.run
 
   return (
     <div>
-      <p className="mb-4 text-xs text-app-muted">
-        <Link
-          to="/runs"
-          className="font-medium text-violet-800 underline decoration-violet-200 underline-offset-2"
-        >
-          ← Runs
-        </Link>
-        <span className="mx-2 text-app-line">/</span>
-        <span className="font-mono">run {runId}</span>
-      </p>
+      <ViewContextBar
+        crumbs={[
+          { label: 'Inicio', to: '/' },
+          run
+            ? {
+                label: `Ejecución ${run.run_date} · ${run.sport}`,
+                to: `/runs/${runId}/events`,
+              }
+            : { label: `Run ${runId}`, to: `/runs/${runId}/events` },
+          { label: 'Picks' },
+        ]}
+      />
       <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-app-fg">
-            Picks y tracking
+            Picks del run
           </h2>
-          {board && (
-            <p className="mt-1 font-mono text-sm text-app-muted tabular-nums">
-              Fecha run <span className="text-violet-900">{board.run.run_date}</span>
-              {' · '}
-              <span className="text-sky-900">{board.run.sport}</span>
-            </p>
-          )}
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-app-muted">
+            Columna derecha: marca <strong className="text-app-fg">Gané / Perdí / Pend.</strong> sin
+            abrir la ficha. La ficha sigue siendo para tomar apuesta, monto y origen.
+          </p>
         </div>
       </div>
 
-      {usersQ.isError && (
-        <p className="mb-4 text-sm text-app-danger whitespace-pre-wrap">
-          {(usersQ.error as Error).message}
+      {userId == null && (
+        <p className="mb-4 text-sm text-app-muted">
+          Elige o crea un usuario en el menú lateral (arriba).
         </p>
-      )}
-
-      <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-violet-200/80 bg-gradient-to-r from-violet-50/90 to-white p-4 text-xs shadow-sm">
-        <span className="font-medium text-violet-900">Usuario</span>
-        <select
-          className="min-w-[12rem] rounded-md border border-violet-200 bg-white px-2 py-2 text-app-fg shadow-sm"
-          value={userId != null ? String(userId) : ''}
-          onChange={(e) => {
-            const v = e.target.value
-            setUserId(v === '' ? null : Number(v))
-          }}
-          disabled={usersQ.isLoading || users.length === 0}
-        >
-          {users.length === 0 ? (
-            <option value="">
-              {usersQ.isLoading ? 'Cargando…' : 'Sin usuarios'}
-            </option>
-          ) : (
-            users.map((u) => (
-              <option key={u.user_id} value={String(u.user_id)}>
-                {u.display_name} ({u.slug})
-              </option>
-            ))
-          )}
-        </select>
-        <button
-          type="button"
-          className="rounded-md border border-app-line bg-white px-3 py-2 text-app-fg shadow-sm disabled:opacity-40"
-          disabled={bootstrapM.isPending}
-          onClick={() => bootstrapM.mutate()}
-        >
-          Crear usuarios prueba
-        </button>
-        <p className="w-full text-[10px] leading-relaxed text-app-muted sm:w-auto sm:flex-1">
-          El bankroll en COP está en la barra lateral: ahí se basan las sugerencias
-          de monto por pick.
-        </p>
-      </div>
-
-      {userId == null && !usersQ.isLoading && users.length > 0 && (
-        <p className="text-sm text-app-muted">Elige un usuario.</p>
       )}
 
       {userId != null && boardQ.isError && (
@@ -252,64 +299,197 @@ export default function RunPicksPage() {
 
       {userId != null && board && (
         <>
-          <div className="mb-4 flex flex-wrap gap-2 text-xs">
-            <button
-              type="button"
-              className="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 font-medium text-teal-950 shadow-sm disabled:opacity-40"
-              disabled={baselinesM.isPending}
-              onClick={() => baselinesM.mutate()}
-            >
-              Congelar baseline
-            </button>
-            <button
-              type="button"
-              className="rounded-md border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 font-medium text-fuchsia-950 shadow-sm disabled:opacity-40"
-              disabled={regenCombosM.isPending}
-              onClick={() => regenCombosM.mutate()}
-            >
-              Regenerar combinadas
-            </button>
-            {baselinesM.isSuccess && (
-              <span className="self-center text-app-muted">
-                +{baselinesM.data.baselines_inserted} baselines
-              </span>
-            )}
+          <div className="mb-4 flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <button
+                type="button"
+                className="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 font-medium text-teal-950 shadow-sm disabled:opacity-40"
+                disabled={baselinesM.isPending}
+                onClick={() => baselinesM.mutate()}
+              >
+                Congelar baseline
+              </button>
+              <button
+                type="button"
+                className="rounded-md border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 font-medium text-fuchsia-950 shadow-sm disabled:opacity-40"
+                disabled={regenCombosM.isPending}
+                onClick={() => regenCombosM.mutate()}
+              >
+                Regenerar combinadas
+              </button>
+              <button
+                type="button"
+                className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 font-medium text-sky-950 shadow-sm disabled:opacity-40"
+                disabled={validatePicksM.isPending}
+                title="Ejecuta validate_picks.py solo para picks de este run (SofaScore → win/loss/pending)."
+                onClick={() => {
+                  setValidateFlash(null)
+                  validatePicksM.mutate()
+                }}
+              >
+                {validatePicksM.isPending
+                  ? 'Validando…'
+                  : `Validar vs SofaScore · ${board.run.execution_slot_label_es}`}
+              </button>
+              <div className="flex flex-wrap items-center gap-1 border-l border-app-line pl-3">
+                <span className="text-app-muted">Orden:</span>
+                <button
+                  type="button"
+                  className={`rounded-md border px-2.5 py-1.5 font-medium shadow-sm ${
+                    pickSortMode === 'confidence'
+                      ? 'border-violet-300 bg-violet-100 text-violet-950'
+                      : 'border-app-line bg-white text-app-muted hover:bg-violet-50/50'
+                  }`}
+                  onClick={() => setPickSortMode('confidence')}
+                >
+                  Confianza
+                </button>
+                <button
+                  type="button"
+                  className={`rounded-md border px-2.5 py-1.5 font-medium shadow-sm ${
+                    pickSortMode === 'kickoff'
+                      ? 'border-violet-300 bg-violet-100 text-violet-950'
+                      : 'border-app-line bg-white text-app-muted hover:bg-violet-50/50'
+                  }`}
+                  onClick={() => setPickSortMode('kickoff')}
+                >
+                  Hora del partido
+                </button>
+              </div>
+              {baselinesM.isSuccess && (
+                <span className="self-center text-app-muted">
+                  +{baselinesM.data.baselines_inserted} baselines
+                </span>
+              )}
+            </div>
+            {validateFlash ? (
+              <div className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-app-line bg-app-card px-3 py-2 text-[11px] text-app-fg">
+                <span className="min-w-0 flex-1 whitespace-pre-wrap">{validateFlash}</span>
+                <button
+                  type="button"
+                  className="shrink-0 text-app-muted hover:text-app-fg"
+                  onClick={() => setValidateFlash(null)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            ) : null}
           </div>
-
-          <p className="mb-3 text-xs text-app-muted">
-            Desliza horizontalmente · análisis y tu seguimiento van en la misma tarjeta.
-          </p>
 
           {board.picks.length === 0 ? (
             <p className="rounded-xl border border-dashed border-app-line bg-app-card p-8 text-center text-sm text-app-muted">
               Sin picks en este run (ejecuta persist_picks tras el análisis).
             </p>
           ) : (
-            <div className="-mx-1 flex gap-4 overflow-x-auto overflow-y-visible pb-4 pt-1 [scrollbar-gutter:stable] snap-x snap-mandatory">
-              {board.picks.map((p, i) => (
-                <div
-                  key={p.pick_id}
-                  className="w-[min(100vw-1.5rem,22rem)] shrink-0 snap-start"
-                >
-                  <PickTelegramCard
-                    p={toCard(p)}
-                    compact
-                    runDate={board.run.run_date}
-                    pickOrdinal={i + 1}
-                    trackingSlot={
-                      <PickTrackingControls
-                        key={`${p.pick_id}-${p.stake_amount ?? ''}`}
-                        pick={p}
-                        userId={userId}
-                        bankrollCOP={bankrollCOP}
-                        disabled={savePickM.isPending}
-                        onSave={(payload) => savePickM.mutate(payload)}
-                      />
-                    }
+            <>
+              <div className="mb-2 grid gap-3 sm:grid-cols-3 sm:items-end">
+                <label className="block text-xs text-app-muted">
+                  Buscar pick
+                  <input
+                    type="text"
+                    value={pickQuery}
+                    onChange={(e) => setPickQuery(e.target.value)}
+                    placeholder="pick_id, event_id, jugador, mercado, confianza..."
+                    className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
                   />
-                </div>
-              ))}
-            </div>
+                </label>
+                <label className="block text-xs text-app-muted">
+                  Confianza del modelo
+                  <select
+                    value={confidenceFilter}
+                    onChange={(e) => setConfidenceFilter(e.target.value)}
+                    className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
+                  >
+                    <option value="">Todas</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Media-Alta">Media-Alta</option>
+                    <option value="Media">Media</option>
+                    <option value="Baja">Baja</option>
+                    <option value="__sin__">Sin etiqueta</option>
+                  </select>
+                </label>
+                <label className="block text-xs text-app-muted">
+                  Estado del pick
+                  <select
+                    value={outcomeFilter}
+                    onChange={(e) =>
+                      setOutcomeFilter(e.target.value as typeof outcomeFilter)
+                    }
+                    className="mt-1 w-full rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg shadow-sm"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="win">Ganada</option>
+                    <option value="loss">Perdida</option>
+                    <option value="pending">Pendiente</option>
+                  </select>
+                </label>
+              </div>
+              <p className="mb-2 text-[11px] text-app-muted">
+                Filtrados:{' '}
+                <span className="font-mono text-app-fg">{picksFiltered.length}</span>
+                {' · total run: '}
+                <span className="font-mono text-app-fg">{picksOrdered.length}</span>
+              </p>
+              <ListPagination
+                className="mb-2"
+                idPrefix="run-picks"
+                page={pickPageSafe}
+                pageSize={pickPageSize}
+                total={pickTotal}
+                onPageChange={setPickListPage}
+                onPageSizeChange={setPickPageSize}
+              />
+              <div className="overflow-hidden rounded-xl border border-app-line bg-app-card shadow-sm">
+                {picksPageSlice.map((p, i) => (
+                <PickInboxRow
+                  key={p.pick_id}
+                  pickId={p.pick_id}
+                  eventId={p.event_id}
+                  href={`/picks/${p.pick_id}`}
+                  eventLabel={p.event_label}
+                  league={p.league}
+                  market={p.market}
+                  selection={p.selection}
+                  pickedValue={p.picked_value}
+                  kickoffDisplay={p.kickoff_display ?? null}
+                  executionSlotLabelEs={p.execution_slot_label_es ?? null}
+                  confidence={refStr(p.odds_reference as OddsRef, 'confianza') ?? null}
+                  outcome={effectiveOutcome(p)}
+                  userTaken={p.user_taken}
+                  ordinal={pickPageSafe * pickPageSize + i + 1}
+                  onQuickOutcome={
+                    userId != null
+                      ? (o) =>
+                          quickOutcomeM.mutate({
+                            pickId: p.pick_id,
+                            dailyRunId: runId,
+                            taken: p.user_taken ?? false,
+                            outcome: o,
+                          })
+                      : undefined
+                  }
+                  quickOutcomePending={
+                    quickOutcomeM.isPending &&
+                    quickOutcomeM.variables?.pickId === p.pick_id
+                  }
+                  onQuickAutoOutcome={
+                    userId != null
+                      ? () =>
+                          quickAutoOutcomeM.mutate({
+                            pickId: p.pick_id,
+                            dailyRunId: runId,
+                            taken: p.user_taken ?? false,
+                          })
+                      : undefined
+                  }
+                  quickAutoOutcomePending={
+                    quickAutoOutcomeM.isPending &&
+                    quickAutoOutcomeM.variables?.pickId === p.pick_id
+                  }
+                />
+                ))}
+              </div>
+            </>
           )}
 
           <h3 className="mb-1 mt-14 text-lg font-semibold tracking-tight text-violet-950">

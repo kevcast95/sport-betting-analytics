@@ -11,21 +11,23 @@ CREATE TABLE IF NOT EXISTS daily_runs (
 
 CREATE TABLE IF NOT EXISTS event_snapshots (
   snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  sport TEXT NOT NULL DEFAULT 'football', -- mismo slug que daily_runs.sport (football|tennis|…)
   event_id INTEGER NOT NULL,
   dataset TEXT NOT NULL, -- event|lineups|statistics|h2h|team_streaks|team_season_stats|odds_all|odds_featured
   captured_at_utc TEXT NOT NULL, -- ISO
   payload_raw TEXT NOT NULL, -- JSON
   source TEXT,
-  UNIQUE(event_id, dataset, captured_at_utc)
+  UNIQUE(sport, event_id, dataset, captured_at_utc)
 );
 
 CREATE TABLE IF NOT EXISTS event_features (
   feature_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  sport TEXT NOT NULL DEFAULT 'football',
   event_id INTEGER NOT NULL,
   captured_at_utc TEXT NOT NULL, -- ISO
   features_json TEXT NOT NULL, -- JSON
   processor_versions_json TEXT NOT NULL, -- JSON
-  UNIQUE(event_id, captured_at_utc)
+  UNIQUE(sport, event_id, captured_at_utc)
 );
 
 CREATE TABLE IF NOT EXISTS picks (

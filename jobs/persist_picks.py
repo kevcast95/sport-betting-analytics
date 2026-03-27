@@ -92,7 +92,14 @@ def rows_from_telegram_payload(payload: Dict[str, Any], *, daily_run_id: int) ->
                 "razon": p.get("razon"),
                 "selection_display": str(sel_display),
             }
-            for k in ("odds_source", "model_odds", "scraped_odds"):
+            for k in (
+                "odds_source",
+                "model_odds",
+                "scraped_odds",
+                "tradable",
+                "tradable_min_odds",
+                "tradable_exclusion_reason",
+            ):
                 if p.get(k) is not None:
                     odds_reference[k] = p[k]
             norm_sel = normalize_selection(sel_display, market=market_s)

@@ -49,6 +49,19 @@ def _processor_versions_json(repo_root: str) -> Dict[str, Any]:
         "processors.odds_all_processor": os.path.join(repo_root, "processors", "odds_all_processor.py"),
         "processors.odds_feature_processor": os.path.join(repo_root, "processors", "odds_feature_processor.py"),
         "processors.team_season_stats_processor": os.path.join(repo_root, "processors", "team_season_stats_processor.py"),
+        "processors.tennis_odds_processor": os.path.join(repo_root, "processors", "tennis_odds_processor.py"),
+        "processors.tennis_rankings_processor": os.path.join(
+            repo_root, "processors", "tennis_rankings_processor.py"
+        ),
+        "processors.tennis_registry_processor": os.path.join(
+            repo_root, "processors", "tennis_registry_processor.py"
+        ),
+        "processors.tennis_team_seasons_discovery_processor": os.path.join(
+            repo_root, "processors", "tennis_team_seasons_discovery_processor.py"
+        ),
+        "processors.tennis_statistics_processor": os.path.join(
+            repo_root, "processors", "tennis_statistics_processor.py"
+        ),
     }
     return {k: _sha256_file(v) for k, v in paths.items()}
 
@@ -58,6 +71,7 @@ async def persist_event_bundle(
     event_id: int,
     conn,
     captured_at_utc: Optional[str] = None,
+    sport: str = "football",
 ) -> bool:
     """
     Persistencia idempotente:
@@ -66,6 +80,7 @@ async def persist_event_bundle(
     """
     # Forzamos el path inmediatamente antes del launch (Playwright puede basarse en env runtime).
     os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.join(REPO_ROOT, "playwright-browsers")
+    sp = (sport or "football").strip().lower()
     captured = captured_at_utc
     if captured is None:
         # Idempotencia fuerte:
@@ -75,11 +90,11 @@ async def persist_event_bundle(
             """
             SELECT captured_at_utc
             FROM event_features
-            WHERE event_id = ?
+            WHERE event_id = ? AND sport = ?
             ORDER BY captured_at_utc DESC
             LIMIT 1
             """,
-            (event_id,),
+            (event_id, sp),
         )
         row = cur.fetchone()
         if row is not None and row["captured_at_utc"]:
@@ -90,13 +105,13 @@ async def persist_event_bundle(
 
     # Si ya tenemos event_features para (event_id, captured_at_utc), no recalculamos.
     already = conn.execute(
-        "SELECT 1 FROM event_features WHERE event_id = ? AND captured_at_utc = ? LIMIT 1",
-        (event_id, captured),
+        "SELECT 1 FROM event_features WHERE sport = ? AND event_id = ? AND captured_at_utc = ? LIMIT 1",
+        (sp, event_id, captured),
     ).fetchone()
     if already is not None:
         return True
 
-    bundle = await fetch_event_bundle(event_id)
+    bundle = await fetch_event_bundle(event_id, sport=sp)
     bundle_meta = bundle.get("bundle_meta") or {}
     source = str(bundle_meta.get("source") or "sofascore")
 
@@ -146,6 +161,7 @@ async def persist_event_bundle(
                 captured_at_utc=captured,
                 payload_raw=payload,
                 source=source,
+                sport=sp,
             )
         insert_event_features(
             conn=conn,
@@ -153,6 +169,7 @@ async def persist_event_bundle(
             captured_at_utc=captured,
             features_json=features_json,
             processor_versions_json=versions,
+            sport=sp,
         )
 
     return True
@@ -160,6 +177,7 @@ async def persist_event_bundle(
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Persistir snapshot+features de un eventId en SQLite.")
     p.add_argument("--event-id", "-e", type=int, required=True)
+    p.add_argument("--sport", default="football", help="Slug daily_runs / SofaScore (football, tennis, …).")
     p.add_argument("--db", required=True)
     p.add_argument("--captured-at-utc", type=str, default=None, help="ISO datetime (opcional).")
     p.add_argument(
@@ -185,6 +203,7 @@ def main() -> None:
             event_id=args.event_id,
             conn=conn,
             captured_at_utc=args.captured_at_utc,
+            sport=args.sport,
         )
     )
     result = {

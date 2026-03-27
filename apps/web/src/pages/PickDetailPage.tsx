@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import {
   OutcomeFeedbackBlock,
   type PickCardData,
@@ -17,6 +17,8 @@ import {
   describeMarketKind,
   describeSelectionPlain,
 } from '@/lib/marketCopy'
+import { ViewContextBar } from '@/components/ViewContextBar'
+import { sofascoreEventUrl } from '@/lib/sofascoreUrls'
 import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
 import type { PickDetail, PickStatusPatchResponse, TrackingBoardOut } from '@/types/api'
@@ -196,23 +198,21 @@ export default function PickDetailPage() {
     : null
   const kickoffCol = kickoffReadableCol(pick.kickoff_display ?? null)
 
+  const crumbPick =
+    title.length > 42 ? `${title.slice(0, 39)}…` : title
+
   return (
     <div className="mx-auto max-w-lg">
-      <p className="mb-4 text-xs text-app-muted">
-        <Link
-          to={`/runs/${pick.daily_run_id}/picks`}
-          className="font-medium text-violet-800 underline decoration-violet-200 underline-offset-2"
-        >
-          ← Run {pick.daily_run_id}
-        </Link>
-        <span className="mx-2 text-app-line">·</span>
-        <Link
-          to="/"
-          className="text-app-muted underline decoration-app-line underline-offset-2"
-        >
-          Dashboard
-        </Link>
-      </p>
+      <ViewContextBar
+        crumbs={[
+          { label: 'Inicio', to: '/' },
+          {
+            label: `Ejecución ${pick.daily_run_id}`,
+            to: `/runs/${pick.daily_run_id}/picks`,
+          },
+          { label: crumbPick },
+        ]}
+      />
 
       <article className="overflow-hidden rounded-2xl border border-violet-200/80 bg-app-card shadow-lg shadow-violet-100/50">
         <header className="border-b border-violet-100 bg-gradient-to-br from-violet-50 via-white to-sky-50/50 px-4 py-4">
@@ -223,12 +223,19 @@ export default function PickDetailPage() {
             <p className="mt-1 text-xs text-app-muted">{pick.league.trim()}</p>
           ) : null}
           {kickoffCol ? (
-            <p className="mt-2 text-sm leading-snug text-app-fg">
-              <span className="text-app-muted">Inicio del partido: </span>
-              <span className="font-mono font-semibold tabular-nums">
-                {kickoffCol}
-              </span>
-            </p>
+            <div className="mt-2">
+              <p className="text-sm leading-snug text-app-fg">
+                <span className="text-app-muted">Inicio del partido: </span>
+                <span className="font-mono font-semibold tabular-nums">
+                  {kickoffCol}
+                </span>
+              </p>
+              <p className="mt-1 text-[10px] leading-relaxed text-app-muted">
+                Es el horario que traía SofaScore cuando se guardó el run. Reprogramaciones
+                posteriores no se actualizan solas; compara con SofaScore si el partido se
+                movió.
+              </p>
+            </div>
           ) : null}
           {runDateLabel ? (
             <p className="mt-1 text-xs text-app-muted">
@@ -236,8 +243,18 @@ export default function PickDetailPage() {
               <span className="font-mono text-app-fg">{runDateLabel}</span>
             </p>
           ) : null}
-          <p className="mt-2 font-mono text-[10px] text-violet-700/90 tabular-nums">
-            pick #{pick.pick_id} · event {pick.event_id}
+          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] text-violet-700/90 tabular-nums">
+            <span>
+              pick #{pick.pick_id} · event {pick.event_id}
+            </span>
+            <a
+              href={sofascoreEventUrl(pick.event_id)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded border border-sky-200 bg-sky-50 px-2 py-0.5 font-sans text-[10px] font-semibold text-sky-900 no-underline hover:bg-sky-100"
+            >
+              SofaScore ↗
+            </a>
           </p>
         </header>
 

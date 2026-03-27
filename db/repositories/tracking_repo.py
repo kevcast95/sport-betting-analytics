@@ -1,6 +1,6 @@
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from db.repositories.dashboard_repo import _effective_outcome
@@ -296,3 +296,68 @@ def sync_realized_returns_for_pick(conn: sqlite3.Connection, *, pick_id: int) ->
         sync_user_pick_realized_return(
             conn, user_id=int(r["user_id"]), pick_id=pick_id
         )
+
+
+def revert_user_outcomes_auto_for_recent_picks(
+    conn: sqlite3.Connection,
+    *,
+    user_id: int,
+    minutes: int,
+) -> Dict[str, Any]:
+    """
+    Limpia el cierre manual del usuario (user_outcome) volviéndolo a "automático"
+    para picks que el usuario modificó en los últimos `minutes`.
+
+    - criterio: user_outcome_updated_at_utc >= ahora - minutes
+    - no toca: taken, stake_amount
+    - después recalcula realized_return_cop y bankroll_cop vía sync_user_pick_realized_return
+    """
+    if minutes < 1:
+        return {"affected_picks": 0}
+
+    now = _utc_now_iso()
+    cutoff_dt = datetime.now(timezone.utc) - timedelta(minutes=int(minutes))
+    cutoff_iso = cutoff_dt.isoformat()
+
+    rows = conn.execute(
+        """
+        SELECT pick_id
+        FROM user_pick_decisions
+        WHERE user_id = ?
+          AND user_outcome_updated_at_utc IS NOT NULL
+          AND user_outcome_updated_at_utc >= ?
+          AND user_outcome IN ('win','loss','pending')
+        """,
+        (user_id, cutoff_iso),
+    ).fetchall()
+    pick_ids = [int(r["pick_id"]) for r in rows]
+
+    if not pick_ids:
+        return {
+            "affected_picks": 0,
+            "reverted_picks": 0,
+            "minutes": int(minutes),
+        }
+
+    conn.execute(
+        """
+        UPDATE user_pick_decisions
+        SET user_outcome = NULL,
+            user_outcome_updated_at_utc = NULL,
+            updated_at_utc = ?
+        WHERE user_id = ?
+          AND user_outcome_updated_at_utc IS NOT NULL
+          AND user_outcome_updated_at_utc >= ?
+        """,
+        (now, user_id, cutoff_iso),
+    )
+
+    # Ajusta bankroll + realized_return para reflejar el resultado del sistema (pick_results).
+    for pid in pick_ids:
+        sync_user_pick_realized_return(conn, user_id=user_id, pick_id=pid)
+
+    return {
+        "affected_picks": len(pick_ids),
+        "reverted_picks": len(pick_ids),
+        "minutes": int(minutes),
+    }

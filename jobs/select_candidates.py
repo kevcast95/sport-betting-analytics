@@ -16,12 +16,14 @@ Scoring: cuenta endpoints OK en diagnostics (0–7).
 
 Exclusión partido terminado (operativo):
   Por defecto se rechazan eventos con match_state finished o status típico de FT (ended, full time, …).
+  Tenis además: match_state live (el API ya sabe que va en curso; evita huecos si startTimestamp va desfasado).
   Para evaluar picks sobre datos post-partido: usar --allow-finished.
 """
 
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -33,15 +35,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from db.config import get_db_config  # noqa: E402
 from db.db import connect  # noqa: E402
 from db.init_db import init_db  # noqa: E402
+from core.candidate_contract import (  # noqa: E402
+    classify_tier,
+    contract_description,
+    diagnostics_flags,
+    normalize_sport,
+    reject_reason as contract_reject_reason,
+)
 from db.repositories.daily_runs_repo import get_daily_run  # noqa: E402
 from db.repositories.event_features_repo import fetch_event_features_by_captured_at  # noqa: E402
-
-
-REQUIRED_EVENT_OK = True
-REQUIRE_LINEUPS = True
-REQUIRE_ODDS = True  # odds_all o odds_featured
-REQUIRE_H2H = True
-REQUIRE_TEAM_STREAKS = True
 
 
 def _schedule_display(event_context: Dict[str, Any], tz_name: str) -> Dict[str, Any]:
@@ -84,6 +86,8 @@ def _is_terminal_match(event_context: Dict[str, Any]) -> bool:
     st_raw = event_context.get("status")
     if isinstance(st_raw, int) and st_raw == 100:
         return True
+    if isinstance(st_raw, str) and st_raw.strip() == "100":
+        return True
     st = str(st_raw or "").lower()
     for hint in (
         "finished",
@@ -91,23 +95,19 @@ def _is_terminal_match(event_context: Dict[str, Any]) -> bool:
         "after penalt",
         "after extra time",
         "ended",
+        # Tenis / estados finales habituales en SofaScore
+        "walkover",
+        "w/o",
+        "retired",
+        "ret.",
+        "awarded",
+        "abandoned",
+        "cancelled",
+        "canceled",
     ):
         if hint in st:
             return True
     return False
-
-
-def _diagnostics_flags(d: Dict[str, Any]) -> Dict[str, bool]:
-    return {
-        "event_ok": bool(d.get("event_ok")),
-        "lineups_ok": bool(d.get("lineups_ok")),
-        "statistics_ok": bool(d.get("statistics_ok")),
-        "h2h_ok": bool(d.get("h2h_ok")),
-        "team_streaks_ok": bool(d.get("team_streaks_ok")),
-        "team_season_stats_ok": bool(d.get("team_season_stats_ok")),
-        "odds_all_ok": bool(d.get("odds_all_ok")),
-        "odds_featured_ok": bool(d.get("odds_featured_ok")),
-    }
 
 
 def _quality_score(flags: Dict[str, bool]) -> int:
@@ -115,44 +115,93 @@ def _quality_score(flags: Dict[str, bool]) -> int:
     return sum(1 for v in flags.values() if v)
 
 
-def _base_contract(flags: Dict[str, bool]) -> bool:
-    if REQUIRED_EVENT_OK and not flags["event_ok"]:
-        return False
-    if REQUIRE_LINEUPS and not flags["lineups_ok"]:
-        return False
-    if REQUIRE_H2H and not flags["h2h_ok"]:
-        return False
-    if REQUIRE_TEAM_STREAKS and not flags["team_streaks_ok"]:
-        return False
-    if REQUIRE_ODDS and not (flags["odds_all_ok"] or flags["odds_featured_ok"]):
-        return False
-    return True
+def _parse_analysis_reference_utc(raw: Optional[str]) -> datetime:
+    if raw is None or not str(raw).strip():
+        return datetime.now(timezone.utc)
+    text = str(raw).strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    dt = datetime.fromisoformat(text)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
-def _classify_tier(flags: Dict[str, bool]) -> Optional[str]:
+def _event_has_started(event_context: Dict[str, Any], *, ref_utc: datetime) -> bool:
+    raw_ts = event_context.get("start_timestamp")
+    try:
+        ts = int(raw_ts)
+    except (TypeError, ValueError):
+        return False
+    start_utc = datetime.fromtimestamp(ts, tz=timezone.utc)
+    return start_utc <= ref_utc
+
+
+def _min_lead_minutes() -> int:
+    raw = os.environ.get("ALTEA_TENNIS_MIN_LEAD_MINUTES", "45").strip()
+    try:
+        v = int(raw)
+    except ValueError:
+        return 45
+    return max(0, v)
+
+
+def _event_starts_too_soon(
+    event_context: Dict[str, Any], *, ref_utc: datetime, min_lead_minutes: int
+) -> bool:
+    raw_ts = event_context.get("start_timestamp")
+    try:
+        ts = int(raw_ts)
+    except (TypeError, ValueError):
+        return False
+    start_utc = datetime.fromtimestamp(ts, tz=timezone.utc)
+    delta_sec = (start_utc - ref_utc).total_seconds()
+    return delta_sec < (min_lead_minutes * 60)
+
+
+def _tennis_low_itf_filter_enabled() -> bool:
+    return os.environ.get("ALTEA_TENNIS_EXCLUDE_LOW_ITF", "1").lower() not in (
+        "0",
+        "false",
+        "no",
+    )
+
+
+def _tennis_tier_caps() -> tuple[int, int]:
     """
-    None si no cumple contrato base.
-    'A' si además statistics_ok; 'B' si base OK pero no statistics.
+    Tope operativo para reducir ruido antes de DS.
+    Se aplica solo en tenis, después del sort A->B por quality_score.
     """
-    if not _base_contract(flags):
-        return None
-    if flags["statistics_ok"]:
-        return "A"
-    return "B"
+    raw_a = os.environ.get("ALTEA_TENNIS_MAX_TIER_A", "12").strip()
+    raw_b = os.environ.get("ALTEA_TENNIS_MAX_TIER_B", "8").strip()
+    try:
+        cap_a = max(0, int(raw_a))
+    except ValueError:
+        cap_a = 12
+    try:
+        cap_b = max(0, int(raw_b))
+    except ValueError:
+        cap_b = 8
+    return cap_a, cap_b
 
 
-def _reject_reason(flags: Dict[str, bool]) -> str:
-    if REQUIRED_EVENT_OK and not flags["event_ok"]:
-        return "event_not_ok"
-    if REQUIRE_LINEUPS and not flags["lineups_ok"]:
-        return "lineups_not_ok"
-    if REQUIRE_H2H and not flags["h2h_ok"]:
-        return "h2h_not_ok"
-    if REQUIRE_TEAM_STREAKS and not flags["team_streaks_ok"]:
-        return "team_streaks_not_ok"
-    if REQUIRE_ODDS and not (flags["odds_all_ok"] or flags["odds_featured_ok"]):
-        return "no_odds"
-    return "unknown"
+def _is_low_itf_tournament(event_context: Dict[str, Any]) -> bool:
+    """
+    Filtro operativo para evitar torneos con baja disponibilidad en casas locales.
+    Se puede ajustar por regex vía env sin tocar código.
+    """
+    tournament = str(event_context.get("tournament") or "").strip()
+    if not tournament:
+        return False
+    rx = os.environ.get(
+        "ALTEA_TENNIS_EXCLUDE_TOURNAMENT_REGEX",
+        r"\bITF\s+W(?:15|25)\b",
+    )
+    try:
+        return re.search(rx, tournament, flags=re.IGNORECASE) is not None
+    except re.error:
+        # Si regex inválida por env, no bloquear el pipeline.
+        return False
 
 
 def parse_args() -> argparse.Namespace:
@@ -170,6 +219,17 @@ def parse_args() -> argparse.Namespace:
         help="Incluye partidos terminados (solo backtesting; operativo debe omitirlo).",
     )
     p.add_argument(
+        "--allow-started",
+        action="store_true",
+        help="Incluye partidos ya iniciados (por defecto se excluyen para ahorrar tokens).",
+    )
+    p.add_argument(
+        "--analysis-at-utc",
+        type=str,
+        default=None,
+        help="Referencia ISO UTC para filtrar eventos iniciados (default: now UTC).",
+    )
+    p.add_argument(
         "--timezone",
         type=str,
         default=os.environ.get("COPA_FOXKIDS_TZ", "America/Bogota"),
@@ -185,8 +245,11 @@ def run(args: argparse.Namespace) -> None:
 
     daily = get_daily_run(conn, args.daily_run_id)
     captured_at_utc = str(daily["created_at_utc"])
+    sport = normalize_sport(daily["sport"])
 
-    rows = fetch_event_features_by_captured_at(conn, captured_at_utc)
+    rows = fetch_event_features_by_captured_at(conn, captured_at_utc, sport=sport)
+    analysis_ref_utc = _parse_analysis_reference_utc(args.analysis_at_utc)
+    lead_minutes = _min_lead_minutes()
 
     candidates: List[Dict[str, Any]] = []
     rejected: List[Dict[str, Any]] = []
@@ -199,6 +262,104 @@ def run(args: argparse.Namespace) -> None:
 
         event_context = features.get("event_context") or {}
         match_state = str(event_context.get("match_state") or "").lower()
+        if not args.allow_started and _event_has_started(
+            event_context, ref_utc=analysis_ref_utc
+        ):
+            reasons["match_started"] = reasons.get("match_started", 0) + 1
+            rejected_reason_by_event[event_id] = "match_started"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "match_started",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "start_timestamp": event_context.get("start_timestamp"),
+                    "analysis_ref_utc": analysis_ref_utc.isoformat(),
+                }
+            )
+            continue
+        if (
+            sport == "tennis"
+            and not args.allow_started
+            and _event_starts_too_soon(
+                event_context,
+                ref_utc=analysis_ref_utc,
+                min_lead_minutes=lead_minutes,
+            )
+        ):
+            reasons["match_start_too_soon"] = reasons.get("match_start_too_soon", 0) + 1
+            rejected_reason_by_event[event_id] = "match_start_too_soon"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "match_start_too_soon",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "start_timestamp": event_context.get("start_timestamp"),
+                    "analysis_ref_utc": analysis_ref_utc.isoformat(),
+                    "min_lead_minutes": lead_minutes,
+                }
+            )
+            continue
+        # Tenis: si el API ya marca en vivo, descartar aunque startTimestamp esté mal
+        # (evita picks cuando el reloj de programación no coincide con la realidad).
+        if (
+            sport == "tennis"
+            and not args.allow_started
+            and match_state == "live"
+        ):
+            reasons["match_live"] = reasons.get("match_live", 0) + 1
+            rejected_reason_by_event[event_id] = "match_live"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "match_live",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "start_timestamp": event_context.get("start_timestamp"),
+                    "status": event_context.get("status"),
+                }
+            )
+            continue
+        # Tenis: en modo operativo solo consideramos pre-partido claro.
+        # Si llega un estado ambiguo/distinto de not started, se excluye para
+        # evitar ruido (ej. snapshots inconsistentes con status textual).
+        if (
+            sport == "tennis"
+            and not args.allow_started
+            and match_state != "not started"
+        ):
+            reasons["match_not_pre_match"] = reasons.get("match_not_pre_match", 0) + 1
+            rejected_reason_by_event[event_id] = "match_not_pre_match"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "match_not_pre_match",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "status": event_context.get("status"),
+                }
+            )
+            continue
+        if (
+            sport == "tennis"
+            and _tennis_low_itf_filter_enabled()
+            and _is_low_itf_tournament(event_context)
+        ):
+            reasons["tournament_not_operable_book"] = (
+                reasons.get("tournament_not_operable_book", 0) + 1
+            )
+            rejected_reason_by_event[event_id] = "tournament_not_operable_book"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "tournament_not_operable_book",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "tournament": event_context.get("tournament"),
+                }
+            )
+            continue
         if not args.allow_finished and _is_terminal_match(event_context):
             reasons["match_finished"] = reasons.get("match_finished", 0) + 1
             rejected_reason_by_event[event_id] = "match_finished"
@@ -206,7 +367,7 @@ def run(args: argparse.Namespace) -> None:
                 {
                     "event_id": event_id,
                     "reason": "match_finished",
-                    "diagnostics": _diagnostics_flags(features.get("diagnostics") or {}),
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
                     "match_state": match_state,
                     "status": event_context.get("status"),
                 }
@@ -214,9 +375,9 @@ def run(args: argparse.Namespace) -> None:
             continue
 
         diagnostics = features.get("diagnostics") or {}
-        flags = _diagnostics_flags(diagnostics)
+        flags = diagnostics_flags(diagnostics)
         score = _quality_score(flags)
-        tier = _classify_tier(flags)
+        tier = classify_tier(flags, sport=sport)
 
         if tier is not None:
             candidates.append(
@@ -228,14 +389,23 @@ def run(args: argparse.Namespace) -> None:
                 }
             )
         else:
-            reason = _reject_reason(flags)
+            reason = contract_reject_reason(
+                flags, str(event_context.get("match_state") or ""), sport=sport
+            ) or "unknown"
             rejected_reason_by_event[event_id] = reason
             reasons[reason] = reasons.get(reason, 0) + 1
             rejected.append({"event_id": event_id, "reason": reason, "diagnostics": flags})
 
     # Tier A primero, luego B; dentro de cada tier, mayor quality_score
     candidates.sort(key=lambda x: (0 if x["tier"] == "A" else 1, -x["quality_score"]))
-    top = candidates[: args.limit]
+    if sport == "tennis":
+        cap_a, cap_b = _tennis_tier_caps()
+        a_rows = [c for c in candidates if c["tier"] == "A"][:cap_a]
+        b_rows = [c for c in candidates if c["tier"] == "B"][:cap_b]
+        candidates_capped = a_rows + b_rows
+        top = candidates_capped[: args.limit]
+    else:
+        top = candidates[: args.limit]
 
     tier_counts: Dict[str, int] = {}
     for c in candidates:
@@ -244,15 +414,13 @@ def run(args: argparse.Namespace) -> None:
     for c in top:
         tier_selected[c["tier"]] = tier_selected.get(c["tier"], 0) + 1
 
+    desc = contract_description(sport=sport)
     result = {
         "job": "select_candidates",
         "daily_run_id": args.daily_run_id,
+        "sport": sport,
         "captured_at_utc": captured_at_utc,
-        "contract": {
-            "base": "event_ok + lineups_ok + h2h_ok + team_streaks_ok + (odds_all_ok | odds_featured_ok)",
-            "tier_A": "base + statistics_ok",
-            "tier_B": "base sin statistics_ok (fallback)",
-        },
+        "contract": desc,
         "total_events": len(rows),
         "passed_filters": len(candidates),
         "tier_counts_all_passed": tier_counts,
@@ -262,6 +430,9 @@ def run(args: argparse.Namespace) -> None:
         "tier_selected": tier_selected,
         "candidates_detail": top,
     }
+    if sport == "tennis":
+        cap_a, cap_b = _tennis_tier_caps()
+        result["tennis_tier_caps"] = {"max_tier_a": cap_a, "max_tier_b": cap_b}
 
     ds_input: List[Dict[str, Any]] = []
     event_ids_selected = [c["event_id"] for c in top]
@@ -298,6 +469,7 @@ def run(args: argparse.Namespace) -> None:
             ds_input.append(
                 {
                     "event_id": eid,
+                    "sport": sport,
                     "selection_tier": tier_by_id.get(eid),
                     "schedule_display": _schedule_display(ec, tz),
                     "event_context": ec,
@@ -388,6 +560,11 @@ def run(args: argparse.Namespace) -> None:
         '{ "picks": [ { "event_id": int, "market": "1X2", "selection": "1"|"X"|"2", '
         '"picked_value": float?, "odds_reference": {}? } ] }'
     )
+    if sport == "tennis":
+        print(
+            "Tenis: 1=jugador local (homeTeam), 2=visitante; processed.tennis_odds resume mercados; "
+            "X casi nunca aplica."
+        )
     print("Tier B implica menor cobertura de estadísticas de equipo en vivo; ponderar confianza.")
     print("=== FIN PAYLOAD DS ===\n")
 

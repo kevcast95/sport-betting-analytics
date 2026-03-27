@@ -10,8 +10,5 @@ export function isPickTrackingLocked(
 export function usePickTrackingLock(
   matchState: string | null | undefined,
 ): boolean {
-  return useMemo(
-    () => isPickTrackingLocked(matchState),
-    [matchState],
-  )
+  return useMemo(() => isPickTrackingLocked(matchState), [matchState])
 }

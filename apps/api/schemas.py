@@ -77,6 +77,8 @@ class PickSummary(BaseModel):
         default=None,
         description="YYYY-MM-DD del daily_run (día del análisis / listado).",
     )
+    execution_slot: Optional[Literal["morning", "evening", "night", "unknown"]] = None
+    execution_slot_label_es: Optional[str] = None
 
 
 class PickDetail(PickSummary):
@@ -213,6 +215,41 @@ class DailyRunBoardOut(BaseModel):
     run_date: str
     sport: str
     status: str
+    created_at_utc: str = Field(
+        ...,
+        description="Cuándo se creó el run en UTC (para inferir cohorte mañana/tarde).",
+    )
+    execution_slot: Literal["morning", "evening", "night"] = Field(
+        ...,
+        description="Cohorte horaria local (ALTEA_VALIDATE_* / COPA_FOXKIDS_TZ): morning=[8,16), evening=[16,24), night=resto.",
+    )
+    execution_slot_label_es: str = Field(
+        ...,
+        description="Etiqueta corta en español para UI (ej. mañana 08:00–15:59).",
+    )
+
+
+class ValidatePicksRunResponse(BaseModel):
+    ok: bool
+    daily_run_id: int
+    execution_slot: Literal["morning", "evening", "night"]
+    execution_slot_label_es: str
+    total_processed: int = 0
+    validated: int = 0
+    pending_outcomes: int = 0
+    pending_before_filter: int = 0
+    subprocess_exit_code: int = 0
+    message: Optional[str] = None
+    log_excerpt: Optional[str] = Field(
+        None, description="Fragmento de salida del job para depuración."
+    )
+
+
+class RevertRecentPickOutcomesResponse(BaseModel):
+    ok: bool
+    user_id: int
+    minutes: int
+    affected_picks: int
 
 
 class TrackingBoardOut(BaseModel):
@@ -263,6 +300,14 @@ class DashboardPerformanceBlock(BaseModel):
 
 class DashboardSummaryBlock(BaseModel):
     run_date: str
+    sport: Optional[str] = Field(
+        None,
+        description="Deporte usado para filtrar picks y run (ej. football, tennis).",
+    )
+    primary_daily_run_id: Optional[int] = Field(
+        None,
+        description="Último daily_run_id del día (misma run_date); enlaces directos a tablero / inspector.",
+    )
     events_total: int = 0
     selection_passed_filters: int = 0
     selection_rejected: int = 0
@@ -274,6 +319,27 @@ class DashboardSummaryBlock(BaseModel):
     outcome_wins: int
     outcome_losses: int
     outcome_pending: int
+    settled_count: int = 0
+    roi_unit: Optional[float] = Field(
+        None,
+        description="ROI unitario sobre picks settled (win/loss), usando stake 1 por pick.",
+    )
+    settled_count_tradable: int = Field(
+        0,
+        description="Cantidad de picks settled con cuota >= min_tradable_odds.",
+    )
+    settled_count_below_min_odds: int = Field(
+        0,
+        description="Cantidad de picks settled excluidos del ROI tradable por cuota baja.",
+    )
+    min_tradable_odds: Optional[float] = Field(
+        None,
+        description="Piso de cuota usado para separar ROI tradable (env ALTEA_MIN_TRADABLE_ODDS).",
+    )
+    roi_unit_tradable: Optional[float] = Field(
+        None,
+        description="ROI unitario sobre picks settled con cuota >= min_tradable_odds.",
+    )
     picks_taken_count: int
     taken_outcome_wins: int = 0
     taken_outcome_losses: int = 0
@@ -316,6 +382,8 @@ class DashboardRecentPick(BaseModel):
     kickoff_display: Optional[str] = None
     kickoff_at_utc: Optional[str] = None
     match_state: Optional[str] = None
+    execution_slot: Optional[Literal["morning", "evening", "night", "unknown"]] = None
+    execution_slot_label_es: Optional[str] = None
     selection_display: Optional[str] = None
     odds_reference: Optional[Any] = Field(
         None, description="Metadatos del modelo (edge, confianza, razón, etc.)"
@@ -325,6 +393,63 @@ class DashboardRecentPick(BaseModel):
 class DashboardBundleOut(BaseModel):
     summary: DashboardSummaryBlock
     recent: List[DashboardRecentPick]
+    issued_daily: List["DashboardIssuedDailyRow"] = Field(
+        default_factory=list,
+        description="Widget compacto: picks escogidos por dia (ultimos dias).",
+    )
+    rolling_by_sport: List["DashboardRollingSportRow"] = Field(
+        default_factory=list,
+        description="Histórico rolling tradable por deporte.",
+    )
+    calibration: Optional["DashboardCalibrationBlock"] = Field(
+        default=None,
+        description="Relación entre señal del modelo (confianza/edge) y resultado.",
+    )
+    recent_total: int = Field(
+        0,
+        description="Total de picks en la fecha (mismo criterio que la lista reciente: orden por created_at desc; respeta only_taken).",
+    )
+
+
+class DashboardRollingSportRow(BaseModel):
+    sport: str
+    settled_total: int
+    settled_tradable: int
+    roi_tradable_50: Optional[float] = None
+    roi_tradable_100: Optional[float] = None
+    hit_rate_tradable_50: Optional[float] = None
+    hit_rate_tradable_100: Optional[float] = None
+    drawdown_units_30d: Optional[float] = None
+
+
+class DashboardCalibrationRow(BaseModel):
+    bucket: str
+    settled: int
+    hit_rate: Optional[float] = None
+    roi_unit: Optional[float] = None
+
+
+class DashboardCalibrationBlock(BaseModel):
+    sport: str
+    min_tradable_odds: float
+    by_confidence: List[DashboardCalibrationRow] = Field(default_factory=list)
+    by_confidence_taken: List[DashboardCalibrationRow] = Field(default_factory=list)
+    by_edge: List[DashboardCalibrationRow] = Field(default_factory=list)
+    daily_trend: List["DashboardDailyTrendRow"] = Field(default_factory=list)
+
+
+class DashboardDailyTrendRow(BaseModel):
+    run_date: str
+    settled: int
+    hit_rate: Optional[float] = None
+    roi_unit: Optional[float] = None
+
+
+class DashboardIssuedDailyRow(BaseModel):
+    run_date: str
+    picks_total: int
+    picks_tradable: int
+    picks_taken: Optional[int] = None
 
 
 class EffectivenessReportStatusOut(BaseModel):

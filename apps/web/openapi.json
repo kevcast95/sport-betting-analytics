@@ -124,6 +124,45 @@
             "description": "Si true, la lista reciente solo incluye picks marcados como tomados"
           },
           {
+            "name": "sport",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Filtra por `daily_runs.sport` (ej. football, tennis).",
+              "default": "football",
+              "title": "Sport"
+            },
+            "description": "Filtra por `daily_runs.sport` (ej. football, tennis)."
+          },
+          {
+            "name": "recent_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Tama\u00f1o de p\u00e1gina para la lista reciente de picks.",
+              "default": 10,
+              "title": "Recent Limit"
+            },
+            "description": "Tama\u00f1o de p\u00e1gina para la lista reciente de picks."
+          },
+          {
+            "name": "recent_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "P\u00e1gina 0-based de la lista reciente (con recent_limit).",
+              "default": 0,
+              "title": "Recent Page"
+            },
+            "description": "P\u00e1gina 0-based de la lista reciente (con recent_limit)."
+          },
+          {
             "name": "X-Local-Api-Key",
             "in": "header",
             "required": false,
@@ -1000,6 +1039,130 @@
         }
       }
     },
+    "/daily-runs/{daily_run_id}/validate-picks": {
+      "post": {
+        "summary": "Api Validate Picks For Run",
+        "description": "Ejecuta jobs/validate_picks.py para este daily_run_id (SofaScore \u2192 pick_results).\nLa cohorte ma\u00f1ana/tarde en la etiqueta se infiere de created_at_utc del run.",
+        "operationId": "api_validate_picks_for_run_daily_runs__daily_run_id__validate_picks_post",
+        "parameters": [
+          {
+            "name": "daily_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Daily Run Id"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidatePicksRunResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/picks/revert-recent-outcomes": {
+      "post": {
+        "summary": "Api Revert Recent Pick Outcomes",
+        "description": "Revertir el cierre manual del usuario (user_outcome) a \"autom\u00e1tico\"\npara picks modificados en los \u00faltimos `minutes`.\n\nCriterio:\n  - user_outcome_updated_at_utc >= now - minutes\n  - user_outcome IN ('win','loss','pending')",
+        "operationId": "api_revert_recent_pick_outcomes_users__user_id__picks_revert_recent_outcomes_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "minutes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1440,
+              "minimum": 1,
+              "default": 90,
+              "title": "Minutes"
+            }
+          },
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevertRecentPickOutcomesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{user_id}/picks/{pick_id}/taken": {
       "put": {
         "summary": "Api Put Pick Taken",
@@ -1451,6 +1614,26 @@
           "status": {
             "type": "string",
             "title": "Status"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "title": "Created At Utc",
+            "description": "Cu\u00e1ndo se cre\u00f3 el run en UTC (para inferir cohorte ma\u00f1ana/tarde)."
+          },
+          "execution_slot": {
+            "type": "string",
+            "enum": [
+              "morning",
+              "evening",
+              "night"
+            ],
+            "title": "Execution Slot",
+            "description": "Cohorte horaria local (ALTEA_VALIDATE_* / COPA_FOXKIDS_TZ): morning=[8,16), evening=[16,24), night=resto."
+          },
+          "execution_slot_label_es": {
+            "type": "string",
+            "title": "Execution Slot Label Es",
+            "description": "Etiqueta corta en espa\u00f1ol para UI (ej. ma\u00f1ana 08:00\u201315:59)."
           }
         },
         "type": "object",
@@ -1458,7 +1641,10 @@
           "daily_run_id",
           "run_date",
           "sport",
-          "status"
+          "status",
+          "created_at_utc",
+          "execution_slot",
+          "execution_slot_label_es"
         ],
         "title": "DailyRunBoardOut"
       },
@@ -1682,6 +1868,12 @@
             },
             "type": "array",
             "title": "Recent"
+          },
+          "recent_total": {
+            "type": "integer",
+            "title": "Recent Total",
+            "description": "Total de picks en la fecha (mismo criterio que la lista reciente: orden por created_at desc; respeta only_taken).",
+            "default": 0
           }
         },
         "type": "object",
@@ -1963,6 +2155,30 @@
             "type": "string",
             "title": "Run Date"
           },
+          "sport": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sport",
+            "description": "Deporte usado para filtrar picks y run (ej. football, tennis)."
+          },
+          "primary_daily_run_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Daily Run Id",
+            "description": "\u00daltimo daily_run_id del d\u00eda (misma run_date); enlaces directos a tablero / inspector."
+          },
           "events_total": {
             "type": "integer",
             "title": "Events Total",
@@ -2019,6 +2235,23 @@
           "outcome_pending": {
             "type": "integer",
             "title": "Outcome Pending"
+          },
+          "settled_count": {
+            "type": "integer",
+            "title": "Settled Count",
+            "default": 0
+          },
+          "roi_unit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Unit",
+            "description": "ROI unitario sobre picks settled (win/loss), usando stake 1 por pick."
           },
           "picks_taken_count": {
             "type": "integer",
@@ -2849,6 +3082,34 @@
         ],
         "title": "RegenerateCombosResponse"
       },
+      "RevertRecentPickOutcomesResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "minutes": {
+            "type": "integer",
+            "title": "Minutes"
+          },
+          "affected_picks": {
+            "type": "integer",
+            "title": "Affected Picks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "user_id",
+          "minutes",
+          "affected_picks"
+        ],
+        "title": "RevertRecentPickOutcomesResponse"
+      },
       "SignalCheckBody": {
         "properties": {
           "slot": {
@@ -3260,6 +3521,87 @@
           "taken"
         ],
         "title": "UserPickTakenBody"
+      },
+      "ValidatePicksRunResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "daily_run_id": {
+            "type": "integer",
+            "title": "Daily Run Id"
+          },
+          "execution_slot": {
+            "type": "string",
+            "enum": [
+              "morning",
+              "evening",
+              "night"
+            ],
+            "title": "Execution Slot"
+          },
+          "execution_slot_label_es": {
+            "type": "string",
+            "title": "Execution Slot Label Es"
+          },
+          "total_processed": {
+            "type": "integer",
+            "title": "Total Processed",
+            "default": 0
+          },
+          "validated": {
+            "type": "integer",
+            "title": "Validated",
+            "default": 0
+          },
+          "pending_outcomes": {
+            "type": "integer",
+            "title": "Pending Outcomes",
+            "default": 0
+          },
+          "pending_before_filter": {
+            "type": "integer",
+            "title": "Pending Before Filter",
+            "default": 0
+          },
+          "subprocess_exit_code": {
+            "type": "integer",
+            "title": "Subprocess Exit Code",
+            "default": 0
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "log_excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Log Excerpt",
+            "description": "Fragmento de salida del job para depuraci\u00f3n."
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "daily_run_id",
+          "execution_slot",
+          "execution_slot_label_es"
+        ],
+        "title": "ValidatePicksRunResponse"
       },
       "ValidationError": {
         "properties": {

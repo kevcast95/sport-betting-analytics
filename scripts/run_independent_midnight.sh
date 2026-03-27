@@ -9,5 +9,6 @@ source .env
 set +a
 export TZ="${COPA_FOXKIDS_TZ:-America/Bogota}"
 DATE="${FECHA:-$(date +%Y-%m-%d)}"
-python3 jobs/independent_runner.py --mode midnight --date "$DATE"
+SPORT="${1:-football}"
+python3 jobs/independent_runner.py --mode midnight --sport "$SPORT" --date "$DATE"
 

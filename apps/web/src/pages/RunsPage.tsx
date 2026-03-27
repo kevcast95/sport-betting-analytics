@@ -1,17 +1,21 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { SportPillTabs } from '@/components/SportPillTabs'
 import { fetchJson } from '@/lib/api'
+import { useDashboardUrlState } from '@/hooks/useDashboardUrlState'
 import type { DailyRunPage } from '@/types/api'
 import { formatCalendarDateEs } from '@/lib/formatDateTime'
 
 const PAGE = 20
 
 export default function RunsPage() {
+  const { sport } = useDashboardUrlState()
+
   const q = useInfiniteQuery({
-    queryKey: ['daily-runs'],
+    queryKey: ['daily-runs', sport],
     initialPageParam: undefined as number | undefined,
     queryFn: async ({ pageParam }) => {
-      const sp = new URLSearchParams({ limit: String(PAGE) })
+      const sp = new URLSearchParams({ limit: String(PAGE), sport })
       if (pageParam != null) sp.set('cursor', String(pageParam))
       return fetchJson<DailyRunPage>(`/daily-runs?${sp}`)
     },
@@ -22,13 +26,29 @@ export default function RunsPage() {
 
   return (
     <div>
-      <h2 className="mb-1 text-xl font-semibold tracking-tight">Daily runs</h2>
-      <p className="mb-6 text-sm text-app-muted">
-        Paginación por cursor (keyset{' '}
+      <SportPillTabs className="mb-4 max-w-md" />
+      <h2 className="mb-1 text-xl font-semibold tracking-tight">
+        Historial de ejecuciones
+      </h2>
+      <p className="mb-6 max-w-xl text-sm text-app-muted">
+        Vista opcional por si necesitas un run concreto por ID. El flujo normal es el{' '}
+        <Link to="/" className="text-app-fg underline decoration-app-line underline-offset-2">
+          dashboard
+        </Link>
+        : eliges fecha, ves picks paginados y usas los botones del encabezado para ir a
+        picks o eventos del día. Esta tabla sigue el cursor (
         <code className="rounded bg-neutral-100 px-1 font-mono text-xs">
           daily_run_id
         </code>
-        ).
+        ). Filtro opcional:{' '}
+        <code className="rounded bg-neutral-100 px-1 font-mono text-xs">
+          ?sport=football
+        </code>{' '}
+        o{' '}
+        <code className="rounded bg-neutral-100 px-1 font-mono text-xs">
+          ?sport=tennis
+        </code>
+        .
       </p>
 
       {q.isError && (
@@ -45,7 +65,7 @@ export default function RunsPage() {
               <th className="p-2 font-normal">Fecha</th>
               <th className="p-2 font-normal">Deporte</th>
               <th className="p-2 font-normal">Estado</th>
-              <th className="p-2 font-normal"></th>
+              <th className="p-2 text-right font-normal">Vistas</th>
             </tr>
           </thead>
           <tbody>
@@ -75,16 +95,16 @@ export default function RunsPage() {
                   <td className="p-2">{r.sport}</td>
                   <td className="p-2">{r.status}</td>
                   <td className="p-2 text-right">
-                    <div className="inline-flex items-center gap-3">
+                    <div className="inline-flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
                       <Link
                         to={`/runs/${r.daily_run_id}/events`}
-                        className="text-app-fg underline decoration-app-line underline-offset-4 hover:decoration-app-fg"
+                        className="whitespace-nowrap text-app-fg underline decoration-app-line underline-offset-4 hover:decoration-app-fg"
                       >
-                        Eventos
+                        Inspector
                       </Link>
                       <Link
                         to={`/runs/${r.daily_run_id}/picks`}
-                        className="text-app-fg underline decoration-app-line underline-offset-4 hover:decoration-app-fg"
+                        className="whitespace-nowrap text-app-fg underline decoration-app-line underline-offset-4 hover:decoration-app-fg"
                       >
                         Picks
                       </Link>
