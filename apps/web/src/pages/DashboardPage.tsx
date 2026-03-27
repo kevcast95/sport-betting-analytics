@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DashboardPerformanceChart } from '@/components/DashboardPerformanceChart'
 import { PickInboxRow } from '@/components/PickInboxRow'
-import { ViewContextBar } from '@/components/ViewContextBar'
 import { fetchJson } from '@/lib/api'
 import { useBarDailyRunId } from '@/hooks/useBarDailyRunId'
 import { useDashboardUrlState } from '@/hooks/useDashboardUrlState'
@@ -137,7 +136,6 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <ViewContextBar crumbs={[{ label: 'Inicio', to: '/' }, { label: 'Dashboard' }]} />
       <div className="mb-8 flex flex-wrap items-start gap-4 border-b border-app-line pb-6">
         <label className="flex flex-col gap-1 text-xs text-app-muted">
           Fecha del run (picks con este día)
@@ -160,42 +158,6 @@ export default function DashboardPage() {
           </label>
         )}
       </div>
-      <div className="mb-6 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('operacion')}
-          className={`rounded-md border px-3 py-1.5 text-xs ${
-            activeTab === 'operacion'
-              ? 'border-app-fg bg-app-card text-app-fg'
-              : 'border-app-line bg-transparent text-app-muted'
-          }`}
-        >
-          Operación diaria
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('analitica')}
-          className={`rounded-md border px-3 py-1.5 text-xs ${
-            activeTab === 'analitica'
-              ? 'border-app-fg bg-app-card text-app-fg'
-              : 'border-app-line bg-transparent text-app-muted'
-          }`}
-        >
-          Rendimiento & calibración
-        </button>
-      </div>
-      <div className="mb-6 rounded-xl border border-app-line bg-app-card p-3 text-xs text-app-muted">
-        <p className="font-semibold text-app-fg">Glosario rapido</p>
-        <p className="mt-1">
-          <strong className="text-app-fg">Tasa de acierto:</strong> de cada 10 picks, cuantos salen bien.
-        </p>
-        <p>
-          <strong className="text-app-fg">Rendimiento:</strong> cuanto ganas o pierdes por cada 1 unidad.
-        </p>
-        <p>
-          <strong className="text-app-fg">Caida maxima:</strong> la peor racha acumulada de perdidas.
-        </p>
-      </div>
 
       {dashQ.isError && (
         <p className="mb-4 text-sm text-app-danger whitespace-pre-wrap">
@@ -209,6 +171,113 @@ export default function DashboardPage() {
 
       {s && (
         <>
+          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-xl border border-app-line border-l-4 border-l-violet-500 bg-app-card p-4 shadow-sm">
+              <p className="text-xs font-medium text-app-muted">
+                Picks modelo · {runDate}
+              </p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums">
+                {s.picks_total}
+              </p>
+              <p className="mt-1 text-xs text-app-muted">
+                {s.outcome_wins} ganados · {s.outcome_losses} perdidos ·{' '}
+                {s.outcome_pending} pendientes (todos)
+              </p>
+              <p className="mt-2 border-t border-app-line pt-2 text-[10px] text-app-muted">
+                Settled (ventana del día):{' '}
+                <span className="font-mono text-app-fg">{s.settled_count}</span>
+                {' · '}
+                ROI total:{' '}
+                <span
+                  className={`font-mono ${
+                    s.roi_unit != null
+                      ? s.roi_unit >= 0
+                        ? 'text-emerald-800'
+                        : 'text-red-800'
+                      : 'text-app-muted'
+                  }`}
+                >
+                  {s.roi_unit != null
+                    ? `${s.roi_unit >= 0 ? '+' : ''}${(s.roi_unit * 100).toFixed(2)}%`
+                    : '—'}
+                </span>
+              </p>
+            </div>
+            <div className="rounded-xl border border-app-line border-l-4 border-l-sky-500 bg-app-card p-4 shadow-sm">
+              <p className="text-xs font-medium text-app-muted">
+                Tomados · resultado
+              </p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums">
+                {userId != null ? s.picks_taken_count : '—'}
+              </p>
+              <p className="mt-1 text-xs text-app-muted">
+                {userId != null
+                  ? `${s.taken_outcome_wins} gan. · ${s.taken_outcome_losses} perd. · ${s.taken_outcome_pending} pend.`
+                  : 'Elige usuario'}
+              </p>
+            </div>
+            <div className="rounded-xl border border-app-line border-l-4 border-l-emerald-500 bg-app-card p-4 shadow-sm">
+              <p className="text-xs font-medium text-app-muted">
+                Bankroll · saldo neto
+              </p>
+              <p
+                className={`mt-2 text-2xl font-semibold tabular-nums ${
+                  s.bankroll_cop != null && s.bankroll_cop >= 0
+                    ? 'text-app-success'
+                    : s.bankroll_cop != null
+                      ? 'text-app-danger'
+                      : ''
+                }`}
+              >
+                {userId != null && s.bankroll_cop != null
+                  ? formatCOP(s.bankroll_cop)
+                  : '—'}
+              </p>
+              <p className="mt-1 text-xs text-app-muted">
+                {userId != null
+                  ? 'Persistido en servidor: sube con cada pick tomado que ganas y baja si pierdes.'
+                  : 'Elige usuario'}
+              </p>
+            </div>
+          </div>
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('operacion')}
+              className={`rounded-md border px-3 py-1.5 text-xs ${
+                activeTab === 'operacion'
+                  ? 'border-app-fg bg-app-card text-app-fg'
+                  : 'border-app-line bg-transparent text-app-muted'
+              }`}
+            >
+              Operación diaria
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('analitica')}
+              className={`rounded-md border px-3 py-1.5 text-xs ${
+                activeTab === 'analitica'
+                  ? 'border-app-fg bg-app-card text-app-fg'
+                  : 'border-app-line bg-transparent text-app-muted'
+              }`}
+            >
+              Rendimiento & calibración
+            </button>
+            <details className="ml-auto rounded-md border border-app-line bg-app-card px-2 py-1 text-[11px] text-app-muted">
+              <summary className="cursor-pointer select-none">Glosario rápido</summary>
+              <div className="mt-2 space-y-1 leading-relaxed">
+                <p>
+                  <strong className="text-app-fg">Tasa de acierto:</strong> de cada 10 picks, cuántos salen bien.
+                </p>
+                <p>
+                  <strong className="text-app-fg">Rendimiento:</strong> cuánto ganas o pierdes por cada 1 unidad.
+                </p>
+                <p>
+                  <strong className="text-app-fg">Caída máxima:</strong> peor racha acumulada de pérdidas.
+                </p>
+              </div>
+            </details>
+          </div>
           {activeTab === 'operacion' && (
             <>
               <div className={`mb-4 rounded-xl border bg-app-card p-4 ${modeTone}`}>
@@ -249,118 +318,6 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-xl border border-app-line border-l-4 border-l-violet-500 bg-app-card p-4 shadow-sm">
-              <p className="text-xs font-medium text-app-muted">
-                Picks modelo · {runDate}
-              </p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums">
-                {s.picks_total}
-              </p>
-              <p className="mt-1 text-xs text-app-muted">
-                {s.outcome_wins} ganados · {s.outcome_losses} perdidos ·{' '}
-                {s.outcome_pending} pendientes (todos)
-              </p>
-              <p className="mt-2 border-t border-app-line pt-2 text-[10px] text-app-muted">
-                Settled (ventana del día):{' '}
-                <span className="font-mono text-app-fg">{s.settled_count}</span>
-                {' · '}
-                ROI total:{' '}
-                <span
-                  className={`font-mono ${
-                    s.roi_unit != null
-                      ? s.roi_unit >= 0
-                        ? 'text-emerald-800'
-                        : 'text-red-800'
-                      : 'text-app-muted'
-                  }`}
-                >
-                  {s.roi_unit != null
-                    ? `${s.roi_unit >= 0 ? '+' : ''}${(s.roi_unit * 100).toFixed(2)}%`
-                    : '—'}
-                </span>
-              </p>
-              <p className="mt-1 text-[10px] text-app-muted">
-                ROI tradable (cuota ≥{' '}
-                <span className="font-mono text-app-fg">
-                  {(s.min_tradable_odds ?? 1.3).toFixed(2)}
-                </span>
-                ):{' '}
-                <span className="font-mono text-app-fg">
-                  {s.settled_count_tradable}
-                </span>
-                {' · '}
-                <span
-                  className={`font-mono ${
-                    s.roi_unit_tradable != null
-                      ? s.roi_unit_tradable >= 0
-                        ? 'text-emerald-800'
-                        : 'text-red-800'
-                      : 'text-app-muted'
-                  }`}
-                >
-                  {s.roi_unit_tradable != null
-                    ? `${s.roi_unit_tradable >= 0 ? '+' : ''}${(
-                        s.roi_unit_tradable * 100
-                      ).toFixed(2)}%`
-                    : '—'}
-                </span>
-              </p>
-            </div>
-            <div className="rounded-xl border border-app-line border-l-4 border-l-sky-500 bg-app-card p-4 shadow-sm">
-              <p className="text-xs font-medium text-app-muted">
-                Tomados · resultado
-              </p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums">
-                {userId != null ? s.picks_taken_count : '—'}
-              </p>
-              <p className="mt-1 text-xs text-app-muted">
-                {userId != null
-                  ? `${s.taken_outcome_wins} gan. · ${s.taken_outcome_losses} perd. · ${s.taken_outcome_pending} pend.`
-                  : 'Elige usuario'}
-              </p>
-            </div>
-            <div className="rounded-xl border border-app-line border-l-4 border-l-emerald-500 bg-app-card p-4 shadow-sm">
-              <p className="text-xs font-medium text-app-muted">
-                Bankroll · saldo neto
-              </p>
-              <p
-                className={`mt-2 text-2xl font-semibold tabular-nums ${
-                  s.bankroll_cop != null && s.bankroll_cop >= 0
-                    ? 'text-app-success'
-                    : s.bankroll_cop != null
-                      ? 'text-app-danger'
-                      : ''
-                }`}
-              >
-                {userId != null && s.bankroll_cop != null
-                  ? formatCOP(s.bankroll_cop)
-                  : '—'}
-              </p>
-              <p className="mt-1 text-xs text-app-muted">
-                {userId != null
-                  ? 'Persistido en servidor: sube con cada pick tomado que ganas y baja si pierdes.'
-                  : 'Elige usuario'}
-              </p>
-              {userId != null &&
-                s.has_stake_data &&
-                s.net_pl_estimate != null && (
-                  <p className="mt-2 border-t border-app-line pt-2 text-[10px] leading-relaxed text-app-muted">
-                    P/L del día (solo referencia, picks de esta fecha):{' '}
-                    <span
-                      className={`font-mono font-medium tabular-nums ${
-                        s.net_pl_estimate >= 0
-                          ? 'text-emerald-800'
-                          : 'text-red-800'
-                      }`}
-                    >
-                      {s.net_pl_estimate >= 0 ? '+' : ''}
-                      {formatCOP(s.net_pl_estimate)}
-                    </span>
-                  </p>
-                )}
-            </div>
-          </div>
           <div className="mt-8">
             <div className="rounded-xl border border-app-line bg-app-card p-5 shadow-sm">
               <h2 className="text-sm font-semibold">Mis selecciones de hoy</h2>
@@ -392,6 +349,7 @@ export default function DashboardPage() {
                           selectionDisplay={r.selection_display}
                           pickedValue={r.picked_value}
                           kickoffDisplay={r.kickoff_display ?? null}
+                          executionSlotLabelEs={r.execution_slot_label_es ?? null}
                           outcome={r.outcome}
                           userTaken={r.user_taken}
                           ordinal={i + 1}

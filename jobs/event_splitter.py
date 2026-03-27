@@ -8,9 +8,9 @@ La lógica de franjas vive aquí (determinista), no en el LLM / OC.
 Entrada: JSON completo de select_candidates (-o candidates.json).
 Salida: mismo esquema reducido a eventos cuyo start_timestamp cae en [inicio, fin) del día --date en --timezone.
 
-Slots predefinidos (2 ventanas al día, alineadas a cron 08:00 y 16:00 CO):
-  --slot morning   → kickoff local [00:00, 16:00) en --date
-  --slot afternoon → kickoff local [16:00, 24:00) en --date
+Slots predefinidos (2 ventanas al día, alineadas a cron 05:00 y 13:00 CO):
+  --slot morning   → kickoff local [06:00, 14:00) en --date
+  --slot afternoon → kickoff local [14:00, 24:00) en --date
   --slot full_day  → todo el día calendario --date en --timezone (sin franjas)
 
 Uso típico tras select_candidates (convención out/ — ver openclaw/NAMING_ARTIFACTS.md):
@@ -55,9 +55,9 @@ def _window_for_slot(
     """(label, t_start, t_end exclusive o None, open_ended_after_start)"""
     s = slot.lower().strip()
     if s in ("1", "morning", "am", "m"):
-        return ("[00:00, 16:00)", time(0, 0), time(16, 0), False)
+        return ("[06:00, 14:00)", time(6, 0), time(14, 0), False)
     if s in ("2", "afternoon", "pm", "p", "tarde"):
-        return ("[16:00, 24:00)", time(16, 0), None, True)
+        return ("[14:00, 24:00)", time(14, 0), None, True)
     if s in ("full_day", "fullday", "full", "all", "day", "dia", "día"):
         # Mismo día local: [00:00, 24:00) vía open_ended desde medianoche.
         return ("[00:00, 24:00) día completo", time(0, 0), None, True)

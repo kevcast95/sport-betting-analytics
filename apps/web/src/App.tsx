@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   BrowserRouter,
+  Link,
   NavLink,
   Route,
   Routes,
@@ -8,7 +9,6 @@ import {
   useSearchParams,
 } from 'react-router-dom'
 import { DashboardChrome } from '@/components/DashboardChrome'
-import { SidebarUserSection } from '@/components/SidebarUserSection'
 import BacktestsPage from '@/pages/BacktestsPage'
 import ApiReadinessPage from '@/pages/ApiReadinessPage'
 import DashboardPage from '@/pages/DashboardPage'
@@ -16,6 +16,7 @@ import PickDetailPage from '@/pages/PickDetailPage'
 import RunEventsPage from '@/pages/RunEventsPage'
 import RunPicksPage from '@/pages/RunPicksPage'
 import RunsPage from '@/pages/RunsPage'
+import SystemSettingsPage from '@/pages/SystemSettingsPage'
 import { fetchJson } from '@/lib/api'
 import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
@@ -30,57 +31,59 @@ function navClass(isActive: boolean) {
   ].join(' ')
 }
 
-function BankrollSidebar() {
+function GlobalBankrollBar() {
   const { userId } = useTrackingUser()
-  const { bankrollCOP, setBankrollCOP } = useBankrollCOP(userId)
+  const { bankrollCOP, setBankrollCOP, isBankrollSaving } = useBankrollCOP(userId)
   const [draft, setDraft] = useState(() =>
     bankrollCOP != null ? String(Math.round(bankrollCOP)) : '',
   )
+  useEffect(() => {
+    setDraft(bankrollCOP != null ? String(Math.round(bankrollCOP)) : '')
+  }, [bankrollCOP])
 
   return (
-    <div className="mt-6 border-t border-app-line px-2 pt-5">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-app-muted">
-        Bankroll (COP)
-      </p>
-      {userId == null ? (
-        <p className="mt-2 text-[10px] leading-relaxed text-app-muted">
-          Elige un usuario arriba en este menú; el bankroll se guarda en el
-          servidor por usuario.
+    <div className="flex w-full items-center justify-between gap-3 rounded-lg border border-app-line bg-app-card px-3 py-2">
+      <div className="min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-app-muted">
+          Bankroll (COP)
         </p>
-      ) : (
-        <>
-          <p className="mt-1 text-[10px] leading-relaxed text-app-muted">
-            Usuario <span className="font-mono">{userId}</span> · se guarda en el
-            servidor con tu cuenta local.
-          </p>
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="Ej. 500000"
-            className="mt-2 w-full rounded-md border border-violet-200 bg-white px-2 py-2 font-mono text-xs text-app-fg tabular-nums shadow-sm"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value.replace(/[^\d]/g, ''))}
-            onBlur={() => {
-              const raw = draft.trim()
-              if (raw === '') {
-                setBankrollCOP(null)
-                return
-              }
-              const n = Number.parseInt(raw, 10)
-              if (!Number.isNaN(n) && n >= 0) setBankrollCOP(n)
-            }}
-          />
-          {bankrollCOP != null && bankrollCOP > 0 && (
-            <p className="mt-1.5 font-mono text-[10px] tabular-nums text-violet-800">
-              {new Intl.NumberFormat('es-CO', {
+        <p className="font-mono text-sm tabular-nums text-violet-900">
+          {bankrollCOP != null && bankrollCOP > 0
+            ? new Intl.NumberFormat('es-CO', {
                 style: 'currency',
                 currency: 'COP',
                 maximumFractionDigits: 0,
-              }).format(bankrollCOP)}
-            </p>
-          )}
-        </>
-      )}
+              }).format(bankrollCOP)
+            : 'Sin monto'}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder="Recargar"
+          className="w-28 rounded-md border border-violet-200 bg-white px-2 py-1.5 font-mono text-xs text-app-fg tabular-nums shadow-sm"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value.replace(/[^\d]/g, ''))}
+          disabled={userId == null || isBankrollSaving}
+        />
+        <button
+          type="button"
+          className="rounded-md border border-app-line bg-white px-2.5 py-1.5 text-xs text-app-fg shadow-sm disabled:opacity-40"
+          disabled={userId == null || isBankrollSaving}
+          onClick={() => {
+            const raw = draft.trim()
+            if (raw === '') {
+              setBankrollCOP(null)
+              return
+            }
+            const n = Number.parseInt(raw, 10)
+            if (!Number.isNaN(n) && n >= 0) setBankrollCOP(n)
+          }}
+        >
+          Editar
+        </button>
+      </div>
     </div>
   )
 }
@@ -88,7 +91,7 @@ function BankrollSidebar() {
 function AppLayout() {
   const { userId } = useTrackingUser()
   const { bankrollCOP } = useBankrollCOP(userId)
-  const bankrollSidebarKey = `${userId ?? 'none'}:${bankrollCOP ?? 'na'}`
+  const bankrollTopKey = `${userId ?? 'none'}:${bankrollCOP ?? 'na'}`
   const [menuOpen, setMenuOpen] = useState(false)
   const [reportNotice, setReportNotice] = useState<string | null>(null)
   const [notificationPermission, setNotificationPermission] = useState<
@@ -132,7 +135,7 @@ function AppLayout() {
           'Notification' in window &&
           Notification.permission === 'granted'
         ) {
-          new Notification('ALTEA · Reporte de efectividad', { body: msg })
+          new Notification('betTracker + · Reporte de efectividad', { body: msg })
         }
       } catch {
         // Silencioso: no interrumpir UI si el API está reiniciando.
@@ -170,7 +173,7 @@ function AppLayout() {
           </span>
         </button>
         <span className="truncate text-sm font-semibold text-violet-900">
-          Panel
+          betTracker +
         </span>
         {notificationPermission === 'default' ? (
           <button
@@ -205,12 +208,9 @@ function AppLayout() {
             menuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
           ].join(' ')}
         >
-          <div className="border-b border-app-line px-3 py-4 md:py-5">
-            <SidebarUserSection />
-          </div>
-          <div className="flex items-center justify-between px-3 py-3 md:pt-4">
+          <div className="flex items-center justify-between border-b border-app-line px-3 py-3 md:pt-4">
             <div className="px-2 text-xs font-semibold uppercase tracking-wide text-violet-900/80">
-              Menú
+              betTracker +
             </div>
             <button
               type="button"
@@ -220,39 +220,34 @@ function AppLayout() {
               Cerrar
             </button>
           </div>
-          <nav className="flex flex-col gap-0.5 px-3">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) => navClass(isActive)}
-              onClick={closeMenu}
-            >
-              Dashboard
-            </NavLink>
-            <NavLink
-              to={runsListHref}
-              title="Opcional: buscar un run por ID o fecha en tabla"
-              className={({ isActive }) => navClass(isActive)}
-              onClick={closeMenu}
-            >
-              Historial de runs
-            </NavLink>
-            <NavLink
-              to="/backtests"
-              className={({ isActive }) => navClass(isActive)}
-              onClick={closeMenu}
-            >
-              Backtests
-            </NavLink>
-            <NavLink
-              to="/api-readiness"
-              className={({ isActive }) => navClass(isActive)}
-              onClick={closeMenu}
-            >
-              API Readiness
-            </NavLink>
-          </nav>
-          <div className="px-3 pb-6">
+          <div className="flex flex-1 flex-col px-3 pb-6">
+            <nav className="flex flex-col gap-0.5 pt-3">
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) => navClass(isActive)}
+                onClick={closeMenu}
+              >
+                Dashboard
+              </NavLink>
+              <NavLink
+                to={runsListHref}
+                title="Opcional: buscar un run por ID o fecha en tabla"
+                className={({ isActive }) => navClass(isActive)}
+                onClick={closeMenu}
+              >
+                Historial de runs
+              </NavLink>
+            </nav>
+            <nav className="mt-auto border-t border-app-line pt-4">
+              <NavLink
+                to="/system-settings"
+                className={({ isActive }) => navClass(isActive)}
+                onClick={closeMenu}
+              >
+                Configuración
+              </NavLink>
+            </nav>
             {notificationPermission === 'default' && (
               <div className="mb-3 rounded-md border border-app-line bg-app-card px-2 py-2">
                 <p className="text-[10px] text-app-muted">
@@ -271,17 +266,27 @@ function AppLayout() {
                 </button>
               </div>
             )}
-            <BankrollSidebar key={bankrollSidebarKey} />
           </div>
         </aside>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col md:overflow-y-auto">
           {isDashboardHome && <DashboardChrome />}
           <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-4 sm:px-4 md:px-8 md:py-8">
+            {!isDashboardHome && (
+              <div className="mb-4">
+                <GlobalBankrollBar key={bankrollTopKey} />
+              </div>
+            )}
             {reportNotice && (
               <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-app-line bg-app-card px-3 py-2 text-xs text-app-fg">
                 <span>{reportNotice}</span>
                 <div className="flex items-center gap-2">
+                  <Link
+                    to="/api-readiness"
+                    className="rounded border border-app-line px-2 py-1 text-[11px] text-app-muted hover:text-app-fg"
+                  >
+                    Ver reporte
+                  </Link>
                   <button
                     type="button"
                     className="rounded border border-app-line px-2 py-1 text-[11px] text-app-muted hover:text-app-fg"
@@ -300,6 +305,7 @@ function AppLayout() {
               <Route path="/picks/:pickId" element={<PickDetailPage />} />
               <Route path="/backtests" element={<BacktestsPage />} />
               <Route path="/api-readiness" element={<ApiReadinessPage />} />
+              <Route path="/system-settings" element={<SystemSettingsPage />} />
             </Routes>
           </main>
         </div>

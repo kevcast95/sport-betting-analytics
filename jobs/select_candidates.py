@@ -167,6 +167,24 @@ def _tennis_low_itf_filter_enabled() -> bool:
     )
 
 
+def _tennis_tier_caps() -> tuple[int, int]:
+    """
+    Tope operativo para reducir ruido antes de DS.
+    Se aplica solo en tenis, después del sort A->B por quality_score.
+    """
+    raw_a = os.environ.get("ALTEA_TENNIS_MAX_TIER_A", "12").strip()
+    raw_b = os.environ.get("ALTEA_TENNIS_MAX_TIER_B", "8").strip()
+    try:
+        cap_a = max(0, int(raw_a))
+    except ValueError:
+        cap_a = 12
+    try:
+        cap_b = max(0, int(raw_b))
+    except ValueError:
+        cap_b = 8
+    return cap_a, cap_b
+
+
 def _is_low_itf_tournament(event_context: Dict[str, Any]) -> bool:
     """
     Filtro operativo para evitar torneos con baja disponibilidad en casas locales.
@@ -303,6 +321,26 @@ def run(args: argparse.Namespace) -> None:
                 }
             )
             continue
+        # Tenis: en modo operativo solo consideramos pre-partido claro.
+        # Si llega un estado ambiguo/distinto de not started, se excluye para
+        # evitar ruido (ej. snapshots inconsistentes con status textual).
+        if (
+            sport == "tennis"
+            and not args.allow_started
+            and match_state != "not started"
+        ):
+            reasons["match_not_pre_match"] = reasons.get("match_not_pre_match", 0) + 1
+            rejected_reason_by_event[event_id] = "match_not_pre_match"
+            rejected.append(
+                {
+                    "event_id": event_id,
+                    "reason": "match_not_pre_match",
+                    "diagnostics": diagnostics_flags(features.get("diagnostics") or {}),
+                    "match_state": match_state,
+                    "status": event_context.get("status"),
+                }
+            )
+            continue
         if (
             sport == "tennis"
             and _tennis_low_itf_filter_enabled()
@@ -360,7 +398,14 @@ def run(args: argparse.Namespace) -> None:
 
     # Tier A primero, luego B; dentro de cada tier, mayor quality_score
     candidates.sort(key=lambda x: (0 if x["tier"] == "A" else 1, -x["quality_score"]))
-    top = candidates[: args.limit]
+    if sport == "tennis":
+        cap_a, cap_b = _tennis_tier_caps()
+        a_rows = [c for c in candidates if c["tier"] == "A"][:cap_a]
+        b_rows = [c for c in candidates if c["tier"] == "B"][:cap_b]
+        candidates_capped = a_rows + b_rows
+        top = candidates_capped[: args.limit]
+    else:
+        top = candidates[: args.limit]
 
     tier_counts: Dict[str, int] = {}
     for c in candidates:
@@ -385,6 +430,9 @@ def run(args: argparse.Namespace) -> None:
         "tier_selected": tier_selected,
         "candidates_detail": top,
     }
+    if sport == "tennis":
+        cap_a, cap_b = _tennis_tier_caps()
+        result["tennis_tier_caps"] = {"max_tier_a": cap_a, "max_tier_b": cap_b}
 
     ds_input: List[Dict[str, Any]] = []
     event_ids_selected = [c["event_id"] for c in top]

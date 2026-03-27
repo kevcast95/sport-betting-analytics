@@ -2236,6 +2236,23 @@
             "type": "integer",
             "title": "Outcome Pending"
           },
+          "settled_count": {
+            "type": "integer",
+            "title": "Settled Count",
+            "default": 0
+          },
+          "roi_unit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Unit",
+            "description": "ROI unitario sobre picks settled (win/loss), usando stake 1 por pick."
+          },
           "picks_taken_count": {
             "type": "integer",
             "title": "Picks Taken Count"

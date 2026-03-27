@@ -77,6 +77,8 @@ class PickSummary(BaseModel):
         default=None,
         description="YYYY-MM-DD del daily_run (día del análisis / listado).",
     )
+    execution_slot: Optional[Literal["morning", "evening", "night", "unknown"]] = None
+    execution_slot_label_es: Optional[str] = None
 
 
 class PickDetail(PickSummary):
@@ -380,6 +382,8 @@ class DashboardRecentPick(BaseModel):
     kickoff_display: Optional[str] = None
     kickoff_at_utc: Optional[str] = None
     match_state: Optional[str] = None
+    execution_slot: Optional[Literal["morning", "evening", "night", "unknown"]] = None
+    execution_slot_label_es: Optional[str] = None
     selection_display: Optional[str] = None
     odds_reference: Optional[Any] = Field(
         None, description="Metadatos del modelo (edge, confianza, razón, etc.)"

@@ -7,8 +7,8 @@
 #     → encajar con slot medianoche (00:00), ANTES de ingest.
 #
 #   ./scripts/run_validate_picks_scheduled.sh today_morning
-#     → picks con created_at local HOY en [8, 16) (corrida mañana del mismo día).
-#     → encajar con slot tarde (16:00), ANTES del análisis tarde.
+#     → picks con created_at local HOY en [5, 13) (corrida mañana del mismo día).
+#     → encajar con slot tarde (13:00), ANTES del análisis tarde.
 #
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -27,8 +27,8 @@ YESTERDAY="$(python3 -c "import os; from datetime import datetime, timedelta; fr
 
 MIN_E="${ALTEA_VALIDATE_AFTERNOON_HOUR_MIN:-16}"
 MAX_E="${ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL:-24}"
-MIN_M="${ALTEA_VALIDATE_MORNING_HOUR_MIN:-8}"
-MAX_M="${ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL:-16}"
+MIN_M="${ALTEA_VALIDATE_MORNING_HOUR_MIN:-5}"
+MAX_M="${ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL:-13}"
 
 if [[ "$KIND" == "yesterday_evening" ]]; then
   python3 jobs/validate_picks.py --db "$DB" --timezone "$TZ" \

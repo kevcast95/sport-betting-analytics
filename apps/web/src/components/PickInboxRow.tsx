@@ -52,6 +52,7 @@ export type PickInboxRowProps = {
   selectionDisplay?: string | null
   pickedValue?: number | null
   kickoffDisplay?: string | null
+  executionSlotLabelEs?: string | null
   confidence?: string | null
   /** Resultado ya efectivo (usuario > sistema), como en el dashboard. */
   outcome?: 'win' | 'loss' | 'pending' | null
@@ -76,6 +77,7 @@ export function PickInboxRow({
   selectionDisplay,
   pickedValue,
   kickoffDisplay,
+  executionSlotLabelEs,
   confidence,
   outcome,
   userTaken,
@@ -143,6 +145,11 @@ export function PickInboxRow({
                     )}`}
                   >
                     {`Confianza: ${confidence.trim()}`}
+                  </span>
+                )}
+                {executionSlotLabelEs && executionSlotLabelEs.trim().length > 0 && (
+                  <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-900">
+                    Banda: {executionSlotLabelEs}
                   </span>
                 )}
               </div>

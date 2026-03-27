@@ -267,6 +267,24 @@ def _run_windowed_analysis(
         return
 
     batch_glob = f"{batch_prefix}_batch*.json"
+    batch_files = sorted(glob.glob(batch_glob))
+    if not batch_files:
+        print(f"Sin batches para {block_label}: no hay eventos válidos en ventana.")
+        telegram_text = os.path.join(repo, "out", "telegram_message.txt")
+        _write_text(
+            telegram_text,
+            (
+                f"ℹ️ {block_label} ejecutado\n"
+                f"📅 Fecha: {date_str}\n"
+                "📭 No hubo eventos válidos en la ventana para análisis.\n"
+            ),
+        )
+        if not args.skip_telegram:
+            _run(
+                [sys.executable, os.path.join(repo, "jobs", "send_telegram_message.py"), "--message-file", telegram_text],
+                dry_run=False,
+            )
+        return
     _run(
         [
             sys.executable,
@@ -376,8 +394,8 @@ def _run_windowed_analysis(
 def _window(args: argparse.Namespace, *, repo: str, db: str, date_str: str) -> None:
     if not args.slot:
         raise RuntimeError("mode=window requiere --slot morning|afternoon")
-    exec_id = "exec_08h" if args.slot == "morning" else "exec_16h"
-    block_label = "Bloque 1 (08:00)" if args.slot == "morning" else "Bloque 2 (16:00)"
+    exec_id = "exec_06h" if args.slot == "morning" else "exec_14h"
+    block_label = "Bloque 1 (06:00)" if args.slot == "morning" else "Bloque 2 (14:00)"
     _run_windowed_analysis(
         args,
         repo=repo,

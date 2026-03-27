@@ -452,6 +452,7 @@ export default function RunPicksPage() {
                   selection={p.selection}
                   pickedValue={p.picked_value}
                   kickoffDisplay={p.kickoff_display ?? null}
+                  executionSlotLabelEs={p.execution_slot_label_es ?? null}
                   confidence={refStr(p.odds_reference as OddsRef, 'confianza') ?? null}
                   outcome={effectiveOutcome(p)}
                   userTaken={p.user_taken}

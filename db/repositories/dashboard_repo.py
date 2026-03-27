@@ -6,7 +6,9 @@ import glob
 import json
 import os
 import sqlite3
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from zoneinfo import ZoneInfo
 
 
 def _safe_float(v: Any) -> Optional[float]:
@@ -68,6 +70,30 @@ def _effective_outcome(u_outcome: Any, pr_outcome: Any) -> str:
     if pr_outcome == "pending":
         return "pending"
     return "pending"
+
+
+def _execution_slot_from_created_at_utc(created_at_utc: Any) -> tuple[str, str]:
+    tz_name = os.environ.get("COPA_FOXKIDS_TZ", "America/Bogota")
+    tz = ZoneInfo(tz_name)
+    t = str(created_at_utc or "").strip()
+    if not t:
+        return "unknown", "sin franja"
+    if t.endswith("Z"):
+        t = t[:-1] + "+00:00"
+    dt = datetime.fromisoformat(t)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    local = dt.astimezone(tz)
+    h = local.hour
+    min_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MIN", "8"))
+    max_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL", "16"))
+    min_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MIN", "16"))
+    max_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL", "24"))
+    if min_m <= h < max_m:
+        return "morning", "mañana"
+    if min_e <= h < max_e:
+        return "evening", "tarde/noche"
+    return "night", "madrugada"
 
 
 def _selection_stats_from_artifact(
@@ -197,6 +223,7 @@ def _rows_for_date(
                 p.selection,
                 p.event_id,
                 p.created_at_utc,
+                dr.created_at_utc AS run_created_at_utc,
                 p.odds_reference,
                 pr.outcome AS pr_outcome,
                 NULL AS u_taken,
@@ -222,6 +249,7 @@ def _rows_for_date(
             p.selection,
             p.event_id,
             p.created_at_utc,
+            dr.created_at_utc AS run_created_at_utc,
             p.odds_reference,
             pr.outcome AS pr_outcome,
             d.taken AS u_taken,

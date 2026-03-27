@@ -60,6 +60,7 @@ from db.db import connect as db_connect
 from db.init_db import init_db
 from db.repositories.dashboard_repo import (
     _effective_outcome,
+    _execution_slot_from_created_at_utc,
     dashboard_insights,
     daily_picks_summary,
     recent_picks_for_date,
@@ -338,6 +339,7 @@ def api_dashboard(
             str(r["odds_reference"]) if r["odds_reference"] is not None else None
         )
         sel_disp = _selection_display_from_odds_ref(odds_parsed)
+        slot_v, slot_lbl = _execution_slot_from_created_at_utc(r["run_created_at_utc"])
         recent.append(
             DashboardRecentPick(
                 pick_id=int(r["pick_id"]),
@@ -359,6 +361,8 @@ def api_dashboard(
                 kickoff_display=em.get("kickoff_display") if em else None,
                 kickoff_at_utc=em.get("kickoff_at_utc") if em else None,
                 match_state=em.get("match_state") if em else None,
+                execution_slot=slot_v,  # type: ignore[arg-type]
+                execution_slot_label_es=slot_lbl,
                 selection_display=sel_disp,
                 odds_reference=odds_parsed,
             )
@@ -599,6 +603,9 @@ def _apply_event_meta(
 
 
 def _pick_summary_from_join_row(r: sqlite3.Row) -> PickSummary:
+    slot_v, slot_lbl = _execution_slot_from_created_at_utc(
+        r["run_created_at_utc"] if "run_created_at_utc" in r.keys() else None
+    )
     result = None
     if r["pr_validated_at_utc"] is not None:
         result = PickResultOut(
@@ -630,6 +637,8 @@ def _pick_summary_from_join_row(r: sqlite3.Row) -> PickSummary:
         idempotency_key=str(r["idempotency_key"]),
         result=result,
         run_date=run_date_v,
+        execution_slot=slot_v,  # type: ignore[arg-type]
+        execution_slot_label_es=slot_lbl,
     )
 
 
@@ -684,6 +693,7 @@ def list_picks(
         SELECT
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection,
             p.picked_value, p.odds_reference, p.status, p.created_at_utc, p.idempotency_key,
+            dr.created_at_utc AS run_created_at_utc,
             pr.validated_at_utc AS pr_validated_at_utc,
             pr.home_score AS pr_home_score,
             pr.away_score AS pr_away_score,
@@ -691,6 +701,7 @@ def list_picks(
             pr.outcome AS pr_outcome,
             pr.evidence_json AS pr_evidence_json
         FROM picks p
+        INNER JOIN daily_runs dr ON dr.daily_run_id = p.daily_run_id
         LEFT JOIN pick_results pr ON pr.pick_id = p.pick_id
         {wh}
         ORDER BY p.pick_id DESC
@@ -712,6 +723,7 @@ def get_pick(pick_id: int, conn: DbConn) -> PickDetail:
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection,
             p.picked_value, p.odds_reference, p.status, p.created_at_utc, p.idempotency_key,
             dr.run_date AS run_date,
+            dr.created_at_utc AS run_created_at_utc,
             pr.validated_at_utc AS pr_validated_at_utc,
             pr.home_score AS pr_home_score,
             pr.away_score AS pr_away_score,
@@ -884,6 +896,7 @@ def api_tracking_board(
         SELECT
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection,
             p.picked_value, p.odds_reference, p.status, p.created_at_utc, p.idempotency_key,
+            dr.created_at_utc AS run_created_at_utc,
             pr.validated_at_utc AS pr_validated_at_utc,
             pr.home_score AS pr_home_score,
             pr.away_score AS pr_away_score,
@@ -891,6 +904,7 @@ def api_tracking_board(
             pr.outcome AS pr_outcome,
             pr.evidence_json AS pr_evidence_json
         FROM picks p
+        INNER JOIN daily_runs dr ON dr.daily_run_id = p.daily_run_id
         LEFT JOIN pick_results pr ON pr.pick_id = p.pick_id
         WHERE p.daily_run_id = ?
         ORDER BY p.pick_id DESC

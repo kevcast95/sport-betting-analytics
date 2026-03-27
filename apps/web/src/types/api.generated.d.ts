@@ -656,6 +656,13 @@ export interface components {
             kickoff_at_utc?: string | null;
             /** Match State */
             match_state?: string | null;
+            /**
+             * Execution Slot
+             * @enum {string}
+             */
+            execution_slot?: ("morning" | "evening" | "night" | "unknown") | null;
+            /** Execution Slot Label Es */
+            execution_slot_label_es?: string | null;
             /** Selection Display */
             selection_display?: string | null;
             /**
@@ -919,6 +926,13 @@ export interface components {
              * @description YYYY-MM-DD del daily_run (día del análisis / listado).
              */
             run_date?: string | null;
+            /**
+             * Execution Slot
+             * @enum {string}
+             */
+            execution_slot?: ("morning" | "evening" | "night" | "unknown") | null;
+            /** Execution Slot Label Es */
+            execution_slot_label_es?: string | null;
         };
         /** PickPage */
         PickPage: {
@@ -1039,6 +1053,13 @@ export interface components {
              * @description YYYY-MM-DD del daily_run (día del análisis / listado).
              */
             run_date?: string | null;
+            /**
+             * Execution Slot
+             * @enum {string}
+             */
+            execution_slot?: ("morning" | "evening" | "night" | "unknown") | null;
+            /** Execution Slot Label Es */
+            execution_slot_label_es?: string | null;
         };
         /** RegenerateCombosResponse */
         RegenerateCombosResponse: {
