@@ -471,6 +471,41 @@ class EffectivenessReportStatusOut(BaseModel):
     roi_unit: Optional[float] = None
 
 
+class PipelineReplayRequest(BaseModel):
+    step: Literal["ingest", "select", "window"]
+    sport: Literal["football", "tennis"] = "tennis"
+    run_date: str = Field(..., description="YYYY-MM-DD (fecha local del run)")
+    slot: Optional[Literal["morning", "afternoon"]] = Field(
+        None,
+        description="Requerido cuando step=window",
+    )
+    limit_ingest: Optional[int] = Field(
+        None,
+        ge=1,
+        le=500,
+        description="Solo para step=ingest",
+    )
+    limit_select: Optional[int] = Field(
+        200,
+        ge=1,
+        le=1000,
+        description="Solo para step=select",
+    )
+
+
+class PipelineReplayResponse(BaseModel):
+    ok: bool
+    step: Literal["ingest", "select", "window"]
+    sport: Literal["football", "tennis"]
+    run_date: str
+    slot: Optional[Literal["morning", "afternoon"]] = None
+    daily_run_id: Optional[int] = None
+    subprocess_exit_code: int
+    stdout_excerpt: Optional[str] = None
+    stderr_excerpt: Optional[str] = None
+    message: Optional[str] = None
+
+
 class DailyRunEventInspectOut(BaseModel):
     daily_run_id: int
     event_id: int

@@ -35,6 +35,8 @@ from apps.api.schemas import (
     DailyRunEventsInspectOut,
     EnsureBaselinesResponse,
     EffectivenessReportStatusOut,
+    PipelineReplayRequest,
+    PipelineReplayResponse,
     HealthOut,
     PickDetail,
     PickPage,
@@ -867,6 +869,149 @@ def api_bootstrap_users(conn: DbConn) -> List[UserOut]:
     rows = ensure_default_test_users(conn)
     conn.commit()
     return [_user_out_from_row(r) for r in rows]
+
+
+@app.post(
+    "/ops/pipeline/replay",
+    response_model=PipelineReplayResponse,
+    dependencies=_global_deps,
+)
+def api_pipeline_replay(body: PipelineReplayRequest, conn: DbConn) -> PipelineReplayResponse:
+    """
+    Re-disparar pasos clave del pipeline desde UI (sin consola):
+    - ingest: vuelve a poblar eventos del día/deporte.
+    - select: recalcula candidates_{date}_{sport}_select.json para el último daily_run.
+    - window: corre análisis DS por ventana (morning/afternoon) con persist_picks.
+    """
+    cfg = get_db_config()
+    repo_root = Path(__file__).resolve().parents[2]
+    sp = str(body.sport).strip().lower()
+    rd = str(body.run_date).strip()
+
+    def _clip(text: str, n: int = 4000) -> str:
+        return text[-n:] if len(text) > n else text
+
+    def _latest_daily_run_id_for_date(run_date: str, sport: str) -> Optional[int]:
+        row = conn.execute(
+            """
+            SELECT daily_run_id
+            FROM daily_runs
+            WHERE run_date = ? AND LOWER(TRIM(sport)) = ?
+            ORDER BY daily_run_id DESC
+            LIMIT 1
+            """,
+            (run_date, sport),
+        ).fetchone()
+        if row is None or row["daily_run_id"] is None:
+            return None
+        return int(row["daily_run_id"])
+
+    env = os.environ.copy()
+    env["FECHA"] = rd
+
+    if body.step == "ingest":
+        cmd = [
+            sys.executable,
+            str(repo_root / "jobs" / "ingest_daily_events.py"),
+            "--sport",
+            sp,
+            "--date",
+            rd,
+            "--db",
+            cfg.path,
+        ]
+        if body.limit_ingest is not None:
+            cmd += ["--limit", str(int(body.limit_ingest))]
+        proc = subprocess.run(
+            cmd,
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            timeout=1800,
+            env=env,
+        )
+        drid = _latest_daily_run_id_for_date(rd, sp)
+        return PipelineReplayResponse(
+            ok=proc.returncode == 0,
+            step=body.step,
+            sport=sp,  # type: ignore[arg-type]
+            run_date=rd,
+            daily_run_id=drid,
+            subprocess_exit_code=int(proc.returncode),
+            stdout_excerpt=_clip(proc.stdout or "") or None,
+            stderr_excerpt=_clip(proc.stderr or "") or None,
+            message=(
+                f"Ingest {'OK' if proc.returncode == 0 else 'falló'} para {sp} {rd}"
+                + (f" (daily_run_id={drid})" if drid is not None else "")
+            ),
+        )
+
+    if body.step == "select":
+        drid = _latest_daily_run_id_for_date(rd, sp)
+        if drid is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No existe daily_run para {sp} en {rd}. Ejecuta ingest primero.",
+            )
+        out_path = repo_root / "out" / f"candidates_{rd}_{sp}_select.json"
+        cmd = [
+            sys.executable,
+            str(repo_root / "jobs" / "select_candidates.py"),
+            "--db",
+            cfg.path,
+            "--daily-run-id",
+            str(drid),
+            "--limit",
+            str(int(body.limit_select or 200)),
+            "-o",
+            str(out_path),
+        ]
+        proc = subprocess.run(
+            cmd,
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            timeout=900,
+            env=env,
+        )
+        return PipelineReplayResponse(
+            ok=proc.returncode == 0,
+            step=body.step,
+            sport=sp,  # type: ignore[arg-type]
+            run_date=rd,
+            daily_run_id=drid,
+            subprocess_exit_code=int(proc.returncode),
+            stdout_excerpt=_clip(proc.stdout or "") or None,
+            stderr_excerpt=_clip(proc.stderr or "") or None,
+            message=f"Select {'OK' if proc.returncode == 0 else 'falló'} → {out_path.name}",
+        )
+
+    # step=window
+    slot = body.slot
+    if slot is None:
+        raise HTTPException(status_code=400, detail="slot es obligatorio para step=window")
+    cmd = [str(repo_root / "scripts" / "run_independent_window.sh"), slot, sp]
+    proc = subprocess.run(
+        cmd,
+        cwd=str(repo_root),
+        capture_output=True,
+        text=True,
+        timeout=3600,
+        env=env,
+    )
+    drid = _latest_daily_run_id_for_date(rd, sp)
+    return PipelineReplayResponse(
+        ok=proc.returncode == 0,
+        step=body.step,
+        sport=sp,  # type: ignore[arg-type]
+        run_date=rd,
+        slot=slot,  # type: ignore[arg-type]
+        daily_run_id=drid,
+        subprocess_exit_code=int(proc.returncode),
+        stdout_excerpt=_clip(proc.stdout or "") or None,
+        stderr_excerpt=_clip(proc.stderr or "") or None,
+        message=f"Window {slot} {'OK' if proc.returncode == 0 else 'falló'} para {sp} {rd}",
+    )
 
 
 @app.get(
