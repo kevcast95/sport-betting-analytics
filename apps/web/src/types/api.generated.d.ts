@@ -415,6 +415,22 @@ export interface components {
             market: string;
             /** Selection */
             selection: string;
+            /**
+             * Picked Value
+             * @description Cuota registrada para la pierna.
+             */
+            picked_value?: number | null;
+            /**
+             * Leg Outcome
+             * @description Estado de esta pierna (misma lógica que un single: usuario o validación).
+             * @enum {string}
+             */
+            leg_outcome?: ("win" | "loss" | "pending") | null;
+            /**
+             * Operativo Visible
+             * @description False si el pick no aparece en el listado tradable del run (solo análisis).
+             */
+            operativo_visible?: boolean;
         };
         /** DailyRunBoardOut */
         DailyRunBoardOut: {

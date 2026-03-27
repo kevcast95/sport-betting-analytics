@@ -54,6 +54,26 @@ function effectiveOutcome(p: BoardPick): 'win' | 'loss' | 'pending' | null {
   return null
 }
 
+const COMBOS_SECTION_STORAGE = 'altea.runPicks.showCombos'
+
+function loadShowCombosPreference(): boolean {
+  try {
+    return localStorage.getItem(COMBOS_SECTION_STORAGE) !== '0'
+  } catch {
+    return true
+  }
+}
+
+function legOutcomeShort(
+  o: 'win' | 'loss' | 'pending' | null | undefined,
+): { label: string; className: string } {
+  if (o === 'win')
+    return { label: 'Pierna: ganada', className: 'border-emerald-200 bg-emerald-50 text-emerald-900' }
+  if (o === 'loss')
+    return { label: 'Pierna: perdida', className: 'border-red-200 bg-red-50 text-red-900' }
+  return { label: 'Pierna: pendiente', className: 'border-amber-200 bg-amber-50 text-amber-900' }
+}
+
 export default function RunPicksPage() {
   const { dailyRunId } = useParams<{ dailyRunId: string }>()
   const runId = Number(dailyRunId)
@@ -74,6 +94,20 @@ export default function RunPicksPage() {
     useListPageSize()
   const quickOutcomeM = usePickOutcomeQuickMutation(userId)
   const quickAutoOutcomeM = usePickOutcomeAutoQuickMutation(userId)
+  const [showCombosSection, setShowCombosSection] = useState(
+    loadShowCombosPreference,
+  )
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        COMBOS_SECTION_STORAGE,
+        showCombosSection ? '1' : '0',
+      )
+    } catch {
+      /* ignore */
+    }
+  }, [showCombosSection])
 
   useEffect(() => {
     setPickListPage(0)
@@ -543,79 +577,120 @@ export default function RunPicksPage() {
             </>
           )}
 
-          <h3 className="mb-1 mt-14 text-lg font-semibold tracking-tight text-violet-950">
-            Combinadas sugeridas
-          </h3>
-          <p className="mb-5 max-w-xl text-xs leading-relaxed text-app-muted">
-            Parlays armados por el modelo. Cada pierna enlaza a su ficha; el tono
-            violeta / ámbar las distingue de los singles.
-          </p>
-          {board.suggested_combos.length === 0 ? (
-            <p className="text-xs text-app-muted">
-              Pulsa «Regenerar combinadas».
-            </p>
-          ) : (
-            <ul className="space-y-5">
-              {board.suggested_combos.map((c) => (
-                <li key={c.suggested_combo_id} className="group relative">
-                  <div className="rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-amber-400 p-[2px] shadow-md">
-                    <div className="rounded-[14px] bg-app-card p-4">
-                      <div className="border-b border-violet-100 pb-3">
-                        <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-900">
-                          Combo #{c.rank_order}
-                        </span>
-                        <p className="mt-2 text-sm font-semibold text-app-fg">
-                          {c.legs.length} piernas · parlay sugerido
-                        </p>
-                        {c.strategy_note && (
-                          <p className="mt-1 text-xs leading-relaxed text-app-muted">
-                            {c.strategy_note}
-                          </p>
-                        )}
+          <div className="mb-1 mt-14 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="text-lg font-semibold tracking-tight text-violet-950">
+              Combinadas sugeridas
+            </h3>
+            <button
+              type="button"
+              className="self-start rounded-md border border-violet-200 bg-violet-50 px-3 py-1.5 text-[11px] font-medium text-violet-950 shadow-sm hover:bg-violet-100"
+              onClick={() => setShowCombosSection((v) => !v)}
+            >
+              {showCombosSection ? 'Ocultar combinadas' : 'Mostrar combinadas'}
+            </button>
+          </div>
+          {showCombosSection ? (
+            <>
+              <p className="mb-5 max-w-xl text-xs leading-relaxed text-app-muted">
+                Parlays armados con reglas automáticas (ver nota en cada combo).
+                Cada pierna enlaza a su ficha. Si una pierna pierde, la combinada
+                pierde: el estado por pierna y el resumen «por piernas» abajo lo
+                reflejan.
+              </p>
+              {board.suggested_combos.length === 0 ? (
+                <p className="text-xs text-app-muted">
+                  Pulsa «Regenerar combinadas».
+                </p>
+              ) : (
+                <ul className="space-y-5">
+                  {board.suggested_combos.map((c) => (
+                    <li key={c.suggested_combo_id} className="group relative">
+                      <div className="rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-amber-400 p-[2px] shadow-md">
+                        <div className="rounded-[14px] bg-app-card p-4">
+                          <div className="border-b border-violet-100 pb-3">
+                            <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-900">
+                              Combo #{c.rank_order}
+                            </span>
+                            <p className="mt-2 text-sm font-semibold text-app-fg">
+                              {c.legs.length} piernas · parlay sugerido
+                            </p>
+                            {c.strategy_note && (
+                              <p className="mt-1 text-xs leading-relaxed text-app-muted">
+                                {c.strategy_note}
+                              </p>
+                            )}
+                          </div>
+                          <ol className="mt-3 space-y-2">
+                            {c.legs.map((leg, idx) => {
+                              const lo = legOutcomeShort(leg.leg_outcome)
+                              const showAnalysis =
+                                leg.operativo_visible === false
+                              return (
+                                <li key={leg.pick_id}>
+                                  <Link
+                                    to={`/picks/${leg.pick_id}`}
+                                    className="flex items-start gap-3 rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50/80 to-white px-3 py-2 text-xs transition-colors hover:border-sky-300 hover:from-sky-50"
+                                  >
+                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-600 text-[10px] font-bold text-white">
+                                      {idx + 1}
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex flex-wrap items-center gap-1.5">
+                                        <p className="font-mono text-[10px] text-app-muted">
+                                          pick {leg.pick_id} · event{' '}
+                                          {leg.event_id}
+                                          {leg.picked_value != null && leg.picked_value > 0
+                                            ? ` · @${Number(leg.picked_value).toFixed(2)}`
+                                            : ''}
+                                        </p>
+                                        <span
+                                          className={`inline-flex rounded-full border px-1.5 py-0.5 text-[9px] font-semibold ${lo.className}`}
+                                        >
+                                          {lo.label}
+                                        </span>
+                                        {showAnalysis ? (
+                                          <span className="inline-flex rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] font-medium text-amber-950">
+                                            Solo análisis (no en lista)
+                                          </span>
+                                        ) : null}
+                                      </div>
+                                      <p className="mt-0.5 font-medium text-app-fg">
+                                        <span className="mr-1 rounded bg-violet-100 px-1 py-0.5 text-[10px] text-violet-900">
+                                          {leg.market}
+                                        </span>{' '}
+                                        {selectionShortLabel(
+                                          leg.market,
+                                          leg.selection,
+                                        )}
+                                      </p>
+                                    </div>
+                                    <span className="shrink-0 text-[10px] font-semibold text-sky-700">
+                                      Ficha →
+                                    </span>
+                                  </Link>
+                                </li>
+                              )
+                            })}
+                          </ol>
+                          <ComboTrackingControls
+                            key={`${c.suggested_combo_id}-${c.user_stake_amount ?? ''}`}
+                            combo={c}
+                            bankrollCOP={bankrollCOP}
+                            disabled={saveComboM.isPending}
+                            onSave={(payload) => saveComboM.mutate(payload)}
+                          />
+                        </div>
                       </div>
-                      <ol className="mt-3 space-y-2">
-                        {c.legs.map((leg, idx) => (
-                          <li key={leg.pick_id}>
-                            <Link
-                              to={`/picks/${leg.pick_id}`}
-                              className="flex items-start gap-3 rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50/80 to-white px-3 py-2 text-xs transition-colors hover:border-sky-300 hover:from-sky-50"
-                            >
-                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-600 text-[10px] font-bold text-white">
-                                {idx + 1}
-                              </span>
-                              <div className="min-w-0 flex-1">
-                                <p className="font-mono text-[10px] text-app-muted">
-                                  pick {leg.pick_id} · event {leg.event_id}
-                                </p>
-                                <p className="mt-0.5 font-medium text-app-fg">
-                                  <span className="mr-1 rounded bg-violet-100 px-1 py-0.5 text-[10px] text-violet-900">
-                                    {leg.market}
-                                  </span>{' '}
-                                  {selectionShortLabel(
-                                    leg.market,
-                                    leg.selection,
-                                  )}
-                                </p>
-                              </div>
-                              <span className="shrink-0 text-[10px] font-semibold text-sky-700">
-                                Ficha →
-                              </span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ol>
-                      <ComboTrackingControls
-                        key={`${c.suggested_combo_id}-${c.user_stake_amount ?? ''}`}
-                        combo={c}
-                        bankrollCOP={bankrollCOP}
-                        disabled={saveComboM.isPending}
-                        onSave={(payload) => saveComboM.mutate(payload)}
-                      />
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          ) : (
+            <p className="mb-5 text-[11px] text-app-muted">
+              Sección oculta para reducir ruido. Pulsa «Mostrar combinadas» cuando
+              quieras verlas de nuevo (se recuerda en este navegador).
+            </p>
           )}
         </>
       )}

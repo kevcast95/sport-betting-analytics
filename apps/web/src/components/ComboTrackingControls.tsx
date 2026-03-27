@@ -100,9 +100,14 @@ export function ComboTrackingControls({
         </span>
       </div>
       <p className="text-[10px] leading-relaxed text-app-muted">
-        Si no tocas el cierre, cuenta el resultado lógico de las piernas. El
-        monto de la combinada sigue tu bankroll (menú lateral); sugerencia
-        conservadora abajo.
+        <strong className="font-medium text-app-fg">Parlay:</strong> basta con que
+        una pierna salga mal para que la combinada pierda. «Por piernas» resume
+        eso (ganan todas → ganada; alguna perdida → perdida; si no → pendiente).
+      </p>
+      <p className="text-[10px] leading-relaxed text-app-muted">
+        Si no tocas el cierre manual, se usa ese resultado lógico. El monto de
+        la combinada sigue tu bankroll (menú lateral); sugerencia conservadora
+        abajo.
       </p>
       {range && (
         <p className="text-[10px] text-violet-900/90">

@@ -12,6 +12,11 @@ Tier B (fallback): contrato base sin statistics_ok — evita quedarse en 0 candi
   SofaScore no expone /statistics pre-partido; contexto vía h2h + rachas + (opcional)
   processed.team_season_stats (estadísticas de temporada en la misma liga).
 
+Tenis — cupos hacia DS (después del sort A→B):
+  - Por defecto ALTEA_TENNIS_TIER_POLICY=dynamic: A hasta ALTEA_TENNIS_A_MAX_HARD y B con techo
+    min(B_max, max(B_min, ceil(A_planned * ratio))) (vars ALTEA_TENNIS_*).
+  - Modo fijo: ALTEA_TENNIS_TIER_POLICY=fixed + ALTEA_TENNIS_MAX_TIER_A / _B.
+
 Scoring: cuenta endpoints OK en diagnostics (0–7).
 
 Exclusión partido terminado (operativo):
@@ -22,6 +27,7 @@ Exclusión partido terminado (operativo):
 
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -167,10 +173,15 @@ def _tennis_low_itf_filter_enabled() -> bool:
     )
 
 
-def _tennis_tier_caps() -> tuple[int, int]:
+def _tennis_tier_policy_mode() -> str:
+    """fixed: caps ALTEA_TENNIS_MAX_TIER_A/B. dynamic (default): A_max + B cap por ratio."""
+    raw = os.environ.get("ALTEA_TENNIS_TIER_POLICY", "dynamic").strip().lower()
+    return raw if raw in ("fixed", "dynamic") else "dynamic"
+
+
+def _tennis_tier_caps_fixed() -> tuple[int, int]:
     """
-    Tope operativo para reducir ruido antes de DS.
-    Se aplica solo en tenis, después del sort A->B por quality_score.
+    Modo fixed: topes fijos después del sort A→B por quality_score.
     """
     raw_a = os.environ.get("ALTEA_TENNIS_MAX_TIER_A", "12").strip()
     raw_b = os.environ.get("ALTEA_TENNIS_MAX_TIER_B", "8").strip()
@@ -183,6 +194,55 @@ def _tennis_tier_caps() -> tuple[int, int]:
     except ValueError:
         cap_b = 8
     return cap_a, cap_b
+
+
+def _tennis_dynamic_plan(a_available: int, b_available: int) -> tuple[int, int, Dict[str, Any]]:
+    """
+    Modo dinámico (solo tenis):
+      - Se toman hasta A_max_hard partidos Tier A (por quality_score).
+      - Cupo Tier B: min(B_max_hard, max(B_min, ceil(A_planned * ratio))).
+      - A_planned = min(a_available, A_max_hard) (cuántos A se pretenden llenar).
+    """
+    raw_amax = os.environ.get("ALTEA_TENNIS_A_MAX_HARD", "48").strip()
+    raw_bmin = os.environ.get("ALTEA_TENNIS_B_MIN", "4").strip()
+    raw_bmax = os.environ.get("ALTEA_TENNIS_B_MAX_HARD", "15").strip()
+    raw_ratio = os.environ.get("ALTEA_TENNIS_B_RATIO_OF_A", "0.35").strip()
+    try:
+        a_max_hard = max(0, int(raw_amax))
+    except ValueError:
+        a_max_hard = 48
+    try:
+        b_min = max(0, int(raw_bmin))
+    except ValueError:
+        b_min = 4
+    try:
+        b_max_hard = max(0, int(raw_bmax))
+    except ValueError:
+        b_max_hard = 15
+    try:
+        b_ratio = float(raw_ratio)
+    except ValueError:
+        b_ratio = 0.35
+    b_ratio = max(0.0, b_ratio)
+
+    a_planned = min(a_available, a_max_hard)
+    b_cap_raw = max(b_min, int(math.ceil(a_planned * b_ratio)))
+    b_cap = min(b_max_hard, b_cap_raw) if b_max_hard > 0 else b_cap_raw
+    b_take = min(b_available, b_cap)
+
+    meta: Dict[str, Any] = {
+        "mode": "dynamic",
+        "a_max_hard": a_max_hard,
+        "b_min": b_min,
+        "b_max_hard": b_max_hard,
+        "b_ratio_of_a_planned": b_ratio,
+        "a_available": a_available,
+        "b_available": b_available,
+        "a_planned": a_planned,
+        "b_cap_computed": b_cap,
+        "b_take_planned": b_take,
+    }
+    return a_planned, b_take, meta
 
 
 def _is_low_itf_tournament(event_context: Dict[str, Any]) -> bool:
@@ -398,10 +458,31 @@ def run(args: argparse.Namespace) -> None:
 
     # Tier A primero, luego B; dentro de cada tier, mayor quality_score
     candidates.sort(key=lambda x: (0 if x["tier"] == "A" else 1, -x["quality_score"]))
+    tier_policy_meta: Optional[Dict[str, Any]] = None
     if sport == "tennis":
-        cap_a, cap_b = _tennis_tier_caps()
-        a_rows = [c for c in candidates if c["tier"] == "A"][:cap_a]
-        b_rows = [c for c in candidates if c["tier"] == "B"][:cap_b]
+        a_all = [c for c in candidates if c["tier"] == "A"]
+        b_all = [c for c in candidates if c["tier"] == "B"]
+        mode = _tennis_tier_policy_mode()
+        if mode == "fixed":
+            cap_a, cap_b = _tennis_tier_caps_fixed()
+            a_rows = a_all[:cap_a]
+            b_rows = b_all[:cap_b]
+            tier_policy_meta = {
+                "mode": "fixed",
+                "max_tier_a": cap_a,
+                "max_tier_b": cap_b,
+                "a_available": len(a_all),
+                "b_available": len(b_all),
+                "a_selected": len(a_rows),
+                "b_selected": len(b_rows),
+            }
+        else:
+            a_planned, b_take, meta = _tennis_dynamic_plan(len(a_all), len(b_all))
+            a_rows = a_all[:a_planned]
+            b_rows = b_all[:b_take]
+            meta["a_selected"] = len(a_rows)
+            meta["b_selected"] = len(b_rows)
+            tier_policy_meta = meta
         candidates_capped = a_rows + b_rows
         top = candidates_capped[: args.limit]
     else:
@@ -430,9 +511,13 @@ def run(args: argparse.Namespace) -> None:
         "tier_selected": tier_selected,
         "candidates_detail": top,
     }
-    if sport == "tennis":
-        cap_a, cap_b = _tennis_tier_caps()
-        result["tennis_tier_caps"] = {"max_tier_a": cap_a, "max_tier_b": cap_b}
+    if sport == "tennis" and tier_policy_meta is not None:
+        result["tier_policy"] = tier_policy_meta
+        if tier_policy_meta.get("mode") == "fixed":
+            result["tennis_tier_caps"] = {
+                "max_tier_a": int(tier_policy_meta.get("max_tier_a") or 0),
+                "max_tier_b": int(tier_policy_meta.get("max_tier_b") or 0),
+            }
 
     ds_input: List[Dict[str, Any]] = []
     event_ids_selected = [c["event_id"] for c in top]
@@ -503,24 +588,21 @@ def run(args: argparse.Namespace) -> None:
         print(f"OK written to {args.output}")
 
     print("\n=== SELECT_CANDIDATES ===")
-    print(
-        json.dumps(
-            {
-                "job": "select_candidates",
-                "daily_run_id": args.daily_run_id,
-                "total_events": len(rows),
-                "passed_filters": len(candidates),
-                "tier_counts_all_passed": tier_counts,
-                "tier_selected": tier_selected,
-                "rejected": len(rejected),
-                "rejection_reasons": reasons,
-                "selected_count": len(top),
-                "selected_event_ids": [c["event_id"] for c in top],
-            },
-            indent=2,
-            ensure_ascii=False,
-        )
-    )
+    summary_dump: Dict[str, Any] = {
+        "job": "select_candidates",
+        "daily_run_id": args.daily_run_id,
+        "total_events": len(rows),
+        "passed_filters": len(candidates),
+        "tier_counts_all_passed": tier_counts,
+        "tier_selected": tier_selected,
+        "rejected": len(rejected),
+        "rejection_reasons": reasons,
+        "selected_count": len(top),
+        "selected_event_ids": [c["event_id"] for c in top],
+    }
+    if sport == "tennis" and tier_policy_meta is not None:
+        summary_dump["tier_policy"] = tier_policy_meta
+    print(json.dumps(summary_dump, indent=2, ensure_ascii=False))
     print("=== OK ===\n")
 
     print(f"\n=== RUN_INVENTORY (validar nombres vs SofaScore; TZ ref={tz}) ===")
@@ -577,6 +659,8 @@ def run(args: argparse.Namespace) -> None:
         print("\n--- Resumen ---", file=sys.stderr)
         print(f"Total eventos: {len(rows)}", file=sys.stderr)
         print(f"Pasaron filtros: {len(candidates)} (A={tier_counts.get('A', 0)}, B={tier_counts.get('B', 0)})", file=sys.stderr)
+        if sport == "tennis" and tier_policy_meta:
+            print(f"Tier policy: {json.dumps(tier_policy_meta, ensure_ascii=False)}", file=sys.stderr)
         print(f"Rechazados: {len(rejected)}", file=sys.stderr)
         for r, n in sorted(reasons.items()):
             print(f"  - {r}: {n}", file=sys.stderr)

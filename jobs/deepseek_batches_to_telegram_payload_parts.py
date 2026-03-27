@@ -119,6 +119,7 @@ def _build_system_prompt(*, sport: str) -> str:
         return TENNIS_SYSTEM_PROMPT
     return (
         "Eres un analista de fútbol para apuestas. "
+        "El campo `razon` (y cualquier explicación legible) debe estar en español. "
         "Debes producir SOLO JSON válido (sin markdown, sin texto adicional). "
         "El JSON debe seguir el esquema pedido por el usuario. "
         "No inventes cuotas: usa las odds desde el campo `processed` del evento."
@@ -164,7 +165,7 @@ def _build_user_prompt(batch: Dict[str, Any], *, date_str: str, sport: str) -> s
         "  edge_pct >= 3 => Media-Alta\n"
         "  edge_pct >= 1.5 => Media\n"
         "  else => Baja\n"
-        "- 'razon' debe ser 1 frase basada en lineups/h2h/streaks y/o odds trend (Tier A vs Tier B).\n\n"
+        "- 'razon' debe ser 1 frase en español basada en lineups/h2h/streaks y/o odds trend (Tier A vs Tier B).\n\n"
         "Datos del lote (JSON):\n"
         f"{json.dumps(batch, ensure_ascii=False)}\n"
     )
