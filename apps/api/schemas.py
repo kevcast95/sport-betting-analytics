@@ -257,6 +257,13 @@ class TrackingBoardOut(BaseModel):
     user_id: int
     picks: List[PickSummary]
     suggested_combos: List[SuggestedComboOut]
+    picks_stats: Optional[dict] = Field(
+        default=None,
+        description=(
+            "Resumen operativo del run: total generado por modelo, tradables visibles "
+            "y ocultos por umbral de cuota."
+        ),
+    )
 
 
 class RegenerateCombosResponse(BaseModel):

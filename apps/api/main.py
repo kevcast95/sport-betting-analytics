@@ -910,6 +910,36 @@ def api_tracking_board(
         ORDER BY p.pick_id DESC
     """
     rows = conn.execute(sql, (daily_run_id,)).fetchall()
+    total_generated = len(rows)
+    raw_floor = os.environ.get("ALTEA_MIN_TRADABLE_ODDS", "1.30").strip()
+    try:
+        min_tradable_odds = max(1.0, float(raw_floor))
+    except ValueError:
+        min_tradable_odds = 1.30
+
+    # Operatividad: en el tablero del run se muestran solo picks tradables.
+    # Los no tradables quedan en DB para analítica/rendimiento del modelo.
+    def _is_tradable_pick_row(row: sqlite3.Row) -> bool:
+        pv_raw = row["picked_value"]
+        pv = float(pv_raw) if pv_raw is not None else 0.0
+        if pv >= min_tradable_odds:
+            return True
+        ref_raw = row["odds_reference"]
+        if not ref_raw:
+            return False
+        try:
+            ref = json.loads(str(ref_raw))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return False
+        if isinstance(ref, dict):
+            tv = ref.get("tradable")
+            if isinstance(tv, bool):
+                return tv
+        return False
+
+    rows = [r for r in rows if _is_tradable_pick_row(r)]
+    tradable_visible = len(rows)
+    hidden_non_tradable = max(0, total_generated - tradable_visible)
     emap = load_event_meta_for_daily_run(conn, daily_run_id=daily_run_id)
     detail = get_pick_decision_rows_for_run(
         conn, user_id=user_id, daily_run_id=daily_run_id
@@ -1010,6 +1040,12 @@ def api_tracking_board(
         user_id=user_id,
         picks=picks_out,
         suggested_combos=combos_out,
+        picks_stats={
+            "total_generated": total_generated,
+            "tradable_visible": tradable_visible,
+            "hidden_non_tradable": hidden_non_tradable,
+            "min_tradable_odds": round(min_tradable_odds, 2),
+        },
     )
 
 

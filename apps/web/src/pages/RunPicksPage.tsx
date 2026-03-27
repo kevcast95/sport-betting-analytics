@@ -19,6 +19,12 @@ import { confidenceTierFromLabel } from '@/lib/stakeSuggestion'
 import type { TrackingBoardOut, ValidatePicksRunResponse } from '@/types/api'
 
 type BoardPick = TrackingBoardOut['picks'][number]
+type RunPicksStats = {
+  total_generated: number
+  tradable_visible: number
+  hidden_non_tradable: number
+  min_tradable_odds: number
+}
 
 type OddsRef = Record<string, unknown> | null | undefined
 
@@ -160,6 +166,16 @@ export default function RunPicksPage() {
   })
 
   const board = boardQ.data
+  const picksStats = (board as (TrackingBoardOut & { picks_stats?: RunPicksStats }) | undefined)?.picks_stats
+  const picksStatsTotal = picksStats?.total_generated ?? 0
+  const picksStatsTradablePct =
+    picksStatsTotal > 0 && picksStats
+      ? Math.round((picksStats.tradable_visible / picksStatsTotal) * 100)
+      : 0
+  const picksStatsAnalysisPct =
+    picksStatsTotal > 0 && picksStats
+      ? Math.round((picksStats.hidden_non_tradable / picksStatsTotal) * 100)
+      : 0
 
   const picksOrdered = useMemo(() => {
     if (!board) return []
@@ -375,6 +391,41 @@ export default function RunPicksPage() {
               </div>
             ) : null}
           </div>
+
+          {picksStats && (
+            <div className="mb-2 rounded-md border border-app-line bg-white px-3 py-2">
+              <p className="text-[11px] font-medium text-app-fg">Feedback del run</p>
+              <div className="mt-1 grid gap-2 sm:grid-cols-3">
+                <div className="rounded border border-app-line bg-app-card px-2 py-1.5">
+                  <p className="text-[10px] uppercase tracking-wide text-app-muted">Generados</p>
+                  <p className="font-mono text-sm text-app-fg">{picksStats.total_generated}</p>
+                </div>
+                <div className="rounded border border-emerald-200 bg-emerald-50/60 px-2 py-1.5">
+                  <p className="text-[10px] uppercase tracking-wide text-app-muted">Tradables operativos</p>
+                  <p className="font-mono text-sm text-emerald-800">
+                    {picksStats.tradable_visible} <span className="text-[11px]">({picksStatsTradablePct}%)</span>
+                  </p>
+                </div>
+                <div className="rounded border border-amber-200 bg-amber-50/60 px-2 py-1.5">
+                  <p className="text-[10px] uppercase tracking-wide text-app-muted">
+                    Solo análisis (&lt; {picksStats.min_tradable_odds})
+                  </p>
+                  <p className="font-mono text-sm text-amber-800">
+                    {picksStats.hidden_non_tradable} <span className="text-[11px]">({picksStatsAnalysisPct}%)</span>
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full border border-app-line bg-app-card">
+                <div
+                  className="h-full bg-emerald-500/80"
+                  style={{ width: `${picksStatsTradablePct}%` }}
+                />
+              </div>
+              <p className="mt-1 text-[10px] text-app-muted">
+                Barra: proporción de picks operativos frente al total generado por el modelo.
+              </p>
+            </div>
+          )}
 
           {board.picks.length === 0 ? (
             <p className="rounded-xl border border-dashed border-app-line bg-app-card p-8 text-center text-sm text-app-muted">

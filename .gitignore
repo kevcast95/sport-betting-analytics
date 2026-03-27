@@ -13,9 +13,13 @@ playwright-browsers/
 .git2/
 
 # SQLite local (no commitear DB de desarrollo)
+db/*.sqlite
+db/*.sqlite-shm
+db/*.sqlite-wal
 db/*.sqlite3
 db/*.sqlite3-shm
 db/*.sqlite3-wal
+db/*.bak_*
 
 # Salidas, logs, estado de scheduler y artefactos de jobs
 out/
@@ -32,5 +36,6 @@ candidates_*.json
 node_modules/
 apps/web/node_modules/
 apps/web/dist/
+apps/web/.vite/
 apps/web/.env
 apps/web/.env.local
