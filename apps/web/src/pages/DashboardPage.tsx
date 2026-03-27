@@ -39,8 +39,7 @@ function confidenceRank(bucket: string): number | null {
 
 export default function DashboardPage() {
   const { userId } = useTrackingUser()
-  const { runDate, setRunDate, onlyTaken, setOnlyTaken, sport } =
-    useDashboardUrlState()
+  const { runDate, onlyTaken, sport } = useDashboardUrlState()
   const onlyTakenForQuery = userId != null && onlyTaken
   const previewLimit = 5
   const [activeTab, setActiveTab] = useState<'operacion' | 'analitica'>(
@@ -171,7 +170,16 @@ export default function DashboardPage() {
       )}
 
       {dashQ.isLoading && (
-        <p className="text-sm text-app-muted">Cargando resumen…</p>
+        <div className="mb-4 rounded-md border border-app-line bg-app-card px-3 py-2 text-sm text-app-muted">
+          <p>Cargando resumen…</p>
+          <p className="mt-1 text-[11px] leading-relaxed">
+            Si se queda así mucho rato: revisa que el API (uvicorn) siga vivo, que la
+            web pueda llegar a ese puerto (proxy /{' '}
+            <code className="font-mono text-[10px] text-app-fg">VITE_API_BASE_URL</code>
+            ), y que ningún otro programa tenga la SQLite bloqueada en escritura
+            (p. ej. otro job o herramienta con la base abierta).
+          </p>
+        </div>
       )}
 
       {s && (

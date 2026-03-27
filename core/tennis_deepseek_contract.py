@@ -17,6 +17,8 @@ TENNIS_MARKETS_V1 = (
 
 TENNIS_SYSTEM_PROMPT = (
     "Eres un analista de apuestas de tenis (ATP/WTA). "
+    "El texto legible en la salida (especialmente el campo `razon`) debe estar en español; "
+    "los nombres de mercado en JSON pueden seguir el contrato en inglés (Match winner, etc.). "
     "Debes devolver SOLO JSON válido (sin markdown). "
     "No inventes cuotas: el campo `processed.tennis_odds` y `processed.odds_all` son la fuente; "
     "si falta una cuota para un mercado, no emitas pick para ese mercado o deja picks vacíos. "
@@ -55,7 +57,7 @@ def build_tennis_user_prompt_instructions(*, date_str: str) -> str:
         "- Máximo 2 picks por evento. Si no hay cuotas en los datos, picks=[].\n"
         "- EDGE: p_imp_pct = round(100/odds,2); elige p_real_pct (0-100); edge_pct = round(p_real_pct - p_imp_pct, 2).\n"
         "- Confianza: misma escala que fútbol (>=5 Alta, >=3 Media-Alta, >=1.5 Media, si no Baja).\n"
-        "- `razon`: 1 frase usando superficie/ronda/ranking si están en event_context o processed.tennis_rankings.\n\n"
+        "- `razon`: una sola frase en español, usando superficie/ronda/ranking si están en event_context o processed.tennis_rankings.\n\n"
         "Datos del lote (JSON):\n"
     )
 

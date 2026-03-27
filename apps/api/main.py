@@ -11,7 +11,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 import json
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, HTTPException, Query
@@ -644,6 +644,45 @@ def _pick_summary_from_join_row(r: sqlite3.Row) -> PickSummary:
     )
 
 
+def _pick_summary_merge_user_detail(
+    s: PickSummary,
+    dr: Optional[sqlite3.Row],
+) -> PickSummary:
+    dump = s.model_dump()
+    if dr is not None:
+        dump["user_taken"] = bool(dr["taken"])
+        dump["risk_category"] = dr["risk_category"]
+        dump["decision_origin"] = dr["decision_origin"]
+        dump["stake_amount"] = (
+            float(dr["stake_amount"]) if dr["stake_amount"] is not None else None
+        )
+        uox = dr["user_outcome"]
+        dump["user_outcome"] = uox if uox in ("win", "loss", "pending") else None
+        rr = dr["realized_return_cop"]
+        dump["realized_return_cop"] = float(rr) if rr is not None else None
+    else:
+        dump["user_taken"] = None
+        dump["risk_category"] = None
+        dump["decision_origin"] = None
+        dump["stake_amount"] = None
+        dump["user_outcome"] = None
+        dump["realized_return_cop"] = None
+    return PickSummary.model_validate(dump)
+
+
+def _is_tradable_pick_summary(s: PickSummary, min_tradable_odds: float) -> bool:
+    pv_raw = s.picked_value
+    pv = float(pv_raw) if pv_raw is not None else 0.0
+    if pv >= min_tradable_odds:
+        return True
+    ref = s.odds_reference
+    if isinstance(ref, dict):
+        tv = ref.get("tradable")
+        if isinstance(tv, bool):
+            return tv
+    return False
+
+
 def _pick_summary_effective_outcome(s: PickSummary) -> str:
     if s.status == "void":
         return "pending"
@@ -1054,8 +1093,8 @@ def api_tracking_board(
         WHERE p.daily_run_id = ?
         ORDER BY p.pick_id DESC
     """
-    rows = conn.execute(sql, (daily_run_id,)).fetchall()
-    total_generated = len(rows)
+    rows_all = list(conn.execute(sql, (daily_run_id,)).fetchall())
+    total_generated = len(rows_all)
     raw_floor = os.environ.get("ALTEA_MIN_TRADABLE_ODDS", "1.30").strip()
     try:
         min_tradable_odds = max(1.0, float(raw_floor))
@@ -1082,44 +1121,19 @@ def api_tracking_board(
                 return tv
         return False
 
-    rows = [r for r in rows if _is_tradable_pick_row(r)]
-    tradable_visible = len(rows)
+    rows_tradable = [r for r in rows_all if _is_tradable_pick_row(r)]
+    tradable_visible = len(rows_tradable)
     hidden_non_tradable = max(0, total_generated - tradable_visible)
     emap = load_event_meta_for_daily_run(conn, daily_run_id=daily_run_id)
     detail = get_pick_decision_rows_for_run(
         conn, user_id=user_id, daily_run_id=daily_run_id
     )
-    picks_out: List[PickSummary] = []
-    for r in rows:
-        s = _apply_event_meta(_pick_summary_from_join_row(r), emap)
+    picks_all_by_id: Dict[int, PickSummary] = {}
+    for r in rows_all:
+        base = _apply_event_meta(_pick_summary_from_join_row(r), emap)
         pid = int(r["pick_id"])
-        dr = detail.get(pid)
-        dump = s.model_dump()
-        if dr is not None:
-            dump["user_taken"] = bool(dr["taken"])
-            dump["risk_category"] = dr["risk_category"]
-            dump["decision_origin"] = dr["decision_origin"]
-            dump["stake_amount"] = (
-                float(dr["stake_amount"]) if dr["stake_amount"] is not None else None
-            )
-            uox = dr["user_outcome"]
-            dump["user_outcome"] = (
-                uox if uox in ("win", "loss", "pending") else None
-            )
-            rr = dr["realized_return_cop"]
-            dump["realized_return_cop"] = (
-                float(rr) if rr is not None else None
-            )
-        else:
-            dump["user_taken"] = None
-            dump["risk_category"] = None
-            dump["decision_origin"] = None
-            dump["stake_amount"] = None
-            dump["user_outcome"] = None
-            dump["realized_return_cop"] = None
-        picks_out.append(PickSummary.model_validate(dump))
-
-    picks_by_id: Dict[int, PickSummary] = {p.pick_id: p for p in picks_out}
+        picks_all_by_id[pid] = _pick_summary_merge_user_detail(base, detail.get(pid))
+    picks_out = [picks_all_by_id[int(r["pick_id"])] for r in rows_tradable]
 
     combo_rows = list_suggested_combos_with_legs(conn, daily_run_id=daily_run_id)
     combo_rows_detail = get_combo_decision_rows_for_run(
@@ -1129,18 +1143,40 @@ def api_tracking_board(
     for c in combo_rows:
         cid = int(c["suggested_combo_id"])
         legs_raw = list_legs_for_combo(conn, suggested_combo_id=cid)
-        legs = [
-            ComboLegOut(
-                pick_id=int(x["pick_id"]),
-                leg_order=int(x["leg_order"]),
-                event_id=int(x["event_id"]),
-                market=str(x["market"]),
-                selection=str(x["selection"]),
+        legs: List[ComboLegOut] = []
+        for x in legs_raw:
+            pid = int(x["pick_id"])
+            ps = picks_all_by_id.get(pid)
+            lo_raw = _pick_summary_effective_outcome(ps) if ps is not None else "pending"
+            lo: Literal["win", "loss", "pending"] = (
+                lo_raw
+                if lo_raw in ("win", "loss", "pending")
+                else "pending"
             )
-            for x in legs_raw
-        ]
+            pv_leg = (
+                float(ps.picked_value)
+                if ps is not None and ps.picked_value is not None
+                else None
+            )
+            vis = (
+                _is_tradable_pick_summary(ps, min_tradable_odds)
+                if ps is not None
+                else False
+            )
+            legs.append(
+                ComboLegOut(
+                    pick_id=pid,
+                    leg_order=int(x["leg_order"]),
+                    event_id=int(x["event_id"]),
+                    market=str(x["market"]),
+                    selection=str(x["selection"]),
+                    picked_value=pv_leg,
+                    leg_outcome=lo,
+                    operativo_visible=vis,
+                )
+            )
         leg_ids = [int(x["pick_id"]) for x in legs_raw]
-        from_legs = _combo_outcome_from_leg_picks(picks_by_id, leg_ids)
+        from_legs = _combo_outcome_from_leg_picks(picks_all_by_id, leg_ids)
         ddr = combo_rows_detail.get(cid)
         if ddr is not None:
             u_taken = bool(ddr["taken"])

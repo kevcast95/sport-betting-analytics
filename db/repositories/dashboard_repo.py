@@ -151,7 +151,11 @@ def _selection_stats_from_artifact(
     for p in sorted(glob.glob(os.path.join(out_dir, f"candidates_{run_date}_*_select.json"))):
         if p in paths:
             continue
-        if s == "football" and p.endswith("_select_tennis.json"):
+        base = os.path.basename(p)
+        # Legado: *_select_tennis.json · naming actual: *_tennis_select.json
+        if s == "football" and (
+            base.endswith("_select_tennis.json") or base.endswith("_tennis_select.json")
+        ):
             continue
         paths.append(p)
 
@@ -523,6 +527,12 @@ def dashboard_insights(
     sport: str,
     user_id: Optional[int] = None,
 ) -> Dict[str, Any]:
+    raw_lb = os.environ.get("ALTEA_DASHBOARD_INSIGHTS_LOOKBACK_DAYS", "548").strip()
+    try:
+        lookback_days = max(30, min(int(raw_lb), 4000))
+    except ValueError:
+        lookback_days = 548
+
     if user_id is None:
         rows = list(
             conn.execute(
@@ -541,8 +551,10 @@ def dashboard_insights(
                 INNER JOIN pick_results r ON r.pick_id = p.pick_id
                 WHERE r.outcome IN ('win','loss')
                   AND d.run_date <= ?
+                  AND d.run_date >= date(?, ?)
+                  AND LOWER(TRIM(d.sport)) IN ('football', 'tennis')
                 """,
-                (run_date,),
+                (run_date, run_date, f"-{lookback_days} days"),
             ).fetchall()
         )
     else:
@@ -565,8 +577,10 @@ def dashboard_insights(
                   ON ud.pick_id = p.pick_id AND ud.user_id = ?
                 WHERE r.outcome IN ('win','loss')
                   AND d.run_date <= ?
+                  AND d.run_date >= date(?, ?)
+                  AND LOWER(TRIM(d.sport)) IN ('football', 'tennis')
                 """,
-                (user_id, run_date),
+                (user_id, run_date, run_date, f"-{lookback_days} days"),
             ).fetchall()
         )
 

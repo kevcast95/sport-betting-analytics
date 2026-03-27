@@ -67,6 +67,7 @@ export default function SystemSettingsPage() {
       if (step === 'window') body.slot = slot
       const res = await fetchJson<typeof replayResult>('/ops/pipeline/replay', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
       setReplayResult(res)

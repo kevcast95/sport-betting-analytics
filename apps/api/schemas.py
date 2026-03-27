@@ -184,6 +184,17 @@ class ComboLegOut(BaseModel):
     event_id: int
     market: str
     selection: str
+    picked_value: Optional[float] = Field(
+        None, description="Cuota registrada para la pierna."
+    )
+    leg_outcome: Optional[Literal["win", "loss", "pending"]] = Field(
+        None,
+        description="Estado de esta pierna (misma lógica que un single: usuario o validación).",
+    )
+    operativo_visible: bool = Field(
+        True,
+        description="False si el pick no aparece en el listado tradable del run (solo análisis).",
+    )
 
 
 class SuggestedComboOut(BaseModel):
