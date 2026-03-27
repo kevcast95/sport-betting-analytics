@@ -20,6 +20,14 @@ function pctPlain(v: number | null | undefined, digits = 1): string {
   return `${(v * 100).toFixed(digits)}%`
 }
 
+function confidenceFromOddsReference(raw: unknown): string | null {
+  if (!raw || typeof raw !== 'object') return null
+  const obj = raw as Record<string, unknown>
+  const direct = obj.confidence ?? obj.confianza
+  if (typeof direct === 'string' && direct.trim().length > 0) return direct.trim()
+  return null
+}
+
 function confidenceRank(bucket: string): number | null {
   const b = bucket.trim().toLowerCase()
   if (b === 'baja') return 1
@@ -101,6 +109,12 @@ export default function DashboardPage() {
       : mode === 'bajar'
         ? 'text-red-700 border-red-200'
         : 'text-amber-700 border-amber-200'
+  const modeCardTone =
+    mode === 'subir'
+      ? 'border-emerald-200 bg-emerald-50/60'
+      : mode === 'bajar'
+        ? 'border-red-200 bg-red-50/60'
+        : 'border-amber-200 bg-amber-50/60'
   const minBucketSample = 30
   const confidenceRows = dashQ.data?.calibration?.by_confidence ?? []
   const confidenceRowsKnown = confidenceRows
@@ -133,32 +147,23 @@ export default function DashboardPage() {
     sport,
     primaryDailyRunId: s?.primary_daily_run_id,
   })
+  const systemStatus =
+    mode === 'subir'
+      ? 'AGRESIVO CONTROLADO'
+      : mode === 'bajar'
+        ? 'DEFENSIVO'
+        : 'NEUTRAL'
+  const recommendedAction =
+    mode === 'subir'
+      ? 'Subir stake +10% y mantener límites diarios.'
+      : mode === 'bajar'
+        ? 'Reducir exposición y bajar stake al 50%.'
+        : 'Mantener stake y reevaluar al cierre del día.'
+  const topPicksPreview = (dashQ.data?.recent ?? []).slice(0, 5)
+  const todayProfitLoss = s?.net_pl_estimate ?? null
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap items-start gap-4 border-b border-app-line pb-6">
-        <label className="flex flex-col gap-1 text-xs text-app-muted">
-          Fecha del run (picks con este día)
-          <input
-            type="date"
-            value={runDate}
-            onChange={(e) => setRunDate(e.target.value)}
-            className="rounded-md border border-app-line bg-app-card px-3 py-2 text-sm text-app-fg"
-          />
-        </label>
-        {userId != null && (
-          <label className="flex cursor-pointer items-center gap-2 text-xs text-app-fg">
-            <input
-              type="checkbox"
-              className="rounded border-app-line"
-              checked={onlyTaken}
-              onChange={(e) => setOnlyTaken(e.target.checked)}
-            />
-            Solo picks que tomé
-          </label>
-        )}
-      </div>
-
       {dashQ.isError && (
         <p className="mb-4 text-sm text-app-danger whitespace-pre-wrap">
           {(dashQ.error as Error).message}
@@ -171,6 +176,88 @@ export default function DashboardPage() {
 
       {s && (
         <>
+          <section className="mb-6 rounded-2xl border border-app-line bg-app-card p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-app-muted">
+              Daily Summary
+            </p>
+            <div className="mt-3 grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <p className="text-xs text-app-muted">Bankroll actual</p>
+                <p className="font-mono text-2xl font-semibold tabular-nums text-violet-900">
+                  {userId != null && s.bankroll_cop != null ? formatCOP(s.bankroll_cop) : '—'}
+                </p>
+                <p className="text-xs text-app-muted">
+                  Hoy:{' '}
+                  <span
+                    className={`font-mono ${
+                      todayProfitLoss == null
+                        ? 'text-app-muted'
+                        : todayProfitLoss >= 0
+                          ? 'text-emerald-700'
+                          : 'text-red-700'
+                    }`}
+                  >
+                    {todayProfitLoss == null
+                      ? '—'
+                      : `${todayProfitLoss >= 0 ? '+' : ''}${formatCOP(todayProfitLoss)}`}
+                  </span>
+                </p>
+                <p className={`inline-flex rounded border px-2 py-1 text-[11px] font-semibold ${modeTone}`}>
+                  Estado: {systemStatus}
+                </p>
+              </div>
+              <div className={`rounded-lg border p-3 ${modeCardTone}`}>
+                <p className="text-xs font-semibold text-app-fg">Acción recomendada</p>
+                <p className="mt-2 text-sm font-semibold text-app-fg">{modeLabel}</p>
+                <p className="mt-2 text-xs text-app-muted">
+                  Motivo: ROI100 {pct(roi100, 1)} · caída máxima 30d {dd30 ?? '—'}u
+                  {twoRedDays ? ' · 2 días rojos seguidos' : ''}.
+                </p>
+                <p className="mt-1 text-xs text-app-muted">Acción sugerida: {recommendedAction}</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="mb-6 rounded-xl border border-app-line bg-app-card p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-app-fg">Top Picks Preview</p>
+              {barRunId != null && (
+                <Link
+                  to={`/runs/${barRunId}/picks`}
+                  className="text-xs text-app-fg underline decoration-app-line underline-offset-2"
+                >
+                  View all picks
+                </Link>
+              )}
+            </div>
+            {topPicksPreview.length === 0 ? (
+              <p className="text-xs text-app-muted">No hay picks recientes para mostrar en este corte.</p>
+            ) : (
+              <div className="overflow-hidden rounded-xl border border-app-line bg-app-card">
+                {topPicksPreview.map((r, i) => (
+                  <PickInboxRow
+                    key={`hero-top-${r.pick_id}`}
+                    pickId={r.pick_id}
+                    eventId={r.event_id}
+                    href={`/picks/${r.pick_id}`}
+                    eventLabel={r.event_label}
+                    league={r.league}
+                    market={r.market}
+                    selection={r.selection}
+                    selectionDisplay={r.selection_display}
+                    pickedValue={r.picked_value}
+                    kickoffDisplay={r.kickoff_display ?? null}
+                    executionSlotLabelEs={r.execution_slot_label_es ?? null}
+                    confidence={confidenceFromOddsReference(r.odds_reference) ?? 'N/D'}
+                    outcome={r.outcome}
+                    userTaken={r.user_taken}
+                    ordinal={i + 1}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
           <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-xl border border-app-line border-l-4 border-l-violet-500 bg-app-card p-4 shadow-sm">
               <p className="text-xs font-medium text-app-muted">
@@ -280,21 +367,6 @@ export default function DashboardPage() {
           </div>
           {activeTab === 'operacion' && (
             <>
-              <div className={`mb-4 rounded-xl border bg-app-card p-4 ${modeTone}`}>
-                <p className="text-xs font-semibold">Que hacer hoy</p>
-                <p className="mt-1 text-sm font-semibold">{modeLabel}</p>
-                <p className="mt-2 text-xs text-app-muted">
-                  Motivo: ROI100 {pct(roi100, 1)} · caida maxima 30d {dd30 ?? '—'}u
-                  {twoRedDays ? ' · 2 dias rojos seguidos' : ''}.
-                </p>
-                <p className="mt-2 text-xs text-app-muted">
-                  Accion sugerida: {mode === 'subir'
-                    ? 'aumentar stake +10% maximo y mantener limites diarios.'
-                    : mode === 'bajar'
-                      ? 'reducir stake al 50% y evitar escaladas.'
-                      : 'mantener stake actual y reevaluar al cierre del dia.'}
-                </p>
-              </div>
               <div className="mb-4 rounded-xl border border-app-line bg-app-card p-4">
                 <p className="text-xs font-semibold text-app-fg">
                   Widget: picks escogidos por dia ({sport})

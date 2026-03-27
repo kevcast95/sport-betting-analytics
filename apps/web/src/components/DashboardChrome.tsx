@@ -15,7 +15,7 @@ import type { DashboardBundleOut } from '@/types/api'
  * Comparte query con DashboardPage vía React Query (misma queryKey).
  */
 export function DashboardChrome() {
-  const { runDate, onlyTaken, sport } = useDashboardUrlState()
+  const { runDate, setRunDate, onlyTaken, setOnlyTaken, sport } = useDashboardUrlState()
   const { userId } = useTrackingUser()
   const onlyTakenForQuery = userId != null && onlyTaken
   const { bankrollCOP, setBankrollCOP, isBankrollSaving } = useBankrollCOP(userId)
@@ -34,6 +34,14 @@ export function DashboardChrome() {
 
   const s = dashQ.data?.summary
   const bankrollDraft = bankrollCOP != null ? String(Math.round(bankrollCOP)) : ''
+  const shiftRunDate = (days: number) => {
+    const [y, m, d] = runDate.split('-').map((v) => Number(v))
+    if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return
+    const dt = new Date(Date.UTC(y, m - 1, d))
+    if (Number.isNaN(dt.getTime())) return
+    dt.setUTCDate(dt.getUTCDate() + days)
+    setRunDate(dt.toISOString().slice(0, 10))
+  }
   const { barRunId } = useBarDailyRunId({
     runDate,
     sport,
@@ -46,7 +54,7 @@ export function DashboardChrome() {
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <SportPillTabs className="max-w-md" />
           {barRunId != null && (
-            <div className="flex shrink-0 flex-wrap gap-2">
+            <div className="flex shrink-0 flex-wrap items-end gap-2">
               <Link
                 to={`/runs/${barRunId}/events`}
                 className="inline-flex items-center justify-center rounded-lg border border-app-line bg-white px-3 py-2 text-xs font-medium text-app-fg shadow-sm hover:bg-violet-50/60"
@@ -59,6 +67,42 @@ export function DashboardChrome() {
               >
                 Tablero picks
               </Link>
+              <button
+                type="button"
+                onClick={() => shiftRunDate(-1)}
+                className="rounded-md border border-app-line bg-white px-2 py-2 text-xs text-app-fg shadow-sm hover:bg-violet-50/60"
+                title="Día anterior"
+              >
+                ←
+              </button>
+              <label className="flex flex-col gap-1 text-[11px] text-app-muted">
+                Fecha
+                <input
+                  type="date"
+                  value={runDate}
+                  onChange={(e) => setRunDate(e.target.value)}
+                  className="rounded-md border border-app-line bg-white px-2 py-1.5 text-xs text-app-fg"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => shiftRunDate(1)}
+                className="rounded-md border border-app-line bg-white px-2 py-2 text-xs text-app-fg shadow-sm hover:bg-violet-50/60"
+                title="Día siguiente"
+              >
+                →
+              </button>
+              {userId != null && (
+                <label className="mb-1 flex cursor-pointer items-center gap-2 text-xs text-app-fg">
+                  <input
+                    type="checkbox"
+                    className="rounded border-app-line"
+                    checked={onlyTaken}
+                    onChange={(e) => setOnlyTaken(e.target.checked)}
+                  />
+                  Solo picks que tomé
+                </label>
+              )}
             </div>
           )}
         </div>
