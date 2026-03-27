@@ -317,6 +317,27 @@ class DashboardSummaryBlock(BaseModel):
     outcome_wins: int
     outcome_losses: int
     outcome_pending: int
+    settled_count: int = 0
+    roi_unit: Optional[float] = Field(
+        None,
+        description="ROI unitario sobre picks settled (win/loss), usando stake 1 por pick.",
+    )
+    settled_count_tradable: int = Field(
+        0,
+        description="Cantidad de picks settled con cuota >= min_tradable_odds.",
+    )
+    settled_count_below_min_odds: int = Field(
+        0,
+        description="Cantidad de picks settled excluidos del ROI tradable por cuota baja.",
+    )
+    min_tradable_odds: Optional[float] = Field(
+        None,
+        description="Piso de cuota usado para separar ROI tradable (env ALTEA_MIN_TRADABLE_ODDS).",
+    )
+    roi_unit_tradable: Optional[float] = Field(
+        None,
+        description="ROI unitario sobre picks settled con cuota >= min_tradable_odds.",
+    )
     picks_taken_count: int
     taken_outcome_wins: int = 0
     taken_outcome_losses: int = 0
@@ -368,10 +389,63 @@ class DashboardRecentPick(BaseModel):
 class DashboardBundleOut(BaseModel):
     summary: DashboardSummaryBlock
     recent: List[DashboardRecentPick]
+    issued_daily: List["DashboardIssuedDailyRow"] = Field(
+        default_factory=list,
+        description="Widget compacto: picks escogidos por dia (ultimos dias).",
+    )
+    rolling_by_sport: List["DashboardRollingSportRow"] = Field(
+        default_factory=list,
+        description="Histórico rolling tradable por deporte.",
+    )
+    calibration: Optional["DashboardCalibrationBlock"] = Field(
+        default=None,
+        description="Relación entre señal del modelo (confianza/edge) y resultado.",
+    )
     recent_total: int = Field(
         0,
         description="Total de picks en la fecha (mismo criterio que la lista reciente: orden por created_at desc; respeta only_taken).",
     )
+
+
+class DashboardRollingSportRow(BaseModel):
+    sport: str
+    settled_total: int
+    settled_tradable: int
+    roi_tradable_50: Optional[float] = None
+    roi_tradable_100: Optional[float] = None
+    hit_rate_tradable_50: Optional[float] = None
+    hit_rate_tradable_100: Optional[float] = None
+    drawdown_units_30d: Optional[float] = None
+
+
+class DashboardCalibrationRow(BaseModel):
+    bucket: str
+    settled: int
+    hit_rate: Optional[float] = None
+    roi_unit: Optional[float] = None
+
+
+class DashboardCalibrationBlock(BaseModel):
+    sport: str
+    min_tradable_odds: float
+    by_confidence: List[DashboardCalibrationRow] = Field(default_factory=list)
+    by_confidence_taken: List[DashboardCalibrationRow] = Field(default_factory=list)
+    by_edge: List[DashboardCalibrationRow] = Field(default_factory=list)
+    daily_trend: List["DashboardDailyTrendRow"] = Field(default_factory=list)
+
+
+class DashboardDailyTrendRow(BaseModel):
+    run_date: str
+    settled: int
+    hit_rate: Optional[float] = None
+    roi_unit: Optional[float] = None
+
+
+class DashboardIssuedDailyRow(BaseModel):
+    run_date: str
+    picks_total: int
+    picks_tradable: int
+    picks_taken: Optional[int] = None
 
 
 class EffectivenessReportStatusOut(BaseModel):

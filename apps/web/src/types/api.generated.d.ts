@@ -517,11 +517,74 @@ export interface components {
             /** Recent */
             recent: components["schemas"]["DashboardRecentPick"][];
             /**
+             * Issued Daily
+             * @description Widget compacto: picks escogidos por dia (ultimos dias).
+             */
+            issued_daily: components["schemas"]["DashboardIssuedDailyRow"][];
+            /**
+             * Rolling By Sport
+             * @description Histórico rolling tradable por deporte.
+             */
+            rolling_by_sport: components["schemas"]["DashboardRollingSportRow"][];
+            /**
+             * Calibration
+             * @description Relación entre señal del modelo (confianza/edge) y resultado.
+             */
+            calibration?: components["schemas"]["DashboardCalibrationBlock"] | null;
+            /**
              * Recent Total
              * @description Total de picks en la fecha (mismo criterio que la lista reciente: orden por created_at desc; respeta only_taken).
              * @default 0
              */
             recent_total: number;
+        };
+        /** DashboardCalibrationBlock */
+        DashboardCalibrationBlock: {
+            /** Sport */
+            sport: string;
+            /** Min Tradable Odds */
+            min_tradable_odds: number;
+            /** By Confidence */
+            by_confidence: components["schemas"]["DashboardCalibrationRow"][];
+            /** By Confidence Taken */
+            by_confidence_taken: components["schemas"]["DashboardCalibrationRow"][];
+            /** By Edge */
+            by_edge: components["schemas"]["DashboardCalibrationRow"][];
+            /** Daily Trend */
+            daily_trend: components["schemas"]["DashboardDailyTrendRow"][];
+        };
+        /** DashboardCalibrationRow */
+        DashboardCalibrationRow: {
+            /** Bucket */
+            bucket: string;
+            /** Settled */
+            settled: number;
+            /** Hit Rate */
+            hit_rate?: number | null;
+            /** Roi Unit */
+            roi_unit?: number | null;
+        };
+        /** DashboardDailyTrendRow */
+        DashboardDailyTrendRow: {
+            /** Run Date */
+            run_date: string;
+            /** Settled */
+            settled: number;
+            /** Hit Rate */
+            hit_rate?: number | null;
+            /** Roi Unit */
+            roi_unit?: number | null;
+        };
+        /** DashboardIssuedDailyRow */
+        DashboardIssuedDailyRow: {
+            /** Run Date */
+            run_date: string;
+            /** Picks Total */
+            picks_total: number;
+            /** Picks Tradable */
+            picks_tradable: number;
+            /** Picks Taken */
+            picks_taken?: number | null;
         };
         /**
          * DashboardPerformanceBlock
@@ -655,6 +718,38 @@ export interface components {
             outcome_losses: number;
             /** Outcome Pending */
             outcome_pending: number;
+            /**
+             * Settled Count
+             * @default 0
+             */
+            settled_count: number;
+            /**
+             * Roi Unit
+             * @description ROI unitario sobre picks settled (win/loss), usando stake 1 por pick.
+             */
+            roi_unit?: number | null;
+            /**
+             * Settled Count Tradable
+             * @description Cantidad de picks settled con cuota >= min_tradable_odds.
+             * @default 0
+             */
+            settled_count_tradable: number;
+            /**
+             * Settled Count Below Min Odds
+             * @description Cantidad de picks settled excluidos del ROI tradable por cuota baja.
+             * @default 0
+             */
+            settled_count_below_min_odds: number;
+            /**
+             * Min Tradable Odds
+             * @description Piso de cuota usado para separar ROI tradable (env ALTEA_MIN_TRADABLE_ODDS).
+             */
+            min_tradable_odds?: number | null;
+            /**
+             * Roi Unit Tradable
+             * @description ROI unitario sobre picks settled con cuota >= min_tradable_odds.
+             */
+            roi_unit_tradable?: number | null;
             /** Picks Taken Count */
             picks_taken_count: number;
             /**
@@ -685,6 +780,25 @@ export interface components {
              * @default false
              */
             has_stake_data: boolean;
+        };
+        /** DashboardRollingSportRow */
+        DashboardRollingSportRow: {
+            /** Sport */
+            sport: string;
+            /** Settled Total */
+            settled_total: number;
+            /** Settled Tradable */
+            settled_tradable: number;
+            /** Roi Tradable 50 */
+            roi_tradable_50?: number | null;
+            /** Roi Tradable 100 */
+            roi_tradable_100?: number | null;
+            /** Hit Rate Tradable 50 */
+            hit_rate_tradable_50?: number | null;
+            /** Hit Rate Tradable 100 */
+            hit_rate_tradable_100?: number | null;
+            /** Drawdown Units 30D */
+            drawdown_units_30d?: number | null;
         };
         /** EffectivenessReportStatusOut */
         EffectivenessReportStatusOut: {

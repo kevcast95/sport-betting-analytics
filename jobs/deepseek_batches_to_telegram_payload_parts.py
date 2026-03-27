@@ -314,7 +314,18 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         ).split(",")
         if x.strip()
     }
-    header = {"title": title, "date": date_str, "daily_run_id": daily_run_id, "pick_count": 0}
+    raw_floor = os.environ.get("ALTEA_MIN_CANDIDATE_ODDS", "1.30").strip()
+    try:
+        min_candidate_odds = max(1.0, float(raw_floor))
+    except ValueError:
+        min_candidate_odds = 1.30
+    header = {
+        "title": title,
+        "date": date_str,
+        "daily_run_id": daily_run_id,
+        "pick_count": 0,
+        "min_candidate_odds": round(min_candidate_odds, 2),
+    }
 
     # Map event_id -> picks list
     picks_map: Dict[int, List[Dict[str, Any]]] = {}
@@ -333,6 +344,8 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
 
     events: List[Dict[str, Any]] = []
     pick_count = 0
+    tradable_pick_count = 0
+    non_tradable_pick_count = 0
     for ev in ds_input:
         eid = int(ev.get("event_id"))
         ec = ev.get("event_context") or {}
@@ -380,6 +393,14 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             if sport == "tennis" and tennis_require_scraped and odds_source != "scraped_sofascore":
                 continue
 
+            is_tradable = bool(
+                final_odds is not None and float(final_odds) >= min_candidate_odds
+            )
+            if is_tradable:
+                tradable_pick_count += 1
+            else:
+                non_tradable_pick_count += 1
+
             edge_pct_out: Optional[float] = (
                 float(edge_pct) if isinstance(edge_pct, (int, float)) else None
             )
@@ -411,6 +432,11 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
                     "odds_source": odds_source,
                     "model_odds": model_odds,
                     "scraped_odds": scraped_odds,
+                    "tradable": is_tradable,
+                    "tradable_min_odds": round(min_candidate_odds, 2),
+                    "tradable_exclusion_reason": (
+                        None if is_tradable else "below_min_odds"
+                    ),
                 }
             )
         pick_count += len(picks_payload)
@@ -426,6 +452,8 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         )
 
     header["pick_count"] = pick_count
+    header["tradable_pick_count"] = tradable_pick_count
+    header["non_tradable_pick_count"] = non_tradable_pick_count
     return {"header": header, "events": events}
 
 

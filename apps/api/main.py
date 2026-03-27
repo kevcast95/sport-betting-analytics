@@ -60,6 +60,7 @@ from db.db import connect as db_connect
 from db.init_db import init_db
 from db.repositories.dashboard_repo import (
     _effective_outcome,
+    dashboard_insights,
     daily_picks_summary,
     recent_picks_for_date,
 )
@@ -303,6 +304,7 @@ def api_dashboard(
     if user_id is not None and urow is None:
         raise HTTPException(status_code=404, detail="user not found")
     s = daily_picks_summary(conn, run_date=rd, user_id=user_id, sport=se)
+    ins = dashboard_insights(conn, run_date=rd, sport=se, user_id=user_id)
     br_dash = urow["bankroll_cop"] if urow is not None else None
     bankroll_summary = float(br_dash) if br_dash is not None else None
     off = int(recent_page) * int(recent_limit)
@@ -381,6 +383,24 @@ def api_dashboard(
             outcome_wins=int(s["outcome_wins"]),
             outcome_losses=int(s["outcome_losses"]),
             outcome_pending=int(s["outcome_pending"]),
+            settled_count=int(s.get("settled_count", 0)),
+            roi_unit=(
+                float(s["roi_unit"])
+                if s.get("roi_unit") is not None
+                else None
+            ),
+            settled_count_tradable=int(s.get("settled_count_tradable", 0)),
+            settled_count_below_min_odds=int(s.get("settled_count_below_min_odds", 0)),
+            min_tradable_odds=(
+                float(s["min_tradable_odds"])
+                if s.get("min_tradable_odds") is not None
+                else None
+            ),
+            roi_unit_tradable=(
+                float(s["roi_unit_tradable"])
+                if s.get("roi_unit_tradable") is not None
+                else None
+            ),
             picks_taken_count=int(s["picks_taken_count"]),
             taken_outcome_wins=int(s.get("taken_outcome_wins", 0)),
             taken_outcome_losses=int(s.get("taken_outcome_losses", 0)),
@@ -407,6 +427,9 @@ def api_dashboard(
             has_stake_data=bool(s["has_stake_data"]),
         ),
         recent=recent,
+        issued_daily=ins.get("issued_daily") or [],
+        rolling_by_sport=ins.get("rolling_by_sport") or [],
+        calibration=ins.get("calibration"),
         recent_total=int(recent_total),
     )
 
