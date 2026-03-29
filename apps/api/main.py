@@ -49,6 +49,7 @@ from apps.api.schemas import (
     SignalCheckOut,
     SuggestedComboOut,
     TrackingBoardOut,
+    ValidatePicksWindowOut,
     UserBankrollBody,
     UserComboTakenBody,
     UserCreate,
@@ -67,6 +68,7 @@ from db.repositories.dashboard_repo import (
     daily_picks_summary,
     recent_picks_for_date,
 )
+from db.repositories.model_feedback_repo import fetch_feedback_map
 from db.repositories.pick_event_meta_repo import (
     is_stake_taken_locked_now,
     load_event_meta_for_daily_run,
@@ -117,9 +119,18 @@ async def _lifespan(app: FastAPI):
     yield
 
 
+def _validate_hour_bounds() -> Tuple[int, int, int, int]:
+    """Defaults alineados con scripts/run_validate_picks_scheduled.sh."""
+    min_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MIN", "5"))
+    max_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL", "13"))
+    min_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MIN", "16"))
+    max_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL", "24"))
+    return min_m, max_m, min_e, max_e
+
+
 def _execution_slot_from_created_at_utc(created_at_utc: str) -> Tuple[str, str]:
     """
-    Alineado con scripts/run_validate_picks_scheduled.sh (ventanas locales).
+    Clasifica la hora local de creación del run (cohortes ALTEA_VALIDATE_*).
     """
     tz_name = os.environ.get("COPA_FOXKIDS_TZ", "America/Bogota")
     tz = ZoneInfo(tz_name)
@@ -131,15 +142,76 @@ def _execution_slot_from_created_at_utc(created_at_utc: str) -> Tuple[str, str]:
         dt = dt.replace(tzinfo=timezone.utc)
     local = dt.astimezone(tz)
     h = local.hour
-    min_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MIN", "8"))
-    max_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL", "16"))
-    min_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MIN", "16"))
-    max_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL", "24"))
+    min_m, max_m, min_e, max_e = _validate_hour_bounds()
     if min_m <= h < max_m:
-        return "morning", "mañana (08:00–15:59 hora CO)"
+        return (
+            "morning",
+            f"mañana (creación local [{min_m:02d},{max_m:02d}), {tz_name})",
+        )
     if min_e <= h < max_e:
-        return "evening", "tarde/noche (16:00–23:59 hora CO)"
-    return "night", "madrugada (00:00–07:59 hora CO)"
+        return (
+            "evening",
+            f"tarde/noche (creación local [{min_e:02d},{max_e:02d}), {tz_name})",
+        )
+    return "night", f"fuera de cohortes mañana/tarde ({tz_name})"
+
+
+def _validate_picks_window_for_run_date(
+    run_date: str,
+) -> Tuple[Optional[str], Optional[int], Optional[int], str, Literal["morning", "evening", "full"]]:
+    """
+    Cohorte que debe usar validate_picks.py según **reloj local ahora** y fecha del run.
+
+    - Día del run = hoy: ventana 1 si hora < fin mañana; si no, ventana 2 (tarde/noche).
+      Inicio ventana 2: ALTEA_VALIDATE_UI_AFTERNOON_HOUR_MIN o, si no existe, fin exclusivo mañana
+      (segunda mitad del día contigua al script de mañana).
+    - Run histórico: sin recorte horario (todos los pendientes del run).
+    """
+    tz_name = os.environ.get("COPA_FOXKIDS_TZ", "America/Bogota")
+    tz = ZoneInfo(tz_name)
+    now = datetime.now(tz)
+    today_s = now.date().isoformat()
+    run_d = str(run_date).strip()
+    min_m, max_m, min_e, max_e = _validate_hour_bounds()
+    afternoon_start_raw = os.environ.get("ALTEA_VALIDATE_UI_AFTERNOON_HOUR_MIN")
+    if afternoon_start_raw is not None and str(afternoon_start_raw).strip() != "":
+        afternoon_start = int(str(afternoon_start_raw).strip())
+    else:
+        afternoon_start = max_m
+
+    if run_d < today_s:
+        return (
+            None,
+            None,
+            None,
+            f"Run histórico ({run_d}): cohorte completa (sin filtro horario). Zona: {tz_name}.",
+            "full",
+        )
+    if run_d > today_s:
+        return (
+            None,
+            None,
+            None,
+            f"Fecha del run futura ({run_d}): sin filtro horario. Zona: {tz_name}.",
+            "full",
+        )
+
+    H = now.hour
+    if H < max_m:
+        label = (
+            f"Mañana: picks creados el {run_d} en "
+            f"[{min_m:02d}:00, {max_m:02d}:00) local ({tz_name})."
+        )
+        return run_d, min_m, max_m, label, "morning"
+
+    lo, hi = afternoon_start, max_e
+    if lo >= hi:
+        lo, hi = min_e, max_e
+    label = (
+        f"Tarde/noche: picks creados el {run_d} en "
+        f"[{lo:02d}:00, {hi:02d}:00) local ({tz_name})."
+    )
+    return run_d, lo, hi, label, "evening"
 
 
 def _parse_validate_picks_stdout(text: str) -> Optional[Dict[str, Any]]:
@@ -530,6 +602,8 @@ def api_daily_run_events_inspect(
         ).fetchall()
     }
 
+    model_feedback_by_event = fetch_feedback_map(conn, daily_run_id=int(daily_run_id))
+
     items: List[DailyRunEventInspectOut] = []
     for r in feature_rows:
         raw = parse_json_field(r["features_json"])
@@ -547,6 +621,9 @@ def api_daily_run_events_inspect(
             else contract_reject_reason(flags, match_state, sport=run_sport)
         )
         eid = int(r["event_id"])
+        mf = model_feedback_by_event.get(eid)
+        model_skip_reason = mf[0] if mf else None
+        pipeline_skip_summary = mf[1] if mf else None
         items.append(
             DailyRunEventInspectOut(
                 daily_run_id=int(daily_run_id),
@@ -564,6 +641,8 @@ def api_daily_run_events_inspect(
                 passed_candidate_filters=passed,
                 in_ds_input=eid in selected_event_ids,
                 reject_reason=reject_reason,
+                model_skip_reason=model_skip_reason,
+                pipeline_skip_summary=pipeline_skip_summary,
                 selection_tier=tier if tier in ("A", "B") else None,
                 event_context=event_context,
                 diagnostics=diagnostics,
@@ -574,6 +653,7 @@ def api_daily_run_events_inspect(
     return DailyRunEventsInspectOut(
         daily_run_id=int(run["daily_run_id"]),
         run_date=str(run["run_date"]),
+        sport=str(run["sport"]),
         captured_at_utc=str(run["created_at_utc"]),
         total_events=len(items),
         items=items,
@@ -764,6 +844,7 @@ def get_pick(pick_id: int, conn: DbConn) -> PickDetail:
             p.pick_id, p.daily_run_id, p.event_id, p.market, p.selection,
             p.picked_value, p.odds_reference, p.status, p.created_at_utc, p.idempotency_key,
             dr.run_date AS run_date,
+            dr.sport AS run_sport,
             dr.created_at_utc AS run_created_at_utc,
             pr.validated_at_utc AS pr_validated_at_utc,
             pr.home_score AS pr_home_score,
@@ -782,7 +863,10 @@ def get_pick(pick_id: int, conn: DbConn) -> PickDetail:
     summary = _pick_summary_from_join_row(r)
     emap = load_event_meta_for_daily_run(conn, daily_run_id=int(summary.daily_run_id))
     summary = _apply_event_meta(summary, emap)
-    return PickDetail.model_validate(summary.model_dump())
+    detail_dump = summary.model_dump()
+    rs = r["run_sport"] if "run_sport" in r.keys() else None
+    detail_dump["run_sport"] = str(rs).strip().lower() if rs is not None else None
+    return PickDetail.model_validate(detail_dump)
 
 
 @app.patch(
@@ -1208,6 +1292,15 @@ def api_tracking_board(
             )
         )
 
+    _lon, _hmin, _hmax, _vlab, _vph = _validate_picks_window_for_run_date(str(run["run_date"]))
+    validate_window = ValidatePicksWindowOut(
+        label_es=_vlab,
+        local_on=_lon,
+        hour_min_incl=_hmin,
+        hour_max_excl=_hmax,
+        phase=_vph,
+    )
+
     return TrackingBoardOut(
         run=DailyRunBoardOut(
             daily_run_id=int(run["daily_run_id"]),
@@ -1221,6 +1314,7 @@ def api_tracking_board(
         user_id=user_id,
         picks=picks_out,
         suggested_combos=combos_out,
+        validate_window=validate_window,
         picks_stats={
             "total_generated": total_generated,
             "tradable_visible": tradable_visible,
@@ -1238,30 +1332,48 @@ def api_tracking_board(
 def api_validate_picks_for_run(daily_run_id: int, conn: DbConn) -> ValidatePicksRunResponse:
     """
     Ejecuta jobs/validate_picks.py para este daily_run_id (SofaScore → pick_results).
-    La cohorte mañana/tarde en la etiqueta se infiere de created_at_utc del run.
+
+    La cohorte horaria (--only-created-local-*) sigue el reloj local y la fecha del run,
+    alineada con ALTEA_VALIDATE_* y run_validate_picks_scheduled.sh (ver _validate_picks_window_for_run_date).
     """
     row = conn.execute(
-        "SELECT daily_run_id, created_at_utc FROM daily_runs WHERE daily_run_id = ?",
+        "SELECT daily_run_id, created_at_utc, run_date FROM daily_runs WHERE daily_run_id = ?",
         (daily_run_id,),
     ).fetchone()
     if row is None:
         raise HTTPException(status_code=404, detail="daily_run not found")
-    slot, slot_label = _execution_slot_from_created_at_utc(str(row["created_at_utc"]))
+    local_on, hmin, hmax, label_filter, phase = _validate_picks_window_for_run_date(
+        str(row["run_date"])
+    )
+    tz_name = os.environ.get("COPA_FOXKIDS_TZ", "America/Bogota")
     cfg = get_db_config()
     repo_root = Path(__file__).resolve().parents[2]
     script = repo_root / "jobs" / "validate_picks.py"
     if not script.is_file():
         raise HTTPException(status_code=500, detail="validate_picks.py no encontrado en el repo")
 
+    cmd: List[str] = [
+        sys.executable,
+        str(script),
+        "--db",
+        cfg.path,
+        "--daily-run-id",
+        str(daily_run_id),
+        "--timezone",
+        tz_name,
+    ]
+    if local_on is not None and hmin is not None and hmax is not None:
+        cmd += [
+            "--only-created-local-on",
+            local_on,
+            "--only-created-local-hour-min",
+            str(hmin),
+            "--only-created-local-hour-max-excl",
+            str(hmax),
+        ]
+
     proc = subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--db",
-            cfg.path,
-            "--daily-run-id",
-            str(daily_run_id),
-        ],
+        cmd,
         cwd=str(repo_root),
         capture_output=True,
         text=True,
@@ -1275,8 +1387,8 @@ def api_validate_picks_for_run(daily_run_id: int, conn: DbConn) -> ValidatePicks
         return ValidatePicksRunResponse(
             ok=False,
             daily_run_id=daily_run_id,
-            execution_slot=slot,  # type: ignore[arg-type]
-            execution_slot_label_es=slot_label,
+            execution_slot=phase,  # type: ignore[arg-type]
+            execution_slot_label_es=label_filter,
             subprocess_exit_code=proc.returncode,
             log_excerpt=excerpt,
             message=(proc.stderr or proc.stdout or "validate_picks terminó con error").strip()[:500],
@@ -1285,8 +1397,8 @@ def api_validate_picks_for_run(daily_run_id: int, conn: DbConn) -> ValidatePicks
         return ValidatePicksRunResponse(
             ok=False,
             daily_run_id=daily_run_id,
-            execution_slot=slot,  # type: ignore[arg-type]
-            execution_slot_label_es=slot_label,
+            execution_slot=phase,  # type: ignore[arg-type]
+            execution_slot_label_es=label_filter,
             subprocess_exit_code=proc.returncode,
             log_excerpt=excerpt,
             message="No se pudo parsear la salida de validate_picks",
@@ -1296,8 +1408,8 @@ def api_validate_picks_for_run(daily_run_id: int, conn: DbConn) -> ValidatePicks
     return ValidatePicksRunResponse(
         ok=True,
         daily_run_id=daily_run_id,
-        execution_slot=slot,  # type: ignore[arg-type]
-        execution_slot_label_es=slot_label,
+        execution_slot=phase,  # type: ignore[arg-type]
+        execution_slot_label_es=label_filter,
         total_processed=total_processed,
         validated=int(parsed.get("validated") or 0),
         pending_outcomes=int(parsed.get("pending_outcomes") or 0),

@@ -85,8 +85,8 @@ def _execution_slot_from_created_at_utc(created_at_utc: Any) -> tuple[str, str]:
         dt = dt.replace(tzinfo=timezone.utc)
     local = dt.astimezone(tz)
     h = local.hour
-    min_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MIN", "8"))
-    max_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL", "16"))
+    min_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MIN", "5"))
+    max_m = int(os.environ.get("ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL", "13"))
     min_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MIN", "16"))
     max_e = int(os.environ.get("ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL", "24"))
     if min_m <= h < max_m:

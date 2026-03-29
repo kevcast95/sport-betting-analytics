@@ -44,6 +44,16 @@ CREATE TABLE IF NOT EXISTS picks (
   FOREIGN KEY (daily_run_id) REFERENCES daily_runs(daily_run_id)
 );
 
+CREATE TABLE IF NOT EXISTS daily_run_event_model_feedback (
+  daily_run_id INTEGER NOT NULL,
+  event_id INTEGER NOT NULL,
+  model_skip_reason TEXT,
+  pipeline_skip_summary TEXT,
+  updated_at_utc TEXT NOT NULL,
+  PRIMARY KEY (daily_run_id, event_id),
+  FOREIGN KEY (daily_run_id) REFERENCES daily_runs(daily_run_id)
+);
+
 CREATE TABLE IF NOT EXISTS pick_results (
   pick_id INTEGER PRIMARY KEY,
   validated_at_utc TEXT NOT NULL, -- ISO

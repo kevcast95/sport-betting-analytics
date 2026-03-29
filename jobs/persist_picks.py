@@ -12,6 +12,7 @@ from db.config import get_db_config  # noqa: E402
 from db.db import connect, transaction  # noqa: E402
 from db.init_db import init_db  # noqa: E402
 from db.sqlite_migrate import apply_migrations  # noqa: E402
+from db.repositories.model_feedback_repo import upsert_feedback_for_run  # noqa: E402
 from db.repositories.picks_repo import (
     generate_idempotency_key,
     insert_picks,
@@ -123,6 +124,28 @@ def rows_from_telegram_payload(payload: Dict[str, Any], *, daily_run_id: int) ->
     return rows
 
 
+def feedback_rows_from_telegram_payload(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    for ev in payload.get("events") or []:
+        if not isinstance(ev, dict):
+            continue
+        eid = ev.get("event_id")
+        if eid is None:
+            continue
+        try:
+            eid_i = int(eid)
+        except (TypeError, ValueError):
+            continue
+        out.append(
+            {
+                "event_id": eid_i,
+                "model_skip_reason": ev.get("model_skip_reason"),
+                "pipeline_skip_summary": ev.get("pipeline_skip_summary"),
+            }
+        )
+    return out
+
+
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -191,13 +214,23 @@ def main() -> None:
             }
         )
 
+    now_utc = _utc_now_iso()
+    feedback_n = 0
     with transaction(conn):
         inserted, attempted = insert_picks(
             conn,
             daily_run_id=int(daily_run_id),
             picks=normalized_rows,
-            created_at_utc=_utc_now_iso(),
+            created_at_utc=now_utc,
         )
+        if tdata is not None:
+            fb_rows = feedback_rows_from_telegram_payload(tdata)
+            feedback_n = upsert_feedback_for_run(
+                conn,
+                daily_run_id=int(daily_run_id),
+                rows=fb_rows,
+                updated_at_utc=now_utc,
+            )
 
     skipped = max(0, attempted - inserted)
     if args.telegram_payload and attempted == 0:
@@ -223,6 +256,7 @@ def main() -> None:
         "picks_inserted": inserted,
         "picks_skipped_duplicate_key": skipped,
         "picks_persisted": inserted,
+        "model_feedback_events_upserted": feedback_n,
         "picks": [
             {"event_id": r["event_id"], "market": r["market"], "selection": r["selection"], "picked_value": r.get("picked_value")}
             for r in normalized_rows

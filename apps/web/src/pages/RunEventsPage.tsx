@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { ListPagination } from '@/components/ListPagination'
 import { useParams } from 'react-router-dom'
+import { SportHiddenInUiMessage } from '@/components/SportHiddenInUiMessage'
 import { ViewContextBar } from '@/components/ViewContextBar'
+import { useUiSportsVisibility } from '@/contexts/UiSportsVisibilityContext'
 import { fetchJson } from '@/lib/api'
 import { useListPageSize } from '@/hooks/useListPageSize'
 import type { DailyRunEventsInspectOut } from '@/types/api'
@@ -16,6 +18,7 @@ function pretty(v: unknown): string {
 }
 
 export default function RunEventsPage() {
+  const { isRunSportVisible } = useUiSportsVisibility()
   const { dailyRunId } = useParams()
   const runId = Number(dailyRunId)
   const [eventQuery, setEventQuery] = useState('')
@@ -44,6 +47,8 @@ export default function RunEventsPage() {
         String(e.event_id),
         e.event_label ?? '',
         e.league ?? '',
+        e.model_skip_reason ?? '',
+        e.pipeline_skip_summary ?? '',
       ]
         .join(' ')
         .toLowerCase()
@@ -73,6 +78,31 @@ export default function RunEventsPage() {
     const start = eventPageSafe * eventPageSize
     return filteredItems.slice(start, start + eventPageSize)
   }, [filteredItems, eventPageSafe, eventPageSize])
+
+  if (
+    q.isSuccess &&
+    q.data?.sport != null &&
+    String(q.data.sport).trim() !== '' &&
+    !isRunSportVisible(String(q.data.sport))
+  ) {
+    return (
+      <div>
+        <ViewContextBar
+          crumbs={[
+            { label: 'Inicio', to: '/' },
+            {
+              label: `Ejecución ${q.data.run_date}`,
+              to: `/runs/${runId}/picks`,
+            },
+            { label: 'Eventos' },
+          ]}
+        />
+        <div className="mt-4">
+          <SportHiddenInUiMessage sportLabel={String(q.data.sport)} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -165,8 +195,39 @@ export default function RunEventsPage() {
                     tier: {e.selection_tier ?? '—'}
                   </span>
                   <span className="text-app-muted">match_state: {e.match_state ?? '—'}</span>
-                  <span className="text-app-muted">en picks: {e.in_ds_input ? 'sí' : 'no'}</span>
+                  <span className="text-app-muted" title="Hay al menos un pick guardado en SQLite para este run">
+                    pick en DB: {e.in_ds_input ? 'sí' : 'no'}
+                  </span>
                 </div>
+
+                {(e.model_skip_reason || e.pipeline_skip_summary) && (
+                  <div className="mt-2 space-y-1 rounded border border-app-line bg-neutral-950/40 p-2 text-xs text-app-fg">
+                    {e.model_skip_reason ? (
+                      <p>
+                        <span className="font-mono text-app-muted">Modelo: </span>
+                        {e.model_skip_reason}
+                      </p>
+                    ) : null}
+                    {e.pipeline_skip_summary ? (
+                      <p>
+                        <span className="font-mono text-app-muted">Pipeline: </span>
+                        {e.pipeline_skip_summary}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+
+                {!e.model_skip_reason &&
+                  !e.pipeline_skip_summary &&
+                  !e.in_ds_input && (
+                    <p className="mt-2 text-xs text-app-muted">
+                      Sin feedback del modelo: este evento no tiene fila persistida de análisis LLM.
+                      La lista muestra todos los partidos con features en el run; solo los que entraron
+                      en <span className="font-mono">ds_input</span> de la ventana y se mergearon en{' '}
+                      <span className="font-mono">telegram_payload</span> al ejecutar{' '}
+                      <span className="font-mono">persist_picks</span> guardan motivo aquí.
+                    </p>
+                  )}
 
                 <details className="mt-2">
                   <summary className="cursor-pointer text-xs text-app-fg">event_context</summary>

@@ -1,3 +1,4 @@
+import { useUiSportsVisibility } from '@/contexts/UiSportsVisibilityContext'
 import {
   type DashboardSport,
   useDashboardUrlState,
@@ -14,11 +15,15 @@ type SportPillTabsProps = {
 
 export function SportPillTabs({ className = '' }: SportPillTabsProps) {
   const { sport, setSport } = useDashboardUrlState()
+  const { visible } = useUiSportsVisibility()
+  const options = OPTIONS.filter((o) => visible[o.id])
+
+  if (options.length === 0) return null
 
   return (
     <div
       className={[
-        'flex flex-wrap gap-1 rounded-lg border border-app-line bg-app-card/90 p-1',
+        'flex flex-wrap gap-1 rounded-lg border border-violet-200/55 bg-white/90 p-1 shadow-sm',
         className,
       ]
         .filter(Boolean)
@@ -26,7 +31,7 @@ export function SportPillTabs({ className = '' }: SportPillTabsProps) {
       role="tablist"
       aria-label="Deporte"
     >
-      {OPTIONS.map((o) => {
+      {options.map((o) => {
         const active = sport === o.id
         return (
           <button
@@ -37,8 +42,8 @@ export function SportPillTabs({ className = '' }: SportPillTabsProps) {
             className={[
               'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
               active
-                ? 'bg-violet-100 font-semibold text-violet-950 shadow-sm'
-                : 'text-app-muted hover:bg-violet-50/60 hover:text-app-fg',
+                ? 'bg-violet-100/90 font-medium text-violet-950 ring-1 ring-violet-300/45 shadow-sm'
+                : 'text-app-muted hover:bg-violet-50/70 hover:text-violet-950',
             ].join(' ')}
             onClick={() => setSport(o.id)}
           >

@@ -4,6 +4,8 @@ import { ViewContextBar } from '@/components/ViewContextBar'
 import { fetchJson } from '@/lib/api'
 import { useRevertRecentPickOutcomesMutation } from '@/hooks/useRevertRecentPickOutcomesMutation'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
+import { useUiSportsVisibility } from '@/contexts/UiSportsVisibilityContext'
+import type { DashboardSport } from '@/hooks/useDashboardUrlState'
 
 function pipelineRunningMessage(
   step: 'ingest' | 'select' | 'window',
@@ -25,6 +27,7 @@ function pipelineRunningMessage(
 }
 
 export default function SystemSettingsPage() {
+  const { visible: sportsVisible, setSportVisible } = useUiSportsVisibility()
   const { userId } = useTrackingUser()
   const [revertMinutes, setRevertMinutes] = useState<number>(90)
   const revertRecentOutcomesM = useRevertRecentPickOutcomesMutation(userId)
@@ -96,6 +99,46 @@ export default function SystemSettingsPage() {
           Acciones operativas sensibles y controles manuales.
         </p>
       </div>
+
+      <section className="rounded-xl border border-app-line bg-app-card p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-violet-900/80">
+          Visibilidad por deporte
+        </p>
+        <p className="mt-2 text-sm text-app-muted">
+          Oculta en esta app el tablero, historial de runs, inspector de eventos y el detalle de picks del deporte
+          seleccionado. Solo afecta la interfaz: no borra datos ni cambia el pipeline. La preferencia se guarda en
+          este navegador.
+        </p>
+        <div className="mt-4 space-y-3">
+          {(
+            [
+              { id: 'football' as const, label: 'Fútbol' },
+              { id: 'tennis' as const, label: 'Tenis' },
+            ] satisfies { id: DashboardSport; label: string }[]
+          ).map((row) => (
+            <label
+              key={row.id}
+              className="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-app-line bg-white/80 px-3 py-2.5 shadow-sm"
+            >
+              <span className="text-sm text-app-fg">{row.label}</span>
+              <span className="flex items-center gap-2 text-xs text-app-muted">
+                {sportsVisible[row.id] ? 'Visible' : 'Oculto'}
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border-app-line text-violet-800 focus:ring-violet-400/40"
+                  checked={sportsVisible[row.id]}
+                  onChange={(e) => setSportVisible(row.id, e.target.checked)}
+                />
+              </span>
+            </label>
+          ))}
+        </div>
+        {!sportsVisible.football && !sportsVisible.tennis ? (
+          <p className="mt-3 text-xs text-amber-800">
+            Debe quedar al menos un deporte visible; si desmarcas ambos, se conserva el estado anterior.
+          </p>
+        ) : null}
+      </section>
 
       <section className="rounded-xl border border-app-line bg-app-card p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-violet-900/80">

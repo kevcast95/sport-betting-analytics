@@ -141,6 +141,7 @@ def _build_user_prompt(batch: Dict[str, Any], *, date_str: str, sport: str) -> s
         '  "picks_by_event": [\n'
         "    {\n"
         '      "event_id": 123,\n'
+        '      "motivo_sin_pick": string,\n'
         '      "picks": [\n'
         "        {\n"
         '          "market": "1X2"|"Over/Under 2.5"|"BTTS"|"Double Chance",\n'
@@ -154,8 +155,11 @@ def _build_user_prompt(batch: Dict[str, Any], *, date_str: str, sport: str) -> s
         "    }\n"
         "  ]\n"
         "}\n"
+        "- Debe haber exactamente un elemento en picks_by_event por cada evento del array ds_input del lote (mismo event_id).\n"
+        "- motivo_sin_pick: obligatorio en español. Si picks tiene 1–2 elementos, usa \"\" (vacío). "
+        "Si picks=[], explica en 1–2 frases por qué no hay valor (datos, cuotas, incertidumbre, etc.).\n"
         "- Para 1X2: usa selection exactamente '1','X','2' (el runner convertirá a '1 (HomeTeam)' etc.).\n"
-        "- Máximo 2 picks por evento. Si no hay odds relevantes, puede dejar picks=[] para ese evento.\n"
+        "- Máximo 2 picks por evento. Si no hay odds relevantes, picks=[] y motivo_sin_pick detallado.\n"
         "- Cálculo de EDGE:\n"
         "  p_imp_pct = round(100 / odds, 2)\n"
         "  elige p_real_pct (0-100) de forma razonada (probabilidad subjetiva en %)\n"
@@ -250,8 +254,10 @@ def _force_json_from_reasoning(
 ) -> str:
     prompt = (
         "Convierte el siguiente razonamiento en SOLO un objeto JSON válido con la forma "
-        "{\"picks_by_event\":[{\"event_id\":123,\"picks\":[{\"market\":\"...\",\"selection\":\"...\","
+        "{\"picks_by_event\":[{\"event_id\":123,\"motivo_sin_pick\":\"\","
+        "\"picks\":[{\"market\":\"...\",\"selection\":\"...\","
         "\"odds\":1.23,\"edge_pct\":2.34,\"confianza\":\"Media\",\"razon\":\"...\"}]}]}. "
+        "motivo_sin_pick debe ser \"\" si hay picks; si picks=[], una frase breve en español. "
         "Sin markdown, sin explicaciones.\n\nRazonamiento:\n"
         + reasoning_text
     )
@@ -328,8 +334,8 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         "min_candidate_odds": round(min_candidate_odds, 2),
     }
 
-    # Map event_id -> picks list
-    picks_map: Dict[int, List[Dict[str, Any]]] = {}
+    # event_id -> fila del modelo (picks + motivo_sin_pick)
+    model_rows: Dict[int, Dict[str, Any]] = {}
     for item in model_out.get("picks_by_event") or []:
         if not isinstance(item, dict):
             continue
@@ -340,8 +346,10 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             continue
         picks = item.get("picks") or []
         if not isinstance(picks, list):
-            continue
-        picks_map[eid_i] = picks
+            picks = []
+        motivo_raw = item.get("motivo_sin_pick")
+        motivo_s = str(motivo_raw).strip() if motivo_raw is not None else ""
+        model_rows[eid_i] = {"picks": picks, "motivo_sin_pick": motivo_s}
 
     events: List[Dict[str, Any]] = []
     pick_count = 0
@@ -352,11 +360,24 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         ec = ev.get("event_context") or {}
         schedule_display = ev.get("schedule_display") or {}
         processed = ev.get("processed") or {}
-        picks_raw = picks_map.get(eid) or []
+
+        mrow = model_rows.get(eid)
+        if mrow is None:
+            picks_raw: List[Dict[str, Any]] = []
+            model_motivo = ""
+            model_missing = True
+        else:
+            picks_raw = list(mrow.get("picks") or [])
+            model_motivo = str(mrow.get("motivo_sin_pick") or "").strip()
+            model_missing = False
 
         picks_payload: List[Dict[str, Any]] = []
+        pipeline_drop_reasons: List[str] = []
         for p in picks_raw:
             if not isinstance(p, dict):
+                pipeline_drop_reasons.append(
+                    "Propuesta del modelo con formato inválido (no es objeto JSON)."
+                )
                 continue
             market = p.get("market")
             selection_code = p.get("selection")
@@ -365,10 +386,16 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             confianza = p.get("confianza")
             razon = p.get("razon")
             if market is None or selection_code is None:
+                pipeline_drop_reasons.append(
+                    "Pick del modelo incompleto (falta mercado o selección)."
+                )
                 continue
             if sport == "tennis":
                 mk_norm = str(market).strip().lower()
                 if mk_norm not in allowed_tennis_markets:
+                    pipeline_drop_reasons.append(
+                        f"Mercado «{market}» no permitido para publicación (tenis)."
+                    )
                     continue
 
             # Render expects selection string.
@@ -392,6 +419,9 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
 
             # Blindaje operativo tenis: evita publicar picks sin ancla de cuota scrapeada.
             if sport == "tennis" and tennis_require_scraped and odds_source != "scraped_sofascore":
+                pipeline_drop_reasons.append(
+                    "Pick del modelo descartado: se exige cuota scrapeada SofaScore y no hubo ancla."
+                )
                 continue
 
             is_tradable = bool(
@@ -442,6 +472,28 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             )
         pick_count += len(picks_payload)
 
+        model_skip_reason_out: Optional[str] = None
+        pipeline_skip_summary_out: Optional[str] = None
+        if not picks_payload:
+            if model_missing:
+                model_skip_reason_out = (
+                    "El modelo no incluyó este evento en picks_by_event."
+                )
+            elif not picks_raw:
+                model_skip_reason_out = (
+                    model_motivo
+                    if model_motivo
+                    else "Sin picks del modelo (motivo_sin_pick vacío o ausente)."
+                )
+            else:
+                model_skip_reason_out = (
+                    "El modelo propuso pick(s), pero ninguno pasó validación/publicación del pipeline."
+                )
+                if pipeline_drop_reasons:
+                    pipeline_skip_summary_out = "; ".join(
+                        dict.fromkeys(pipeline_drop_reasons)
+                    )
+
         events.append(
             {
                 "label": _label_from_event_context(ec),
@@ -449,6 +501,8 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
                 "local_time_short": _local_time_short_from_schedule_display(schedule_display),
                 "event_id": eid,
                 "picks": picks_payload,
+                "model_skip_reason": model_skip_reason_out,
+                "pipeline_skip_summary": pipeline_skip_summary_out,
             }
         )
 

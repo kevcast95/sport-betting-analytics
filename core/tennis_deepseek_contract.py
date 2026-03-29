@@ -40,6 +40,7 @@ def build_tennis_user_prompt_instructions(*, date_str: str) -> str:
         '  "picks_by_event": [\n'
         "    {\n"
         '      "event_id": 123,\n'
+        '      "motivo_sin_pick": string,\n'
         '      "picks": [\n'
         "        {\n"
         '          "market": "Match winner"|"First set winner"|"Total games Over/Under",\n'
@@ -53,8 +54,10 @@ def build_tennis_user_prompt_instructions(*, date_str: str) -> str:
         "    }\n"
         "  ]\n"
         "}\n"
+        "- Debe haber un elemento en picks_by_event por cada evento del ds_input del lote (mismo event_id).\n"
+        "- motivo_sin_pick: obligatorio en español. Si hay picks, usa \"\". Si picks=[], explica por qué no hay valor.\n"
         '- Para "Match winner" / "Winner": selection solo "1" o "2".\n'
-        "- Máximo 2 picks por evento. Si no hay cuotas en los datos, picks=[].\n"
+        "- Máximo 2 picks por evento. Si no hay cuotas en los datos, picks=[] y motivo_sin_pick detallado.\n"
         "- EDGE: p_imp_pct = round(100/odds,2); elige p_real_pct (0-100); edge_pct = round(p_real_pct - p_imp_pct, 2).\n"
         "- Confianza: misma escala que fútbol (>=5 Alta, >=3 Media-Alta, >=1.5 Media, si no Baja).\n"
         "- `razon`: una sola frase en español, usando superficie/ronda/ranking si están en event_context o processed.tennis_rankings.\n\n"

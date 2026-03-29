@@ -233,8 +233,9 @@ Argumentos: `yesterday_evening` (slot 00:00) y `today_morning` (slot 13:00).
 |----------|-----|
 | `ALTEA_VALIDATE_AFTERNOON_HOUR_MIN` | Inicio hora local cohorte **ayer tarde** (default `16`) |
 | `ALTEA_VALIDATE_AFTERNOON_HOUR_MAX_EXCL` | Fin exclusivo (default `24`) |
-| `ALTEA_VALIDATE_MORNING_HOUR_MIN` | Inicio hora local cohorte **hoy mañana** (default `8`) |
-| `ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL` | Fin exclusivo (default `16`) |
+| `ALTEA_VALIDATE_MORNING_HOUR_MIN` | Inicio hora local cohorte **hoy mañana** (default `5`, igual que el script) |
+| `ALTEA_VALIDATE_MORNING_HOUR_MAX_EXCL` | Fin exclusivo (default `13`) |
+| `ALTEA_VALIDATE_UI_AFTERNOON_HOUR_MIN` | (Opcional) Hora local de inicio de la **ventana 2** en el botón/API `validate-picks` para el run de **hoy**. Si se omite, usa `MORNING_HOUR_MAX_EXCL` (ventana contigua). Si la fijas en `16`, la segunda ventana coincide con la cohorte “tarde” del cron. |
 
 Detalle de endpoints tenis: `openclaw/TENNIS_ENDPOINTS_ROADMAP.md`.
 
