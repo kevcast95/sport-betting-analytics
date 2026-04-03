@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
 
 type UserStoreState = {
   isAuthenticated: boolean
@@ -54,7 +55,7 @@ export const useUserStore = create<UserStoreState & UserStoreActions>()(
     }),
     {
       name: 'bt2_v2_user_state',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createBt2EncryptedLocalStorage()),
     },
   ),
 )

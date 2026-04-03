@@ -17,7 +17,8 @@ Objetivo: ejecutar upgrade sin apagar el sistema actual.
   - `/runs/:dailyRunId/picks`
 - V2 (nuevo dominio conductual):
   - `/v2`
-  - `/v2/session`
+  - `/v2/session` (auth + modal de contrato)
+  - `/v2/dashboard` (Búnker tras sesión mock y contrato firmado)
   - `/v2/risk`
   - `/v2/protocol`
   - `/v2/reports`

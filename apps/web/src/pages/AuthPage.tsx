@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
+import { Navigate } from 'react-router-dom'
 import { DisciplineContract } from '@/components/DisciplineContract'
 import { useUserStore } from '@/store/useUserStore'
-import BunkerLayout from '@/layouts/BunkerLayout'
 
 type AuthMode = 'login' | 'signup'
 
@@ -120,6 +120,7 @@ export default function AuthPage({
   const setHasAcceptedContract = useUserStore(
     (s) => s.setHasAcceptedContract,
   )
+  const setOperatorName = useUserStore((s) => s.setOperatorName)
 
   useEffect(() => {
     ensureFontLinks()
@@ -134,16 +135,20 @@ export default function AuthPage({
 
   const onSubmitMock = (e: FormEvent) => {
     e.preventDefault()
-    // POC: simulamos que el usuario "entró" al entorno, pero el desbloqueo del contrato llega en T-002.
+    const form = e.currentTarget as HTMLFormElement
+    const fd = new FormData(form)
+    const name = fd.get('operatorName')
+    if (typeof name === 'string' && name.trim()) {
+      setOperatorName(name.trim())
+    }
     initSession()
     setMockAuthStatus('success')
   }
 
   const shouldShowContract = isAuthenticated && !hasAcceptedContract
 
-  // Cuando el contrato ya está firmado, se pasa a la base del Búnker.
   if (isAuthenticated && hasAcceptedContract) {
-    return <BunkerLayout />
+    return <Navigate to="/v2/dashboard" replace />
   }
 
   return (
@@ -188,10 +193,10 @@ export default function AuthPage({
                       <LockIcon className="h-6 w-6" />
                     </div>
                     <h1 className="mb-2 text-2xl font-bold tracking-tight text-[#26343d]">
-                      Enter the Discipline Vault
+                      Acceso a la bóveda de disciplina
                     </h1>
                     <p className="text-xs font-medium tracking-wide text-[#52616a]">
-                      AUTHENTICATION REQUIRED
+                      AUTENTICACIÓN REQUERIDA
                     </p>
                   </div>
 
@@ -201,7 +206,7 @@ export default function AuthPage({
                         className="px-1 text-[0.70rem] font-semibold uppercase tracking-[0.1em] text-[#52616a]"
                         htmlFor="email"
                       >
-                        Institutional Email
+                        Correo institucional
                       </label>
                       <input
                         id="email"
@@ -219,7 +224,7 @@ export default function AuthPage({
                           className="text-[0.70rem] font-semibold uppercase tracking-[0.1em] text-[#52616a]"
                           htmlFor="password"
                         >
-                          Security Protocol
+                          Protocolo de seguridad
                         </label>
                         <a
                           href="#"
@@ -227,7 +232,7 @@ export default function AuthPage({
                           onClick={(e) => e.preventDefault()}
                           style={monoStyle}
                         >
-                          Forgot Password?
+                          ¿Olvidaste la contraseña?
                         </a>
                       </div>
                       <input
@@ -237,6 +242,7 @@ export default function AuthPage({
                         placeholder="••••••••••••"
                         required
                         className="w-full rounded-xl border border-transparent bg-[#ddeaf3]/80 px-4 py-3.5 text-sm outline-none transition-all focus:border-[#8B5CF6] focus:bg-[#eef4fa]"
+                        style={monoStyle}
                       />
                     </div>
 
@@ -244,7 +250,7 @@ export default function AuthPage({
                       type="submit"
                       className="w-full rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-4 text-sm font-semibold tracking-tight text-white shadow-lg shadow-[#8B5CF6]/20 transition-all hover:opacity-90 active:scale-[0.98]"
                     >
-                      Access Sentinel Protocol
+                      Entrar al protocolo Sentinel
                     </button>
                   </form>
 
@@ -254,7 +260,7 @@ export default function AuthPage({
                     </div>
                     <div className="relative flex justify-center text-[0.65rem] uppercase tracking-widest">
                       <span className="bg-[#fcfcfd] px-4 text-[#52616a]">
-                        External Verification
+                        Verificación externa
                       </span>
                     </div>
                   </div>
@@ -269,12 +275,12 @@ export default function AuthPage({
                     }}
                   >
                     <GoogleIcon className="h-5 w-5" />
-                    Continue with Google
+                    Continuar con Google
                   </button>
 
                   <div className="mt-10 text-center">
                     <p className="text-sm text-[#52616a]">
-                      New Operator?{' '}
+                      ¿Nuevo operador?{' '}
                       <button
                         type="button"
                         className="ml-1 font-bold text-[#8B5CF6] hover:underline"
@@ -283,7 +289,7 @@ export default function AuthPage({
                           setMockAuthStatus('idle')
                         }}
                       >
-                        Create Account
+                        Crear cuenta
                       </button>
                     </p>
                   </div>
@@ -293,8 +299,8 @@ export default function AuthPage({
                       className="mt-6 rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-2 text-xs text-[#26343d]"
                       style={monoStyle}
                     >
-                      [POC] Login simulado OK. Falta T-002 para desbloquear el
-                      Contrato de Disciplina.
+                      [POC] Inicio de sesión simulado correcto. Completa el
+                      Contrato de Disciplina en el modal.
                     </p>
                   )}
                 </motion.section>
@@ -314,15 +320,15 @@ export default function AuthPage({
                         <LockIcon className="h-3.5 w-3.5" />
                       </span>
                       <span className="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-[#52616a]">
-                        Secure Vault Access
+                        Acceso seguro a la bóveda
                       </span>
                     </div>
                     <h1 className="text-3xl font-extrabold tracking-tight text-[#26343d]">
-                      Begin Your Elite Progression
+                      Inicia tu progresión
                     </h1>
                     <p className="text-sm leading-relaxed text-[#52616a]">
-                      System registration for professional bankroll management
-                      and disciplined risk assessment.
+                      Registro para gestión profesional de bankroll y evaluación
+                      disciplinada del riesgo.
                     </p>
                   </header>
 
@@ -332,13 +338,13 @@ export default function AuthPage({
                         className="ml-1 text-[0.7rem] font-bold uppercase tracking-[0.05em] text-[#52616a]"
                         htmlFor="operatorName"
                       >
-                        Operator Name
+                        Nombre del operador
                       </label>
                       <input
                         id="operatorName"
                         name="operatorName"
                         type="text"
-                        placeholder="Full Legal Name"
+                        placeholder="Nombre completo"
                         required
                         className="w-full rounded-xl border border-transparent bg-[#ddeaf3]/80 px-5 py-4 text-[#26343d] outline-none transition-all focus:border-[#8B5CF6] focus:bg-[#eef4fa] placeholder:text-[#a4b4be]/80"
                       />
@@ -349,7 +355,7 @@ export default function AuthPage({
                         className="ml-1 text-[0.7rem] font-bold uppercase tracking-[0.05em] text-[#52616a]"
                         htmlFor="signupEmail"
                       >
-                        Secure Email Address
+                        Correo seguro
                       </label>
                       <input
                         id="signupEmail"
@@ -367,7 +373,7 @@ export default function AuthPage({
                           className="ml-1 text-[0.7rem] font-bold uppercase tracking-[0.05em] text-[#52616a]"
                           htmlFor="signupPassword"
                         >
-                          Password
+                          Contraseña
                         </label>
                         <input
                           id="signupPassword"
@@ -384,7 +390,7 @@ export default function AuthPage({
                           className="ml-1 text-[0.7rem] font-bold uppercase tracking-[0.05em] text-[#52616a]"
                           htmlFor="confirmPassword"
                         >
-                          Confirm Password
+                          Confirmar contraseña
                         </label>
                         <input
                           id="confirmPassword"
@@ -412,12 +418,12 @@ export default function AuthPage({
                         htmlFor="protocol"
                         className="cursor-pointer select-none text-xs leading-relaxed text-[#52616a]"
                       >
-                        I accept the{' '}
+                        Acepto el{' '}
                         <span className="font-semibold text-[#26343d] underline decoration-[#8B5CF6]/30">
-                          Strict Adherence Protocol
+                          protocolo de adherencia estricta
                         </span>
-                        . I understand that all analytical data is processed
-                        through secure digital vault technology.
+                        . Entiendo que los datos analíticos se procesan en la
+                        bóveda digital segura.
                       </label>
                     </div>
 
@@ -426,7 +432,7 @@ export default function AuthPage({
                         type="submit"
                         className="w-full rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-4 text-sm font-bold text-white shadow-[0px_10px_20px_rgba(109,59,215,0.2)] transition-all hover:opacity-95 active:scale-[0.98]"
                       >
-                        Initialize Risk Profile
+                        Inicializar perfil de riesgo
                       </button>
                     </div>
                   </form>
@@ -435,7 +441,7 @@ export default function AuthPage({
                     <div className="inline-flex items-center gap-3 rounded-full border border-[#a4b4be]/20 bg-[#eef4fa] px-6 py-3 shadow-sm">
                       <div className="h-2 w-2 rounded-full bg-[#fe932c] shadow-[0_0_8px_rgba(145,77,0,0.4)]" />
                       <span className="text-[0.7rem] font-bold uppercase tracking-[0.1em] text-[#52616a]">
-                        System Status: Awaiting Authentication
+                        Estado del sistema: esperando autenticación
                       </span>
                       <span
                         className="text-xs font-semibold"
@@ -448,7 +454,7 @@ export default function AuthPage({
 
                   <footer className="mt-10 pt-8 border-t border-[#a4b4be]/20 text-center">
                     <p className="text-sm text-[#52616a]">
-                      Already an Operator?{' '}
+                      ¿Ya eres operador?{' '}
                       <button
                         type="button"
                         className="ml-1 font-bold text-[#8B5CF6] hover:underline"
@@ -457,7 +463,7 @@ export default function AuthPage({
                           setMockAuthStatus('idle')
                         }}
                       >
-                        Login
+                        Iniciar sesión
                       </button>
                     </p>
                   </footer>
@@ -467,8 +473,8 @@ export default function AuthPage({
                       className="mt-6 rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-2 text-xs text-[#26343d]"
                       style={monoStyle}
                     >
-                      [POC] Signup simulado OK. Falta T-002 para desbloquear
-                      el Contrato de Disciplina.
+                      [POC] Registro simulado correcto. Completa el Contrato
+                      de Disciplina en el modal.
                     </p>
                   )}
                 </motion.section>
@@ -521,8 +527,8 @@ export default function AuthPage({
                     </p>
                   </div>
                   <div className="rounded-2xl border border-[#a4b4be]/20 bg-[#eef4fa] px-4 py-4 text-xs leading-relaxed text-[#52616a]">
-                    [POC] T-002 completado: el acceso se desbloquea solo tras
-                    confirmar los 3 axiomas.
+                    [POC] El acceso al tablero V2 se desbloquea solo tras
+                    confirmar los 3 axiomas del contrato.
                   </div>
                 </motion.section>
               )}

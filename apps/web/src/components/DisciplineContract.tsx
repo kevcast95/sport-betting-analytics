@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
+import type { CSSProperties } from 'react'
 
 type DisciplineContractProps = {
   open: boolean
@@ -56,11 +57,36 @@ export function DisciplineContract({ open, onCommitted }: DisciplineContractProp
     stakes: false,
     emotional: false,
   })
+  const [sessionToken, setSessionToken] = useState('')
+
+  const monoStyle = useMemo<CSSProperties>(
+    () => ({
+      fontFamily: `'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`,
+    }),
+    [],
+  )
 
   useEffect(() => {
     if (!open) return
-    // Al abrir el modal, reiniciamos las 3 confirmaciones para que el usuario vuelva a “firmar”.
     setChecks({ ledger: false, stakes: false, emotional: false })
+    const id =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? `SS-VAULT-${crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()}`
+        : `SS-VAULT-${String(Math.random()).slice(2, 10).toUpperCase()}`
+    setSessionToken(id)
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        console.warn(
+          '[BT2] Observabilidad: intento de cerrar el contrato con Escape (modal bloqueado).',
+        )
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
   const allAccepted = checks.ledger && checks.stakes && checks.emotional
@@ -153,10 +179,15 @@ export function DisciplineContract({ open, onCommitted }: DisciplineContractProp
                   <span className="text-[#8B5CF6]">✓</span>
                 </div>
                 <div>
-                  <p className="font-mono text-xs font-bold text-[#52616a]">
-                    TOKEN DE AUTENTICACION
+                  <p
+                    className="text-xs font-bold text-[#52616a]"
+                    style={monoStyle}
+                  >
+                    TOKEN DE AUTENTICACIÓN
                   </p>
-                  <p className="font-mono text-sm text-[#26343d]">SS-VAULT-772-K9</p>
+                  <p className="text-sm text-[#26343d]" style={monoStyle}>
+                    {sessionToken || '—'}
+                  </p>
                 </div>
               </div>
 
