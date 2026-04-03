@@ -116,7 +116,18 @@ def _safe_event_meta(raw_event: Dict[str, Any]) -> Dict[str, Any]:
         or (status_code == 100)
         or (status_type == "finished")
     )
-    match_state = "finished" if is_finished else ("live" if "live" in status_desc or status_code in (0, 31, 32, 33, 34, 61, 71) else "not started")
+    # Nota: no usar status_code=0 como "live". En tenis hemos visto "Not started" + code=0,
+    # y eso disparaba falsos positivos de match_live (descartando candidatos antes de DS).
+    is_not_started = ("not started" in status_desc) or (status_type in ("notstarted", "not_started"))
+    is_live = ("live" in status_desc) or (status_code in (31, 32, 33, 34, 61, 71))
+    if is_finished:
+        match_state = "finished"
+    elif is_not_started:
+        match_state = "not started"
+    elif is_live:
+        match_state = "live"
+    else:
+        match_state = "not started"
 
     home_score = _extract_score(event.get("homeScore"))
     away_score = _extract_score(event.get("awayScore"))

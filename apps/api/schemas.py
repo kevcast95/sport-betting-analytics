@@ -84,6 +84,11 @@ class PickSummary(BaseModel):
 class PickDetail(PickSummary):
     """Mismo shape que lista pero explícito para OpenAPI / detalle."""
 
+    run_sport: Optional[str] = Field(
+        None,
+        description="Deporte del daily_run asociado (football|tennis).",
+    )
+
 
 class PickPage(BaseModel):
     items: List[PickSummary]
@@ -184,6 +189,17 @@ class ComboLegOut(BaseModel):
     event_id: int
     market: str
     selection: str
+    picked_value: Optional[float] = Field(
+        None, description="Cuota registrada para la pierna."
+    )
+    leg_outcome: Optional[Literal["win", "loss", "pending"]] = Field(
+        None,
+        description="Estado de esta pierna (misma lógica que un single: usuario o validación).",
+    )
+    operativo_visible: bool = Field(
+        True,
+        description="False si el pick no aparece en el listado tradable del run (solo análisis).",
+    )
 
 
 class SuggestedComboOut(BaseModel):
@@ -221,7 +237,10 @@ class DailyRunBoardOut(BaseModel):
     )
     execution_slot: Literal["morning", "evening", "night"] = Field(
         ...,
-        description="Cohorte horaria local (ALTEA_VALIDATE_* / COPA_FOXKIDS_TZ): morning=[8,16), evening=[16,24), night=resto.",
+        description=(
+            "Cohorte por hora local de creación del run; rangos por defecto alineados con "
+            "run_validate_picks_scheduled.sh (mañana ALTEA_VALIDATE_MORNING_*, tarde ALTEA_VALIDATE_AFTERNOON_*)."
+        ),
     )
     execution_slot_label_es: str = Field(
         ...,
@@ -229,10 +248,23 @@ class DailyRunBoardOut(BaseModel):
     )
 
 
+class ValidatePicksWindowOut(BaseModel):
+    """Cohorte horaria que aplicará POST /validate-picks (reloj local vs fecha del run)."""
+
+    label_es: str = Field(..., description="Texto para botón / ayuda en UI.")
+    local_on: Optional[str] = Field(None, description="YYYY-MM-DD cohorte (--only-created-local-on).")
+    hour_min_incl: Optional[int] = Field(None, description="Hora local inclusiva 0-23.")
+    hour_max_excl: Optional[int] = Field(None, description="Hora local exclusiva 1-24.")
+    phase: Literal["morning", "evening", "full"] = Field(
+        ...,
+        description="morning|evening según reloj del día del run; full = run histórico (sin recorte horario).",
+    )
+
+
 class ValidatePicksRunResponse(BaseModel):
     ok: bool
     daily_run_id: int
-    execution_slot: Literal["morning", "evening", "night"]
+    execution_slot: Literal["morning", "evening", "night", "full"]
     execution_slot_label_es: str
     total_processed: int = 0
     validated: int = 0
@@ -257,6 +289,17 @@ class TrackingBoardOut(BaseModel):
     user_id: int
     picks: List[PickSummary]
     suggested_combos: List[SuggestedComboOut]
+    validate_window: Optional[ValidatePicksWindowOut] = Field(
+        default=None,
+        description="Ventana de validación SofaScore sugerida al abrir el tablero (misma que usará POST validate-picks).",
+    )
+    picks_stats: Optional[dict] = Field(
+        default=None,
+        description=(
+            "Resumen operativo del run: total generado por modelo, tradables visibles "
+            "y ocultos por umbral de cuota."
+        ),
+    )
 
 
 class RegenerateCombosResponse(BaseModel):
@@ -464,6 +507,41 @@ class EffectivenessReportStatusOut(BaseModel):
     roi_unit: Optional[float] = None
 
 
+class PipelineReplayRequest(BaseModel):
+    step: Literal["ingest", "select", "window"]
+    sport: Literal["football", "tennis"] = "tennis"
+    run_date: str = Field(..., description="YYYY-MM-DD (fecha local del run)")
+    slot: Optional[Literal["morning", "afternoon"]] = Field(
+        None,
+        description="Requerido cuando step=window",
+    )
+    limit_ingest: Optional[int] = Field(
+        None,
+        ge=1,
+        le=500,
+        description="Solo para step=ingest",
+    )
+    limit_select: Optional[int] = Field(
+        200,
+        ge=1,
+        le=1000,
+        description="Solo para step=select",
+    )
+
+
+class PipelineReplayResponse(BaseModel):
+    ok: bool
+    step: Literal["ingest", "select", "window"]
+    sport: Literal["football", "tennis"]
+    run_date: str
+    slot: Optional[Literal["morning", "afternoon"]] = None
+    daily_run_id: Optional[int] = None
+    subprocess_exit_code: int
+    stdout_excerpt: Optional[str] = None
+    stderr_excerpt: Optional[str] = None
+    message: Optional[str] = None
+
+
 class DailyRunEventInspectOut(BaseModel):
     daily_run_id: int
     event_id: int
@@ -474,6 +552,14 @@ class DailyRunEventInspectOut(BaseModel):
     passed_candidate_filters: bool
     in_ds_input: bool
     reject_reason: Optional[str] = None
+    model_skip_reason: Optional[str] = Field(
+        None,
+        description="Motivo declarado por el LLM o resumen cuando no hay pick publicable (post-análisis).",
+    )
+    pipeline_skip_summary: Optional[str] = Field(
+        None,
+        description="Detalle cuando el modelo sí propuso pick(s) pero el pipeline los filtró.",
+    )
     selection_tier: Optional[Literal["A", "B"]] = None
     event_context: Any = None
     diagnostics: Any = None
@@ -483,6 +569,7 @@ class DailyRunEventInspectOut(BaseModel):
 class DailyRunEventsInspectOut(BaseModel):
     daily_run_id: int
     run_date: str
+    sport: str
     captured_at_utc: str
     total_events: int
     items: List[DailyRunEventInspectOut]

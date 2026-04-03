@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { SportPillTabs } from '@/components/SportPillTabs'
+import { useUiSportsVisibility } from '@/contexts/UiSportsVisibilityContext'
 import { fetchJson } from '@/lib/api'
 import { useDashboardUrlState } from '@/hooks/useDashboardUrlState'
 import type { DailyRunPage } from '@/types/api'
@@ -10,6 +11,7 @@ const PAGE = 20
 
 export default function RunsPage() {
   const { sport } = useDashboardUrlState()
+  const { isRunSportVisible } = useUiSportsVisibility()
 
   const q = useInfiniteQuery({
     queryKey: ['daily-runs', sport],
@@ -22,7 +24,9 @@ export default function RunsPage() {
     getNextPageParam: (last) => last.next_cursor ?? undefined,
   })
 
-  const rows = q.data?.pages.flatMap((p) => p.items) ?? []
+  const rows = (q.data?.pages.flatMap((p) => p.items) ?? []).filter((r) =>
+    isRunSportVisible(r.sport),
+  )
 
   return (
     <div>

@@ -23,6 +23,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 import urllib.request
 import urllib.error
 from datetime import datetime
@@ -114,11 +115,74 @@ def _selection_display(market: str, selection: str, ec: Dict[str, Any]) -> str:
     return sel
 
 
+def _is_enabled_env(var_name: str, default: str = "1") -> bool:
+    return os.environ.get(var_name, default).strip().lower() not in (
+        "0",
+        "false",
+        "no",
+    )
+
+
+def _normalize_text(value: str) -> str:
+    s = unicodedata.normalize("NFKD", str(value or ""))
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    return s.lower()
+
+
+def _reason_conflicts_with_selection(*, market: str, selection_code: str, reason: str) -> bool:
+    """
+    Heurística conservadora para detectar contradicción explícita entre selección y razón textual.
+    Se limita a mercados ganador/1X2 para reducir falsos positivos.
+    """
+    mk = str(market or "").strip().lower()
+    sel = str(selection_code or "").strip()
+    rs = _normalize_text(reason)
+    if not rs:
+        return False
+
+    winner_markets = {"1x2", "match winner", "winner", "to win match"}
+    if mk not in winner_markets:
+        return False
+
+    local_positive = (
+        "gana local",
+        "ganara local",
+        "victoria local",
+        "favor local",
+        "local se impone",
+    )
+    away_positive = (
+        "gana visitante",
+        "ganara visitante",
+        "victoria visitante",
+        "favor visitante",
+        "visitante se impone",
+    )
+    draw_positive = ("empate", "igualdad", "reparto de puntos")
+    local_negative = ("pierde local", "derrota local", "no gana local", "local pierde")
+    away_negative = (
+        "pierde visitante",
+        "derrota visitante",
+        "no gana visitante",
+        "visitante pierde",
+    )
+    anti_draw = ("sin empate", "no hay empate")
+
+    if sel == "1":
+        return any(k in rs for k in away_positive + local_negative)
+    if sel == "2":
+        return any(k in rs for k in local_positive + away_negative)
+    if sel == "X":
+        return any(k in rs for k in local_positive + away_positive + anti_draw)
+    return False
+
+
 def _build_system_prompt(*, sport: str) -> str:
     if sport == "tennis":
         return TENNIS_SYSTEM_PROMPT
     return (
         "Eres un analista de fútbol para apuestas. "
+        "El campo `razon` (y cualquier explicación legible) debe estar en español. "
         "Debes producir SOLO JSON válido (sin markdown, sin texto adicional). "
         "El JSON debe seguir el esquema pedido por el usuario. "
         "No inventes cuotas: usa las odds desde el campo `processed` del evento."
@@ -140,6 +204,7 @@ def _build_user_prompt(batch: Dict[str, Any], *, date_str: str, sport: str) -> s
         '  "picks_by_event": [\n'
         "    {\n"
         '      "event_id": 123,\n'
+        '      "motivo_sin_pick": string,\n'
         '      "picks": [\n'
         "        {\n"
         '          "market": "1X2"|"Over/Under 2.5"|"BTTS"|"Double Chance",\n'
@@ -153,8 +218,11 @@ def _build_user_prompt(batch: Dict[str, Any], *, date_str: str, sport: str) -> s
         "    }\n"
         "  ]\n"
         "}\n"
+        "- Debe haber exactamente un elemento en picks_by_event por cada evento del array ds_input del lote (mismo event_id).\n"
+        "- motivo_sin_pick: obligatorio en español. Si picks tiene 1–2 elementos, usa \"\" (vacío). "
+        "Si picks=[], explica en 1–2 frases por qué no hay valor (datos, cuotas, incertidumbre, etc.).\n"
         "- Para 1X2: usa selection exactamente '1','X','2' (el runner convertirá a '1 (HomeTeam)' etc.).\n"
-        "- Máximo 2 picks por evento. Si no hay odds relevantes, puede dejar picks=[] para ese evento.\n"
+        "- Máximo 2 picks por evento. Si no hay odds relevantes, picks=[] y motivo_sin_pick detallado.\n"
         "- Cálculo de EDGE:\n"
         "  p_imp_pct = round(100 / odds, 2)\n"
         "  elige p_real_pct (0-100) de forma razonada (probabilidad subjetiva en %)\n"
@@ -164,7 +232,7 @@ def _build_user_prompt(batch: Dict[str, Any], *, date_str: str, sport: str) -> s
         "  edge_pct >= 3 => Media-Alta\n"
         "  edge_pct >= 1.5 => Media\n"
         "  else => Baja\n"
-        "- 'razon' debe ser 1 frase basada en lineups/h2h/streaks y/o odds trend (Tier A vs Tier B).\n\n"
+        "- 'razon' debe ser 1 frase en español basada en lineups/h2h/streaks y/o odds trend (Tier A vs Tier B).\n\n"
         "Datos del lote (JSON):\n"
         f"{json.dumps(batch, ensure_ascii=False)}\n"
     )
@@ -249,8 +317,10 @@ def _force_json_from_reasoning(
 ) -> str:
     prompt = (
         "Convierte el siguiente razonamiento en SOLO un objeto JSON válido con la forma "
-        "{\"picks_by_event\":[{\"event_id\":123,\"picks\":[{\"market\":\"...\",\"selection\":\"...\","
+        "{\"picks_by_event\":[{\"event_id\":123,\"motivo_sin_pick\":\"\","
+        "\"picks\":[{\"market\":\"...\",\"selection\":\"...\","
         "\"odds\":1.23,\"edge_pct\":2.34,\"confianza\":\"Media\",\"razon\":\"...\"}]}]}. "
+        "motivo_sin_pick debe ser \"\" si hay picks; si picks=[], una frase breve en español. "
         "Sin markdown, sin explicaciones.\n\nRazonamiento:\n"
         + reasoning_text
     )
@@ -319,6 +389,11 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         min_candidate_odds = max(1.0, float(raw_floor))
     except ValueError:
         min_candidate_odds = 1.30
+    block_nonpositive_edge = _is_enabled_env("ALTEA_BLOCK_NONPOSITIVE_EDGE", "1")
+    block_reason_selection_conflict = _is_enabled_env(
+        "ALTEA_BLOCK_REASON_SELECTION_CONFLICT",
+        "1",
+    )
     header = {
         "title": title,
         "date": date_str,
@@ -327,8 +402,8 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         "min_candidate_odds": round(min_candidate_odds, 2),
     }
 
-    # Map event_id -> picks list
-    picks_map: Dict[int, List[Dict[str, Any]]] = {}
+    # event_id -> fila del modelo (picks + motivo_sin_pick)
+    model_rows: Dict[int, Dict[str, Any]] = {}
     for item in model_out.get("picks_by_event") or []:
         if not isinstance(item, dict):
             continue
@@ -339,8 +414,10 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             continue
         picks = item.get("picks") or []
         if not isinstance(picks, list):
-            continue
-        picks_map[eid_i] = picks
+            picks = []
+        motivo_raw = item.get("motivo_sin_pick")
+        motivo_s = str(motivo_raw).strip() if motivo_raw is not None else ""
+        model_rows[eid_i] = {"picks": picks, "motivo_sin_pick": motivo_s}
 
     events: List[Dict[str, Any]] = []
     pick_count = 0
@@ -351,11 +428,24 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         ec = ev.get("event_context") or {}
         schedule_display = ev.get("schedule_display") or {}
         processed = ev.get("processed") or {}
-        picks_raw = picks_map.get(eid) or []
+
+        mrow = model_rows.get(eid)
+        if mrow is None:
+            picks_raw: List[Dict[str, Any]] = []
+            model_motivo = ""
+            model_missing = True
+        else:
+            picks_raw = list(mrow.get("picks") or [])
+            model_motivo = str(mrow.get("motivo_sin_pick") or "").strip()
+            model_missing = False
 
         picks_payload: List[Dict[str, Any]] = []
+        pipeline_drop_reasons: List[str] = []
         for p in picks_raw:
             if not isinstance(p, dict):
+                pipeline_drop_reasons.append(
+                    "Propuesta del modelo con formato inválido (no es objeto JSON)."
+                )
                 continue
             market = p.get("market")
             selection_code = p.get("selection")
@@ -364,20 +454,28 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             confianza = p.get("confianza")
             razon = p.get("razon")
             if market is None or selection_code is None:
+                pipeline_drop_reasons.append(
+                    "Pick del modelo incompleto (falta mercado o selección)."
+                )
                 continue
+            market_s = str(market)
+            selection_code_s = str(selection_code)
             if sport == "tennis":
-                mk_norm = str(market).strip().lower()
+                mk_norm = market_s.strip().lower()
                 if mk_norm not in allowed_tennis_markets:
+                    pipeline_drop_reasons.append(
+                        f"Mercado «{market}» no permitido para publicación (tenis)."
+                    )
                     continue
 
             # Render expects selection string.
-            selection_display = _selection_display(str(market), str(selection_code), ec)
+            selection_display = _selection_display(market_s, selection_code_s, ec)
 
             model_odds = odds if isinstance(odds, (int, float)) else None
             scraped_odds = scraped_decimal_odds_for_pick(
                 processed,
-                market=str(market),
-                selection_code=str(selection_code),
+                market=market_s,
+                selection_code=selection_code_s,
             )
             if scraped_odds is not None:
                 final_odds: Optional[float] = scraped_odds
@@ -391,6 +489,9 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
 
             # Blindaje operativo tenis: evita publicar picks sin ancla de cuota scrapeada.
             if sport == "tennis" and tennis_require_scraped and odds_source != "scraped_sofascore":
+                pipeline_drop_reasons.append(
+                    "Pick del modelo descartado: se exige cuota scrapeada SofaScore y no hubo ancla."
+                )
                 continue
 
             is_tradable = bool(
@@ -421,14 +522,39 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
                     edge_pct_out = rec
                     confianza_out = confianza_from_edge(rec)
 
+            if (
+                block_nonpositive_edge
+                and isinstance(edge_pct_out, (int, float))
+                and float(edge_pct_out) <= 0.0
+            ):
+                pipeline_drop_reasons.append(
+                    f"Pick descartado: edge_pct={float(edge_pct_out):.2f}% (regla: solo edge positivo)."
+                )
+                continue
+
+            razon_out = razon if razon is not None else ""
+            if (
+                block_reason_selection_conflict
+                and isinstance(razon_out, str)
+                and _reason_conflicts_with_selection(
+                    market=market_s,
+                    selection_code=selection_code_s,
+                    reason=razon_out,
+                )
+            ):
+                pipeline_drop_reasons.append(
+                    "Pick descartado: la razón textual contradice la selección del pick."
+                )
+                continue
+
             picks_payload.append(
                 {
-                    "market": str(market),
+                    "market": market_s,
                     "selection": selection_display,
                     "odds": final_odds,
                     "edge_pct": edge_pct_out,
                     "confianza": confianza_out,
-                    "razon": razon if razon is not None else "",
+                    "razon": razon_out,
                     "odds_source": odds_source,
                     "model_odds": model_odds,
                     "scraped_odds": scraped_odds,
@@ -441,6 +567,28 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
             )
         pick_count += len(picks_payload)
 
+        model_skip_reason_out: Optional[str] = None
+        pipeline_skip_summary_out: Optional[str] = None
+        if not picks_payload:
+            if model_missing:
+                model_skip_reason_out = (
+                    "El modelo no incluyó este evento en picks_by_event."
+                )
+            elif not picks_raw:
+                model_skip_reason_out = (
+                    model_motivo
+                    if model_motivo
+                    else "Sin picks del modelo (motivo_sin_pick vacío o ausente)."
+                )
+            else:
+                model_skip_reason_out = (
+                    "El modelo propuso pick(s), pero ninguno pasó validación/publicación del pipeline."
+                )
+                if pipeline_drop_reasons:
+                    pipeline_skip_summary_out = "; ".join(
+                        dict.fromkeys(pipeline_drop_reasons)
+                    )
+
         events.append(
             {
                 "label": _label_from_event_context(ec),
@@ -448,6 +596,8 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
                 "local_time_short": _local_time_short_from_schedule_display(schedule_display),
                 "event_id": eid,
                 "picks": picks_payload,
+                "model_skip_reason": model_skip_reason_out,
+                "pipeline_skip_summary": pipeline_skip_summary_out,
             }
         )
 

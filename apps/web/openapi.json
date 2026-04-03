@@ -973,6 +973,63 @@
         }
       }
     },
+    "/ops/pipeline/replay": {
+      "post": {
+        "summary": "Api Pipeline Replay",
+        "description": "Re-disparar pasos clave del pipeline desde UI (sin consola):\n- ingest: vuelve a poblar eventos del d\u00eda/deporte.\n- select: recalcula candidates_{date}_{sport}_select.json para el \u00faltimo daily_run.\n- window: corre an\u00e1lisis DS por ventana (morning/afternoon) con persist_picks.",
+        "operationId": "api_pipeline_replay_ops_pipeline_replay_post",
+        "parameters": [
+          {
+            "name": "X-Local-Api-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Local-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PipelineReplayRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineReplayResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/daily-runs/{daily_run_id}/board": {
       "get": {
         "summary": "Api Tracking Board",
@@ -1042,7 +1099,7 @@
     "/daily-runs/{daily_run_id}/validate-picks": {
       "post": {
         "summary": "Api Validate Picks For Run",
-        "description": "Ejecuta jobs/validate_picks.py para este daily_run_id (SofaScore \u2192 pick_results).\nLa cohorte ma\u00f1ana/tarde en la etiqueta se infiere de created_at_utc del run.",
+        "description": "Ejecuta jobs/validate_picks.py para este daily_run_id (SofaScore \u2192 pick_results).\n\nLa cohorte horaria (--only-created-local-*) sigue el reloj local y la fecha del run,\nalineada con ALTEA_VALIDATE_* y run_validate_picks_scheduled.sh (ver _validate_picks_window_for_run_date).",
         "operationId": "api_validate_picks_for_run_daily_runs__daily_run_id__validate_picks_post",
         "parameters": [
           {
@@ -1585,6 +1642,41 @@
           "selection": {
             "type": "string",
             "title": "Selection"
+          },
+          "picked_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Picked Value",
+            "description": "Cuota registrada para la pierna."
+          },
+          "leg_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "win",
+                  "loss",
+                  "pending"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leg Outcome",
+            "description": "Estado de esta pierna (misma l\u00f3gica que un single: usuario o validaci\u00f3n)."
+          },
+          "operativo_visible": {
+            "type": "boolean",
+            "title": "Operativo Visible",
+            "description": "False si el pick no aparece en el listado tradable del run (solo an\u00e1lisis).",
+            "default": true
           }
         },
         "type": "object",
@@ -1628,7 +1720,7 @@
               "night"
             ],
             "title": "Execution Slot",
-            "description": "Cohorte horaria local (ALTEA_VALIDATE_* / COPA_FOXKIDS_TZ): morning=[8,16), evening=[16,24), night=resto."
+            "description": "Cohorte por hora local de creaci\u00f3n del run; rangos por defecto alineados con run_validate_picks_scheduled.sh (ma\u00f1ana ALTEA_VALIDATE_MORNING_*, tarde ALTEA_VALIDATE_AFTERNOON_*)."
           },
           "execution_slot_label_es": {
             "type": "string",
@@ -1721,6 +1813,30 @@
             ],
             "title": "Reject Reason"
           },
+          "model_skip_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Skip Reason",
+            "description": "Motivo declarado por el LLM o resumen cuando no hay pick publicable (post-an\u00e1lisis)."
+          },
+          "pipeline_skip_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pipeline Skip Summary",
+            "description": "Detalle cuando el modelo s\u00ed propuso pick(s) pero el pipeline los filtr\u00f3."
+          },
           "selection_tier": {
             "anyOf": [
               {
@@ -1765,6 +1881,10 @@
             "type": "string",
             "title": "Run Date"
           },
+          "sport": {
+            "type": "string",
+            "title": "Sport"
+          },
           "captured_at_utc": {
             "type": "string",
             "title": "Captured At Utc"
@@ -1785,6 +1905,7 @@
         "required": [
           "daily_run_id",
           "run_date",
+          "sport",
           "captured_at_utc",
           "total_events",
           "items"
@@ -1869,6 +1990,33 @@
             "type": "array",
             "title": "Recent"
           },
+          "issued_daily": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardIssuedDailyRow"
+            },
+            "type": "array",
+            "title": "Issued Daily",
+            "description": "Widget compacto: picks escogidos por dia (ultimos dias)."
+          },
+          "rolling_by_sport": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardRollingSportRow"
+            },
+            "type": "array",
+            "title": "Rolling By Sport",
+            "description": "Hist\u00f3rico rolling tradable por deporte."
+          },
+          "calibration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DashboardCalibrationBlock"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Relaci\u00f3n entre se\u00f1al del modelo (confianza/edge) y resultado."
+          },
           "recent_total": {
             "type": "integer",
             "title": "Recent Total",
@@ -1882,6 +2030,166 @@
           "recent"
         ],
         "title": "DashboardBundleOut"
+      },
+      "DashboardCalibrationBlock": {
+        "properties": {
+          "sport": {
+            "type": "string",
+            "title": "Sport"
+          },
+          "min_tradable_odds": {
+            "type": "number",
+            "title": "Min Tradable Odds"
+          },
+          "by_confidence": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardCalibrationRow"
+            },
+            "type": "array",
+            "title": "By Confidence"
+          },
+          "by_confidence_taken": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardCalibrationRow"
+            },
+            "type": "array",
+            "title": "By Confidence Taken"
+          },
+          "by_edge": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardCalibrationRow"
+            },
+            "type": "array",
+            "title": "By Edge"
+          },
+          "daily_trend": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardDailyTrendRow"
+            },
+            "type": "array",
+            "title": "Daily Trend"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sport",
+          "min_tradable_odds"
+        ],
+        "title": "DashboardCalibrationBlock"
+      },
+      "DashboardCalibrationRow": {
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "title": "Bucket"
+          },
+          "settled": {
+            "type": "integer",
+            "title": "Settled"
+          },
+          "hit_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit Rate"
+          },
+          "roi_unit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bucket",
+          "settled"
+        ],
+        "title": "DashboardCalibrationRow"
+      },
+      "DashboardDailyTrendRow": {
+        "properties": {
+          "run_date": {
+            "type": "string",
+            "title": "Run Date"
+          },
+          "settled": {
+            "type": "integer",
+            "title": "Settled"
+          },
+          "hit_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit Rate"
+          },
+          "roi_unit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_date",
+          "settled"
+        ],
+        "title": "DashboardDailyTrendRow"
+      },
+      "DashboardIssuedDailyRow": {
+        "properties": {
+          "run_date": {
+            "type": "string",
+            "title": "Run Date"
+          },
+          "picks_total": {
+            "type": "integer",
+            "title": "Picks Total"
+          },
+          "picks_tradable": {
+            "type": "integer",
+            "title": "Picks Tradable"
+          },
+          "picks_taken": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Picks Taken"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_date",
+          "picks_total",
+          "picks_tradable"
+        ],
+        "title": "DashboardIssuedDailyRow"
       },
       "DashboardPerformanceBlock": {
         "properties": {
@@ -2115,6 +2423,34 @@
             ],
             "title": "Match State"
           },
+          "execution_slot": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "morning",
+                  "evening",
+                  "night",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Slot"
+          },
+          "execution_slot_label_es": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Slot Label Es"
+          },
           "selection_display": {
             "anyOf": [
               {
@@ -2148,6 +2484,84 @@
           "created_at_utc"
         ],
         "title": "DashboardRecentPick"
+      },
+      "DashboardRollingSportRow": {
+        "properties": {
+          "sport": {
+            "type": "string",
+            "title": "Sport"
+          },
+          "settled_total": {
+            "type": "integer",
+            "title": "Settled Total"
+          },
+          "settled_tradable": {
+            "type": "integer",
+            "title": "Settled Tradable"
+          },
+          "roi_tradable_50": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Tradable 50"
+          },
+          "roi_tradable_100": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Tradable 100"
+          },
+          "hit_rate_tradable_50": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit Rate Tradable 50"
+          },
+          "hit_rate_tradable_100": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit Rate Tradable 100"
+          },
+          "drawdown_units_30d": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drawdown Units 30D"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sport",
+          "settled_total",
+          "settled_tradable"
+        ],
+        "title": "DashboardRollingSportRow"
       },
       "DashboardSummaryBlock": {
         "properties": {
@@ -2252,6 +2666,42 @@
             ],
             "title": "Roi Unit",
             "description": "ROI unitario sobre picks settled (win/loss), usando stake 1 por pick."
+          },
+          "settled_count_tradable": {
+            "type": "integer",
+            "title": "Settled Count Tradable",
+            "description": "Cantidad de picks settled con cuota >= min_tradable_odds.",
+            "default": 0
+          },
+          "settled_count_below_min_odds": {
+            "type": "integer",
+            "title": "Settled Count Below Min Odds",
+            "description": "Cantidad de picks settled excluidos del ROI tradable por cuota baja.",
+            "default": 0
+          },
+          "min_tradable_odds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Tradable Odds",
+            "description": "Piso de cuota usado para separar ROI tradable (env ALTEA_MIN_TRADABLE_ODDS)."
+          },
+          "roi_unit_tradable": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roi Unit Tradable",
+            "description": "ROI unitario sobre picks settled con cuota >= min_tradable_odds."
           },
           "picks_taken_count": {
             "type": "integer",
@@ -2678,6 +3128,46 @@
             ],
             "title": "Run Date",
             "description": "YYYY-MM-DD del daily_run (d\u00eda del an\u00e1lisis / listado)."
+          },
+          "execution_slot": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "morning",
+                  "evening",
+                  "night",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Slot"
+          },
+          "execution_slot_label_es": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Slot Label Es"
+          },
+          "run_sport": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Sport",
+            "description": "Deporte del daily_run asociado (football|tennis)."
           }
         },
         "type": "object",
@@ -3038,6 +3528,34 @@
             ],
             "title": "Run Date",
             "description": "YYYY-MM-DD del daily_run (d\u00eda del an\u00e1lisis / listado)."
+          },
+          "execution_slot": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "morning",
+                  "evening",
+                  "night",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Slot"
+          },
+          "execution_slot_label_es": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Slot Label Es"
           }
         },
         "type": "object",
@@ -3055,6 +3573,185 @@
           "result"
         ],
         "title": "PickSummary"
+      },
+      "PipelineReplayRequest": {
+        "properties": {
+          "step": {
+            "type": "string",
+            "enum": [
+              "ingest",
+              "select",
+              "window"
+            ],
+            "title": "Step"
+          },
+          "sport": {
+            "type": "string",
+            "enum": [
+              "football",
+              "tennis"
+            ],
+            "title": "Sport",
+            "default": "tennis"
+          },
+          "run_date": {
+            "type": "string",
+            "title": "Run Date",
+            "description": "YYYY-MM-DD (fecha local del run)"
+          },
+          "slot": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "morning",
+                  "afternoon"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slot",
+            "description": "Requerido cuando step=window"
+          },
+          "limit_ingest": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 500.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Ingest",
+            "description": "Solo para step=ingest"
+          },
+          "limit_select": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Select",
+            "description": "Solo para step=select",
+            "default": 200
+          }
+        },
+        "type": "object",
+        "required": [
+          "step",
+          "run_date"
+        ],
+        "title": "PipelineReplayRequest"
+      },
+      "PipelineReplayResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "step": {
+            "type": "string",
+            "enum": [
+              "ingest",
+              "select",
+              "window"
+            ],
+            "title": "Step"
+          },
+          "sport": {
+            "type": "string",
+            "enum": [
+              "football",
+              "tennis"
+            ],
+            "title": "Sport"
+          },
+          "run_date": {
+            "type": "string",
+            "title": "Run Date"
+          },
+          "slot": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "morning",
+                  "afternoon"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slot"
+          },
+          "daily_run_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Daily Run Id"
+          },
+          "subprocess_exit_code": {
+            "type": "integer",
+            "title": "Subprocess Exit Code"
+          },
+          "stdout_excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stdout Excerpt"
+          },
+          "stderr_excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stderr Excerpt"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "step",
+          "sport",
+          "run_date",
+          "subprocess_exit_code"
+        ],
+        "title": "PipelineReplayResponse"
       },
       "RegenerateCombosResponse": {
         "properties": {
@@ -3293,6 +3990,30 @@
             },
             "type": "array",
             "title": "Suggested Combos"
+          },
+          "validate_window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidatePicksWindowOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ventana de validaci\u00f3n SofaScore sugerida al abrir el tablero (misma que usar\u00e1 POST validate-picks)."
+          },
+          "picks_stats": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Picks Stats",
+            "description": "Resumen operativo del run: total generado por modelo, tradables visibles y ocultos por umbral de cuota."
           }
         },
         "type": "object",
@@ -3537,7 +4258,8 @@
             "enum": [
               "morning",
               "evening",
-              "night"
+              "night",
+              "full"
             ],
             "title": "Execution Slot"
           },
@@ -3602,6 +4324,68 @@
           "execution_slot_label_es"
         ],
         "title": "ValidatePicksRunResponse"
+      },
+      "ValidatePicksWindowOut": {
+        "properties": {
+          "label_es": {
+            "type": "string",
+            "title": "Label Es",
+            "description": "Texto para bot\u00f3n / ayuda en UI."
+          },
+          "local_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local On",
+            "description": "YYYY-MM-DD cohorte (--only-created-local-on)."
+          },
+          "hour_min_incl": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hour Min Incl",
+            "description": "Hora local inclusiva 0-23."
+          },
+          "hour_max_excl": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hour Max Excl",
+            "description": "Hora local exclusiva 1-24."
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "morning",
+              "evening",
+              "full"
+            ],
+            "title": "Phase",
+            "description": "morning|evening seg\u00fan reloj del d\u00eda del run; full = run hist\u00f3rico (sin recorte horario)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "label_es",
+          "phase"
+        ],
+        "title": "ValidatePicksWindowOut",
+        "description": "Cohorte horaria que aplicar\u00e1 POST /validate-picks (reloj local vs fecha del run)."
       },
       "ValidationError": {
         "properties": {

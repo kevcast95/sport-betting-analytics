@@ -229,6 +229,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/pipeline/replay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Api Pipeline Replay
+         * @description Re-disparar pasos clave del pipeline desde UI (sin consola):
+         *     - ingest: vuelve a poblar eventos del día/deporte.
+         *     - select: recalcula candidates_{date}_{sport}_select.json para el último daily_run.
+         *     - window: corre análisis DS por ventana (morning/afternoon) con persist_picks.
+         */
+        post: operations["api_pipeline_replay_ops_pipeline_replay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/daily-runs/{daily_run_id}/board": {
         parameters: {
             query?: never;
@@ -258,7 +281,9 @@ export interface paths {
         /**
          * Api Validate Picks For Run
          * @description Ejecuta jobs/validate_picks.py para este daily_run_id (SofaScore → pick_results).
-         *     La cohorte mañana/tarde en la etiqueta se infiere de created_at_utc del run.
+         *
+         *     La cohorte horaria (--only-created-local-*) sigue el reloj local y la fecha del run,
+         *     alineada con ALTEA_VALIDATE_* y run_validate_picks_scheduled.sh (ver _validate_picks_window_for_run_date).
          */
         post: operations["api_validate_picks_for_run_daily_runs__daily_run_id__validate_picks_post"];
         delete?: never;
@@ -415,6 +440,22 @@ export interface components {
             market: string;
             /** Selection */
             selection: string;
+            /**
+             * Picked Value
+             * @description Cuota registrada para la pierna.
+             */
+            picked_value?: number | null;
+            /**
+             * Leg Outcome
+             * @description Estado de esta pierna (misma lógica que un single: usuario o validación).
+             */
+            leg_outcome?: ("win" | "loss" | "pending") | null;
+            /**
+             * Operativo Visible
+             * @description False si el pick no aparece en el listado tradable del run (solo análisis).
+             * @default true
+             */
+            operativo_visible: boolean;
         };
         /** DailyRunBoardOut */
         DailyRunBoardOut: {
@@ -433,7 +474,7 @@ export interface components {
             created_at_utc: string;
             /**
              * Execution Slot
-             * @description Cohorte horaria local (ALTEA_VALIDATE_* / COPA_FOXKIDS_TZ): morning=[8,16), evening=[16,24), night=resto.
+             * @description Cohorte por hora local de creación del run; rangos por defecto alineados con run_validate_picks_scheduled.sh (mañana ALTEA_VALIDATE_MORNING_*, tarde ALTEA_VALIDATE_AFTERNOON_*).
              * @enum {string}
              */
             execution_slot: "morning" | "evening" | "night";
@@ -463,6 +504,16 @@ export interface components {
             in_ds_input: boolean;
             /** Reject Reason */
             reject_reason?: string | null;
+            /**
+             * Model Skip Reason
+             * @description Motivo declarado por el LLM o resumen cuando no hay pick publicable (post-análisis).
+             */
+            model_skip_reason?: string | null;
+            /**
+             * Pipeline Skip Summary
+             * @description Detalle cuando el modelo sí propuso pick(s) pero el pipeline los filtró.
+             */
+            pipeline_skip_summary?: string | null;
             /** Selection Tier */
             selection_tier?: ("A" | "B") | null;
             /** Event Context */
@@ -478,6 +529,8 @@ export interface components {
             daily_run_id: number;
             /** Run Date */
             run_date: string;
+            /** Sport */
+            sport: string;
             /** Captured At Utc */
             captured_at_utc: string;
             /** Total Events */
@@ -520,16 +573,13 @@ export interface components {
              * Issued Daily
              * @description Widget compacto: picks escogidos por dia (ultimos dias).
              */
-            issued_daily: components["schemas"]["DashboardIssuedDailyRow"][];
+            issued_daily?: components["schemas"]["DashboardIssuedDailyRow"][];
             /**
              * Rolling By Sport
              * @description Histórico rolling tradable por deporte.
              */
-            rolling_by_sport: components["schemas"]["DashboardRollingSportRow"][];
-            /**
-             * Calibration
-             * @description Relación entre señal del modelo (confianza/edge) y resultado.
-             */
+            rolling_by_sport?: components["schemas"]["DashboardRollingSportRow"][];
+            /** @description Relación entre señal del modelo (confianza/edge) y resultado. */
             calibration?: components["schemas"]["DashboardCalibrationBlock"] | null;
             /**
              * Recent Total
@@ -545,13 +595,13 @@ export interface components {
             /** Min Tradable Odds */
             min_tradable_odds: number;
             /** By Confidence */
-            by_confidence: components["schemas"]["DashboardCalibrationRow"][];
+            by_confidence?: components["schemas"]["DashboardCalibrationRow"][];
             /** By Confidence Taken */
-            by_confidence_taken: components["schemas"]["DashboardCalibrationRow"][];
+            by_confidence_taken?: components["schemas"]["DashboardCalibrationRow"][];
             /** By Edge */
-            by_edge: components["schemas"]["DashboardCalibrationRow"][];
+            by_edge?: components["schemas"]["DashboardCalibrationRow"][];
             /** Daily Trend */
-            daily_trend: components["schemas"]["DashboardDailyTrendRow"][];
+            daily_trend?: components["schemas"]["DashboardDailyTrendRow"][];
         };
         /** DashboardCalibrationRow */
         DashboardCalibrationRow: {
@@ -656,10 +706,7 @@ export interface components {
             kickoff_at_utc?: string | null;
             /** Match State */
             match_state?: string | null;
-            /**
-             * Execution Slot
-             * @enum {string}
-             */
+            /** Execution Slot */
             execution_slot?: ("morning" | "evening" | "night" | "unknown") | null;
             /** Execution Slot Label Es */
             execution_slot_label_es?: string | null;
@@ -670,6 +717,25 @@ export interface components {
              * @description Metadatos del modelo (edge, confianza, razón, etc.)
              */
             odds_reference?: unknown | null;
+        };
+        /** DashboardRollingSportRow */
+        DashboardRollingSportRow: {
+            /** Sport */
+            sport: string;
+            /** Settled Total */
+            settled_total: number;
+            /** Settled Tradable */
+            settled_tradable: number;
+            /** Roi Tradable 50 */
+            roi_tradable_50?: number | null;
+            /** Roi Tradable 100 */
+            roi_tradable_100?: number | null;
+            /** Hit Rate Tradable 50 */
+            hit_rate_tradable_50?: number | null;
+            /** Hit Rate Tradable 100 */
+            hit_rate_tradable_100?: number | null;
+            /** Drawdown Units 30D */
+            drawdown_units_30d?: number | null;
         };
         /** DashboardSummaryBlock */
         DashboardSummaryBlock: {
@@ -787,25 +853,6 @@ export interface components {
              * @default false
              */
             has_stake_data: boolean;
-        };
-        /** DashboardRollingSportRow */
-        DashboardRollingSportRow: {
-            /** Sport */
-            sport: string;
-            /** Settled Total */
-            settled_total: number;
-            /** Settled Tradable */
-            settled_tradable: number;
-            /** Roi Tradable 50 */
-            roi_tradable_50?: number | null;
-            /** Roi Tradable 100 */
-            roi_tradable_100?: number | null;
-            /** Hit Rate Tradable 50 */
-            hit_rate_tradable_50?: number | null;
-            /** Hit Rate Tradable 100 */
-            hit_rate_tradable_100?: number | null;
-            /** Drawdown Units 30D */
-            drawdown_units_30d?: number | null;
         };
         /** EffectivenessReportStatusOut */
         EffectivenessReportStatusOut: {
@@ -926,13 +973,15 @@ export interface components {
              * @description YYYY-MM-DD del daily_run (día del análisis / listado).
              */
             run_date?: string | null;
-            /**
-             * Execution Slot
-             * @enum {string}
-             */
+            /** Execution Slot */
             execution_slot?: ("morning" | "evening" | "night" | "unknown") | null;
             /** Execution Slot Label Es */
             execution_slot_label_es?: string | null;
+            /**
+             * Run Sport
+             * @description Deporte del daily_run asociado (football|tennis).
+             */
+            run_sport?: string | null;
         };
         /** PickPage */
         PickPage: {
@@ -1053,13 +1102,74 @@ export interface components {
              * @description YYYY-MM-DD del daily_run (día del análisis / listado).
              */
             run_date?: string | null;
-            /**
-             * Execution Slot
-             * @enum {string}
-             */
+            /** Execution Slot */
             execution_slot?: ("morning" | "evening" | "night" | "unknown") | null;
             /** Execution Slot Label Es */
             execution_slot_label_es?: string | null;
+        };
+        /** PipelineReplayRequest */
+        PipelineReplayRequest: {
+            /**
+             * Step
+             * @enum {string}
+             */
+            step: "ingest" | "select" | "window";
+            /**
+             * Sport
+             * @default tennis
+             * @enum {string}
+             */
+            sport: "football" | "tennis";
+            /**
+             * Run Date
+             * @description YYYY-MM-DD (fecha local del run)
+             */
+            run_date: string;
+            /**
+             * Slot
+             * @description Requerido cuando step=window
+             */
+            slot?: ("morning" | "afternoon") | null;
+            /**
+             * Limit Ingest
+             * @description Solo para step=ingest
+             */
+            limit_ingest?: number | null;
+            /**
+             * Limit Select
+             * @description Solo para step=select
+             * @default 200
+             */
+            limit_select: number | null;
+        };
+        /** PipelineReplayResponse */
+        PipelineReplayResponse: {
+            /** Ok */
+            ok: boolean;
+            /**
+             * Step
+             * @enum {string}
+             */
+            step: "ingest" | "select" | "window";
+            /**
+             * Sport
+             * @enum {string}
+             */
+            sport: "football" | "tennis";
+            /** Run Date */
+            run_date: string;
+            /** Slot */
+            slot?: ("morning" | "afternoon") | null;
+            /** Daily Run Id */
+            daily_run_id?: number | null;
+            /** Subprocess Exit Code */
+            subprocess_exit_code: number;
+            /** Stdout Excerpt */
+            stdout_excerpt?: string | null;
+            /** Stderr Excerpt */
+            stderr_excerpt?: string | null;
+            /** Message */
+            message?: string | null;
         };
         /** RegenerateCombosResponse */
         RegenerateCombosResponse: {
@@ -1151,6 +1261,15 @@ export interface components {
             picks: components["schemas"]["PickSummary"][];
             /** Suggested Combos */
             suggested_combos: components["schemas"]["SuggestedComboOut"][];
+            /** @description Ventana de validación SofaScore sugerida al abrir el tablero (misma que usará POST validate-picks). */
+            validate_window?: components["schemas"]["ValidatePicksWindowOut"] | null;
+            /**
+             * Picks Stats
+             * @description Resumen operativo del run: total generado por modelo, tradables visibles y ocultos por umbral de cuota.
+             */
+            picks_stats?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** UserBankrollBody */
         UserBankrollBody: {
@@ -1235,7 +1354,7 @@ export interface components {
              * Execution Slot
              * @enum {string}
              */
-            execution_slot: "morning" | "evening" | "night";
+            execution_slot: "morning" | "evening" | "night" | "full";
             /** Execution Slot Label Es */
             execution_slot_label_es: string;
             /**
@@ -1270,6 +1389,38 @@ export interface components {
              * @description Fragmento de salida del job para depuración.
              */
             log_excerpt?: string | null;
+        };
+        /**
+         * ValidatePicksWindowOut
+         * @description Cohorte horaria que aplicará POST /validate-picks (reloj local vs fecha del run).
+         */
+        ValidatePicksWindowOut: {
+            /**
+             * Label Es
+             * @description Texto para botón / ayuda en UI.
+             */
+            label_es: string;
+            /**
+             * Local On
+             * @description YYYY-MM-DD cohorte (--only-created-local-on).
+             */
+            local_on?: string | null;
+            /**
+             * Hour Min Incl
+             * @description Hora local inclusiva 0-23.
+             */
+            hour_min_incl?: number | null;
+            /**
+             * Hour Max Excl
+             * @description Hora local exclusiva 1-24.
+             */
+            hour_max_excl?: number | null;
+            /**
+             * Phase
+             * @description morning|evening según reloj del día del run; full = run histórico (sin recorte horario).
+             * @enum {string}
+             */
+            phase: "morning" | "evening" | "full";
         };
         /** ValidationError */
         ValidationError: {
@@ -1757,6 +1908,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    api_pipeline_replay_ops_pipeline_replay_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Local-Api-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PipelineReplayRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineReplayResponse"];
                 };
             };
             /** @description Validation Error */

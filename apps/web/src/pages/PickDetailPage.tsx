@@ -17,7 +17,9 @@ import {
   describeMarketKind,
   describeSelectionPlain,
 } from '@/lib/marketCopy'
+import { SportHiddenInUiMessage } from '@/components/SportHiddenInUiMessage'
 import { ViewContextBar } from '@/components/ViewContextBar'
+import { useUiSportsVisibility } from '@/contexts/UiSportsVisibilityContext'
 import { sofascoreEventUrl } from '@/lib/sofascoreUrls'
 import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
@@ -91,6 +93,7 @@ function refNum(ref: OddsRef, key: string): number | undefined {
 const DIV = 'border-t border-app-line'
 
 export default function PickDetailPage() {
+  const { isRunSportVisible } = useUiSportsVisibility()
   const { pickId } = useParams<{ pickId: string }>()
   const id = Number(pickId)
   const invalid = Number.isNaN(id)
@@ -185,6 +188,25 @@ export default function PickDetailPage() {
   }
 
   const pick = q.data!
+  if (
+    pick.run_sport != null &&
+    String(pick.run_sport).trim() !== '' &&
+    !isRunSportVisible(String(pick.run_sport))
+  ) {
+    return (
+      <div className="mx-auto max-w-lg">
+        <ViewContextBar
+          crumbs={[
+            { label: 'Inicio', to: '/' },
+            { label: `Pick ${pick.pick_id}` },
+          ]}
+        />
+        <div className="mt-4">
+          <SportHiddenInUiMessage sportLabel={String(pick.run_sport)} />
+        </div>
+      </div>
+    )
+  }
   const ref = pick.odds_reference as OddsRef
   const selShow =
     refStr(ref, 'selection_display') ?? pick.selection

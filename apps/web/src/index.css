@@ -1,13 +1,15 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Notion / Linear — claro, mobile-first + acentos para badges */
-  --color-app-bg: #fafafa;
+  /* Claro con leve matiz violeta (coherente con nav); evita el gris plano */
+  --color-app-bg: #f6f4fa;
   --color-app-fg: #171717;
   --color-app-muted: #737373;
-  --color-app-line: #e5e5e5;
+  --color-app-line: #e6e2ef;
   --color-app-card: #ffffff;
   --color-app-accent: #4c1d95;
+  --color-app-accent-soft: #f3f0ff;
+  --color-app-accent-line: #e4dcf2;
   --color-app-accent-fg: #ffffff;
   --color-app-success: #15803d;
   --color-app-danger: #dc2626;
@@ -15,11 +17,14 @@
   --color-app-info: #0369a1;
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, 'Palatino Linotype', 'Book Antiqua',
+    serif;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
 }
 
 @layer base {
   html {
+    height: 100%;
     background-color: var(--color-app-bg);
     color: var(--color-app-fg);
     -webkit-font-smoothing: antialiased;
@@ -28,7 +33,18 @@
 
   body {
     margin: 0;
+    height: 100%;
     min-height: 100dvh;
+    overflow: hidden;
     font-family: var(--font-sans);
+  }
+
+  /** Contenedor de React: encaja al viewport para que el scroll sea interno (sidebar + chrome fijos). */
+  #root {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
   }
 }

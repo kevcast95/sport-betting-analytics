@@ -16,7 +16,10 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      {/** Asegura que el árbol ocupe el flex de #root (scroll solo dentro de AppLayout). */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <App />
+      </div>
     </QueryClientProvider>
   </StrictMode>,
 )

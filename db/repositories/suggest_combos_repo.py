@@ -1,11 +1,14 @@
 """
-Genera hasta 2 combinaciones sugeridas (2 piernas c/u), sin repetir event_id dentro del combo.
+Genera hasta N combinaciones sugeridas (2 piernas c/u), sin repetir event_id dentro del combo.
+N = env ALTEA_MAX_SUGGESTED_COMBOS (default 2, tope 10).
 Orden: confianza (Alta > Media-Alta > Media > Baja) y luego cuota descendente.
+Usa todos los picks del run (incluye cuotas bajas): mismas filas que en persistencia.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -65,9 +68,19 @@ def _remaining_after_pair(
     return [r for r in rows if int(r["pick_id"]) not in ps]
 
 
+def _max_suggested_combos() -> int:
+    """ALTEA_MAX_SUGGESTED_COMBOS (default 2, max 10): greedy pairs por run."""
+    raw = os.environ.get("ALTEA_MAX_SUGGESTED_COMBOS", "2").strip()
+    try:
+        n = int(raw)
+    except ValueError:
+        return 2
+    return max(1, min(n, 10))
+
+
 def regenerate_suggested_combos(conn: sqlite3.Connection, *, daily_run_id: int) -> List[int]:
     """
-    Borra combos previos del run e inserta hasta 2 nuevos (rank 1 y 2).
+    Borra combos previos del run e inserta hasta N greedy (rank 1..N).
     Retorna lista de suggested_combo_id creados.
     """
     cur = conn.execute(
@@ -81,13 +94,14 @@ def regenerate_suggested_combos(conn: sqlite3.Connection, *, daily_run_id: int) 
     rows.sort(key=_sort_key)
 
     combos: List[List[int]] = []
-    first = _first_pair(rows)
-    if first:
-        combos.append(first)
-        rest = _remaining_after_pair(rows, first)
-        second = _first_pair(rest)
-        if second:
-            combos.append(second)
+    pool: List[sqlite3.Row] = list(rows)
+    cap = _max_suggested_combos()
+    while len(combos) < cap:
+        nxt = _first_pair(pool)
+        if not nxt:
+            break
+        combos.append(nxt)
+        pool = _remaining_after_pair(pool, nxt)
 
     conn.execute(
         "DELETE FROM suggested_combos WHERE daily_run_id = ?",
@@ -98,7 +112,7 @@ def regenerate_suggested_combos(conn: sqlite3.Connection, *, daily_run_id: int) 
     for rank, legs in enumerate(combos, start=1):
         note = (
             "Greedy por confianza+cuota; piernas en distintos event_id; "
-            f"máx 2 combos diarios (rank {rank})."
+            f"hasta {cap} combos por run (rank {rank})."
         )
         cur2 = conn.execute(
             """

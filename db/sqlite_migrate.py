@@ -169,9 +169,30 @@ def _backfill_bankroll_delta_applied_cop(conn: sqlite3.Connection) -> None:
         )
 
 
+def ensure_daily_run_event_model_feedback_table(conn: sqlite3.Connection) -> bool:
+    if _table_exists(conn, "daily_run_event_model_feedback"):
+        return False
+    conn.execute(
+        """
+        CREATE TABLE daily_run_event_model_feedback (
+          daily_run_id INTEGER NOT NULL,
+          event_id INTEGER NOT NULL,
+          model_skip_reason TEXT,
+          pipeline_skip_summary TEXT,
+          updated_at_utc TEXT NOT NULL,
+          PRIMARY KEY (daily_run_id, event_id),
+          FOREIGN KEY (daily_run_id) REFERENCES daily_runs(daily_run_id)
+        )
+        """
+    )
+    return True
+
+
 def apply_migrations(conn: sqlite3.Connection) -> list[str]:
     """Aplica migraciones pendientes. Retorna lista de descripciones aplicadas."""
     applied: list[str] = []
+    if ensure_daily_run_event_model_feedback_table(conn):
+        applied.append("daily_run_event_model_feedback (LLM/pipeline feedback por evento)")
     if migrate_event_storage_add_sport(conn):
         applied.append("event_snapshots/event_features.sport + UNIQUE compuesto")
     if relax_picks_selection_constraint(conn):

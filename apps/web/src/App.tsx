@@ -3,6 +3,7 @@ import {
   BrowserRouter,
   Link,
   NavLink,
+  Navigate,
   Route,
   Routes,
   useMatch,
@@ -11,15 +12,20 @@ import {
 import { DashboardChrome } from '@/components/DashboardChrome'
 import BacktestsPage from '@/pages/BacktestsPage'
 import ApiReadinessPage from '@/pages/ApiReadinessPage'
+import AuthPage from '@/pages/AuthPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PickDetailPage from '@/pages/PickDetailPage'
 import RunEventsPage from '@/pages/RunEventsPage'
 import RunPicksPage from '@/pages/RunPicksPage'
 import RunsPage from '@/pages/RunsPage'
 import SystemSettingsPage from '@/pages/SystemSettingsPage'
+import {
+  UiSportsVisibilityProvider,
+  useUiSportsVisibility,
+} from '@/contexts/UiSportsVisibilityContext'
+import { SportUrlSync } from '@/components/SportUrlSync'
+import { firstVisibleSport } from '@/lib/uiSportsVisibility'
 import { fetchJson } from '@/lib/api'
-import { useBankrollCOP } from '@/hooks/useBankrollCOP'
-import { useTrackingUser } from '@/hooks/useTrackingUser'
 import type { EffectivenessReportStatusOut } from '@/types/api'
 
 function navClass(isActive: boolean) {
@@ -31,67 +37,8 @@ function navClass(isActive: boolean) {
   ].join(' ')
 }
 
-function GlobalBankrollBar() {
-  const { userId } = useTrackingUser()
-  const { bankrollCOP, setBankrollCOP, isBankrollSaving } = useBankrollCOP(userId)
-  const [draft, setDraft] = useState(() =>
-    bankrollCOP != null ? String(Math.round(bankrollCOP)) : '',
-  )
-  useEffect(() => {
-    setDraft(bankrollCOP != null ? String(Math.round(bankrollCOP)) : '')
-  }, [bankrollCOP])
-
-  return (
-    <div className="flex w-full items-center justify-between gap-3 rounded-lg border border-app-line bg-app-card px-3 py-2">
-      <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-app-muted">
-          Bankroll (COP)
-        </p>
-        <p className="font-mono text-sm tabular-nums text-violet-900">
-          {bankrollCOP != null && bankrollCOP > 0
-            ? new Intl.NumberFormat('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                maximumFractionDigits: 0,
-              }).format(bankrollCOP)
-            : 'Sin monto'}
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          inputMode="numeric"
-          placeholder="Recargar"
-          className="w-28 rounded-md border border-violet-200 bg-white px-2 py-1.5 font-mono text-xs text-app-fg tabular-nums shadow-sm"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value.replace(/[^\d]/g, ''))}
-          disabled={userId == null || isBankrollSaving}
-        />
-        <button
-          type="button"
-          className="rounded-md border border-app-line bg-white px-2.5 py-1.5 text-xs text-app-fg shadow-sm disabled:opacity-40"
-          disabled={userId == null || isBankrollSaving}
-          onClick={() => {
-            const raw = draft.trim()
-            if (raw === '') {
-              setBankrollCOP(null)
-              return
-            }
-            const n = Number.parseInt(raw, 10)
-            if (!Number.isNaN(n) && n >= 0) setBankrollCOP(n)
-          }}
-        >
-          Editar
-        </button>
-      </div>
-    </div>
-  )
-}
-
 function AppLayout() {
-  const { userId } = useTrackingUser()
-  const { bankrollCOP } = useBankrollCOP(userId)
-  const bankrollTopKey = `${userId ?? 'none'}:${bankrollCOP ?? 'na'}`
+  const { visible: sportsVisible } = useUiSportsVisibility()
   const [menuOpen, setMenuOpen] = useState(false)
   const [reportNotice, setReportNotice] = useState<string | null>(null)
   const [notificationPermission, setNotificationPermission] = useState<
@@ -104,6 +51,8 @@ function AppLayout() {
   })
   const latestReportSeenRef = useRef<string | null>(null)
 
+  const isV2Route = useMatch({ path: '/v2/*' }) != null
+
   useEffect(() => {
     if (!menuOpen) return
     const onKey = (e: KeyboardEvent) => {
@@ -114,6 +63,7 @@ function AppLayout() {
   }, [menuOpen])
 
   useEffect(() => {
+    if (isV2Route) return
     let cancelled = false
     const poll = async () => {
       try {
@@ -148,17 +98,22 @@ function AppLayout() {
       cancelled = true
       window.clearInterval(id)
     }
-  }, [])
+  }, [isV2Route])
 
   const closeMenu = () => setMenuOpen(false)
   const isDashboardHome = useMatch({ path: '/', end: true })
   const [navSearch] = useSearchParams()
+  const runsSportParam = navSearch.get('sport') === 'tennis' ? 'tennis' : 'football'
+  const runsSportEffective = sportsVisible[runsSportParam]
+    ? runsSportParam
+    : firstVisibleSport(sportsVisible)
   const runsListHref =
-    navSearch.get('sport') === 'tennis' ? '/runs?sport=tennis' : '/runs'
+    runsSportEffective === 'tennis' ? '/runs?sport=tennis' : '/runs'
 
   return (
-    <div className="flex min-h-dvh flex-col bg-app-bg text-app-fg">
-      <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between gap-2 border-b border-app-line bg-app-card/95 px-3 py-3 backdrop-blur-sm md:hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-app-bg text-app-fg">
+      {!isV2Route && (
+        <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between gap-2 border-b border-app-line bg-app-card/95 px-3 py-3 backdrop-blur-sm md:hidden">
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-lg border border-app-line bg-white text-app-fg shadow-sm"
@@ -190,9 +145,10 @@ function AppLayout() {
         ) : (
           <span className="w-10 shrink-0" aria-hidden />
         )}
-      </header>
+        </header>
+      )}
 
-      {menuOpen && (
+      {!isV2Route && menuOpen && (
         <button
           type="button"
           className="fixed inset-0 z-40 bg-black/35 md:hidden"
@@ -201,13 +157,14 @@ function AppLayout() {
         />
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <aside
-          className={[
-            'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col overflow-y-auto border-r border-app-line bg-app-card shadow-xl transition-transform duration-200 ease-out md:static md:z-0 md:w-56 md:max-w-none md:shadow-none',
-            menuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-          ].join(' ')}
-        >
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
+        {!isV2Route && (
+          <aside
+            className={[
+              'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col overflow-y-auto border-r border-app-line bg-app-card shadow-xl transition-transform duration-200 ease-out md:static md:z-0 md:h-full md:w-56 md:max-w-none md:shrink-0 md:shadow-none',
+              menuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+            ].join(' ')}
+          >
           <div className="flex items-center justify-between border-b border-app-line px-3 py-3 md:pt-4">
             <div className="px-2 text-xs font-semibold uppercase tracking-wide text-violet-900/80">
               betTracker +
@@ -267,17 +224,20 @@ function AppLayout() {
               </div>
             )}
           </div>
-        </aside>
+          </aside>
+        )}
 
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col md:overflow-y-auto">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {isDashboardHome && <DashboardChrome />}
-          <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-4 sm:px-4 md:px-8 md:py-8">
-            {!isDashboardHome && (
-              <div className="mb-4">
-                <GlobalBankrollBar key={bankrollTopKey} />
-              </div>
-            )}
-            {reportNotice && (
+          <main
+            className={[
+              'mx-auto min-h-0 flex-1 overflow-y-auto overscroll-contain',
+              isV2Route
+                ? 'max-w-none p-0 overflow-hidden bg-[#f6fafe]'
+                : 'w-full max-w-5xl px-3 py-4 sm:px-4 md:px-8 md:py-8',
+            ].join(' ')}
+          >
+            {!isV2Route && reportNotice && (
               <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-app-line bg-app-card px-3 py-2 text-xs text-app-fg">
                 <span>{reportNotice}</span>
                 <div className="flex items-center gap-2">
@@ -299,6 +259,8 @@ function AppLayout() {
             )}
             <Routes>
               <Route path="/" element={<DashboardPage />} />
+              <Route path="/v2" element={<Navigate to="/v2/session" replace />} />
+              <Route path="/v2/session" element={<AuthPage />} />
               <Route path="/runs" element={<RunsPage />} />
               <Route path="/runs/:dailyRunId/picks" element={<RunPicksPage />} />
               <Route path="/runs/:dailyRunId/events" element={<RunEventsPage />} />
@@ -314,10 +276,21 @@ function AppLayout() {
   )
 }
 
+function AppWithSportsProvider() {
+  return (
+    <>
+      <SportUrlSync />
+      <AppLayout />
+    </>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <AppLayout />
+      <UiSportsVisibilityProvider>
+        <AppWithSportsProvider />
+      </UiSportsVisibilityProvider>
     </BrowserRouter>
   )
 }
