@@ -23,6 +23,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 import urllib.request
 import urllib.error
 from datetime import datetime
@@ -112,6 +113,68 @@ def _selection_display(market: str, selection: str, ec: Dict[str, Any]) -> str:
             return f"2 ({away})"
         return sel
     return sel
+
+
+def _is_enabled_env(var_name: str, default: str = "1") -> bool:
+    return os.environ.get(var_name, default).strip().lower() not in (
+        "0",
+        "false",
+        "no",
+    )
+
+
+def _normalize_text(value: str) -> str:
+    s = unicodedata.normalize("NFKD", str(value or ""))
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    return s.lower()
+
+
+def _reason_conflicts_with_selection(*, market: str, selection_code: str, reason: str) -> bool:
+    """
+    Heurística conservadora para detectar contradicción explícita entre selección y razón textual.
+    Se limita a mercados ganador/1X2 para reducir falsos positivos.
+    """
+    mk = str(market or "").strip().lower()
+    sel = str(selection_code or "").strip()
+    rs = _normalize_text(reason)
+    if not rs:
+        return False
+
+    winner_markets = {"1x2", "match winner", "winner", "to win match"}
+    if mk not in winner_markets:
+        return False
+
+    local_positive = (
+        "gana local",
+        "ganara local",
+        "victoria local",
+        "favor local",
+        "local se impone",
+    )
+    away_positive = (
+        "gana visitante",
+        "ganara visitante",
+        "victoria visitante",
+        "favor visitante",
+        "visitante se impone",
+    )
+    draw_positive = ("empate", "igualdad", "reparto de puntos")
+    local_negative = ("pierde local", "derrota local", "no gana local", "local pierde")
+    away_negative = (
+        "pierde visitante",
+        "derrota visitante",
+        "no gana visitante",
+        "visitante pierde",
+    )
+    anti_draw = ("sin empate", "no hay empate")
+
+    if sel == "1":
+        return any(k in rs for k in away_positive + local_negative)
+    if sel == "2":
+        return any(k in rs for k in local_positive + away_negative)
+    if sel == "X":
+        return any(k in rs for k in local_positive + away_positive + anti_draw)
+    return False
 
 
 def _build_system_prompt(*, sport: str) -> str:
@@ -326,6 +389,11 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
         min_candidate_odds = max(1.0, float(raw_floor))
     except ValueError:
         min_candidate_odds = 1.30
+    block_nonpositive_edge = _is_enabled_env("ALTEA_BLOCK_NONPOSITIVE_EDGE", "1")
+    block_reason_selection_conflict = _is_enabled_env(
+        "ALTEA_BLOCK_REASON_SELECTION_CONFLICT",
+        "1",
+    )
     header = {
         "title": title,
         "date": date_str,
@@ -390,8 +458,10 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
                     "Pick del modelo incompleto (falta mercado o selección)."
                 )
                 continue
+            market_s = str(market)
+            selection_code_s = str(selection_code)
             if sport == "tennis":
-                mk_norm = str(market).strip().lower()
+                mk_norm = market_s.strip().lower()
                 if mk_norm not in allowed_tennis_markets:
                     pipeline_drop_reasons.append(
                         f"Mercado «{market}» no permitido para publicación (tenis)."
@@ -399,13 +469,13 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
                     continue
 
             # Render expects selection string.
-            selection_display = _selection_display(str(market), str(selection_code), ec)
+            selection_display = _selection_display(market_s, selection_code_s, ec)
 
             model_odds = odds if isinstance(odds, (int, float)) else None
             scraped_odds = scraped_decimal_odds_for_pick(
                 processed,
-                market=str(market),
-                selection_code=str(selection_code),
+                market=market_s,
+                selection_code=selection_code_s,
             )
             if scraped_odds is not None:
                 final_odds: Optional[float] = scraped_odds
@@ -452,14 +522,39 @@ def _build_payload_from_batch(batch: Dict[str, Any], model_out: Dict[str, Any], 
                     edge_pct_out = rec
                     confianza_out = confianza_from_edge(rec)
 
+            if (
+                block_nonpositive_edge
+                and isinstance(edge_pct_out, (int, float))
+                and float(edge_pct_out) <= 0.0
+            ):
+                pipeline_drop_reasons.append(
+                    f"Pick descartado: edge_pct={float(edge_pct_out):.2f}% (regla: solo edge positivo)."
+                )
+                continue
+
+            razon_out = razon if razon is not None else ""
+            if (
+                block_reason_selection_conflict
+                and isinstance(razon_out, str)
+                and _reason_conflicts_with_selection(
+                    market=market_s,
+                    selection_code=selection_code_s,
+                    reason=razon_out,
+                )
+            ):
+                pipeline_drop_reasons.append(
+                    "Pick descartado: la razón textual contradice la selección del pick."
+                )
+                continue
+
             picks_payload.append(
                 {
-                    "market": str(market),
+                    "market": market_s,
                     "selection": selection_display,
                     "odds": final_odds,
                     "edge_pct": edge_pct_out,
                     "confianza": confianza_out,
-                    "razon": razon if razon is not None else "",
+                    "razon": razon_out,
                     "odds_source": odds_source,
                     "model_odds": model_odds,
                     "scraped_odds": scraped_odds,

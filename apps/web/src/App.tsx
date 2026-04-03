@@ -3,6 +3,7 @@ import {
   BrowserRouter,
   Link,
   NavLink,
+  Navigate,
   Route,
   Routes,
   useMatch,
@@ -11,6 +12,7 @@ import {
 import { DashboardChrome } from '@/components/DashboardChrome'
 import BacktestsPage from '@/pages/BacktestsPage'
 import ApiReadinessPage from '@/pages/ApiReadinessPage'
+import AuthPage from '@/pages/AuthPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PickDetailPage from '@/pages/PickDetailPage'
 import RunEventsPage from '@/pages/RunEventsPage'
@@ -49,6 +51,8 @@ function AppLayout() {
   })
   const latestReportSeenRef = useRef<string | null>(null)
 
+  const isV2Route = useMatch({ path: '/v2/*' }) != null
+
   useEffect(() => {
     if (!menuOpen) return
     const onKey = (e: KeyboardEvent) => {
@@ -59,6 +63,7 @@ function AppLayout() {
   }, [menuOpen])
 
   useEffect(() => {
+    if (isV2Route) return
     let cancelled = false
     const poll = async () => {
       try {
@@ -93,7 +98,7 @@ function AppLayout() {
       cancelled = true
       window.clearInterval(id)
     }
-  }, [])
+  }, [isV2Route])
 
   const closeMenu = () => setMenuOpen(false)
   const isDashboardHome = useMatch({ path: '/', end: true })
@@ -107,7 +112,8 @@ function AppLayout() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-app-bg text-app-fg">
-      <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between gap-2 border-b border-app-line bg-app-card/95 px-3 py-3 backdrop-blur-sm md:hidden">
+      {!isV2Route && (
+        <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between gap-2 border-b border-app-line bg-app-card/95 px-3 py-3 backdrop-blur-sm md:hidden">
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-lg border border-app-line bg-white text-app-fg shadow-sm"
@@ -139,9 +145,10 @@ function AppLayout() {
         ) : (
           <span className="w-10 shrink-0" aria-hidden />
         )}
-      </header>
+        </header>
+      )}
 
-      {menuOpen && (
+      {!isV2Route && menuOpen && (
         <button
           type="button"
           className="fixed inset-0 z-40 bg-black/35 md:hidden"
@@ -151,12 +158,13 @@ function AppLayout() {
       )}
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
-        <aside
-          className={[
-            'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col overflow-y-auto border-r border-app-line bg-app-card shadow-xl transition-transform duration-200 ease-out md:static md:z-0 md:h-full md:w-56 md:max-w-none md:shrink-0 md:shadow-none',
-            menuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-          ].join(' ')}
-        >
+        {!isV2Route && (
+          <aside
+            className={[
+              'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col overflow-y-auto border-r border-app-line bg-app-card shadow-xl transition-transform duration-200 ease-out md:static md:z-0 md:h-full md:w-56 md:max-w-none md:shrink-0 md:shadow-none',
+              menuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+            ].join(' ')}
+          >
           <div className="flex items-center justify-between border-b border-app-line px-3 py-3 md:pt-4">
             <div className="px-2 text-xs font-semibold uppercase tracking-wide text-violet-900/80">
               betTracker +
@@ -216,12 +224,20 @@ function AppLayout() {
               </div>
             )}
           </div>
-        </aside>
+          </aside>
+        )}
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {isDashboardHome && <DashboardChrome />}
-          <main className="mx-auto w-full max-w-5xl min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 md:px-8 md:py-8">
-            {reportNotice && (
+          <main
+            className={[
+              'mx-auto min-h-0 flex-1 overflow-y-auto overscroll-contain',
+              isV2Route
+                ? 'max-w-none p-0 overflow-hidden bg-[#f6fafe]'
+                : 'w-full max-w-5xl px-3 py-4 sm:px-4 md:px-8 md:py-8',
+            ].join(' ')}
+          >
+            {!isV2Route && reportNotice && (
               <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-app-line bg-app-card px-3 py-2 text-xs text-app-fg">
                 <span>{reportNotice}</span>
                 <div className="flex items-center gap-2">
@@ -243,6 +259,8 @@ function AppLayout() {
             )}
             <Routes>
               <Route path="/" element={<DashboardPage />} />
+              <Route path="/v2" element={<Navigate to="/v2/session" replace />} />
+              <Route path="/v2/session" element={<AuthPage />} />
               <Route path="/runs" element={<RunsPage />} />
               <Route path="/runs/:dailyRunId/picks" element={<RunPicksPage />} />
               <Route path="/runs/:dailyRunId/events" element={<RunEventsPage />} />
