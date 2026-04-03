@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
 
-type UserStoreState = {
+export type UserStoreState = {
   isAuthenticated: boolean
   hasAcceptedContract: boolean
   operatorName: string | null
@@ -10,7 +10,7 @@ type UserStoreState = {
   equityCop: number | null
 }
 
-type UserStoreActions = {
+export type UserStoreActions = {
   setAuthenticated: (next: boolean) => void
   setHasAcceptedContract: (next: boolean) => void
   setOperatorName: (next: string | null) => void
@@ -24,7 +24,9 @@ type UserStoreActions = {
   reset: () => void
 }
 
-export const useUserStore = create<UserStoreState & UserStoreActions>()(
+export type UserStore = UserStoreState & UserStoreActions
+
+export const useUserStore = create<UserStore>()(
   persist(
     (set) => ({
       isAuthenticated: false,

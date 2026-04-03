@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { DisciplineContract } from '@/components/DisciplineContract'
+import { Bt2HelpIcon, Bt2LockIcon } from '@/components/icons/bt2Icons'
 import { useUserStore } from '@/store/useUserStore'
 
 type AuthMode = 'login' | 'signup'
@@ -20,62 +21,6 @@ function ensureFontLinks() {
   link.rel = 'stylesheet'
   link.href = GOOGLE_FONTS_LINK
   document.head.appendChild(link)
-}
-
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden="true"
-    >
-      <path
-        d="M7 11V8.8C7 6.149 9.239 4 12 4C14.761 4 17 6.149 17 8.8V11"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M6.5 11H17.5C18.3284 11 19 11.6716 19 12.5V18.5C19 19.3284 18.3284 20 17.5 20H6.5C5.67157 20 5 19.3284 5 18.5V12.5C5 11.6716 5.67157 11 6.5 11Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function HelpIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden="true"
-    >
-      <path
-        d="M12 17.5H12.01"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M9.5 9.5C9.8 8.3 10.9 7.5 12.2 7.5C13.7 7.5 14.7 8.4 14.7 9.7C14.7 10.6 14.2 11.2 13.5 11.7C12.8 12.2 12.4 12.6 12.4 13.5V14"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-    </svg>
-  )
 }
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -161,10 +106,10 @@ export default function AuthPage({
           </span>
           <div className="flex items-center gap-6">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#eef4fa] text-[#52616a]">
-              <LockIcon className="h-5 w-5" />
+              <Bt2LockIcon className="h-5 w-5" />
             </span>
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#eef4fa] text-[#52616a]">
-              <HelpIcon className="h-5 w-5" />
+              <Bt2HelpIcon className="h-5 w-5" />
             </span>
           </div>
         </div>
@@ -190,7 +135,7 @@ export default function AuthPage({
                 >
                   <div className="mb-10 text-center">
                     <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#e9ddff] text-[#6d3bd7]">
-                      <LockIcon className="h-6 w-6" />
+                      <Bt2LockIcon className="h-6 w-6" />
                     </div>
                     <h1 className="mb-2 text-2xl font-bold tracking-tight text-[#26343d]">
                       Acceso a la bóveda de disciplina
@@ -317,7 +262,7 @@ export default function AuthPage({
                   <header className="mb-10 space-y-3">
                     <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-[#8B5CF6]/10 px-3 py-1">
                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#8B5CF6]/15 text-[#8B5CF6]">
-                        <LockIcon className="h-3.5 w-3.5" />
+                        <Bt2LockIcon className="h-3.5 w-3.5" />
                       </span>
                       <span className="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-[#52616a]">
                         Acceso seguro a la bóveda
@@ -490,7 +435,7 @@ export default function AuthPage({
                 >
                   <div className="mb-6 text-center">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#eef4fa] text-[#8B5CF6]">
-                      <LockIcon className="h-6 w-6" />
+                      <Bt2LockIcon className="h-6 w-6" />
                     </div>
                     <h2 className="text-2xl font-bold tracking-tight text-[#26343d]">
                       Acceso bloqueado

@@ -1,5 +1,34 @@
 import type { StateStorage } from 'zustand/middleware'
 
+export const BT2_ENCRYPTED_WRAP_VERSION = 1 as const
+
+export type Bt2EncryptedEnvelope = {
+  v: typeof BT2_ENCRYPTED_WRAP_VERSION
+  d: string
+}
+
+/** Formato legado: JSON que `createJSONStorage` guardaba en bruto en localStorage */
+export type ZustandPersistJsonBlob = {
+  state: unknown
+  version?: number
+}
+
+function isEncryptedEnvelope(value: unknown): value is Bt2EncryptedEnvelope {
+  if (value == null || typeof value !== 'object') return false
+  const o = value as Record<string, unknown>
+  return (
+    o.v === BT2_ENCRYPTED_WRAP_VERSION &&
+    typeof o.d === 'string' &&
+    !('state' in o)
+  )
+}
+
+function isLegacyZustandJson(value: unknown): value is ZustandPersistJsonBlob {
+  if (value == null || typeof value !== 'object') return false
+  const o = value as Record<string, unknown>
+  return 'state' in o && !('d' in o)
+}
+
 /**
  * Capa de ofuscación para localStorage (POC US-FE-001).
  * XOR por bytes con clave derivada del origen; no sustituye secretos en servidor.
@@ -35,15 +64,8 @@ function b64ToU8(b64: string): Uint8Array {
   return out
 }
 
-const WRAP_VERSION = 1
-
-function isLegacyZustandBlob(raw: string): boolean {
-  try {
-    const o = JSON.parse(raw) as Record<string, unknown>
-    return o != null && typeof o === 'object' && 'state' in o && !('d' in o)
-  } catch {
-    return false
-  }
+function parseStoredRaw(raw: string): unknown {
+  return JSON.parse(raw) as unknown
 }
 
 /**
@@ -57,26 +79,32 @@ export function createBt2EncryptedLocalStorage(): StateStorage {
       const raw = localStorage.getItem(name)
       if (raw == null) return null
       try {
-        const o = JSON.parse(raw) as { v?: number; d?: string }
-        if (o?.v === WRAP_VERSION && typeof o.d === 'string') {
-          const clear = xorBytes(b64ToU8(o.d), keyBytes())
+        const parsed = parseStoredRaw(raw)
+        if (isEncryptedEnvelope(parsed)) {
+          const clear = xorBytes(b64ToU8(parsed.d), keyBytes())
           return new TextDecoder().decode(clear)
         }
       } catch {
-        /* legado o corrupto */
+        /* JSON inválido o corrupto */
       }
-      if (isLegacyZustandBlob(raw)) {
-        return raw
+      try {
+        const parsed = parseStoredRaw(raw)
+        if (isLegacyZustandJson(parsed)) {
+          return raw
+        }
+      } catch {
+        /* vacío */
       }
       return null
     },
     setItem(name, value) {
       if (typeof window === 'undefined') return
       const enc = xorBytes(new TextEncoder().encode(value), keyBytes())
-      localStorage.setItem(
-        name,
-        JSON.stringify({ v: WRAP_VERSION, d: u8ToB64(enc) }),
-      )
+      const payload: Bt2EncryptedEnvelope = {
+        v: BT2_ENCRYPTED_WRAP_VERSION,
+        d: u8ToB64(enc),
+      }
+      localStorage.setItem(name, JSON.stringify(payload))
     },
     removeItem(name) {
       if (typeof window !== 'undefined') localStorage.removeItem(name)

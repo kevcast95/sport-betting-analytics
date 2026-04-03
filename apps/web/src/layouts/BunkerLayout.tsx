@@ -1,177 +1,14 @@
 import { motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
+import {
+  Bt2ChartBarsIcon,
+  Bt2HistoryIcon,
+  Bt2PlusIcon,
+  Bt2ShieldCheckIcon,
+  Bt2UserIcon,
+  Bt2VaultIcon,
+} from '@/components/icons/bt2Icons'
 import { useUserStore } from '@/store/useUserStore'
-
-function ShieldMark() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4"
-    >
-      <path
-        d="M12 3l7 4v6c0 5-3 8-7 8s-7-3-7-8V7l7-4z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.3 12.2l1.8 1.8 3.7-4.2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function IconVault() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-    >
-      <path
-        d="M4.5 10.3L12 6l7.5 4.3V18c0 3.9-2.7 6-7.5 6s-7.5-2.1-7.5-6v-7.7z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 13l3 2 3-2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function IconHistory() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-    >
-      <path
-        d="M12 7v5l3 2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M4.8 8.2A8.5 8.5 0 1 0 20 12"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M4 4v4h4"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function IconInsights() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-    >
-      <path
-        d="M4 19V5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M9 19v-8"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M14 19v-11"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M19 19v-6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function IconProfile() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-    >
-      <path
-        d="M20 21a8 8 0 0 0-16 0"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M12 12a4.5 4.5 0 1 0-4.5-4.5A4.5 4.5 0 0 0 12 12z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-    </svg>
-  )
-}
-
-function IconAdd() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-    >
-      <path
-        d="M12 5v14"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M5 12h14"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
 
 export default function BunkerLayout() {
   const {
@@ -206,8 +43,8 @@ export default function BunkerLayout() {
           </span>
           <span className="hidden h-6 w-[1px] bg-[#6e7d86]/30 sm:inline-block" />
           <div className="flex items-center gap-3 rounded-xl border border-[#a4b4be]/30 bg-[#eef4fa] px-4 py-2">
-            <span className="text-[#8B5CF6]">
-              <ShieldMark />
+            <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-[#8B5CF6]">
+              <Bt2ShieldCheckIcon className="h-5 w-5" />
             </span>
             <motion.span
               key={dpPulseKey}
@@ -249,28 +86,36 @@ export default function BunkerLayout() {
               type="button"
               className="flex w-full items-center gap-3 rounded-none border-r-2 border-[#8B5CF6] bg-[#eef4fa]/60 px-4 py-3 text-left font-bold text-[#8B5CF6]"
             >
-              <IconVault />
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2VaultIcon className="h-5 w-5" />
+              </span>
               El Búnker
             </button>
             <button
               type="button"
               className="flex w-full items-center gap-3 rounded-none px-4 py-3 text-left font-semibold text-[#52616a] hover:bg-white/60"
             >
-              <IconHistory />
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2HistoryIcon className="h-5 w-5" />
+              </span>
               Historial
             </button>
             <button
               type="button"
               className="flex w-full items-center gap-3 rounded-none px-4 py-3 text-left font-semibold text-[#52616a] hover:bg-white/60"
             >
-              <IconInsights />
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2ChartBarsIcon className="h-5 w-5" />
+              </span>
               Estrategia
             </button>
             <button
               type="button"
               className="flex w-full items-center gap-3 rounded-none px-4 py-3 text-left font-semibold text-[#52616a] hover:bg-white/60"
             >
-              <IconProfile />
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2UserIcon className="h-5 w-5" />
+              </span>
               Perfil
             </button>
           </nav>
@@ -281,7 +126,9 @@ export default function BunkerLayout() {
               onClick={incPositiveAction}
               className="w-full rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-3 text-white font-bold tracking-tight text-xs uppercase flex items-center justify-center gap-2 shadow-lg shadow-[#8B5CF6]/20"
             >
-              <IconAdd />
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-white">
+                <Bt2PlusIcon className="h-5 w-5" />
+              </span>
               Nueva Disciplina
             </button>
           </div>
@@ -316,4 +163,3 @@ export default function BunkerLayout() {
     </div>
   )
 }
-
