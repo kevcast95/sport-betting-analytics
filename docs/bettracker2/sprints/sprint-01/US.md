@@ -167,6 +167,11 @@ Establecer el capital base y la unidad de riesgo operativa, permitiendo que el s
 - Regla 2: V2 únicamente. No alterar balance, bankroll ni APIs de la V1 (`/`, `/runs`, etc.).
 - Regla 3: El botón de confirmación del modal permanece deshabilitado si el bankroll es `NaN` o `≤ 0`.
 - Regla 4: Cada apertura del modal debe pedir **re-confirmación** del saldo (campo editable o paso explícito), según mitigación de riesgo abajo.
+Regla 5: (Trigger Automático): Si el initialBankroll en el store es 0, el modal debe dispararse automáticamente al entrar al Dashboard por primera vez tras aceptar el contrato.
+
+Regla 6: (Trigger Manual): El modal se dispara al hacer clic en el componente de "Equity/Bankroll" ubicado en el Header.
+
+Regla 7: (Trigger de Configuración): Debe ser accesible desde la ruta `/v2/settings` y el ítem **Settings** del sidebar del Búnker.
 
 #### 6) Criterios de aceptación (Given / When / Then)
 
@@ -194,11 +199,11 @@ Establecer el capital base y la unidad de riesgo operativa, permitiendo que el s
 
 #### 10) Definition of Done
 
-- [ ] Código implementado
-- [ ] Tipado estricto
-- [ ] Tests verdes
-- [ ] Documentación actualizada en `docs/bettracker2/`
-- [ ] Sin acoplamiento a proveedor en UI/IA
+- [x] Código implementado
+- [x] Tipado estricto
+- [x] Tests verdes
+- [x] Documentación actualizada en `docs/bettracker2/`
+- [x] Sin acoplamiento a proveedor en UI/IA
 
 ## Contratos
 

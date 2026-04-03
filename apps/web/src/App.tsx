@@ -14,6 +14,7 @@ import BacktestsPage from '@/pages/BacktestsPage'
 import ApiReadinessPage from '@/pages/ApiReadinessPage'
 import AuthPage from '@/pages/AuthPage'
 import V2DashboardPage from '@/pages/V2DashboardPage'
+import V2SettingsPage from '@/pages/V2SettingsPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PickDetailPage from '@/pages/PickDetailPage'
 import RunEventsPage from '@/pages/RunEventsPage'
@@ -263,6 +264,7 @@ function AppLayout() {
               <Route path="/v2" element={<Navigate to="/v2/session" replace />} />
               <Route path="/v2/session" element={<AuthPage />} />
               <Route path="/v2/dashboard" element={<V2DashboardPage />} />
+              <Route path="/v2/settings" element={<V2SettingsPage />} />
               <Route path="/runs" element={<RunsPage />} />
               <Route path="/runs/:dailyRunId/picks" element={<RunPicksPage />} />
               <Route path="/runs/:dailyRunId/events" element={<RunEventsPage />} />
