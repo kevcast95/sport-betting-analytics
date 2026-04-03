@@ -205,6 +205,173 @@ Regla 7: (Trigger de Configuración): Debe ser accesible desde la ruta `/v2/sett
 - [x] Documentación actualizada en `docs/bettracker2/`
 - [x] Sin acoplamiento a proveedor en UI/IA
 
+
+### US-FE-003 - La Bóveda Central (The Vault)
+
+#### 1) Objetivo de negocio
+
+Implementar el centro de mando operativo donde el usuario visualiza, analiza y desbloquea oportunidades de inversión (+EV) utilizando su saldo de Puntos de Disciplina (DP).
+
+#### 2) Alcance
+
+- Incluye:
+  - Rejilla de tarjetas de picks (V2) con estados **bloqueado** y **desbloqueado**, alineada a la ref `docs/bettracker2/sprints/sprint-01/refs/us_fe_003_vault.md` (tokens Zurich Calm; sin Material/CDN en runtime).
+  - Gestión de desbloqueo tipo **deslizar para confirmar** que descuenta DP en `useUserStore`.
+  - Tras desbloquear: mostrar la **traducción humana** (copy conductual) y curva de equity (mock CDM).
+- Excluye:
+  - Formulario de registro / evaluación de riesgo del pick (otra US).
+
+#### 3) Contexto técnico actual
+
+- Módulos afectados:
+  - `apps/web/src/pages/VaultPage.tsx`
+  - `apps/web/src/components/vault/PickCard.tsx`
+  - `apps/web/src/store/useVaultStore.ts`
+  - `apps/web/src/data/vaultMockPicks.ts` (mocks CDM, sin nombres de proveedor)
+- Referencia visual:
+  - `docs/bettracker2/sprints/sprint-01/refs/us_fe_003_vault.md`
+- Dependencias externas:
+  - framer-motion (blur, deslizamiento, transiciones).
+
+#### 4) Contrato de entrada/salida
+
+```json
+{
+  "input": {
+    "disciplinePoints": "number",
+    "pickId": "string"
+  },
+  "output": {
+    "isUnlocked": "boolean",
+    "remainingDP": "number",
+    "unlockedContent": {
+      "humanTranslation": "string",
+      "equityCurveData": "array"
+    }
+  }
+}
+```
+
+#### 5) Reglas de dominio
+
+- Regla 1: Costo de desbloqueo por defecto **50 DP** (parametrizable en código).
+- Regla 2: Si DP &lt; 50, el control de desbloqueo deshabilitado y mensaje **«Disciplina insuficiente»**.
+- Regla 3: Solo V2. Feed con **modelo canónico (CDM)**; mocks sin datos crudos de API de proveedor.
+
+#### 6) Criterios de aceptación (Given / When / Then)
+
+1. Given un pick bloqueado, When el usuario completa el gesto de deslizar para desbloquear, Then se descuenta el costo en DP y el contenido aparece con **fundido** (fade-in).
+2. Given un pick ya desbloqueado, When el usuario recarga la página, Then el pick sigue desbloqueado (persistencia en Zustand).
+
+#### 7) No funcionales
+
+- Performance: grid de ~20 tarjetas sin degradar FPS perceptible.
+- Observabilidad: log del id del pick desbloqueado (prefijo `[BT2]`).
+- Seguridad: la traducción humana y datos sensibles del pick **no** deben estar en el DOM hasta desbloquear (sin texto oculto solo por CSS).
+- Compatibilidad: gesto fluido en trackpad y táctil.
+
+#### 8) Riesgos y mitigación
+
+- Riesgo: desbloqueos accidentales.
+  - Mitigación: deslizar en lugar de clic único.
+- Rollback: si fallara la carga del contenido tras cobro, revertir DP y quitar id desbloqueado (en mocks no aplica; hook preparado).
+
+#### 9) Plan de pruebas
+
+- Unitarias: descuento exacto de DP y persistencia de ids desbloqueados.
+- Integración: `PickCard` refleja estado según store.
+- Manual UI: tipografía y espaciado acordes a `04_IDENTIDAD_VISUAL_UI.md` y la ref.
+
+#### 10) Definition of Done
+
+- [x] Código implementado conforme a `04_IDENTIDAD_VISUAL_UI.md` e identidad (copy en español).
+- [x] Tipado estricto (TS).
+- [x] Tests verdes.
+- [x] Documentación actualizada en `docs/bettracker2/`.
+- [x] Sin acoplamiento a proveedor (mocks CDM).
+
+### US-FE-004 - Navegación estructural (jerarquía del sidebar)
+
+#### 1) Objetivo de negocio
+
+Reordenar el sidebar V2 para que **Santuario** sea el primer ítem y la **entrada por defecto** tras sesión, con transición clara hacia **La Bóveda**.
+
+#### 2) Alcance
+
+- Incluye:
+  - Primer ítem de navegación: **Santuario** (`/v2/sanctuary`); segundo: **La Bóveda** (`/v2/vault`).
+  - Vista de contenido **Santuario** (solo cuerpo de página; ref compuesta en Stitch: no copiar chrome extra del HTML).
+  - Estados activo/hover Zurich Calm en ítems con `NavLink`.
+  - Compatibilidad **tablet**: sidebar ancho fijo solo desde **1024px** (`lg:`); por debajo, barra de navegación compacta.
+- Excluye:
+  - RBAC del menú.
+  - Cambiar la ruta raíz **V1** `/` (sigue siendo dashboard clásico).
+
+#### 3) Contexto técnico actual
+
+- Módulos afectados:
+  - `apps/web/src/layouts/BunkerLayout.tsx` (sidebar + outlet + títulos por ruta)
+  - `apps/web/src/layouts/V2ProtectedLayout.tsx`
+  - `apps/web/src/App.tsx` (rutas anidadas bajo `/v2`)
+  - `apps/web/src/pages/SanctuaryPage.tsx`, `apps/web/src/pages/VaultPage.tsx`, `apps/web/src/pages/V2SettingsOutlet.tsx`
+  - `apps/web/src/components/icons/bt2Icons.tsx` (`Bt2HomeIcon` para Santuario)
+- Referencia visual (tokens/layout; sin CDN en runtime): `docs/bettracker2/sprints/sprint-01/refs/us_fe_004_sanctuaryt.md`
+- Iconos: **Bt2** (alineado al resto de V2); no añadir `lucide-react` solo por esta US.
+
+#### 4) Contrato de entrada/salida
+
+```json
+{
+  "input": {
+    "currentPath": "string",
+    "menuConfig": [
+      { "label": "Santuario", "order": 1 },
+      { "label": "La Bóveda", "order": 2 }
+    ]
+  },
+  "output": {
+    "activeRoute": "string"
+  }
+}
+```
+
+#### 5) Reglas de dominio
+
+- Regla 1: **Santuario** es el primer ítem del menú lateral (y de la barra móvil).
+- Regla 2: Tras login + contrato, destino por defecto **`/v2/sanctuary`**; **`/v2`** redirige al índice Santuario; **`/v2/dashboard`** redirige a **`/v2/sanctuary`** (compat).
+- Regla 3: Solo V2; labels en español en UI.
+- Regla 4: La ref Stitch es global: implementar **solo** la vista Santuario + orden de nav; no añadir elementos de sidebar/header no pedidos.
+
+#### 6) Criterios de aceptación (Given / When / Then)
+
+1. Given usuario autenticado con contrato, When se renderiza el sidebar, Then el primer ítem enlazado es **Santuario**.
+2. Given ruta **La Bóveda**, When se renderiza el sidebar, Then **Santuario** en reposo y **La Bóveda** activa.
+
+#### 7) No funcionales
+
+- Performance: navegación por React Router (sin recarga completa).
+- Observabilidad: `console.info` con prefijo `[BT2]` al cambiar de módulo principal (Santuario, La Bóveda, Ajustes).
+- Seguridad: sin contrato aceptado, `V2SessionGate` impide el layout V2 (equivalente a no mostrar el shell autenticado).
+- Compatibilidad: sidebar colapsado bajo 1024px con alternativa táctil en barra superior.
+
+#### 8) Riesgos y mitigación
+
+- Riesgo: solapamiento con menú V1 → V2 bajo `/v2/*` y copy distintivo.
+- Rollback: restaurar orden de rutas anterior si hay bucles de redirección.
+
+#### 9) Plan de pruebas
+
+- Unitarias / integración: rutas protegidas, Santuario vs Bóveda, regresión de sesión.
+- Manual UI: borde lateral 1px y tipografía acordes a `04_IDENTIDAD_VISUAL_UI.md`.
+
+#### 10) Definition of Done
+
+- [x] Código implementado
+- [x] Tipado estricto
+- [x] Tests verdes
+- [x] Documentación actualizada en `docs/bettracker2/`
+- [x] Sin acoplamiento a proveedor en UI
+
 ## Contratos
 
 ### US-DX-001 - [PENDIENTE]

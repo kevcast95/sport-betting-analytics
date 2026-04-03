@@ -47,6 +47,14 @@ export function Bt2ShieldCheckIcon({ className }: { className?: string }) {
   )
 }
 
+export function Bt2HomeIcon({ className }: { className?: string }) {
+  return (
+    <Bt2Svg className={className} aria-hidden>
+      <path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-4v-6h-5v6H5.5A1.5 1.5 0 0 1 4 19v-8.5z" {...stroke} />
+    </Bt2Svg>
+  )
+}
+
 export function Bt2VaultIcon({ className }: { className?: string }) {
   return (
     <Bt2Svg className={className} aria-hidden>

@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
-import { useEffect, useMemo, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { TreasuryModal } from '@/components/TreasuryModal'
 import {
   Bt2ChartBarsIcon,
   Bt2HistoryIcon,
+  Bt2HomeIcon,
   Bt2PlusIcon,
   Bt2SettingsIcon,
   Bt2ShieldCheckIcon,
@@ -16,19 +17,35 @@ import { useUserStore } from '@/store/useUserStore'
 
 function navItemClass(isActive: boolean) {
   return [
-    'flex w-full items-center gap-3 rounded-none px-4 py-3 text-left font-semibold transition-colors',
+    'flex w-full items-center gap-3 rounded-none border-r-2 px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide transition-colors',
     isActive
-      ? 'border-r-2 border-[#8B5CF6] bg-[#eef4fa]/60 font-bold text-[#8B5CF6]'
-      : 'border-r-2 border-transparent text-[#52616a] hover:bg-white/60',
+      ? 'border-[#8B5CF6] bg-[#eef4fa]/60 font-bold text-[#8B5CF6]'
+      : 'border-transparent text-[#52616a] hover:bg-white/60',
   ].join(' ')
+}
+
+function mainModuleLabel(pathname: string): string | null {
+  if (pathname === '/v2' || pathname.startsWith('/v2/sanctuary')) {
+    return 'Santuario'
+  }
+  if (pathname.startsWith('/v2/vault')) return 'La Bóveda'
+  if (pathname.startsWith('/v2/settings')) return 'Ajustes'
+  if (pathname.startsWith('/v2/dashboard')) return 'Santuario'
+  return null
 }
 
 export default function BunkerLayout() {
   const location = useLocation()
+  const navigate = useNavigate()
   const isSettings = location.pathname.startsWith('/v2/settings')
+  const isSanctuaryRoute =
+    location.pathname === '/v2' ||
+    location.pathname.startsWith('/v2/sanctuary')
+  const navLogPath = useRef('')
 
   const { operatorName, disciplinePoints, incrementDisciplinePoints } =
     useUserStore()
+  const endSession = useUserStore((s) => s.endSession)
   const confirmedBankrollCop = useBankrollStore((s) => s.confirmedBankrollCop)
 
   const [dpPulseKey, setDpPulseKey] = useState(0)
@@ -41,6 +58,16 @@ export default function BunkerLayout() {
       setTreasuryOpen(true)
     }
   }, [confirmedBankrollCop])
+
+  useEffect(() => {
+    const p = location.pathname
+    if (p === navLogPath.current) return
+    const label = mainModuleLabel(p)
+    if (label) {
+      console.info(`[BT2] Navegación: ${label} → ${p}`)
+    }
+    navLogPath.current = p
+  }, [location.pathname])
 
   const equityLabel = useMemo(() => {
     if (confirmedBankrollCop <= 0) return 'Sin configurar'
@@ -57,6 +84,23 @@ export default function BunkerLayout() {
   }
 
   const openTreasury = () => setTreasuryOpen(true)
+
+  const handleLogout = () => {
+    endSession()
+    navigate('/v2/session', { replace: true })
+  }
+
+  const pageTitle = isSettings
+    ? 'Configuración'
+    : location.pathname.startsWith('/v2/vault')
+      ? 'La Bóveda'
+      : 'Santuario'
+
+  const pageSubtitle = isSettings
+    ? 'Preferencias del entorno V2. El capital de trabajo se define en el protocolo de gestión de capital.'
+    : location.pathname.startsWith('/v2/vault')
+      ? 'Oportunidades con valor esperado positivo (modelo canónico CDM); desbloqueo con DP.'
+      : 'Panel de inicio del entorno de control conductual.'
 
   return (
     <div className="flex h-full w-[100vw] flex-col overflow-hidden bg-[#f6fafe] text-[#26343d]">
@@ -126,21 +170,87 @@ export default function BunkerLayout() {
               Nivel: élite
             </p>
           </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="shrink-0 rounded-lg border border-[#a4b4be]/35 bg-white/70 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#52616a] transition-colors hover:border-[#9e3f4e]/40 hover:text-[#9e3f4e]"
+          >
+            Cerrar sesión
+          </button>
           <div className="h-9 w-9 shrink-0 rounded-full border border-[#8B5CF6]/20 bg-[#eef4fa]" />
         </div>
       </header>
 
+      <nav
+        aria-label="Navegación principal V2"
+        className="flex shrink-0 gap-1 overflow-x-auto border-b border-[#26343d]/15 bg-[#eef4fa] px-2 py-2 lg:hidden"
+      >
+        <NavLink
+          to="/v2/sanctuary"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Santuario
+        </NavLink>
+        <NavLink
+          to="/v2/vault"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          La Bóveda
+        </NavLink>
+        <NavLink
+          to="/v2/settings"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Ajustes
+        </NavLink>
+      </nav>
+
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <aside className="hidden w-64 flex-col border-r border-[#26343d]/15 bg-[#eef4fa] py-8 px-4 md:flex">
+        <aside
+          className="hidden w-64 shrink-0 flex-col border-r border-[#26343d]/15 bg-[#eef4fa] py-8 px-4 font-sans lg:flex"
+          role="navigation"
+          aria-label="Navegación lateral V2"
+        >
           <nav className="flex-1 space-y-1">
             <NavLink
-              to="/v2/dashboard"
+              to="/v2/sanctuary"
+              end
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2HomeIcon className="h-5 w-5" />
+              </span>
+              Santuario
+            </NavLink>
+            <NavLink
+              to="/v2/vault"
               className={({ isActive }) => navItemClass(isActive)}
             >
               <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
                 <Bt2VaultIcon className="h-5 w-5" />
               </span>
-              El Búnker
+              La Bóveda
             </NavLink>
             <button
               type="button"
@@ -195,16 +305,13 @@ export default function BunkerLayout() {
         </aside>
 
         <main className="flex-1 overflow-y-auto p-8">
-          <div className="mx-auto max-w-5xl">
+          <div className="mx-auto max-w-7xl">
             {isSettings ? (
               <header className="mb-10 space-y-4">
                 <h1 className="text-3xl font-bold tracking-tighter text-[#26343d]">
-                  Configuración
+                  {pageTitle}
                 </h1>
-                <p className="text-sm text-[#52616a]">
-                  Preferencias del entorno V2. El capital de trabajo se define en el
-                  protocolo de gestión de capital.
-                </p>
+                <p className="text-sm text-[#52616a]">{pageSubtitle}</p>
                 <button
                   type="button"
                   onClick={openTreasury}
@@ -213,15 +320,13 @@ export default function BunkerLayout() {
                   Abrir protocolo de capital
                 </button>
               </header>
-            ) : (
+            ) : isSanctuaryRoute ? null : (
               <header className="mb-10 flex items-end justify-between gap-4">
                 <div>
                   <h1 className="text-3xl font-bold tracking-tighter text-[#26343d]">
-                    El Búnker
+                    {pageTitle}
                   </h1>
-                  <p className="mt-1 text-sm text-[#52616a]">
-                    Centro de control para gestión conductual y riesgo.
-                  </p>
+                  <p className="mt-1 text-sm text-[#52616a]">{pageSubtitle}</p>
                 </div>
                 <div>
                   <span className="inline-flex rounded-full border border-[#a4b4be]/30 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86]">
@@ -231,13 +336,7 @@ export default function BunkerLayout() {
               </header>
             )}
 
-            {!isSettings && (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div className="min-h-[180px] rounded-xl border border-[#a4b4be]/30 bg-white/80 p-6" />
-                <div className="min-h-[180px] rounded-xl border border-[#a4b4be]/30 bg-white/80 p-6" />
-                <div className="min-h-[180px] rounded-xl border border-[#a4b4be]/30 bg-white/80 p-6" />
-              </div>
-            )}
+            <Outlet />
           </div>
         </main>
       </div>

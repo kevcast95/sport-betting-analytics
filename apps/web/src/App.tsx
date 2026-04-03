@@ -13,9 +13,12 @@ import { DashboardChrome } from '@/components/DashboardChrome'
 import BacktestsPage from '@/pages/BacktestsPage'
 import ApiReadinessPage from '@/pages/ApiReadinessPage'
 import AuthPage from '@/pages/AuthPage'
+import SanctuaryPage from '@/pages/SanctuaryPage'
+import VaultPage from '@/pages/VaultPage'
 import V2DashboardPage from '@/pages/V2DashboardPage'
-import V2SettingsPage from '@/pages/V2SettingsPage'
+import V2SettingsOutlet from '@/pages/V2SettingsOutlet'
 import DashboardPage from '@/pages/DashboardPage'
+import V2ProtectedLayout from '@/layouts/V2ProtectedLayout'
 import PickDetailPage from '@/pages/PickDetailPage'
 import RunEventsPage from '@/pages/RunEventsPage'
 import RunPicksPage from '@/pages/RunPicksPage'
@@ -261,10 +264,14 @@ function AppLayout() {
             )}
             <Routes>
               <Route path="/" element={<DashboardPage />} />
-              <Route path="/v2" element={<Navigate to="/v2/session" replace />} />
               <Route path="/v2/session" element={<AuthPage />} />
-              <Route path="/v2/dashboard" element={<V2DashboardPage />} />
-              <Route path="/v2/settings" element={<V2SettingsPage />} />
+              <Route path="/v2" element={<V2ProtectedLayout />}>
+                <Route index element={<Navigate to="sanctuary" replace />} />
+                <Route path="sanctuary" element={<SanctuaryPage />} />
+                <Route path="vault" element={<VaultPage />} />
+                <Route path="dashboard" element={<V2DashboardPage />} />
+                <Route path="settings" element={<V2SettingsOutlet />} />
+              </Route>
               <Route path="/runs" element={<RunsPage />} />
               <Route path="/runs/:dailyRunId/picks" element={<RunPicksPage />} />
               <Route path="/runs/:dailyRunId/events" element={<RunEventsPage />} />

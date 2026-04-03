@@ -1,13 +1,6 @@
-import BunkerLayout from '@/layouts/BunkerLayout'
-import { V2SessionGate } from '@/components/V2SessionGate'
+import { Navigate } from 'react-router-dom'
 
-/**
- * US-FE-001 / US-FE-002: tablero V2 tras sesión mock y contrato.
- */
+/** Compat: enlaces antiguos a `/v2/dashboard` → Santuario (US-FE-004). */
 export default function V2DashboardPage() {
-  return (
-    <V2SessionGate>
-      <BunkerLayout />
-    </V2SessionGate>
-  )
+  return <Navigate to="/v2/sanctuary" replace />
 }
