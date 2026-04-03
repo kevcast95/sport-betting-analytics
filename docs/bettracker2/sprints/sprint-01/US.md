@@ -171,7 +171,7 @@ Regla 5: (Trigger Automático): Si el initialBankroll en el store es 0, el modal
 
 Regla 6: (Trigger Manual): El modal se dispara al hacer clic en el componente de "Equity/Bankroll" ubicado en el Header.
 
-Regla 7: (Trigger de Configuración): Debe ser accesible desde la ruta `/v2/settings` y el ítem **Settings** del sidebar del Búnker.
+Regla 7: (Trigger de Configuración): Debe ser accesible desde la ruta `/v2/settings` y el ítem **Ajustes** del sidebar del Búnker.
 
 #### 6) Criterios de aceptación (Given / When / Then)
 

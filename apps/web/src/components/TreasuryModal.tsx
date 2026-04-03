@@ -15,7 +15,7 @@ import { useBankrollStore } from '@/store/useBankrollStore'
 export type TreasuryModalProps = {
   open: boolean
   onClose: () => void
-  /** Si true, no se puede cerrar sin confirmar bankroll válido (US-FE-002 Regla 5). */
+  /** Si true, no se puede cerrar sin confirmar un capital válido (US-FE-002 Regla 5). */
   blocking: boolean
 }
 
@@ -101,11 +101,12 @@ export function TreasuryModal({ open, onClose, blocking }: TreasuryModalProps) {
                     id="treasury-modal-title"
                     className="text-2xl font-extrabold tracking-tight text-[#26343d]"
                   >
-                    Capital Management Protocol
+                    Protocolo de gestión de capital
                   </h2>
                   <p className="mt-1 text-sm text-[#52616a]">
-                    Confirma el capital de trabajo y la unidad de riesgo (COP). Obligatorio
-                    revalidar el monto al abrir.
+                    Indica tu capital de trabajo en pesos colombianos y el porcentaje que
+                    destinas por unidad de riesgo. Cada vez que abras este cuadro debes
+                    volver a validar el monto.
                   </p>
                 </div>
                 <div className="rounded-xl bg-[#eef4fa] p-2 text-[#8B5CF6]">
@@ -146,10 +147,10 @@ export function TreasuryModal({ open, onClose, blocking }: TreasuryModalProps) {
                   <div className="mb-4 flex items-center justify-between gap-4">
                     <div>
                       <h3 className="text-sm font-bold text-[#26343d]">
-                        Stake unit configuration
+                        Unidad de apuesta (riesgo por operación)
                       </h3>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">
-                        Base risk · {STAKE_PCT_MIN}% – {STAKE_PCT_MAX}%
+                        Calibración · {STAKE_PCT_MIN}% – {STAKE_PCT_MAX}%
                       </p>
                     </div>
                     <span
@@ -160,7 +161,7 @@ export function TreasuryModal({ open, onClose, blocking }: TreasuryModalProps) {
                     </span>
                   </div>
                   <p className="mb-3 text-xs text-[#52616a]">
-                    Unit value (vista previa)
+                    Valor de una unidad (vista previa)
                   </p>
                   <p
                     className="mb-6 text-lg font-bold tabular-nums text-[#059669]"
@@ -178,6 +179,7 @@ export function TreasuryModal({ open, onClose, blocking }: TreasuryModalProps) {
                     value={draftStake}
                     onChange={(e) => setDraftStake(Number(e.target.value))}
                     className="h-2 w-full cursor-pointer accent-[#8B5CF6]"
+                    aria-label={`Porcentaje del capital por unidad: ${draftStake.toFixed(2)} por ciento`}
                     aria-valuemin={STAKE_PCT_MIN}
                     aria-valuemax={STAKE_PCT_MAX}
                     aria-valuenow={draftStake}

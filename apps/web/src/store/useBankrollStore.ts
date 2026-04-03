@@ -31,7 +31,7 @@ function logTreasuryConfirm(stakePct: number, bankrollCop: number) {
       ? '0'
       : `***${String(Math.round(bankrollCop)).slice(-3)}`
   console.info(
-    `[BT2] Treasury confirmado: stake=${stakePct}% · bankroll≈${masked} COP`,
+    `[BT2] Tesorería confirmada: unidad al ${stakePct}% del capital · monto≈${masked} COP`,
   )
 }
 

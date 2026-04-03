@@ -87,7 +87,7 @@ export default function BunkerLayout() {
             title="Abrir protocolo de capital"
           >
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#6e7d86]">
-              Total equity
+              Patrimonio total
             </span>
             <span
               className={[
@@ -107,7 +107,7 @@ export default function BunkerLayout() {
             className="flex max-w-[9rem] flex-col rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa]/80 px-2 py-1 text-left sm:hidden"
           >
             <span className="text-[9px] font-bold uppercase tracking-wider text-[#6e7d86]">
-              Equity
+              Capital
             </span>
             <span
               className={[
@@ -123,7 +123,7 @@ export default function BunkerLayout() {
               {operatorName ?? 'Operador'}
             </p>
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#8B5CF6]">
-              Nivel: Elite
+              Nivel: élite
             </p>
           </div>
           <div className="h-9 w-9 shrink-0 rounded-full border border-[#8B5CF6]/20 bg-[#eef4fa]" />
@@ -176,7 +176,7 @@ export default function BunkerLayout() {
               <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
                 <Bt2SettingsIcon className="h-5 w-5" />
               </span>
-              Settings
+              Ajustes
             </NavLink>
           </nav>
 
@@ -202,15 +202,15 @@ export default function BunkerLayout() {
                   Configuración
                 </h1>
                 <p className="text-sm text-[#52616a]">
-                  Ajustes del entorno V2. El capital de trabajo se gestiona en el protocolo
-                  institucional.
+                  Preferencias del entorno V2. El capital de trabajo se define en el
+                  protocolo de gestión de capital.
                 </p>
                 <button
                   type="button"
                   onClick={openTreasury}
                   className="rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#8B5CF6]/20"
                 >
-                  Abrir Capital Management Protocol
+                  Abrir protocolo de capital
                 </button>
               </header>
             ) : (
