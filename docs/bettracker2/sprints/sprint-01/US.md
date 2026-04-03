@@ -40,15 +40,22 @@ Persistencia en base de datos real (se usará Mock Auth en este sprint).
 3) Contexto tecnico actual
 Modulos afectados:
 
-src/pages/AuthPage.tsx
+apps/web/src/pages/AuthPage.tsx
 
-src/layouts/BunkerLayout.tsx
+apps/web/src/layouts/BunkerLayout.tsx
 
-src/store/useUserStore.ts
+apps/web/src/store/useUserStore.ts
+
+Referencias visuales (HTML de apoyo):
+
+- `docs/bettracker2/sprints/sprint-01/refs/us_fe_001_login.md`
+- `docs/bettracker2/sprints/sprint-01/refs/us_fe_001_signup.md`
+- `docs/bettracker2/sprints/sprint-01/refs/us_fe_001_discipline_contract.md`
+- `docs/bettracker2/sprints/sprint-01/refs/us_fe_001_bunker_layout.md`
 
 Dependencias externas:
 
-framer-motion, lucide-react, zustand.
+framer-motion, zustand, iconos inline (`apps/web/src/components/icons/`, sin Material Symbols en runtime).
 
 4) Contrato de entrada/salida
 JSON
@@ -67,7 +74,7 @@ JSON
   }
 }
 5) Reglas de dominio
-Regla 1: El acceso a /dashboard está prohibido si hasAcceptedContract es false.
+Regla 1: El acceso al tablero V2 (`/v2/dashboard`) está prohibido si `hasAcceptedContract` es false.
 
 Regla 2: El botón "Commit to the Protocol" requiere que los 3 checks de axiomas sean true.
 
@@ -111,6 +118,87 @@ Manual UI: Confirmar el uso de Geist Mono en campos de contraseña y tokens.
 [ ] Documentacion actualizada en docs/bettracker2/
 
 [ ] Sin acoplamiento a proveedor en UI/IA
+
+### US-FE-002 - Configuración del Tesoro (Treasury Setup)
+
+#### 1) Objetivo de negocio
+
+Establecer el capital base y la unidad de riesgo operativa, permitiendo que el sistema calcule montos reales en moneda local para cada sugerencia de la Bóveda.
+
+#### 2) Alcance
+
+- Incluye:
+  - Modal **Capital Management Protocol** alineado a la ref HTML `sprints/sprint-01/refs/us_fe_002_bankroll.md` (paleta y jerarquía Zurich Calm; en React **no** cargar Material Symbols ni CDN de Tailwind de la ref: portar tokens y layout).
+  - Slider para **Stake Unit** entre **0,25%** y **5,00%** (pasos coherentes con UX; valor por defecto documentado en implementación).
+  - Visualización en tiempo real del **Unit Value** (`bankroll × stake_pct / 100`) con tipografía monoespaciada (Geist Mono, misma línea que US-FE-001).
+  - Sincronización del saldo mostrado en cabecera del Búnker (`BunkerLayout`) cuando el usuario confirma en el modal.
+- Excluye:
+  - Historial de depósitos/retiros (solo saldo inicial / capital de trabajo en este sprint).
+
+#### 3) Contexto técnico actual
+
+- Módulos afectados:
+  - `apps/web/src/store/useBankrollStore.ts` (nuevo; persistencia con el mismo patrón cifrado que `useUserStore` vía `createJSONStorage` + `createBt2EncryptedLocalStorage`).
+  - `apps/web/src/components/TreasuryModal.tsx` (nuevo).
+  - `apps/web/src/layouts/BunkerLayout.tsx` (lectura de bankroll / equity coherente con el store).
+- Referencia visual:
+  - `docs/bettracker2/sprints/sprint-01/refs/us_fe_002_bankroll.md`
+- Dependencias externas:
+  - zustand (persist), framer-motion (opcional, transiciones del modal), iconos en `apps/web/src/components/icons/` (sin `lucide-react` ni proveedor de iconos con nombre en UI).
+
+#### 4) Contrato de entrada/salida
+
+```json
+{
+  "input": {
+    "initialBankroll": "number",
+    "selectedStakePct": "number"
+  },
+  "output": {
+    "unitValue": "number",
+    "calculatedAt": "ISO8601"
+  }
+}
+```
+
+#### 5) Reglas de dominio
+
+- Regla 1: `unitValue = initialBankroll * (selectedStakePct / 100)` (porcentaje expresado como número, p. ej. `2` para 2%).
+- Regla 2: V2 únicamente. No alterar balance, bankroll ni APIs de la V1 (`/`, `/runs`, etc.).
+- Regla 3: El botón de confirmación del modal permanece deshabilitado si el bankroll es `NaN` o `≤ 0`.
+- Regla 4: Cada apertura del modal debe pedir **re-confirmación** del saldo (campo editable o paso explícito), según mitigación de riesgo abajo.
+
+#### 6) Criterios de aceptación (Given / When / Then)
+
+1. Given un usuario autenticado con contrato aceptado en el tablero V2 (`/v2/dashboard`), When abre el Treasury Modal, Then ve el bankroll actual resaltado con acento **esmeralda u oro** acorde a `04_IDENTIDAD_VISUAL_UI.md` y a la ref `us_fe_002_bankroll.md`.
+2. Given el slider de stake, When el usuario lo fija en **2,00%** y el bankroll es **N**, Then el Unit Value mostrado es exactamente **N × 0,02**, formateado en moneda local (COP por defecto) con **Geist Mono**.
+
+#### 7) No funcionales
+
+- Performance: cálculo de Unit Value &lt; 10 ms en dispositivos objetivo.
+- Observabilidad: `console` con prefijo `[BT2]` en cada cambio confirmado de `selectedStakePct` o bankroll (sin datos sensibles completos en claro si se evita loguear el monto entero; opcional truncar).
+- Seguridad: persistencia del store de bankroll con **cifrado/ofuscación** en localStorage (mismo mecanismo que `useUserStore`).
+- Compatibilidad: slider usable con teclado y tactil (rango acotado 0,25–5).
+
+#### 8) Riesgos y mitigación
+
+- Riesgo: desalineación entre saldo “real” y el introducido en el modal.
+  - Mitigación: re-confirmación obligatoria al abrir el modal (copiar o revalidar monto).
+- Criterio de rollback: restaurar últimos valores válidos en `useBankrollStore` ante entradas inválidas (`NaN`, &lt; 0) o corrupción del blob persistido.
+
+#### 9) Plan de pruebas
+
+- Unitarias: función pura `computeUnitValue(bankroll, stakePct)` con varios porcentajes y bordes (0,25; 5; bankroll 0).
+- Integración: confirmar en modal actualiza estado leído por `BunkerLayout` (equity / bankroll visible).
+- Manual UI: slider no sale del rango; confirmación bloqueada con bankroll inválido.
+
+#### 10) Definition of Done
+
+- [ ] Código implementado
+- [ ] Tipado estricto
+- [ ] Tests verdes
+- [ ] Documentación actualizada en `docs/bettracker2/`
+- [ ] Sin acoplamiento a proveedor en UI/IA
 
 ## Contratos
 
