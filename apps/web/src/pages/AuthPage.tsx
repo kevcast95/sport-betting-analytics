@@ -79,7 +79,7 @@ export default function AuthPage({
   const shouldShowContract = isAuthenticated && !hasAcceptedContract
 
   if (isAuthenticated && hasAcceptedContract) {
-    return <Navigate to="/v2/dashboard" replace />
+    return <Navigate to="/v2/sanctuary" replace />
   }
 
   return (

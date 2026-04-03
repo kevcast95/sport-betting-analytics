@@ -17,10 +17,10 @@ export type UserStoreActions = {
   setDisciplinePoints: (next: number) => void
   setEquityCop: (next: number | null) => void
   incrementDisciplinePoints: (delta: number) => void
-  /**
-   * Útil para POC: simula login/signup y deja el contrato como pendiente.
-   */
+  /** POC: marca sesión autenticada; no resetea el contrato (sigue persistido tras logout). */
   initSession: () => void
+  /** Solo cierra la sesión de autenticación; no borra DP, contrato, nombre ni equity persistidos. */
+  endSession: () => void
   reset: () => void
 }
 
@@ -41,11 +41,8 @@ export const useUserStore = create<UserStore>()(
       setEquityCop: (next) => set({ equityCop: next }),
       incrementDisciplinePoints: (delta) =>
         set((s) => ({ disciplinePoints: s.disciplinePoints + delta })),
-      initSession: () =>
-        set({
-          isAuthenticated: true,
-          hasAcceptedContract: false,
-        }),
+      initSession: () => set({ isAuthenticated: true }),
+      endSession: () => set({ isAuthenticated: false }),
       reset: () =>
         set({
           isAuthenticated: false,
