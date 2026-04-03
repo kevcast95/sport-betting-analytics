@@ -4,24 +4,10 @@ import type { CSSProperties, FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { DisciplineContract } from '@/components/DisciplineContract'
 import { Bt2HelpIcon, Bt2LockIcon } from '@/components/icons/bt2Icons'
+import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
 import { useUserStore } from '@/store/useUserStore'
 
 type AuthMode = 'login' | 'signup'
-
-const GOOGLE_FONTS_LINK =
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap'
-
-function ensureFontLinks() {
-  if (typeof document === 'undefined') return
-  const id = 'bt2-v2-fonts'
-  if (document.getElementById(id)) return
-
-  const link = document.createElement('link')
-  link.id = id
-  link.rel = 'stylesheet'
-  link.href = GOOGLE_FONTS_LINK
-  document.head.appendChild(link)
-}
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -68,7 +54,7 @@ export default function AuthPage({
   const setOperatorName = useUserStore((s) => s.setOperatorName)
 
   useEffect(() => {
-    ensureFontLinks()
+    ensureBt2FontLinks()
   }, [])
 
   const monoStyle = useMemo<CSSProperties>(

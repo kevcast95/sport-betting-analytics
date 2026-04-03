@@ -26,3 +26,12 @@ Registra decisiones de arquitectura y trade-offs.
 - **Alternativas consideradas:** JSON plano; Web Crypto AES-GCM con clave fija en bundle (similar riesgo, más código).
 - **Elegida:** `apps/web/src/lib/bt2EncryptedStorage.ts` (`createBt2EncryptedLocalStorage` como `StateStorage` de Zustand 5) compuesto con `createJSONStorage()` en `useUserStore`.
 - **Impacto:** Primera escritura tras upgrade cifra el blob; usuarios con estado legado siguen pudiendo leer hasta el próximo `setItem`.
+
+---
+
+## US-FE-002 — Treasury y rutas V2 (fecha según commit)
+
+- **Decision:** Estado de bankroll y stake en `useBankrollStore` persistido con el mismo `createBt2EncryptedLocalStorage` que el usuario V2; equity del header lee solo de ese store.
+- **Contexto:** US pide cálculo de unit value, modal de capital y triggers automático/manual/settings.
+- **Elegida:** `TreasuryModal` + auto-apertura si `confirmedBankrollCop === 0`; `V2SessionGate` compartido para `/v2/dashboard` y `/v2/settings`; observabilidad en confirm con `console.info` prefijo `[BT2]`.
+- **Impacto:** Rutas documentadas en `03_RUTAS_PARALELAS_V1_V2.md`.

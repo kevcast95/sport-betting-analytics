@@ -30,6 +30,14 @@ Un solo archivo `sprints/sprint-XX/US.md` con **secciones**:
 
 En `TASKS.md`, cada tarea referencia la US: `- [ ] T-005 (US-FE-002) ...`
 
+### Referencias visuales (HTML en `refs/`)
+
+Archivos en `sprints/sprint-XX/refs/` con nombre ejecutable:
+
+`us_<capa>_<id>_<slug>.md` (minúsculas, slug descriptivo). Ejemplos: `us_fe_001_login.md`, `us_fe_002_bankroll.md`.
+
+Cada US que use mock HTML debe **enlazar** el archivo en **Contexto técnico** o **Alcance**. La implementación en React no debe copiar CDNs de la ref (Tailwind CDN, fuentes de iconos de terceros) si el contrato de producto lo prohíbe; se portan tokens y layout.
+
 ## Formato obligatorio por US
 
 ```md

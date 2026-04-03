@@ -1,10 +1,7 @@
 import BunkerLayout from '@/layouts/BunkerLayout'
 import { V2SessionGate } from '@/components/V2SessionGate'
 
-/**
- * US-FE-001 / US-FE-002: tablero V2 tras sesión mock y contrato.
- */
-export default function V2DashboardPage() {
+export default function V2SettingsPage() {
   return (
     <V2SessionGate>
       <BunkerLayout />

@@ -24,3 +24,10 @@ Esta carpeta centraliza la ejecucion de la nueva etapa (API-first + CDM + reglas
 2. Derivar tareas en `TASKS.md`.
 3. Ejecutar y registrar decisiones en `DECISIONES.md`.
 4. Cerrar con checklist en `QA_CHECKLIST.md`.
+
+## Referencias HTML (`sprints/sprint-XX/refs/`)
+
+Convención de nombre (ejecutable por Cursor): `us_<capa>_<id>_<slug>.md` en minúsculas.
+
+- Ejemplos: `us_fe_001_login.md`, `us_fe_002_bankroll.md`.
+- Cada US de frontend que traiga mock HTML debe citar su archivo en la sección **Contexto técnico** o **Alcance** de `US.md`.
