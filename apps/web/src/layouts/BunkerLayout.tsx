@@ -29,9 +29,21 @@ function mainModuleLabel(pathname: string): string | null {
     return 'Santuario'
   }
   if (pathname.startsWith('/v2/vault')) return 'La Bóveda'
+  if (pathname.startsWith('/v2/settlement')) return 'Liquidación'
+  if (pathname.startsWith('/v2/daily-review')) return 'Cierre del día'
+  if (pathname.startsWith('/v2/ledger')) return 'Libro mayor'
+  if (pathname.startsWith('/v2/performance')) return 'Estrategia'
+  if (pathname.startsWith('/v2/profile')) return 'Perfil'
   if (pathname.startsWith('/v2/settings')) return 'Ajustes'
   if (pathname.startsWith('/v2/dashboard')) return 'Santuario'
   return null
+}
+
+function bunkerRankLabel(dp: number): string {
+  if (dp >= 5000) return 'Master'
+  if (dp >= 3000) return 'Elite'
+  if (dp >= 1500) return 'Sentinel'
+  return 'Novice'
 }
 
 export default function BunkerLayout() {
@@ -78,6 +90,11 @@ export default function BunkerLayout() {
     }).format(confirmedBankrollCop)
   }, [confirmedBankrollCop])
 
+  const rankLabel = useMemo(
+    () => bunkerRankLabel(disciplinePoints),
+    [disciplinePoints],
+  )
+
   const incPositiveAction = () => {
     incrementDisciplinePoints(25)
     setDpPulseKey((k) => k + 1)
@@ -94,13 +111,33 @@ export default function BunkerLayout() {
     ? 'Configuración'
     : location.pathname.startsWith('/v2/vault')
       ? 'La Bóveda'
-      : 'Santuario'
+      : location.pathname.startsWith('/v2/settlement')
+        ? 'Liquidación'
+        : location.pathname.startsWith('/v2/daily-review')
+          ? 'Cierre del día'
+          : location.pathname.startsWith('/v2/ledger')
+            ? 'Libro mayor'
+            : location.pathname.startsWith('/v2/performance')
+              ? 'Estrategia y rendimiento'
+              : location.pathname.startsWith('/v2/profile')
+                ? 'Perfil operador'
+                : 'Santuario'
 
   const pageSubtitle = isSettings
     ? 'Preferencias del entorno V2. El capital de trabajo se define en el protocolo de gestión de capital.'
     : location.pathname.startsWith('/v2/vault')
       ? 'Oportunidades con valor esperado positivo (modelo canónico CDM); desbloqueo con DP.'
-      : 'Panel de inicio del entorno de control conductual.'
+      : location.pathname.startsWith('/v2/settlement')
+        ? 'Auditoría de resultado y reflexión obligatoria antes de archivar en ledger.'
+        : location.pathname.startsWith('/v2/daily-review')
+          ? 'Reconciliación del saldo real y sellado de la estación operativa.'
+          : location.pathname.startsWith('/v2/ledger')
+            ? 'Auditoría histórica de liquidaciones y disciplina.'
+            : location.pathname.startsWith('/v2/performance')
+              ? 'Métricas macro y curva de equity desde el ledger.'
+              : location.pathname.startsWith('/v2/profile')
+                ? 'Progresión, medallas y recalibración de identidad.'
+                : 'Panel de inicio del entorno de control conductual.'
 
   return (
     <div className="flex h-full w-[100vw] flex-col overflow-hidden bg-[#f6fafe] text-[#26343d]">
@@ -167,7 +204,7 @@ export default function BunkerLayout() {
               {operatorName ?? 'Operador'}
             </p>
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#8B5CF6]">
-              Nivel: élite
+              Rango: {rankLabel}
             </p>
           </div>
           <button
@@ -212,6 +249,58 @@ export default function BunkerLayout() {
           La Bóveda
         </NavLink>
         <NavLink
+          to="/v2/daily-review"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Cierre
+        </NavLink>
+        <NavLink
+          to="/v2/ledger"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Ledger
+        </NavLink>
+        <NavLink
+          to="/v2/performance"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Métricas
+        </NavLink>
+        <NavLink
+          to="/v2/profile"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Perfil
+        </NavLink>
+        <NavLink
           to="/v2/settings"
           className={({ isActive }) =>
             [
@@ -252,33 +341,42 @@ export default function BunkerLayout() {
               </span>
               La Bóveda
             </NavLink>
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 rounded-none px-4 py-3 text-left font-semibold text-[#52616a] hover:bg-white/60"
+            <NavLink
+              to="/v2/daily-review"
+              className={({ isActive }) => navItemClass(isActive)}
             >
               <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
                 <Bt2HistoryIcon className="h-5 w-5" />
               </span>
-              Historial
-            </button>
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 rounded-none px-4 py-3 text-left font-semibold text-[#52616a] hover:bg-white/60"
+              Cierre del día
+            </NavLink>
+            <NavLink
+              to="/v2/ledger"
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2HistoryIcon className="h-5 w-5" />
+              </span>
+              Libro mayor
+            </NavLink>
+            <NavLink
+              to="/v2/performance"
+              className={({ isActive }) => navItemClass(isActive)}
             >
               <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
                 <Bt2ChartBarsIcon className="h-5 w-5" />
               </span>
               Estrategia
-            </button>
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 rounded-none px-4 py-3 text-left font-semibold text-[#52616a] hover:bg-white/60"
+            </NavLink>
+            <NavLink
+              to="/v2/profile"
+              className={({ isActive }) => navItemClass(isActive)}
             >
               <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
                 <Bt2UserIcon className="h-5 w-5" />
               </span>
               Perfil
-            </button>
+            </NavLink>
             <NavLink
               to="/v2/settings"
               className={({ isActive }) => navItemClass(isActive)}

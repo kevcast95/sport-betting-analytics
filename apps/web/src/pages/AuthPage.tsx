@@ -47,7 +47,8 @@ export default function AuthPage({
     'idle' | 'success'
   >('idle')
 
-  const { isAuthenticated, hasAcceptedContract, initSession } = useUserStore()
+  const { isAuthenticated, hasAcceptedContract, hasCompletedDiagnostic, initSession } =
+    useUserStore()
   const setHasAcceptedContract = useUserStore(
     (s) => s.setHasAcceptedContract,
   )
@@ -79,7 +80,12 @@ export default function AuthPage({
   const shouldShowContract = isAuthenticated && !hasAcceptedContract
 
   if (isAuthenticated && hasAcceptedContract) {
-    return <Navigate to="/v2/sanctuary" replace />
+    return (
+      <Navigate
+        to={hasCompletedDiagnostic ? '/v2/sanctuary' : '/v2/diagnostic'}
+        replace
+      />
+    )
   }
 
   return (

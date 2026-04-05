@@ -5,8 +5,11 @@ import {
   useRef,
   useState,
 } from 'react'
+import { NavLink } from 'react-router-dom'
 import type { VaultPickCdm } from '@/data/vaultMockPicks'
 import { VAULT_UNLOCK_COST_DP } from '@/data/vaultMockPicks'
+import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
+import { useTradeStore } from '@/store/useTradeStore'
 
 const KNOB = 40
 const PAD = 6
@@ -49,11 +52,16 @@ function EquitySparkline({
 }
 
 type SlideToUnlockProps = {
+  stationLocked: boolean
   insufficientDp: boolean
   onUnlocked: () => void
 }
 
-function SlideToUnlock({ insufficientDp, onUnlocked }: SlideToUnlockProps) {
+function SlideToUnlock({
+  stationLocked,
+  insufficientDp,
+  onUnlocked,
+}: SlideToUnlockProps) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [maxX, setMaxX] = useState(0)
   const x = useMotionValue(0)
@@ -82,6 +90,16 @@ function SlideToUnlock({ insufficientDp, onUnlocked }: SlideToUnlockProps) {
     onUnlocked()
     void animate(x, 0, { duration: 0.2 })
   }, [maxX, onUnlocked, x])
+
+  if (stationLocked) {
+    return (
+      <div className="rounded-full border border-[#8B5CF6]/30 bg-[#e9ddff]/25 px-4 py-3 text-center">
+        <p className="text-xs font-semibold text-[#6d3bd7]">
+          Estación cerrada: sin nuevos desbloqueos hasta el próximo ciclo
+        </p>
+      </div>
+    )
+  }
 
   if (insufficientDp) {
     return (
@@ -138,6 +156,8 @@ export function PickCard({
   onRequestUnlock,
 }: PickCardProps) {
   const insufficient = disciplinePoints < VAULT_UNLOCK_COST_DP
+  const isSettled = useTradeStore((s) => s.settledPickIds.includes(pick.id))
+  const stationLocked = useSessionStore(selectStationLocked)
 
   return (
     <article
@@ -172,6 +192,7 @@ export function PickCard({
           </div>
           <div className="mt-4">
             <SlideToUnlock
+              stationLocked={stationLocked}
               insufficientDp={insufficient}
               onUnlocked={() => onRequestUnlock(pick.id)}
             />
@@ -196,6 +217,18 @@ export function PickCard({
               className="h-14 w-full text-[#059669]"
             />
           </div>
+          {isSettled ? (
+            <p className="rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-2 text-center text-xs font-semibold text-[#52616a]">
+              Archivado en ledger
+            </p>
+          ) : (
+            <NavLink
+              to={`/v2/settlement/${pick.id}`}
+              className="block rounded-lg border border-[#8B5CF6]/35 bg-[#e9ddff]/25 py-2.5 text-center text-sm font-bold text-[#6d3bd7] transition-colors hover:bg-[#e9ddff]/45"
+            >
+              Abrir terminal de liquidación
+            </NavLink>
+          )}
         </motion.div>
       )}
     </article>

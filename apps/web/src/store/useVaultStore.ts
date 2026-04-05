@@ -1,12 +1,19 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
+import { useSessionStore } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
 import { VAULT_UNLOCK_COST_DP } from '@/data/vaultMockPicks'
 
 export type VaultUnlockResult =
   | { ok: true }
-  | { ok: false; reason: 'insufficient_dp' | 'already_unlocked' }
+  | {
+      ok: false
+      reason:
+        | 'insufficient_dp'
+        | 'already_unlocked'
+        | 'station_locked'
+    }
 
 export type VaultStoreState = {
   unlockedPickIds: string[]
@@ -31,6 +38,12 @@ export const useVaultStore = create<VaultStore>()(
       ...initial,
       isUnlocked: (pickId) => get().unlockedPickIds.includes(pickId),
       tryUnlockPick: (pickId) => {
+        if (useSessionStore.getState().isStationLocked()) {
+          console.warn(
+            `[BT2] Bóveda bloqueada: estación cerrada hasta fin de ciclo.`,
+          )
+          return { ok: false, reason: 'station_locked' }
+        }
         if (get().unlockedPickIds.includes(pickId)) {
           return { ok: false, reason: 'already_unlocked' }
         }

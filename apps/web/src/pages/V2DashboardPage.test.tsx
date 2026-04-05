@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
+import { DiagnosticAccessGuard } from '@/components/DiagnosticAccessGuard'
+import BunkerLayout from '@/layouts/BunkerLayout'
 import V2ProtectedLayout from '@/layouts/V2ProtectedLayout'
 import SanctuaryPage from '@/pages/SanctuaryPage'
 import VaultPage from '@/pages/VaultPage'
@@ -13,9 +15,17 @@ function v2Harness(initialPath: string) {
       <Routes>
         <Route path="/v2/session" element={<div>v2-session-marker</div>} />
         <Route path="/v2" element={<V2ProtectedLayout />}>
-          <Route path="sanctuary" element={<SanctuaryPage />} />
-          <Route path="vault" element={<VaultPage />} />
-          <Route path="settings" element={<V2SettingsOutlet />} />
+          <Route
+            path="diagnostic"
+            element={<div>diagnostic-marker</div>}
+          />
+          <Route element={<DiagnosticAccessGuard />}>
+            <Route element={<BunkerLayout />}>
+              <Route path="sanctuary" element={<SanctuaryPage />} />
+              <Route path="vault" element={<VaultPage />} />
+              <Route path="settings" element={<V2SettingsOutlet />} />
+            </Route>
+          </Route>
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -51,10 +61,21 @@ describe('V2 rutas protegidas (US-FE-004)', () => {
     warn.mockRestore()
   })
 
+  it('US-FE-005: redirige a diagnóstico si falta completarlo', () => {
+    useUserStore.setState({
+      isAuthenticated: true,
+      hasAcceptedContract: true,
+      hasCompletedDiagnostic: false,
+    })
+    v2Harness('/v2/sanctuary')
+    expect(screen.getByText('diagnostic-marker')).toBeInTheDocument()
+  })
+
   it('muestra el Santuario cuando sesión y contrato están OK', () => {
     useUserStore.setState({
       isAuthenticated: true,
       hasAcceptedContract: true,
+      hasCompletedDiagnostic: true,
     })
     v2Harness('/v2/sanctuary')
     expect(
@@ -69,6 +90,7 @@ describe('V2 rutas protegidas (US-FE-004)', () => {
     useUserStore.setState({
       isAuthenticated: true,
       hasAcceptedContract: true,
+      hasCompletedDiagnostic: true,
     })
     v2Harness('/v2/vault')
     expect(
@@ -80,6 +102,7 @@ describe('V2 rutas protegidas (US-FE-004)', () => {
     useUserStore.setState({
       isAuthenticated: true,
       hasAcceptedContract: true,
+      hasCompletedDiagnostic: true,
     })
     v2Harness('/v2/vault')
     const lateral = screen.getByRole('navigation', {

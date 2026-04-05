@@ -447,9 +447,11 @@ Establecer un perfil conductual previo al uso operativo de BetTracker 2.0, calib
 
 #### 10) Definition of Done
 
-- [ ] Maquetación y flujo alineados a `us_fe_005_diagnostic.md` (tokens Zurich Calm, sin Material/CDN).
-- [ ] Cálculo de integridad y perfil en Zustand con tests.
-- [ ] Guard de diagnóstico validado en el enrutador V2.
+- [x] Maquetación y flujo alineados a `us_fe_005_diagnostic.md` (tokens Zurich Calm, sin Material/CDN).
+- [x] Cálculo de integridad y perfil en Zustand con tests.
+- [x] Guard de diagnóstico validado en el enrutador V2.
+
+**Batch (implementación):** la ruta de foco es `/v2/diagnostic` (no `/v2/sanctuary` hasta completar). Tras contrato, `AuthPage` redirige a diagnóstico si `hasCompletedDiagnostic === false`.
 
 ### US-FE-006 - Terminal de Auditoría (Settlement Terminal)
 1) Objetivo de negocio
@@ -534,11 +536,13 @@ Unitarias: Validar las funciones de cálculo de PNL para cuotas decimales.
 Integración: Asegurar que el useUserStore sume correctamente los DP tras la liquidación.
 
 10) Definition of Done
-[ ] Interfaz implementada según `docs/bettracker2/sprints/sprint-01/refs/us_fe_006_settlement.md` (tokens; sin CDN).
+[x] Interfaz implementada según `docs/bettracker2/sprints/sprint-01/refs/us_fe_006_settlement.md` (tokens; sin CDN).
 
-[ ] Lógica de liquidación vinculada al useBankrollStore.
+[x] Lógica de liquidación vinculada al useBankrollStore.
 
-[ ] Validación de campo de reflexión funcional.
+[x] Validación de campo de reflexión funcional.
+
+**Batch:** Ruta `/v2/settlement/:pickId`. Cuota mock estable por `pickId` (`pickSettlementMock.ts`). Toast fijo post-confirmación antes de volver a la bóveda.
 
 ### US-FE-007 - After-Action Review (Cierre del Día)
 1) Objetivo de negocio
@@ -615,11 +619,13 @@ Mitigación: Notificación visual en el Santuario si hay picks liquidados pero l
 Integración: Confirmar que al cerrar la estación, el estado isLocked impida mutaciones en el useTradeStore.
 
 10) Definition of Done
-[ ] Interfaz implementada según `docs/bettracker2/sprints/sprint-01/refs/us_fe_007_after_action.md` (tokens; sin CDN).
+[x] Interfaz implementada según `docs/bettracker2/sprints/sprint-01/refs/us_fe_007_after_action.md` (tokens; sin CDN).
 
-[ ] Lógica de reconciliación de saldo operativa.
+[x] Lógica de reconciliación de saldo operativa.
 
-[ ] Bloqueo de UI post-cierre validado.
+[x] Bloqueo de UI post-cierre validado.
+
+**Batch:** Ruta `/v2/daily-review`. `closeStationAndFinalizeDay` recibe `settlementsTodayCount` desde la UI (evita ciclo store↔store). Bloqueo 24 h vía `stationLockedUntilIso`. Nota obligatoria si la discrepancia supera el 1 % respecto al proyectado.
 
 
 ### US-FE-008 - El Libro Mayor Estratégico (The Strategic Ledger)
@@ -696,11 +702,13 @@ Mitigación: Uso de estados vacíos (Empty States) elegantes si no hay registros
 Integración: Validar que los datos mostrados en el Ledger sean un reflejo exacto del estado settled del useTradeStore.
 
 10) Definition of Done
-[ ] Interfaz implementada según `docs/bettracker2/sprints/sprint-01/refs/us_fe_008_strategic_ledger.md` (tokens; sin CDN).
+[x] Interfaz implementada según `docs/bettracker2/sprints/sprint-01/refs/us_fe_008_strategic_ledger.md` (tokens; sin CDN).
 
-[ ] Filtros y búsqueda funcionales.
+[x] Filtros y búsqueda funcionales.
 
-[ ] Tipado estricto en la interfaz LedgerEntry.
+[x] Tipado estricto en la interfaz LedgerEntry.
+
+**Batch:** `/v2/ledger` + `LedgerTable`. Protocolo = `marketClass` CDM. Sin virtualización hasta 100 filas (pendiente si crece el volumen).
 
 ### US-FE-009 - Estrategia y Rendimiento (Strategy & Performance)
 1) Objetivo de negocio
@@ -776,11 +784,13 @@ Mitigación: Mostrar "Empty State" con una curva proyectada o tutorial de cómo 
 Unitarias: Verificar la lógica de cálculo del ROI y Drawdown basada en el historial de transacciones.
 
 10) Definition of Done
-[ ] Interfaz implementada según `docs/bettracker2/sprints/sprint-01/refs/us_fe_009_strategy_performance.md` (tokens; sin CDN).
+[x] Interfaz implementada según `docs/bettracker2/sprints/sprint-01/refs/us_fe_009_strategy_performance.md` (tokens; sin CDN).
 
-[ ] Gráfico de equidad interactivo y filtrable.
+[x] Gráfico de equidad interactivo y filtrable.
 
-[ ] Widgets de métricas vinculados al estado global de analíticas.
+[x] Widgets de métricas vinculados al estado global de analíticas.
+
+**Batch:** `/v2/performance` + `EquityChart` (SVG, sin Recharts). Métricas derivadas de `useTradeStore.ledger` vía `ledgerAnalytics.ts`. Sin `useAnalyticsStore` (cálculo en página).
 
 ### US-FE-010 - El Camino a la Maestría (Elite Progression Path)
 1) Objetivo de negocio
@@ -856,11 +866,13 @@ Mitigación: Niveles iniciales rápidos (Quick Wins) para reforzar el hábito de
 Unitarias: Validar la función calculateRank(points) con diferentes escenarios de DP acumulados.
 
 10) Definition of Done
-[ ] Interfaz de perfil implementada con barra de progreso funcional.
+[x] Interfaz de perfil implementada con barra de progreso funcional.
 
-[ ] Lógica de desbloqueo de diagnóstico validada.
+[x] Lógica de desbloqueo de diagnóstico validada.
 
-[ ] Grid de medallas maquetado con estados bloqueado/desbloqueado.
+[x] Grid de medallas maquetado con estados bloqueado/desbloqueado.
+
+**Batch:** `/v2/profile` + `RankBadge`. Rango también en cabecera (`BunkerLayout`). Recalibración deshabilitada hasta implementar contador 30 días + 50 ledger (copy visible). Umbrales de rango: Novice / Sentinel / Elite / Master en código.
 
 ## Contratos
 

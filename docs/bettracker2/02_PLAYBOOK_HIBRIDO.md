@@ -6,7 +6,7 @@ Maximizar calidad de diseno y velocidad de implementacion sin quemar cuota.
 
 ## Distribucion de roles
 
-- Gemini: arquitectura abstracta, trade-offs, propuestas de CDM, roadmap.
+- Cursor front-end / back-end agent: arquitectura abstracta, trade-offs, propuestas de CDM, roadmap.
 - Cursor: viabilidad en codebase real, implementacion, refactor, pruebas, commit.
 
 ## Ciclo recomendado (cerrado)
