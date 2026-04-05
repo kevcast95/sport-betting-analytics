@@ -18,7 +18,15 @@ import VaultPage from '@/pages/VaultPage'
 import V2DashboardPage from '@/pages/V2DashboardPage'
 import V2SettingsOutlet from '@/pages/V2SettingsOutlet'
 import DashboardPage from '@/pages/DashboardPage'
+import { DiagnosticAccessGuard } from '@/components/DiagnosticAccessGuard'
+import BunkerLayout from '@/layouts/BunkerLayout'
 import V2ProtectedLayout from '@/layouts/V2ProtectedLayout'
+import DiagnosticPage from '@/pages/DiagnosticPage'
+import DailyReviewPage from '@/pages/DailyReviewPage'
+import LedgerPage from '@/pages/LedgerPage'
+import PerformancePage from '@/pages/PerformancePage'
+import ProfilePage from '@/pages/ProfilePage'
+import SettlementPage from '@/pages/SettlementPage'
 import PickDetailPage from '@/pages/PickDetailPage'
 import RunEventsPage from '@/pages/RunEventsPage'
 import RunPicksPage from '@/pages/RunPicksPage'
@@ -57,6 +65,7 @@ function AppLayout() {
   const latestReportSeenRef = useRef<string | null>(null)
 
   const isV2Route = useMatch({ path: '/v2/*' }) != null
+  const isV2DiagnosticRoute = useMatch({ path: '/v2/diagnostic', end: true }) != null
 
   useEffect(() => {
     if (!menuOpen) return
@@ -238,7 +247,9 @@ function AppLayout() {
             className={[
               'mx-auto min-h-0 flex-1 overflow-y-auto overscroll-contain',
               isV2Route
-                ? 'max-w-none p-0 overflow-hidden bg-[#f6fafe]'
+                ? isV2DiagnosticRoute
+                  ? 'max-w-none w-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#f6fafe] p-0'
+                  : 'max-w-none p-0 overflow-hidden bg-[#f6fafe]'
                 : 'w-full max-w-5xl px-3 py-4 sm:px-4 md:px-8 md:py-8',
             ].join(' ')}
           >
@@ -266,11 +277,21 @@ function AppLayout() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/v2/session" element={<AuthPage />} />
               <Route path="/v2" element={<V2ProtectedLayout />}>
-                <Route index element={<Navigate to="sanctuary" replace />} />
-                <Route path="sanctuary" element={<SanctuaryPage />} />
-                <Route path="vault" element={<VaultPage />} />
-                <Route path="dashboard" element={<V2DashboardPage />} />
-                <Route path="settings" element={<V2SettingsOutlet />} />
+                <Route path="diagnostic" element={<DiagnosticPage />} />
+                <Route element={<DiagnosticAccessGuard />}>
+                  <Route element={<BunkerLayout />}>
+                    <Route index element={<Navigate to="sanctuary" replace />} />
+                    <Route path="sanctuary" element={<SanctuaryPage />} />
+                    <Route path="vault" element={<VaultPage />} />
+                    <Route path="settlement/:pickId" element={<SettlementPage />} />
+                    <Route path="daily-review" element={<DailyReviewPage />} />
+                    <Route path="ledger" element={<LedgerPage />} />
+                    <Route path="performance" element={<PerformancePage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="dashboard" element={<V2DashboardPage />} />
+                    <Route path="settings" element={<V2SettingsOutlet />} />
+                  </Route>
+                </Route>
               </Route>
               <Route path="/runs" element={<RunsPage />} />
               <Route path="/runs/:dailyRunId/picks" element={<RunPicksPage />} />

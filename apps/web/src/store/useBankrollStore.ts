@@ -14,6 +14,10 @@ export type BankrollStoreState = {
 
 export type BankrollStoreActions = {
   confirmTreasury: (bankrollCop: number, stakePct: number) => void
+  /** US-FE-006: aplica PnL de liquidación al capital confirmado (mínimo 0). */
+  applyBankrollDelta: (deltaCop: number) => void
+  /** US-FE-007: alinea el capital confirmado al saldo real reportado en cierre. */
+  reconcileToExchangeBalance: (cop: number) => void
   reset: () => void
 }
 
@@ -48,6 +52,16 @@ export const useBankrollStore = create<BankrollStore>()(
           selectedStakePct: stakePct,
           lastCalculatedAt: new Date().toISOString(),
         })
+      },
+      applyBankrollDelta: (deltaCop) => {
+        if (!Number.isFinite(deltaCop)) return
+        set((s) => ({
+          confirmedBankrollCop: Math.max(0, s.confirmedBankrollCop + deltaCop),
+        }))
+      },
+      reconcileToExchangeBalance: (cop) => {
+        if (!Number.isFinite(cop) || cop < 0) return
+        set({ confirmedBankrollCop: cop })
       },
       reset: () => set(initial),
     }),

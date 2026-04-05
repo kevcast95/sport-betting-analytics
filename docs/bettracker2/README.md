@@ -16,6 +16,7 @@ Esta carpeta centraliza la ejecucion de la nueva etapa (API-first + CDM + reglas
 - `01_CONTRATO_US.md`: contrato estricto para redactar Historias de Usuario.
 - `02_PLAYBOOK_HIBRIDO.md`: como trabajar Gemini (diseño) + Cursor (ejecucion).
 - `03_RUTAS_PARALELAS_V1_V2.md`: estrategia para correr en paralelo sin apagar el sistema actual.
+- `agent_roles/front_end_agent.md`: rol del asistente BA/producto frontend (contexto, US-FE, auditoría de maquetación).
 - `sprints/`: trabajo secuencial por sprint.
 
 ## Flujo recomendado
