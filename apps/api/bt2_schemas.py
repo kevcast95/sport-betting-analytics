@@ -67,9 +67,11 @@ class Bt2VaultPickOut(BaseModel):
     selection_summary_es: str = Field(serialization_alias="selectionSummaryEs")
     traduccion_humana: str = Field(serialization_alias="traduccionHumana")
     curva_equidad: List[float] = Field(serialization_alias="curvaEquidad")
-    access_tier: Literal["open", "premium"] = Field(serialization_alias="accessTier")
+    access_tier: str = Field(serialization_alias="accessTier")
     unlock_cost_dp: int = Field(serialization_alias="unlockCostDp")
     operating_day_key: str = Field(serialization_alias="operatingDayKey")
+    is_available: bool = Field(True, serialization_alias="isAvailable")
+    external_search_url: str = Field("", serialization_alias="externalSearchUrl")
 
 
 class Bt2VaultPicksPageOut(BaseModel):
@@ -79,8 +81,9 @@ class Bt2VaultPicksPageOut(BaseModel):
     generated_at_utc: str = Field(
         ...,
         serialization_alias="generatedAtUtc",
-        description="Marca temporal del stub (estática en MVP).",
+        description="Marca temporal de generación.",
     )
+    message: Optional[str] = Field(None, serialization_alias="message")
 
 
 class Bt2BehavioralMetricsOut(BaseModel):

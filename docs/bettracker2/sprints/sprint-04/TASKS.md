@@ -82,6 +82,46 @@ T-096 → T-097 → T-098 → T-099 → T-100 → T-101 → T-102 → T-103
 
 ---
 
+## Addendum — Ola 5 y 6 (US-BE-013 y US-BE-014)
+
+### Ola 5 — Ingesta diaria de eventos futuros (US-BE-013)
+
+- [x] T-104 (US-BE-013) — `scripts/bt2_cdm/fetch_upcoming.py`:
+  - Lee bt2_leagues WHERE is_active=true (27 ligas).
+  - Single-pass paginado + filtro Python (API ignora filtro de liga en el endpoint between).
+  - Upsert idempotente en bt2_events + bt2_odds_snapshot.
+  - Manejo de 429: espera 60s, reintenta una vez.
+  - Reporte en `docs/bettracker2/recon_results/upcoming_{fecha}.md`.
+  - CLI: `--hours-ahead 48` (default), `--dry-run`.
+  - Verificado: 82 eventos futuros | 2da ejecución → conteo igual (idempotencia).
+  - V1 health: OK.
+
+### Ola 6 — Pick snapshot diario (US-BE-014)
+
+- [x] T-105 (US-BE-014) — Migración Alembic `bt2_daily_picks`:
+  - Columnas: id, user_id FK, event_id FK, operating_day_key, access_tier, is_available, suggested_at.
+  - UniqueConstraint (user_id, event_id, operating_day_key).
+  - Índice (user_id, operating_day_key).
+  - `alembic upgrade head` OK | `alembic downgrade -1 && upgrade head` OK.
+
+- [x] T-106 (US-BE-014) — `POST /bt2/session/open` genera snapshot diario:
+  - `_generate_daily_picks_snapshot()`: consulta bt2_events del día local del usuario.
+  - Ordena Tier S→A→B + menor margen de casa.
+  - Inserta hasta 3 standard + 2 premium en bt2_daily_picks.
+  - Idempotente: doble apertura → mismo conteo de picks.
+  - Verificado: sesión 2026-04-07 generó 5 picks reales.
+
+- [x] T-107 (US-BE-014) — `GET /bt2/vault/picks` lee de `bt2_daily_picks`:
+  - JOIN bt2_events, bt2_leagues, bt2_teams.
+  - `isAvailable` calculado en tiempo real (event.status == 'scheduled').
+  - `accessTier`: 'standard' | 'premium'.
+  - `externalSearchUrl`: Google search con home+vs+away+kickoff_date.
+  - Sin snapshot → lista vacía + mensaje informativo (nunca 5xx).
+  - Picks premium siempre en lista; backend no los oculta.
+  - V1 health final: OK.
+
+---
+
 ## Reglas
 
 - No modificar `apps/api/main.py` directamente.

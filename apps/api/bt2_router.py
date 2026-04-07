@@ -376,42 +376,122 @@ def bt2_session_day(user_id: Bt2UserId) -> Bt2SessionDayOut:
 @router.get("/vault/picks", response_model=Bt2VaultPicksPageOut, response_model_by_alias=True)
 def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    odk = _operating_day_key()
-    events = _fetch_upcoming_events(hours=24, require_active_league=True)
+    odk = _operating_day_key_for_user(user_id)
+
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        cur.execute("""
+            SELECT
+                dp.id           AS dp_id,
+                dp.access_tier,
+                dp.suggested_at,
+                e.id            AS event_id,
+                e.status        AS event_status,
+                e.kickoff_utc,
+                e.result_home,
+                e.result_away,
+                ht.name         AS home_team,
+                at2.name        AS away_team,
+                l.name          AS league_name,
+                l.tier          AS league_tier,
+                -- Mejor odd Home (1X2 / Match Winner / Full Time Result)
+                (SELECT MAX(o.odds) FROM bt2_odds_snapshot o
+                 WHERE o.event_id = e.id
+                   AND lower(o.market) IN ('1x2', 'match winner', 'full time result', 'fulltime result')
+                   AND (o.selection IN ('1', 'Home') OR lower(o.selection) LIKE '%%home%%')
+                ) AS odds_home,
+                (SELECT MAX(o.odds) FROM bt2_odds_snapshot o
+                 WHERE o.event_id = e.id
+                   AND lower(o.market) IN ('1x2', 'match winner', 'full time result', 'fulltime result')
+                   AND (o.selection IN ('X', 'Draw') OR lower(o.selection) LIKE '%%draw%%')
+                ) AS odds_draw,
+                (SELECT MAX(o.odds) FROM bt2_odds_snapshot o
+                 WHERE o.event_id = e.id
+                   AND lower(o.market) IN ('1x2', 'match winner', 'full time result', 'fulltime result')
+                   AND (o.selection IN ('2', 'Away') OR lower(o.selection) LIKE '%%away%%')
+                ) AS odds_away
+            FROM bt2_daily_picks dp
+            JOIN bt2_events e ON e.id = dp.event_id
+            JOIN bt2_leagues l ON l.id = e.league_id
+            LEFT JOIN bt2_teams ht ON ht.id = e.home_team_id
+            LEFT JOIN bt2_teams at2 ON at2.id = e.away_team_id
+            WHERE dp.user_id = %s::uuid
+              AND dp.operating_day_key = %s
+            ORDER BY
+                CASE dp.access_tier WHEN 'standard' THEN 1 ELSE 2 END,
+                dp.suggested_at ASC
+        """, (user_id, odk))
+        rows = cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()
+
+    if not rows:
+        return Bt2VaultPicksPageOut(
+            picks=[],
+            generated_at_utc=now,
+            message="No hay eventos disponibles para hoy. El sistema actualiza la cartelera cada mañana.",
+        )
 
     picks: list[Bt2VaultPickOut] = []
-    for i, ev in enumerate(events):
-        odds_home = ev.get("odds_home") or 0.0
-        odds_away = ev.get("odds_away") or 0.0
-        odds_draw = ev.get("odds_draw") or 0.0
+    for row in rows:
+        home_team = row["home_team"] or "Local"
+        away_team = row["away_team"] or "Visitante"
+        league_name = row["league_name"] or "Liga"
+        kickoff = row["kickoff_utc"]
+        event_status = row["event_status"] or "scheduled"
+        is_available = (event_status == "scheduled")
 
-        if max(odds_home, odds_draw, odds_away) <= 1.30:
-            continue
-
+        # Odds
+        odds_home = float(row["odds_home"] or 0.0)
+        odds_draw = float(row["odds_draw"] or 0.0)
+        odds_away = float(row["odds_away"] or 0.0)
         best_odds = max(odds_home, odds_draw, odds_away)
-        if odds_home == best_odds:
-            mc, selection, odds_val = "ML_SIDE", f"Victoria {ev['home_team']}", odds_home
-        elif odds_away == best_odds:
-            mc, selection, odds_val = "ML_AWAY", f"Victoria {ev['away_team']}", odds_away
-        else:
-            mc, selection, odds_val = "ML_SIDE", "Empate", odds_draw
 
-        tier: Literal["open", "premium"] = "open" if i % 2 == 0 else "premium"
+        if best_odds > 1.0:
+            if odds_home == best_odds:
+                mc = "ML_SIDE"
+                selection = f"Victoria {home_team}"
+                odds_val = odds_home
+            elif odds_away == best_odds:
+                mc = "ML_AWAY"
+                selection = f"Victoria {away_team}"
+                odds_val = odds_away
+            else:
+                mc = "ML_SIDE"
+                selection = "Empate"
+                odds_val = odds_draw
+        else:
+            mc = "ML_SIDE"
+            selection = f"{home_team} vs {away_team}"
+            odds_val = 2.0
+
+        # URL de búsqueda externa
+        kickoff_date = kickoff.strftime("%Y-%m-%d") if kickoff else odk
+        search_q = f"{home_team}+vs+{away_team}+{kickoff_date}".replace(" ", "+")
+        external_url = f"https://www.google.com/search?q={search_q}"
+
+        titulo = f"{league_name} · {kickoff.strftime('%d/%m') if kickoff else odk}"
+        tier_label = row["access_tier"]  # "standard" | "premium"
+
         picks.append(
             Bt2VaultPickOut(
-                id=f"cdm-{ev['id']}",
+                id=f"dp-{row['dp_id']}",
                 market_class=mc,
                 market_label_es=_MARKET_LABEL_ES.get(mc, mc),
-                event_label=f"{ev['home_team']} vs {ev['away_team']}",
-                titulo=f"{ev['league']} · {ev['kickoff_utc'].strftime('%d/%m') if ev['kickoff_utc'] else ''}",
+                event_label=f"{home_team} vs {away_team}",
+                titulo=titulo,
                 suggested_decimal_odds=round(float(odds_val), 2),
                 edge_bps=0,
                 selection_summary_es=selection,
                 traduccion_humana="Selección basada en datos CDM BT2 — modelo en construcción.",
                 curva_equidad=[0.0],
-                access_tier=tier,
-                unlock_cost_dp=0 if tier == "open" else _UNLOCK_DP_PREMIUM,
+                access_tier=tier_label,
+                unlock_cost_dp=0 if tier_label == "standard" else _UNLOCK_DP_PREMIUM,
                 operating_day_key=odk,
+                is_available=is_available,
+                external_search_url=external_url,
             )
         )
 
@@ -939,9 +1019,86 @@ class SessionCloseOut(BaseModel):
 
 # ── Sesión endpoints (T-100, T-101) ──────────────────────────────────────────
 
+def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) -> int:
+    """
+    Genera el snapshot diario de hasta 5 picks en bt2_daily_picks.
+    Idempotente: si ya existe snapshot para (user_id, odk), no hace nada.
+    Retorna el número de picks insertados (0 si ya existía snapshot).
+    """
+    # Verificar si ya existe snapshot
+    cur.execute(
+        "SELECT COUNT(*) FROM bt2_daily_picks WHERE user_id = %s::uuid AND operating_day_key = %s",
+        (user_id, odk),
+    )
+    if int(cur.fetchone()[0]) > 0:
+        return 0
+
+    # Calcular rango del día en UTC
+    try:
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo(tz_name)
+    except Exception:
+        tz = timezone.utc
+
+    local_today = datetime.now(tz=tz).date()
+    day_start_utc = datetime.combine(local_today, datetime.min.time(), tzinfo=tz).astimezone(timezone.utc)
+    day_end_utc = day_start_utc + timedelta(hours=24)
+
+    # Buscar eventos del día con status='scheduled' y al menos 1 odd disponible
+    cur.execute("""
+        SELECT
+            e.id AS event_id,
+            l.tier,
+            e.home_team_id,
+            e.away_team_id,
+            e.kickoff_utc,
+            -- Margen de casa: inversa del odds home (menor = más balanceado)
+            COALESCE((
+                SELECT MIN(1.0 / NULLIF(o.odds, 0))
+                FROM bt2_odds_snapshot o
+                WHERE o.event_id = e.id
+                  AND lower(o.market) IN ('1x2','match winner','full time result','fulltime result')
+                  AND (o.selection IN ('1','Home') OR lower(o.selection) LIKE '%%home%%')
+            ), 999) AS house_margin
+        FROM bt2_events e
+        JOIN bt2_leagues l ON l.id = e.league_id
+        WHERE
+            e.kickoff_utc >= %s
+            AND e.kickoff_utc < %s
+            AND e.status = 'scheduled'
+            AND l.is_active = true
+            AND EXISTS (
+                SELECT 1 FROM bt2_odds_snapshot o2
+                WHERE o2.event_id = e.id
+            )
+        ORDER BY
+            CASE l.tier WHEN 'S' THEN 1 WHEN 'A' THEN 2 WHEN 'B' THEN 3 ELSE 4 END ASC,
+            house_margin ASC
+        LIMIT 5
+    """, (day_start_utc, day_end_utc))
+
+    rows = cur.fetchall()
+    if not rows:
+        return 0
+
+    inserted = 0
+    for i, row in enumerate(rows):
+        event_id = row[0]
+        access_tier = "standard" if i < 3 else "premium"
+        cur.execute("""
+            INSERT INTO bt2_daily_picks (user_id, event_id, operating_day_key, access_tier)
+            VALUES (%s::uuid, %s, %s, %s)
+            ON CONFLICT (user_id, event_id, operating_day_key) DO NOTHING
+        """, (user_id, event_id, odk, access_tier))
+        inserted += 1
+
+    return inserted
+
+
 @router.post("/session/open", status_code=201, response_model=SessionOpenOut)
 def bt2_session_open(user_id: Bt2UserId) -> SessionOpenOut:
     odk = _operating_day_key_for_user(user_id)
+    tz_name = _user_timezone(user_id)
     conn = _db_conn()
     cur = conn.cursor()
     try:
@@ -960,8 +1117,11 @@ def bt2_session_open(user_id: Bt2UserId) -> SessionOpenOut:
             (user_id, odk),
         )
         row = cur.fetchone()
-        conn.commit()
         session_id, opened_at = row
+
+        # Generar snapshot diario de picks (idempotente)
+        _generate_daily_picks_snapshot(cur, user_id, odk, tz_name)
+        conn.commit()
     finally:
         cur.close()
         conn.close()

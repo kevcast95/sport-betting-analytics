@@ -67,3 +67,33 @@
 **Decisión:** Para testing de picks en el entorno actual (fixtures todos históricos), se acepta usar eventos con status='scheduled' (79 disponibles en CDM). En producción el atraco incremental alimentará eventos futuros reales.
 
 **Trade-off:** No es posible testear el flujo completo pick→settle con datos 100% reales hasta que haya fixtures scheduled recientes. Mitigación documentada en QA_CHECKLIST.md.
+
+---
+
+## D-04-008: fetch_upcoming — single-pass paginado, filtro en Python
+
+**Decisión:** `fetch_upcoming.py` descarga TODOS los fixtures del rango en una sola pasada paginada (`/v3/football/fixtures/between/{start}/{end}`) y filtra por `active_league_ids` en Python, en lugar de hacer 1 request por liga con el parámetro `filters=leagueIds:{id}`.
+
+**Razón:** La API de Sportmonks ignora el parámetro `filters=leagueIds` en el endpoint `between`, devolviendo siempre todos los fixtures del rango sin importar el filtro. Hacer 27 requests con filtros ignorados consumiría 27× los créditos sin beneficio. El enfoque del `sportmonks_worker.py` (fetch-all + filter-Python) es el correcto para esta API.
+
+**Consecuencia:** El costo por ejecución es ~9-15 requests (páginas del rango 48h) en lugar de 27.
+
+---
+
+## D-04-009: bt2_daily_picks snapshot — ventana del día local del usuario
+
+**Decisión:** El snapshot de picks diarios (`_generate_daily_picks_snapshot`) busca eventos con `kickoff_utc` entre `hoy 00:00 tz_usuario` y `mañana 00:00 tz_usuario` (convertido a UTC), no en UTC directo.
+
+**Razón:** Un usuario en Bogotá (UTC-5) espera ver los partidos de "su día", no los del día UTC. Si hay un partido a las 23:00 UTC (18:00 Bogotá), es un partido de hoy para él. Si es a las 02:00 UTC del día siguiente (21:00 Bogotá del día anterior), también es su partidos del día operativo previo.
+
+**Trade-off:** Requiere convertir fechas con `ZoneInfo`. Fallback a UTC si el timezone del usuario es inválido.
+
+---
+
+## D-04-010: labels de odds — normalización multi-formato en vault/picks
+
+**Decisión:** Las consultas de odds en `GET /bt2/vault/picks` usan `lower(o.market) IN ('1x2', 'match winner', 'full time result', 'fulltime result')` y selecciones `IN ('1', 'Home')` / `IN ('X', 'Draw')` / `IN ('2', 'Away')` con LIKE como fallback.
+
+**Razón:** El CDM histórico (Atraco) almacena market como `'1X2'` y selections como `'1'`, `'X'`, `'2'`. Los fixtures nuevos de `fetch_upcoming.py` pueden tener market_description `'Match Winner'` o `'Full Time Result'` con selections `'Home'`, `'Draw'`, `'Away'`. El query debe soportar ambos formatos para no mostrar odds vacíos.
+
+**Trade-off:** Query más verboso. Normalización completa en Sprint 05 si se unifica market/selection en el CDM.

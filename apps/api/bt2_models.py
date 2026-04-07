@@ -322,3 +322,30 @@ class Bt2UserSettings(Base):
     display_currency: Mapped[str] = mapped_column(
         String(10), server_default="COP", nullable=False
     )
+
+
+class Bt2DailyPick(Base):
+    __tablename__ = "bt2_daily_picks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("bt2_users.id"), nullable=False
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_events.id"), nullable=False
+    )
+    operating_day_key: Mapped[str] = mapped_column(String(10), nullable=False)
+    access_tier: Mapped[str] = mapped_column(
+        String(10), nullable=False
+    )
+    is_available: Mapped[bool] = mapped_column(
+        Boolean, server_default="true", nullable=False
+    )
+    suggested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "event_id", "operating_day_key", name="uq_daily_picks_user_event_day"),
+        Index("ix_daily_picks_user_day", "user_id", "operating_day_key"),
+    )
