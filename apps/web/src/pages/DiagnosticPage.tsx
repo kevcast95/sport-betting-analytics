@@ -116,11 +116,12 @@ function tierFromIntegrity(integrity: number): string {
   return 'TIER I'
 }
 
-function operatorStatusCode(integrity: number, hasSlice: boolean): string {
-  if (!hasSlice) return 'CALIBRATING_V0'
-  if (integrity >= 0.92) return 'STABLE_V4'
-  if (integrity >= 0.82) return 'STABLE_V2'
-  return 'VOLATILE_PROBE'
+/** Etiqueta de estado legible en español. Los códigos técnicos no se muestran al operador. */
+function operatorStatusLabel(integrity: number, hasSlice: boolean): string {
+  if (!hasSlice) return 'Calibrando perfil…'
+  if (integrity >= 0.92) return 'Protocolo estable'
+  if (integrity >= 0.82) return 'En ajuste de señal'
+  return 'Alta varianza detectada'
 }
 
 type QuestionDef = {
@@ -349,7 +350,13 @@ export default function DiagnosticPage() {
     pendingOption != null ? answers.length + 1 > 0 : answers.length > 0
   const integrityPercent = Math.round(previewIntegrity * 100)
   const tier = tierFromIntegrity(previewIntegrity)
-  const statusCode = operatorStatusCode(previewIntegrity, hasPreviewSlice)
+  const statusLabel = operatorStatusLabel(previewIntegrity, hasPreviewSlice)
+  const statusColor =
+    !hasPreviewSlice || previewIntegrity >= 0.92
+      ? '#52616a'
+      : previewIntegrity >= 0.82
+        ? '#914d00'
+        : '#9e3f4e'
 
   const profileTitle =
     previewProfile != null
@@ -403,39 +410,52 @@ export default function DiagnosticPage() {
             </div>
           </div>
           {/* Tarjeta stats técnicos (ref: Technical Stats) */}
-          <div className="space-y-4 rounded-xl bg-[#eef4fa] p-8">
-            <div className="flex items-end justify-between border-b border-[#a4b4be]/10 pb-2">
-              <span
-                className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#52616a]"
-                style={monoStyle}
-              >
-                Integridad del sistema
-              </span>
-              <span
-                className="font-mono text-lg font-bold text-[#6d3bd7]"
-                style={monoStyle}
-              >
-                {previewIntegrity.toFixed(3)}
-              </span>
-            </div>
-            <div className="flex items-end justify-between border-b border-[#a4b4be]/10 pb-2">
-              <span
-                className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#52616a]"
-                style={monoStyle}
-              >
-                Puntos de disciplina
-              </span>
-              <div className="flex items-center gap-2">
-                <Bt2ShieldCheckIcon className="h-4 w-4 shrink-0 text-[#6d3bd7]" />
+          <div className="space-y-5 rounded-xl bg-[#eef4fa] p-8">
+            {/* Integridad: % legible + microcopy */}
+            <div className="border-b border-[#a4b4be]/10 pb-4">
+              <div className="flex items-end justify-between">
                 <span
-                  className="font-mono text-lg font-bold text-[#26343d]"
+                  className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#52616a]"
                   style={monoStyle}
                 >
-                  {previewDp.toLocaleString('es-CO')} XP
+                  Consistencia del cuestionario
+                </span>
+                <span
+                  className="font-mono text-lg font-bold text-[#6d3bd7]"
+                  style={monoStyle}
+                >
+                  {integrityPercent}%
                 </span>
               </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#6e7d86]">
+                Sube con opciones alineadas al protocolo; baja con las más impulsivas.
+              </p>
             </div>
-            <div className="flex items-end justify-between border-b border-[#a4b4be]/10 pb-2">
+            {/* Puntos de disciplina: DP + nota de vista previa */}
+            <div className="border-b border-[#a4b4be]/10 pb-4">
+              <div className="flex items-end justify-between">
+                <span
+                  className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#52616a]"
+                  style={monoStyle}
+                >
+                  Puntos de disciplina
+                </span>
+                <div className="flex items-center gap-2">
+                  <Bt2ShieldCheckIcon className="h-4 w-4 shrink-0 text-[#6d3bd7]" />
+                  <span
+                    className="font-mono text-lg font-bold text-[#26343d]"
+                    style={monoStyle}
+                  >
+                    {previewDp.toLocaleString('es-CO')} DP
+                  </span>
+                </div>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#6e7d86]">
+                Vista previa — refleja el ajuste del cuestionario sobre tu saldo actual.
+              </p>
+            </div>
+            {/* Estado operador: etiqueta en español, sin código interno */}
+            <div className="flex items-center justify-between">
               <span
                 className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#52616a]"
                 style={monoStyle}
@@ -443,10 +463,10 @@ export default function DiagnosticPage() {
                 Estado operador
               </span>
               <span
-                className="font-mono text-xs font-bold text-[#914d00]"
-                style={monoStyle}
+                className="text-sm font-semibold"
+                style={{ color: statusColor }}
               >
-                {statusCode}
+                {statusLabel}
               </span>
             </div>
           </div>

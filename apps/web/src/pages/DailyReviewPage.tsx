@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
+import { ViewTourModal } from '@/components/tours/ViewTourModal'
+import { getTourScript } from '@/components/tours/tourScripts'
+import { useTourStore } from '@/store/useTourStore'
 import {
   IconArrowForward,
   IconCheckCircle,
@@ -12,8 +15,13 @@ import { todayRoiPercent, todaySessionPnlAndStake } from '@/lib/dayLedgerMetrics
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
 import { parseCopIntegerInput } from '@/lib/treasuryMath'
 import { useBankrollStore } from '@/store/useBankrollStore'
-import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
+import {
+  selectStationLocked,
+  useSessionStore,
+} from '@/store/useSessionStore'
 import { useTradeStore } from '@/store/useTradeStore'
+
+const DAILY_REVIEW_TOUR = getTourScript('daily-review')!
 
 function discrepancyPercent(exchangeCop: number, projectedCop: number): number {
   const base = Math.max(projectedCop, 1)
@@ -35,11 +43,46 @@ export default function DailyReviewPage() {
   const stationLocked = useSessionStore(selectStationLocked)
   const lastSummary = useSessionStore((s) => s.lastCloseSummary)
   const lockedUntil = useSessionStore((s) => s.stationLockedUntilIso)
+  // US-FE-012 / US-FE-014: día operativo y gracia
+  const operatingDayKey = useSessionStore((s) => s.operatingDayKey)
+  const graceActiveUntilIso = useSessionStore((s) => s.graceActiveUntilIso)
+  const pendingItems = useSessionStore((s) => s.previousDayPendingItems)
+
+  // Tiempo restante calculado localmente — NO usar Date.now() en selectores Zustand
+  const [nowMs, setNowMs] = useState(Date.now)
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  const graceRemainingMs = useMemo(
+    () => graceActiveUntilIso
+      ? Math.max(0, new Date(graceActiveUntilIso).getTime() - nowMs)
+      : 0,
+    [graceActiveUntilIso, nowMs],
+  )
+  const hasPendingWithGrace = useMemo(
+    () => pendingItems.length > 0 && graceActiveUntilIso !== null && graceRemainingMs > 0,
+    [pendingItems.length, graceActiveUntilIso, graceRemainingMs],
+  )
+
+  const graceHoursLeft = Math.ceil(graceRemainingMs / (60 * 60 * 1000))
 
   const [exchangeRaw, setExchangeRaw] = useState('')
   const [reflection, setReflection] = useState('')
   const [discrepancyNote, setDiscrepancyNote] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('daily-review'))
+  const markTourSeen = useTourStore((s) => s.markTourSeen)
+  const resetTour = useTourStore((s) => s.resetTour)
+  const [tourOpen, setTourOpen] = useState(false)
+
+  useEffect(() => {
+    if (!hasSeenTour) {
+      const t = setTimeout(() => setTourOpen(true), 500)
+      return () => clearTimeout(t)
+    }
+  }, [hasSeenTour])
 
   useEffect(() => {
     ensureBt2FontLinks()
@@ -86,13 +129,14 @@ export default function DailyReviewPage() {
   )
 
   const sessionLabel = useMemo(() => {
+    if (operatingDayKey) return operatingDayKey
     const d = new Date()
     return d.toLocaleDateString('es-CO', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     })
-  }, [])
+  }, [operatingDayKey])
 
   const onClose = () => {
     setError(null)
@@ -143,7 +187,12 @@ export default function DailyReviewPage() {
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#26343d]">
             Estación cerrada
           </h1>
-          <p className="mt-2 text-sm text-[#52616a]" style={monoStyle}>
+          {/* US-FE-014: día operativo legible */}
+          <p className="mt-1 text-[10px] font-mono font-semibold text-[#52616a]">
+            Día operativo:{' '}
+            <span className="text-[#26343d]">{operatingDayKey ?? '—'}</span>
+          </p>
+          <p className="mt-1 text-sm text-[#52616a]" style={monoStyle}>
             Hasta:{' '}
             {lockedUntil
               ? new Date(lockedUntil).toLocaleString('es-CO')
@@ -178,15 +227,50 @@ export default function DailyReviewPage() {
       </div>
 
       <div className="mx-auto flex min-h-0 max-w-7xl flex-col items-center px-6 pb-24 pt-8 md:px-12">
+        {/* US-FE-012: aviso de gracia activa con ítems pendientes */}
+        {hasPendingWithGrace && (
+          <div
+            className="mb-8 w-full rounded-xl border border-[#FACC15]/40 bg-[#FACC15]/10 px-5 py-4"
+            role="alert"
+          >
+            <p className="text-sm font-bold text-[#92600a]">
+              Día anterior con pendientes — gracia activa
+            </p>
+            <ul className="mt-1 text-xs text-[#92600a]/80 space-y-0.5">
+              {pendingItems.includes('STATION_UNCLOSED') && (
+                <li>· Estación del día anterior sin cerrar. Completa el cierre ahora.</li>
+              )}
+              {pendingItems.includes('UNSETTLED_PICK') && (
+                <li>· Picks desbloqueados sin liquidar del día anterior.</li>
+              )}
+            </ul>
+            <p className="mt-2 font-mono text-xs font-semibold text-[#92600a]">
+              Tiempo restante de gracia: {graceHoursLeft} h
+            </p>
+          </div>
+        )}
+
         <div className="mb-12 w-full text-center md:mb-16">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#52616a]">
             Revisión final
           </p>
-          <h1 className="text-4xl font-extrabold leading-none tracking-tight text-[#26343d] md:text-5xl">
-            After-Action Review
-          </h1>
+          <div className="flex items-center justify-center gap-4">
+            <h1 className="text-4xl font-extrabold leading-none tracking-tight text-[#26343d] md:text-5xl">
+              Análisis post-sesión
+            </h1>
+            <button
+              type="button"
+              onClick={() => { resetTour('daily-review'); setTourOpen(true) }}
+              className="inline-flex items-center gap-1 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
+              title="Ver cómo funciona esta vista"
+            >
+              <span aria-hidden className="text-[11px]">?</span>
+              Cómo funciona
+            </button>
+          </div>
           <p className="mt-4 font-medium text-[#52616a]">
-            Sesión: {sessionLabel} · Estación operativa
+            {/* US-FE-014: día operativo calendario */}
+            Día operativo: <span className="font-mono">{sessionLabel}</span> · Estación activa
           </p>
         </div>
 
@@ -225,7 +309,7 @@ export default function DailyReviewPage() {
                 </div>
                 <div className="mt-8">
                   <div
-                    className={`font-mono text-4xl font-semibold tracking-tighter sm:text-5xl ${netPnlCop >= 0 ? 'text-[#6d3bd7]' : 'text-[#9e3f4e]'}`}
+                    className={`font-mono text-4xl font-semibold tracking-tighter sm:text-5xl ${netPnlCop >= 0 ? 'text-[#059669]' : 'text-[#9e3f4e]'}`}
                     style={monoStyle}
                   >
                     {netPnlCop >= 0 ? '+' : ''}
@@ -406,6 +490,14 @@ export default function DailyReviewPage() {
           </div>
         </div>
       </div>
+
+      {/* US-FE-021 (T-054): tour contextual */}
+      <ViewTourModal
+        open={tourOpen}
+        title={DAILY_REVIEW_TOUR.title}
+        steps={DAILY_REVIEW_TOUR.steps}
+        onComplete={() => { setTourOpen(false); markTourSeen('daily-review') }}
+      />
     </div>
   )
 }

@@ -8,6 +8,7 @@ import {
 import { NavLink } from 'react-router-dom'
 import type { VaultPickCdm } from '@/data/vaultMockPicks'
 import { VAULT_UNLOCK_COST_DP } from '@/data/vaultMockPicks'
+import { getMarketLabelEs } from '@/lib/marketLabels'
 import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
 import { useTradeStore } from '@/store/useTradeStore'
 
@@ -158,6 +159,7 @@ export function PickCard({
   const insufficient = disciplinePoints < VAULT_UNLOCK_COST_DP
   const isSettled = useTradeStore((s) => s.settledPickIds.includes(pick.id))
   const stationLocked = useSessionStore(selectStationLocked)
+  const marketLabel = getMarketLabelEs(pick.marketClass)
 
   return (
     <article
@@ -166,16 +168,43 @@ export function PickCard({
     >
       <header className="mb-3 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#8B5CF6]">
-            {pick.marketClass}
+          {/* US-FE-022/023: mercado en español (código CDM en title para debug) */}
+          <p
+            className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#8B5CF6]"
+            title={pick.marketClass}
+          >
+            {marketLabel}
           </p>
+          {/* US-FE-024: selección visible en preview (open y premium desbloqueado) */}
+          {pick.selectionSummaryEs ? (
+            <p className="mt-0.5 text-xs font-semibold text-[#26343d]">
+              {pick.selectionSummaryEs}
+            </p>
+          ) : null}
+          {/* Evento: línea principal legible */}
           <h2 className="mt-1 text-base font-bold leading-snug tracking-tight text-[#26343d]">
-            {pick.titulo}
+            {pick.eventLabel}
           </h2>
+          {/* Tesis del modelo como subtítulo */}
+          <p className="mt-0.5 text-[11px] leading-snug text-[#52616a]">
+            {pick.titulo}
+          </p>
         </div>
-        <span className="shrink-0 rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] px-2 py-1 font-mono text-xs font-bold tabular-nums text-[#26343d]">
-          +{(pick.edgeBps / 100).toFixed(2)}%
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <span className="rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] px-2 py-1 font-mono text-xs font-bold tabular-nums text-[#26343d]">
+            +{(pick.edgeBps / 100).toFixed(2)}%
+          </span>
+          {/* US-FE-023: chip de tier */}
+          {pick.accessTier === 'open' ? (
+            <span className="rounded-full bg-[#d1fae5] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#065f46]">
+              Abierto
+            </span>
+          ) : (
+            <span className="rounded-full bg-[#e9ddff] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#6d3bd7]">
+              Premium
+            </span>
+          )}
+        </div>
       </header>
 
       {!isUnlocked ? (
@@ -205,17 +234,34 @@ export function PickCard({
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="mt-2 flex flex-1 flex-col gap-3"
         >
-          <p className="text-sm leading-relaxed text-[#26343d]">
-            {pick.traduccionHumana}
-          </p>
-          <div className="rounded-lg border border-[#a4b4be]/20 bg-[#f6fafe] p-3">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86]">
-              Curva de equity (mock CDM)
+          {/* US-FE-022/023: "Lectura del modelo" */}
+          <div>
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#6e7d86]">
+              Lectura del modelo
             </p>
-            <EquitySparkline
-              values={pick.curvaEquidad}
-              className="h-14 w-full text-[#059669]"
-            />
+            <p className="text-sm leading-relaxed text-[#26343d]">
+              {pick.traduccionHumana}
+            </p>
+          </div>
+          {/* Cuota sugerida */}
+          <div className="flex items-center gap-4 rounded-lg border border-[#a4b4be]/20 bg-[#f6fafe] px-3 py-2">
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
+                Cuota sugerida
+              </p>
+              <p className="font-mono text-base font-semibold text-[#26343d]">
+                {pick.suggestedDecimalOdds.toFixed(2)}
+              </p>
+            </div>
+            <div className="rounded-lg border border-[#a4b4be]/20 bg-[#eef4fa] p-2 flex-1">
+              <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
+                Curva de equity (CDM)
+              </p>
+              <EquitySparkline
+                values={pick.curvaEquidad}
+                className="h-10 w-full text-[#059669]"
+              />
+            </div>
           </div>
           {isSettled ? (
             <p className="rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-2 text-center text-xs font-semibold text-[#52616a]">

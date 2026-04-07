@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { EconomyTourModal } from '@/components/EconomyTourModal'
+import { OnboardingCompleteModal } from '@/components/OnboardingCompleteModal'
 import { TreasuryModal } from '@/components/TreasuryModal'
 import {
   Bt2ChartBarsIcon,
@@ -13,7 +15,10 @@ import {
   Bt2VaultIcon,
 } from '@/components/icons/bt2Icons'
 import { useBankrollStore } from '@/store/useBankrollStore'
+import { useSessionStore } from '@/store/useSessionStore'
+import { useTradeStore } from '@/store/useTradeStore'
 import { useUserStore } from '@/store/useUserStore'
+import { useVaultStore } from '@/store/useVaultStore'
 
 function navItemClass(isActive: boolean) {
   return [
@@ -58,12 +63,34 @@ export default function BunkerLayout() {
   const { operatorName, disciplinePoints, incrementDisciplinePoints } =
     useUserStore()
   const endSession = useUserStore((s) => s.endSession)
+  const onboardingPhaseAComplete = useUserStore((s) => s.onboardingPhaseAComplete)
+  const hasSeenEconomyTour = useUserStore((s) => s.hasSeenEconomyTour)
+  const completeOnboardingPhaseA = useUserStore((s) => s.completeOnboardingPhaseA)
+  const completeEconomyTour = useUserStore((s) => s.completeEconomyTour)
   const confirmedBankrollCop = useBankrollStore((s) => s.confirmedBankrollCop)
+  const checkDayBoundary = useSessionStore((s) => s.checkDayBoundary)
 
   const [dpPulseKey, setDpPulseKey] = useState(0)
   const [treasuryOpen, setTreasuryOpen] = useState(false)
+  const [onboardingPhaseAOpen, setOnboardingPhaseAOpen] = useState(false)
+  const [economyTourOpen, setEconomyTourOpen] = useState(false)
 
   const treasuryBlocking = confirmedBankrollCop <= 0
+
+  // US-FE-012: heartbeat de día operativo cada 60 segundos
+  useEffect(() => {
+    const runCheck = () => {
+      const unlockedPickIds = useVaultStore.getState().unlockedPickIds
+      const settledPickIds = useTradeStore.getState().settledPickIds
+      const hasUnsettledPicks = unlockedPickIds.some(
+        (id) => !settledPickIds.includes(id),
+      )
+      checkDayBoundary(new Date().toISOString(), hasUnsettledPicks)
+    }
+    runCheck()
+    const timer = window.setInterval(runCheck, 60_000)
+    return () => window.clearInterval(timer)
+  }, [checkDayBoundary])
 
   useEffect(() => {
     if (confirmedBankrollCop === 0) {
@@ -89,6 +116,26 @@ export default function BunkerLayout() {
       maximumFractionDigits: 0,
     }).format(confirmedBankrollCop)
   }, [confirmedBankrollCop])
+
+  // US-FE-011: callback tras confirmar treasury
+  const handleTreasuryConfirm = () => {
+    if (!onboardingPhaseAComplete) {
+      setOnboardingPhaseAOpen(true)
+    }
+  }
+
+  const handleOnboardingPhaseAComplete = () => {
+    completeOnboardingPhaseA()
+    setOnboardingPhaseAOpen(false)
+    if (!hasSeenEconomyTour) {
+      setEconomyTourOpen(true)
+    }
+  }
+
+  const handleEconomyTourComplete = () => {
+    completeEconomyTour()
+    setEconomyTourOpen(false)
+  }
 
   const rankLabel = useMemo(
     () => bunkerRankLabel(disciplinePoints),
@@ -443,6 +490,21 @@ export default function BunkerLayout() {
         open={treasuryOpen}
         onClose={() => setTreasuryOpen(false)}
         blocking={treasuryBlocking}
+        onConfirm={handleTreasuryConfirm}
+      />
+
+      {/* US-FE-011: cierre de onboarding fase A (solo primera vez) */}
+      <OnboardingCompleteModal
+        open={onboardingPhaseAOpen}
+        operatorName={operatorName}
+        bankrollFormatted={equityLabel}
+        onContinueToTour={handleOnboardingPhaseAComplete}
+      />
+
+      {/* US-FE-011: tour de economía DP fase B (solo primera vez) */}
+      <EconomyTourModal
+        open={economyTourOpen}
+        onComplete={handleEconomyTourComplete}
       />
     </div>
   )

@@ -17,9 +17,15 @@ export type TreasuryModalProps = {
   onClose: () => void
   /** Si true, no se puede cerrar sin confirmar un capital válido (US-FE-002 Regla 5). */
   blocking: boolean
+  /**
+   * US-FE-011: callback llamado SOLO tras una confirmación exitosa del capital
+   * (no en descartar ni en cierre por backdrop). Permite orquestar el flujo
+   * de onboarding en el padre sin acoplar la lógica aquí.
+   */
+  onConfirm?: () => void
 }
 
-export function TreasuryModal({ open, onClose, blocking }: TreasuryModalProps) {
+export function TreasuryModal({ open, onClose, blocking, onConfirm }: TreasuryModalProps) {
   const confirmedBankrollCop = useBankrollStore((s) => s.confirmedBankrollCop)
   const selectedStakePct = useBankrollStore((s) => s.selectedStakePct)
   const confirmTreasury = useBankrollStore((s) => s.confirmTreasury)
@@ -64,6 +70,7 @@ export function TreasuryModal({ open, onClose, blocking }: TreasuryModalProps) {
     e.preventDefault()
     if (!canConfirm) return
     confirmTreasury(bankrollNum, draftStake)
+    onConfirm?.()
     onClose()
   }
 

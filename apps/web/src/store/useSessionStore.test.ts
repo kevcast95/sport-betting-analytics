@@ -1,14 +1,29 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 import { useBankrollStore } from '@/store/useBankrollStore'
-import { useSessionStore } from '@/store/useSessionStore'
+import {
+  selectStationLocked,
+  useSessionStore,
+} from '@/store/useSessionStore'
+import { useUserStore } from '@/store/useUserStore'
+import {
+  endOfDayLocalIso,
+  graceExpiresIso,
+} from '@/lib/operatingDay'
+
+beforeEach(() => {
+  useSessionStore.getState().reset()
+  useBankrollStore.setState({
+    confirmedBankrollCop: 500_000,
+    selectedStakePct: 2,
+    lastCalculatedAt: new Date().toISOString(),
+  })
+})
 
 describe('useSessionStore (US-FE-007)', () => {
   it('cierra estación, reconcilia bankroll y bloquea 24h', () => {
-    useBankrollStore.setState({
-      confirmedBankrollCop: 500_000,
-      selectedStakePct: 2,
-      lastCalculatedAt: new Date().toISOString(),
-    })
+    // Inicializar día operativo
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
+
     const res = useSessionStore.getState().closeStationAndFinalizeDay({
       exchangeCop: 500_000,
       projectedCop: 500_000,
@@ -23,6 +38,7 @@ describe('useSessionStore (US-FE-007)', () => {
   })
 
   it('exige nota si discrepancia > 1%', () => {
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
     const res = useSessionStore.getState().closeStationAndFinalizeDay({
       exchangeCop: 600_000,
       projectedCop: 500_000,
@@ -30,5 +46,119 @@ describe('useSessionStore (US-FE-007)', () => {
       settlementsTodayCount: 0,
     })
     expect(res).toEqual({ ok: false, reason: 'note_required_for_discrepancy' })
+  })
+})
+
+describe('useSessionStore (US-FE-012): día operativo y gracia', () => {
+  it('inicializa operatingDayKey en el primer checkDayBoundary', () => {
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
+    expect(useSessionStore.getState().operatingDayKey).toBe('2026-04-05')
+  })
+
+  it('detecta cambio de día y registra pendiente STATION_UNCLOSED', () => {
+    // Primer día
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
+    // Avanzar al día siguiente SIN cerrar la estación
+    useSessionStore.getState().checkDayBoundary('2026-04-06T08:00:00.000Z', false)
+
+    const state = useSessionStore.getState()
+    expect(state.operatingDayKey).toBe('2026-04-06')
+    expect(state.previousDayPendingItems).toContain('STATION_UNCLOSED')
+    expect(state.graceActiveUntilIso).not.toBeNull()
+  })
+
+  it('detecta UNSETTLED_PICK cuando hay picks sin liquidar al cambiar de día', () => {
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
+    // Día siguiente con picks sin liquidar
+    useSessionStore.getState().checkDayBoundary('2026-04-06T08:00:00.000Z', true)
+
+    const state = useSessionStore.getState()
+    expect(state.previousDayPendingItems).toContain('UNSETTLED_PICK')
+  })
+
+  it('aplica penalización si la gracia expiró y hay estación sin cerrar', () => {
+    useUserStore.getState().reset()
+    const dpBefore = useUserStore.getState().disciplinePoints
+
+    // Día 5 como referencia: usar un día suficientemente en el pasado fijo
+    const dayKey5 = '2026-04-05'
+
+    // Inicializar en el día 5
+    useSessionStore.getState().checkDayBoundary(`${dayKey5}T10:00:00.000Z`, false)
+
+    // La gracia del día 5 expira a medianoche local del día 7.
+    // Avanzar al día 7 DESPUÉS de medianoche (gracia expirada) — usamos +12h sobre la expiry
+    const graceEnd5 = new Date(graceExpiresIso(dayKey5)).getTime()
+    const afterGrace = new Date(graceEnd5 + 12 * 60 * 60 * 1000).toISOString()
+
+    // checkDayBoundary detectará: cambio de día 5→(día7) + gracia expirada → penalización
+    useSessionStore.getState().checkDayBoundary(afterGrace, false)
+
+    const state = useSessionStore.getState()
+    expect(state.penaltiesApplied.length).toBeGreaterThan(0)
+    expect(state.penaltiesApplied[0].reason).toBe('grace_expired_station_unclosed')
+    expect(useUserStore.getState().disciplinePoints).toBeLessThan(dpBefore)
+  })
+
+  it('no registra pendientes si la estación se cerró correctamente el día anterior', () => {
+    // Día 5, cerrar estación correctamente
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
+    useSessionStore.getState().closeStationAndFinalizeDay({
+      exchangeCop: 500_000,
+      projectedCop: 500_000,
+      dailyReflection: 'Sin novedades, todo en orden.',
+      settlementsTodayCount: 1,
+    })
+
+    // Día siguiente
+    useSessionStore.getState().checkDayBoundary('2026-04-06T08:00:00.000Z', false)
+
+    const state = useSessionStore.getState()
+    expect(state.operatingDayKey).toBe('2026-04-06')
+    expect(state.previousDayPendingItems).toHaveLength(0)
+    expect(state.graceActiveUntilIso).toBeNull()
+  })
+})
+
+describe('selectStationLocked (US-FE-014): coherencia con día calendario', () => {
+  it('bloquea la estación si se cerró en el mismo día operativo', () => {
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
+    useSessionStore.getState().closeStationAndFinalizeDay({
+      exchangeCop: 500_000,
+      projectedCop: 500_000,
+      dailyReflection: 'Sesión cerrada correctamente.',
+      settlementsTodayCount: 1,
+    })
+
+    const state = useSessionStore.getState()
+    expect(selectStationLocked(state)).toBe(true)
+  })
+
+  it('NO bloquea si el día operativo cambió (día siguiente)', () => {
+    // Cerrar estación en día 5
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
+    useSessionStore.getState().closeStationAndFinalizeDay({
+      exchangeCop: 500_000,
+      projectedCop: 500_000,
+      dailyReflection: 'Sesión cerrada en día 5.',
+      settlementsTodayCount: 1,
+    })
+
+    // Avanzar al día 6
+    useSessionStore.getState().checkDayBoundary('2026-04-06T08:00:00.000Z', false)
+
+    const state = useSessionStore.getState()
+    // La bóveda del nuevo día no está bloqueada por el cierre del día anterior
+    expect(selectStationLocked(state)).toBe(false)
+  })
+
+  it('NO bloquea si stationLockedUntilIso ya venció', () => {
+    useSessionStore.setState({
+      stationLockedUntilIso: new Date(Date.now() - 1000).toISOString(),
+      operatingDayKey: '2026-04-05',
+      closedForDayKey: '2026-04-05',
+    })
+    const state = useSessionStore.getState()
+    expect(selectStationLocked(state)).toBe(false)
   })
 })

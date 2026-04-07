@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
-import type { CSSProperties } from 'react'
 
 type DisciplineContractProps = {
   open: boolean
@@ -8,13 +7,6 @@ type DisciplineContractProps = {
    * Se dispara al completar los 3 axiomas y presionar el compromiso con el protocolo.
    */
   onCommitted: () => void
-}
-
-function makeSessionToken(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return `SS-VAULT-${crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()}`
-  }
-  return `SS-VAULT-${String(Math.random()).slice(2, 10).toUpperCase()}`
 }
 
 function AxiomCard({
@@ -66,14 +58,6 @@ function DisciplineContractPanel({ onCommitted }: { onCommitted: () => void }) {
     stakes: false,
     emotional: false,
   })
-  const [sessionToken] = useState(() => makeSessionToken())
-
-  const monoStyle = useMemo<CSSProperties>(
-    () => ({
-      fontFamily: `'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`,
-    }),
-    [],
-  )
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -156,21 +140,7 @@ function DisciplineContractPanel({ onCommitted }: { onCommitted: () => void }) {
         ))}
       </div>
 
-      <div className="mt-8 border-t border-[#a4b4be]/20 pt-6 flex items-center justify-between gap-8">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8B5CF6]/10">
-            <span className="text-[#8B5CF6]">✓</span>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-[#52616a]" style={monoStyle}>
-              TOKEN DE AUTENTICACIÓN
-            </p>
-            <p className="text-sm text-[#26343d]" style={monoStyle}>
-              {sessionToken}
-            </p>
-          </div>
-        </div>
-
+      <div className="mt-8 border-t border-[#a4b4be]/20 pt-6">
         <button
           type="button"
           className={[

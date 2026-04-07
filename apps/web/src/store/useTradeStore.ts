@@ -16,11 +16,20 @@ export type LedgerRow = {
   /** US-FE-008: protocolo CDM (clase de mercado). */
   marketClass?: string
   titulo?: string
+  /** Etiqueta de evento (US-FE-022). */
+  eventLabel?: string
+  /** Selección concreta de la apuesta en español (US-FE-024). */
+  selectionSummaryEs?: string
   outcome: SettlementOutcome
   reflection: string
   pnlCop: number
   stakeCop: number
+  /** Cuota usada para calcular el PnL (puede ser cuota casa si fue capturada). */
   decimalCuota: number
+  /** Cuota sugerida por el sistema CDM (US-FE-022). */
+  suggestedDecimalOdds?: number
+  /** Cuota real capturada en la casa del operador (US-FE-022 T-057). */
+  bookDecimalOdds?: number
   settledAt: string
   /** +25 DP por liquidación (US-FE-006). */
   earnedDp?: number
@@ -51,6 +60,8 @@ export type TradeStoreActions = {
     reflection: string
     stakeCop: number
     decimalCuota: number
+    /** Cuota real capturada en la casa; si se provee, se usa para PnL y se persiste. */
+    bookDecimalOdds?: number
   }) => FinalizeSettlementResult
   reset: () => void
 }
@@ -94,11 +105,15 @@ export const useTradeStore = create<TradeStore>()(
           pickId: input.pickId,
           marketClass: meta?.marketClass ?? 'CDM',
           titulo: meta?.titulo ?? input.pickId,
+          eventLabel: meta?.eventLabel,
+          selectionSummaryEs: meta?.selectionSummaryEs,
           outcome: input.outcome,
           reflection,
           pnlCop: pnl,
           stakeCop: input.stakeCop,
           decimalCuota: input.decimalCuota,
+          suggestedDecimalOdds: meta?.suggestedDecimalOdds,
+          bookDecimalOdds: input.bookDecimalOdds,
           settledAt: new Date().toISOString(),
           earnedDp: SETTLEMENT_DP_REWARD,
         }

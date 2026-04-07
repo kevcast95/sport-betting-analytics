@@ -17,6 +17,7 @@ from zoneinfo import ZoneInfo
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+from apps.api.bt2_router import router as bt2_router
 from apps.api.deps import DbConn, verify_local_api_key
 from apps.api.jsonutil import parse_json_field
 from apps.api.schemas import (
@@ -257,6 +258,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(bt2_router)
 
 _global_deps = [Depends(verify_local_api_key)]
 

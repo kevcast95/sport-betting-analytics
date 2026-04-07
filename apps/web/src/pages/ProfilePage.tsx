@@ -1,5 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
+import { ViewTourModal } from '@/components/tours/ViewTourModal'
+import { getTourScript } from '@/components/tours/tourScripts'
+import { useTourStore } from '@/store/useTourStore'
 import { Link } from 'react-router-dom'
 import {
   IconBolt,
@@ -35,6 +38,8 @@ function seniorityDays(ledger: { settledAt: string }[]): number {
   return Math.max(0, Math.floor((Date.now() - t) / 86_400_000))
 }
 
+const PROFILE_TOUR = getTourScript('profile')!
+
 export default function ProfilePage() {
   const operatorName = useUserStore((s) => s.operatorName)
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
@@ -43,9 +48,21 @@ export default function ProfilePage() {
   const hasDiagnostic = useUserStore((s) => s.hasCompletedDiagnostic)
   const ledger = useTradeStore((s) => s.ledger)
 
+  const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('profile'))
+  const markTourSeen = useTourStore((s) => s.markTourSeen)
+  const resetTour = useTourStore((s) => s.resetTour)
+  const [tourOpen, setTourOpen] = useState(false)
+
   useEffect(() => {
     ensureBt2FontLinks()
   }, [])
+
+  useEffect(() => {
+    if (!hasSeenTour) {
+      const t = setTimeout(() => setTourOpen(true), 500)
+      return () => clearTimeout(t)
+    }
+  }, [hasSeenTour])
 
   const monoStyle = useMemo<CSSProperties>(
     () => ({
@@ -132,9 +149,20 @@ export default function ProfilePage() {
       <section className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-12">
         <div className="relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-10 lg:col-span-8">
           <div className="relative z-10">
-            <h3 className="mb-2 text-xs font-medium uppercase tracking-[0.1em] text-[#52616a]">
-              Usuario autenticado
-            </h3>
+            <div className="mb-2 flex items-center gap-3">
+              <h3 className="text-xs font-medium uppercase tracking-[0.1em] text-[#52616a]">
+                Usuario autenticado
+              </h3>
+              <button
+                type="button"
+                onClick={() => { resetTour('profile'); setTourOpen(true) }}
+                className="inline-flex items-center gap-1 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
+                title="Ver cómo funciona esta vista"
+              >
+                <span aria-hidden className="text-[11px]">?</span>
+                Cómo funciona
+              </button>
+            </div>
             <h1 className="text-4xl font-extrabold tracking-tight text-[#26343d]">
               {operatorName ?? 'Operador'}
             </h1>
@@ -146,13 +174,16 @@ export default function ProfilePage() {
           <div className="relative z-10 mt-12 grid grid-cols-3 gap-6">
             <div>
               <p className="mb-1 text-xs uppercase tracking-wider text-[#52616a]">
-                Rank
+                Posición global
               </p>
               <p
                 className="text-xl font-bold text-[#26343d]"
                 style={monoStyle}
               >
                 Top {rankTopPct}%
+              </p>
+              <p className="mt-1 text-[10px] leading-relaxed text-[#6e7d86]">
+                Basado en DP acumulado.
               </p>
             </div>
             <div>
@@ -261,13 +292,16 @@ export default function ProfilePage() {
           </p>
           <div className="flex items-end justify-between">
             <span
-              className="text-3xl font-bold text-[#26343d]"
+              className="text-3xl font-bold text-[#6d3bd7]"
               style={monoStyle}
             >
               {disciplinePoints.toLocaleString('es-CO')}
             </span>
             <IconWallet className="h-7 w-7 text-[#6d3bd7]" />
           </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-[#6e7d86]">
+            Saldo de disciplina acumulada. Crece al liquidar, cerrar y reflexionar. Sin vencimiento.
+          </p>
         </div>
         <div className="rounded-xl border border-transparent bg-[#eef4fa] p-6 transition-all hover:border-[#6d3bd7]/20">
           <p className="mb-4 text-xs font-bold uppercase tracking-widest text-[#52616a]">
@@ -455,7 +489,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#52616a]">
-                Discipline Shield
+                Escudo de disciplina
               </p>
               <p className="text-lg font-bold text-[#26343d]" style={monoStyle}>
                 {disciplinePoints.toLocaleString('es-CO')}{' '}
@@ -491,6 +525,14 @@ export default function ProfilePage() {
           </button>
         )}
       </div>
+
+      {/* US-FE-021 (T-055): tour contextual */}
+      <ViewTourModal
+        open={tourOpen}
+        title={PROFILE_TOUR.title}
+        steps={PROFILE_TOUR.steps}
+        onComplete={() => { setTourOpen(false); markTourSeen('profile') }}
+      />
     </div>
   )
 }

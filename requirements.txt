@@ -1,2 +1,14 @@
 playwright>=1.40.0
 playwright-stealth>=2.0.0
+
+# BetTracker 2.0 — Sprint 02
+pydantic-settings>=2.0
+sqlalchemy[asyncio]>=2.0
+asyncpg
+alembic
+httpx
+psycopg2-binary
+
+# BetTracker 2.0 — Sprint 03 (Auth)
+bcrypt
+python-jose[cryptography]

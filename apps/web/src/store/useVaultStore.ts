@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
 import { useSessionStore } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
-import { VAULT_UNLOCK_COST_DP } from '@/data/vaultMockPicks'
+import { vaultMockPicks, VAULT_UNLOCK_COST_DP } from '@/data/vaultMockPicks'
 
 export type VaultUnlockResult =
   | { ok: true }
@@ -36,8 +36,18 @@ export const useVaultStore = create<VaultStore>()(
   persist(
     (set, get) => ({
       ...initial,
-      isUnlocked: (pickId) => get().unlockedPickIds.includes(pickId),
+      isUnlocked: (pickId) => {
+        // US-FE-023: picks open son accesibles sin gastar DP
+        const pick = vaultMockPicks.find((p) => p.id === pickId)
+        if (pick?.accessTier === 'open') return true
+        return get().unlockedPickIds.includes(pickId)
+      },
       tryUnlockPick: (pickId) => {
+        // Open picks no requieren desbloqueo explícito
+        const pick = vaultMockPicks.find((p) => p.id === pickId)
+        if (pick?.accessTier === 'open') {
+          return { ok: false, reason: 'already_unlocked' }
+        }
         if (useSessionStore.getState().isStationLocked()) {
           console.warn(
             `[BT2] Bóveda bloqueada: estación cerrada hasta fin de ciclo.`,

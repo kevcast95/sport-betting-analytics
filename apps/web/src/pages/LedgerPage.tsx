@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
+import { ViewTourModal } from '@/components/tours/ViewTourModal'
+import { getTourScript } from '@/components/tours/tourScripts'
+import { useTourStore } from '@/store/useTourStore'
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -35,17 +38,31 @@ function disciplineFactorFromDp(dp: number): {
   return { factor, label, barPct }
 }
 
+const LEDGER_TOUR = getTourScript('ledger')!
+
 export default function LedgerPage() {
   const ledger = useTradeStore((s) => s.ledger)
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
-  const [protocol, setProtocol] = useState<string>('ALL')
+  const [protocol, setProtocol] = useState<string>('TODOS')
   const [idQuery, setIdQuery] = useState('')
   const [page, setPage] = useState(0)
   const [detail, setDetail] = useState<LedgerRow | null>(null)
 
+  const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('ledger'))
+  const markTourSeen = useTourStore((s) => s.markTourSeen)
+  const resetTour = useTourStore((s) => s.resetTour)
+  const [tourOpen, setTourOpen] = useState(false)
+
   useEffect(() => {
     ensureBt2FontLinks()
   }, [])
+
+  useEffect(() => {
+    if (!hasSeenTour) {
+      const t = setTimeout(() => setTourOpen(true), 500)
+      return () => clearTimeout(t)
+    }
+  }, [hasSeenTour])
 
   const monoStyle = useMemo<CSSProperties>(
     () => ({
@@ -60,14 +77,14 @@ export default function LedgerPage() {
       const m = r.marketClass ?? ''
       if (m) u.add(m)
     }
-    return ['ALL', ...[...u].sort()]
+    return ['TODOS', ...[...u].sort()]
   }, [ledger])
 
   const filtered = useMemo(() => {
     let rows = [...ledger].sort(
       (a, b) => new Date(b.settledAt).getTime() - new Date(a.settledAt).getTime(),
     )
-    if (protocol !== 'ALL') {
+    if (protocol !== 'TODOS') {
       rows = rows.filter((r) => (r.marketClass ?? '') === protocol)
     }
     const q = idQuery.trim().toLowerCase()
@@ -78,7 +95,7 @@ export default function LedgerPage() {
   }, [ledger, protocol, idQuery])
 
   const eff = useMemo(
-    () => (protocol === 'ALL' ? 0 : protocolWinRate(ledger, protocol)),
+    () => (protocol === 'TODOS' ? 0 : protocolWinRate(ledger, protocol)),
     [ledger, protocol],
   )
 
@@ -145,9 +162,20 @@ export default function LedgerPage() {
     <div className="mx-auto w-full max-w-7xl space-y-10" aria-label="Libro mayor estratégico">
       <section className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[#26343d]">
-            Libro mayor estratégico
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[#26343d]">
+              Libro mayor estratégico
+            </h1>
+            <button
+              type="button"
+              onClick={() => { resetTour('ledger'); setTourOpen(true) }}
+              className="mb-2 inline-flex items-center gap-1 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
+              title="Ver cómo funciona esta vista"
+            >
+              <span aria-hidden className="text-[11px]">?</span>
+              Cómo funciona
+            </button>
+          </div>
           <p className="font-medium text-[#52616a]">
             Registro cronológico de ejecución disciplinada.
           </p>
@@ -180,7 +208,7 @@ export default function LedgerPage() {
             >
               {protocols.map((p) => (
                 <option key={p} value={p}>
-                  {p === 'ALL' ? 'Filtrar por protocolo' : p}
+                  {p === 'TODOS' ? 'Filtrar por protocolo' : p}
                 </option>
               ))}
             </select>
@@ -209,7 +237,7 @@ export default function LedgerPage() {
               Eficiencia del protocolo
             </h4>
             <p className="text-sm leading-relaxed text-[#26343d]">
-              {protocol !== 'ALL' ? (
+              {protocol !== 'TODOS' ? (
                 <>
                   El protocolo{' '}
                   <span
@@ -298,6 +326,14 @@ export default function LedgerPage() {
           </div>
         </div>
       ) : null}
+
+      {/* US-FE-021 (T-055): tour contextual */}
+      <ViewTourModal
+        open={tourOpen}
+        title={LEDGER_TOUR.title}
+        steps={LEDGER_TOUR.steps}
+        onComplete={() => { setTourOpen(false); markTourSeen('ledger') }}
+      />
     </div>
   )
 }

@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
+import { ViewTourModal } from '@/components/tours/ViewTourModal'
+import { getTourScript } from '@/components/tours/tourScripts'
+import { useTourStore } from '@/store/useTourStore'
 import {
   IconPsychology,
   IconSmallCheck,
@@ -28,6 +31,8 @@ function fmtAxis(iso: string): string {
 const STRATEGIC_FALLBACK =
   'El ciclo actual se define por la liquidez disponible y la varianza observada en el ledger. Mantén tamaños de unidad consistentes y endurece criterios de salida en eventos atípicos. La preparación psicológica tras el cierre reciente condiciona la siguiente sesión: evita sobreapalancamiento en rachas prolongadas.'
 
+const PERFORMANCE_TOUR = getTourScript('performance')!
+
 export default function PerformancePage() {
   const ledger = useTradeStore((s) => s.ledger)
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
@@ -35,9 +40,21 @@ export default function PerformancePage() {
   const lastClose = useSessionStore((s) => s.lastCloseSummary)
   const [logScale, setLogScale] = useState(false)
 
+  const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('performance'))
+  const markTourSeen = useTourStore((s) => s.markTourSeen)
+  const resetTour = useTourStore((s) => s.resetTour)
+  const [tourOpen, setTourOpen] = useState(false)
+
   useEffect(() => {
     ensureBt2FontLinks()
   }, [])
+
+  useEffect(() => {
+    if (!hasSeenTour) {
+      const t = setTimeout(() => setTourOpen(true), 500)
+      return () => clearTimeout(t)
+    }
+  }, [hasSeenTour])
 
   const monoStyle = useMemo<CSSProperties>(
     () => ({
@@ -94,9 +111,20 @@ export default function PerformancePage() {
       aria-label="Rendimiento y estrategia"
     >
       <header className="mb-2">
-        <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[#26343d]">
-          Estrategia y rendimiento
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[#26343d]">
+            Estrategia y rendimiento
+          </h1>
+          <button
+            type="button"
+            onClick={() => { resetTour('performance'); setTourOpen(true) }}
+            className="mb-2 inline-flex items-center gap-1 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
+            title="Ver cómo funciona esta vista"
+          >
+            <span aria-hidden className="text-[11px]">?</span>
+            Cómo funciona
+          </button>
+        </div>
         <p className="text-sm font-medium uppercase tracking-wide text-[#52616a] opacity-70">
           Resumen ejecutivo del protocolo Alpha
         </p>
@@ -109,17 +137,20 @@ export default function PerformancePage() {
           </p>
           <div className="flex items-baseline gap-2">
             <span
-              className="text-3xl font-bold text-[#6d3bd7]"
+              className="text-3xl font-bold text-[#059669]"
               style={monoStyle}
             >
               {roiStr}
             </span>
-            <IconTrendingUp className="h-4 w-4 shrink-0 text-[#6d3bd7]" />
+            <IconTrendingUp className="h-4 w-4 shrink-0 text-[#059669]" />
           </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-[#6e7d86]">
+            Retorno sobre el capital total en riesgo. Refleja eficiencia del protocolo, no suerte aislada.
+          </p>
         </div>
         <div className="rounded-xl border border-[#a4b4be]/15 bg-white p-6 transition-shadow hover:shadow-md">
           <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#52616a]">
-            Win rate
+            Tasa de éxito
           </p>
           <div className="flex items-baseline gap-2">
             <span
@@ -129,10 +160,13 @@ export default function PerformancePage() {
               {metrics.winRatePct.toFixed(1)}%
             </span>
           </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-[#6e7d86]">
+            Porcentaje de liquidaciones positivas. En protocolos sanos tiende a superar el 50 %.
+          </p>
         </div>
         <div className="rounded-xl border border-[#a4b4be]/15 bg-white p-6 transition-shadow hover:shadow-md">
           <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#52616a]">
-            Max drawdown
+            Caída máxima
           </p>
           <div className="flex items-baseline gap-2">
             <span
@@ -143,6 +177,9 @@ export default function PerformancePage() {
             </span>
             <IconWarning className="h-4 w-4 shrink-0 text-[#914d00]" />
           </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-[#6e7d86]">
+            Mayor retroceso acumulado respecto al stake total. Mide resistencia en rachas adversas.
+          </p>
         </div>
         <div className="rounded-xl border border-[#a4b4be]/15 bg-white p-6 transition-shadow hover:shadow-md">
           <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#52616a]">
@@ -155,8 +192,12 @@ export default function PerformancePage() {
             >
               +{metrics.disciplineDpFromSettlements}
             </span>
+            <span className="text-sm font-bold text-[#6d3bd7]">DP</span>
             <IconVerified className="h-4 w-4 shrink-0 text-[#6d3bd7]" />
           </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-[#6e7d86]">
+            DP acumulados en liquidaciones. Independiente del resultado: mide consistencia de proceso.
+          </p>
         </div>
       </div>
 
@@ -387,6 +428,14 @@ export default function PerformancePage() {
           </div>
         </div>
       </div>
+
+      {/* US-FE-021 (T-055): tour contextual */}
+      <ViewTourModal
+        open={tourOpen}
+        title={PERFORMANCE_TOUR.title}
+        steps={PERFORMANCE_TOUR.steps}
+        onComplete={() => { setTourOpen(false); markTourSeen('performance') }}
+      />
     </div>
   )
 }
