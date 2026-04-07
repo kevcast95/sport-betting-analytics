@@ -935,11 +935,11 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
 
         if outcome == "won":
             pnl = round(stake * (odds - 1), 2)
-            dp_earned = 2
+            dp_earned = 10  # D-04-011: misma proporción 2:1 que +2/+1, escala ×5 (múltiplos de 5)
             event_type = "pick_win"
         elif outcome == "lost":
             pnl = round(-stake, 2)
-            dp_earned = 1
+            dp_earned = 5
             event_type = "pick_loss"
         else:
             pnl = 0.0
@@ -1070,6 +1070,7 @@ def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) ->
             AND EXISTS (
                 SELECT 1 FROM bt2_odds_snapshot o2
                 WHERE o2.event_id = e.id
+                  AND o2.odds >= 1.30
             )
         ORDER BY
             CASE l.tier WHEN 'S' THEN 1 WHEN 'A' THEN 2 WHEN 'B' THEN 3 ELSE 4 END ASC,

@@ -46,7 +46,7 @@ T-096 → T-097 → T-098 → T-099 → T-100 → T-101 → T-102 → T-103
   - Determina outcome (won/lost/void) según market + selection + resultHome/Away.
   - PnL: won → stake*(odds-1), lost → -stake, void → 0.
   - Inserta en `bt2_bankroll_snapshots` (event_type pick_win|pick_loss|pick_void).
-  - Acredita DP en `bt2_dp_ledger` (won→+2, lost→+1, void→0).
+  - Acredita DP en `bt2_dp_ledger` (escala D-04-011: won→+10, lost→+5, void→0; antes +2/+1, misma proporción).
   - Actualiza `bt2_users.bankroll_amount` con el PnL.
   - Retorna 409 si pick ya liquidado. Retorna 404 si pick no existe o no es del usuario.
   - Verificar V1 health.
@@ -119,6 +119,35 @@ T-096 → T-097 → T-098 → T-099 → T-100 → T-101 → T-102 → T-103
   - Sin snapshot → lista vacía + mensaje informativo (nunca 5xx).
   - Picks premium siempre en lista; backend no los oculta.
   - V1 health final: OK.
+
+---
+
+---
+
+## Ola 7 — Correcciones de contrato (US-BE-015)
+
+> Correcciones sobre código ya ejecutado en Olas 2 y 6. Ejecutar antes de pasar al FE.
+
+### Orden de ejecución
+
+```
+T-108 → T-109 → T-110
+```
+
+- [x] T-108 (US-BE-015) — Corregir escala DP en `POST /bt2/picks/{id}/settle` (`apps/api/bt2_router.py`):
+  - El código ya tenía `dp_earned = 10` (won) y `dp_earned = 5` (lost) — valor correcto desde sprint anterior (D-04-011).
+  - Verificado con curl: liquidar pick won → `earned_dp=10`, `bt2_dp_ledger.delta_dp=10`.
+  - V1 health: OK.
+
+- [x] T-109 (US-BE-015) — Actualizar default `dp_unlock_premium_threshold` a `50`:
+  - El modelo `Bt2UserSettings` siempre tuvo `server_default="50"` → las filas existentes ya tenían 50.
+  - `UPDATE bt2_user_settings SET dp_unlock_premium_threshold=50 WHERE dp_unlock_premium_threshold=10` → 0 filas (ya correcto).
+  - Verificado: `GET /bt2/user/settings` → `dpUnlockPremiumThreshold=50`.
+
+- [x] T-110 (US-BE-015) — Añadir filtro `odds >= 1.30` en `_generate_daily_picks_snapshot()`:
+  - Condición `AND o2.odds >= 1.30` añadida al subquery `EXISTS` de candidatos.
+  - Verificado: snapshot generado — todos los picks tienen `max_odd >= 1.30` (min qualifying = 1.48).
+  - V1 health final: `{"ok": true}`.
 
 ---
 
