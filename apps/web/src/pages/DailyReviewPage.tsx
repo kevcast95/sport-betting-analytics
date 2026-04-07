@@ -279,9 +279,14 @@ export default function DailyReviewPage() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="flex aspect-square flex-col justify-between rounded-xl bg-[#eef4fa] p-8 md:aspect-auto">
                 <div className="flex items-start justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                    ROI del día
-                  </span>
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
+                      ROI del día
+                    </span>
+                    <span className="ml-2 rounded-full bg-[#e2e8f0] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#6e7d86]">
+                      Local
+                    </span>
+                  </div>
                   <IconTrendingUp className="text-[#6d3bd7]" />
                 </div>
                 <div className="mt-8">
@@ -302,9 +307,14 @@ export default function DailyReviewPage() {
               </div>
               <div className="flex flex-col justify-between rounded-xl bg-[#eef4fa] p-8">
                 <div className="flex items-start justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                    P/L neto
-                  </span>
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
+                      Resultado neto
+                    </span>
+                    <span className="ml-2 rounded-full bg-[#e2e8f0] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#6e7d86]">
+                      Local
+                    </span>
+                  </div>
                   <IconWallet className="text-[#6d3bd7]" />
                 </div>
                 <div className="mt-8">

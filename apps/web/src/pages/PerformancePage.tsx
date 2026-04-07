@@ -72,10 +72,11 @@ export default function PerformancePage() {
     return Date.now() - t < 24 * 60 * 60 * 1000
   }, [lastClose])
 
+  const dp = disciplinePoints ?? 0
   const protection =
-    disciplinePoints >= 2000
+    dp >= 2000
       ? 'MÁXIMO'
-      : disciplinePoints >= 1200
+      : dp >= 1200
         ? 'ALTO'
         : 'ESTÁNDAR'
 
@@ -404,7 +405,7 @@ export default function PerformancePage() {
             <p className="text-xs leading-relaxed opacity-70">
               Tu puntuación actual de{' '}
               <span className="font-mono font-semibold">
-                {disciplinePoints.toLocaleString('es-CO')} DP
+                {dp.toLocaleString('es-CO')} DP
               </span>{' '}
               define el acceso a informes de precisión y módulos de entrada con
               control de liquidez.

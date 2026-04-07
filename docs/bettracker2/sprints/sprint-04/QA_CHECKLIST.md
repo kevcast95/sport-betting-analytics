@@ -37,12 +37,12 @@
 - [ ] Pick inexistente → `404`.
 
 ### POST /bt2/picks/{id}/settle
-- [x] Pick open + resultado → `200` con `status='won'`, `pnl_units=stake*(odds-1)`, `earned_dp=2`.
+- [x] Pick open + resultado → `200` con `status='won'`, `pnl_units=stake*(odds-1)`, `earned_dp=10` (D-04-011).
 - [x] Pick ya liquidado → `409`.
 - [x] `bankroll_amount` del usuario actualizado en BD.
 - [x] Entrada en `bt2_bankroll_snapshots` con `event_type='pick_win'`.
-- [x] Entrada en `bt2_dp_ledger` con `delta_dp=2`, `reason='pick_settle'`.
-- [ ] Pick lost: `pnl_units=-stake`, `earned_dp=1`, `event_type='pick_loss'`.
+- [x] Entrada en `bt2_dp_ledger` con `delta_dp=10`, `reason='pick_settle'` (won).
+- [ ] Pick lost: `pnl_units=-stake`, `earned_dp=5`, `event_type='pick_loss'`.
 - [ ] Pick void: `pnl_units=0`, `earned_dp=0`, `event_type='pick_void'`.
 
 ```sql

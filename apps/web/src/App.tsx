@@ -40,6 +40,7 @@ import { SportUrlSync } from '@/components/SportUrlSync'
 import { firstVisibleSport } from '@/lib/uiSportsVisibility'
 import { fetchJson } from '@/lib/api'
 import type { EffectivenessReportStatusOut } from '@/types/api'
+import { useAppInit } from '@/hooks/useAppInit'
 
 function navClass(isActive: boolean) {
   return [
@@ -51,6 +52,7 @@ function navClass(isActive: boolean) {
 }
 
 function AppLayout() {
+  useAppInit()
   const { visible: sportsVisible } = useUiSportsVisibility()
   const [menuOpen, setMenuOpen] = useState(false)
   const [reportNotice, setReportNotice] = useState<string | null>(null)

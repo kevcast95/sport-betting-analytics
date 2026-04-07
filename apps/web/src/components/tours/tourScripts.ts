@@ -38,9 +38,9 @@ const TOUR_SANCTUARY: TourScript = {
       title: 'Riqueza de carácter y DP',
       body: [
         'El indicador de Discipline Points (DP) refleja tu coherencia operativa, no tu capital real. Un saldo alto de DP significa que estás siguiendo el protocolo.',
-        'Cada día completo (liquidaciones, cierre y reconciliación) suma DP a tu saldo.',
+        'Cada liquidación registrada acredita DP en el servidor (+10 si ganancia, +5 si pérdida). El saldo total sigue otras reglas del protocolo cuando el backend las activa.',
       ],
-      highlight: { label: 'Recompensa por cierre completo', value: '+25 DP' },
+      highlight: { label: 'DP por liquidación (ganada / perdida)', value: '+10 / +5 DP' },
     },
     {
       id: 'sanctuary-day',
@@ -70,19 +70,19 @@ const TOUR_VAULT: TourScript = {
       id: 'vault-unlock',
       title: 'Desbloqueo con Discipline Points',
       body: [
-        'Algunos picks son "abiertos" (sin coste) y otros "premium" (requieren DP). El coste se muestra en cada tarjeta bloqueada.',
+        'Hay picks estándar (sin gastar DP) y premium (−50 DP al tomarlos; umbral configurable). El coste se muestra en cada tarjeta.',
         'Desbloquear no garantiza profit — garantiza acceso a más contexto. La disciplina del tamaño y el registro sigue siendo tuya.',
       ],
-      highlight: { label: 'Coste típico de desbloqueo', value: '100 DP' },
+      highlight: { label: 'Coste premium al tomar pick', value: '50 DP' },
     },
     {
       id: 'vault-settle',
       title: 'Liquidar para ganar DP',
       body: [
         'Después de desbloquear un pick, debes liquidarlo en la Terminal de Liquidación cuando conozcas el resultado.',
-        'Cada liquidación completada con reflexión suma +25 DP a tu saldo. El protocolo importa más que el resultado.',
+        'Cada liquidación completada con reflexión suma DP a tu saldo: +10 DP si ganancia, +5 DP si pérdida. El protocolo importa más que el resultado.',
       ],
-      highlight: { label: 'DP por liquidación', value: '+25 DP' },
+      highlight: { label: 'DP por liquidación ganada', value: '+10 DP' },
     },
   ],
 }
@@ -119,7 +119,7 @@ const TOUR_SETTLEMENT: TourScript = {
         'Escribe tu estado emocional y decisiones clave de la sesión (mínimo 10 caracteres). Esto alimenta tu índice de equilibrio emocional.',
         'Una reflexión genuina te ayuda a identificar patrones de comportamiento que los números solos no revelan.',
       ],
-      highlight: { label: 'DP por liquidación completada', value: '+25 DP' },
+      highlight: { label: 'DP por liquidación (ganancia / pérdida)', value: '+10 / +5 DP' },
     },
   ],
 }

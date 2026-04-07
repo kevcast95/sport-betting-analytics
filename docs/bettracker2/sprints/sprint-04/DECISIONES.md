@@ -97,3 +97,134 @@
 **Razón:** El CDM histórico (Atraco) almacena market como `'1X2'` y selections como `'1'`, `'X'`, `'2'`. Los fixtures nuevos de `fetch_upcoming.py` pueden tener market_description `'Match Winner'` o `'Full Time Result'` con selections `'Home'`, `'Draw'`, `'Away'`. El query debe soportar ambos formatos para no mostrar odds vacíos.
 
 **Trade-off:** Query más verboso. Normalización completa en Sprint 05 si se unifica market/selection en el CDM.
+
+---
+
+## D-04-011: Economía de Discipline Points (DP) — escala UX y proporciones canónicas
+
+**Decisión:** Los movimientos de DP que se persisten en `bt2_dp_ledger` usan **enteros múltiplos de 5 o de 10** (según el tipo de evento), manteniendo las **mismas proporciones relativas** que la primera implementación de settle en Sprint 04 (**ganar la jugada : perder la jugada = 2 : 1** en DP de recompensa por registrar el proceso).
+
+**Valores canónicos acordados para alinear BE + FE + copy:**
+
+| Evento (concepto) | `reason` sugerido | Δ DP | Nota |
+|-------------------|-------------------|------|------|
+| Liquidación pick — resultado **won** | `pick_settle` | **+10** | Múltiplo de 10; **2×** el de lost (misma razón 2:1 que +2/+1 inicial). |
+| Liquidación pick — resultado **lost** | `pick_settle` | **+5** | Múltiplo de 5. Recompensa por **disciplina de registro**, no por acierto. |
+| Liquidación pick — **void** / push | `pick_settle` | **0** | Sin cambio. |
+| Desbloqueo / toma pick **premium** (coste) | `pick_premium_unlock` *(o nombre cerrado en US-DX)* | **−50** | Múltiplo de 10; el coste debe **doler** frente a ganancias típicas +5/+10 por liquidación. |
+| Onboarding fase A (abono único) | `onboarding_welcome` *(servidor cuando exista)* | **+250** | Múltiplo de 10; hoy solo FE; BE debe reflejarlo en ledger cuando se centralice. |
+| Penalización — estación sin cerrar (tras gracia) | `penalty_station_unclosed` *(servidor cuando exista)* | **−50** | Alineado a FE actual; múltiplo de 10. |
+| Penalización — picks sin liquidar (tras gracia) | `penalty_unsettled_picks` *(servidor cuando exista)* | **−25** | Múltiplo de 5. |
+
+**Razón de producto (UX + backend):**  
+- **Múltiplos de 5 y 10:** el usuario percibe **progreso legible** (decenas, quincenas) sin “centavos de DP”; al mismo tiempo el **coste** de abrir premium (−50) y las **recompensas** por liquidar (+5 / +10) quedan en **la misma escala**, así la dimensión cambia respecto a +2/+1 pero **no la lógica económica** (premiar consistencia, cobrar decisiones caras).  
+- **Proporción 2:1** se conserva respecto al diseño ya codificado en `bt2_router` (+2 won / +1 lost): es un **cambio de escala** (×5), no de política.
+
+**Acción técnica:** Actualizar `POST /bt2/picks/{id}/settle` para usar **+10 / +5 / 0** en lugar de +2 / +1 / 0; documentar `reason` en OpenAPI; FE y textos de tours deben dejar de asumir **+25** plano por liquidación y reflejar **+10 / +5** según resultado (US-FE integración + US-FE-029 copy).
+
+**Trade-off:** Saldo histórico de usuarios de prueba que ya tengan ledger con +2/+1 queda en escala vieja hasta migración o “reset” de entorno; aceptable en dev.
+
+---
+
+## D-04-FE-001: outcomeToScores en modo trust — limitación PUSH
+
+**Decisión:** `settleApiPick` en `useTradeStore.ts` usa `outcomeToScores()` para derivar `result_home`/`result_away` del outcome local (PROFIT/LOSS/PUSH). Para PUSH → `{0, 0}`, que el backend puede interpretar como `lost` en mercados 1X2 o totales.
+
+**Razón:** El FE no tiene los scores reales; en "trust mode" el usuario declara el outcome sin verificación externa. El mapeo PUSH→0:0 es la aproximación más segura (partido empatado o nulo).
+
+**Limitación documentada:** Para mercados Over/Under, 0:0 puede no representar un void auténtico. Sprint 05 debe exponer un campo `result_type` en la API de settle (`'won'|'lost'|'void'`) para eliminar la ambigüedad.
+
+---
+
+## D-04-FE-002: Copy de DP — terminología en UI
+
+**Decisión (US-FE-029):** Toda la UI usa "Resultado neto" en lugar de "PnL" en textos visibles al usuario (páginas, modales, confirmaciones). "PnL" se mantiene en código interno (variables, comentarios técnicos, libs). Los tours y modales de onboarding reflejan **+10 DP (ganancia) / +5 DP (pérdida)** — no "+25 DP" plano.
+
+**Razón:** "PnL" es jerga financiera anglosajona; el producto está en español. La distinción +10/+5 comunica que el protocolo recompensa el proceso sin importar el resultado.
+
+**Campos solo locales (sin sync BE en Sprint 04):** `reflection` (campo libre en settlement), `bookDecimalOdds` (cuota capturada en casa). Ambos se persisten en el ledger local pero no se envían al servidor. Sprint 05 puede añadir estos campos a `POST /bt2/picks/{id}/settle`.
+
+---
+
+## D-04-FE-003: Drift de DP entre FE y BD en flujos sin soporte backend aún
+
+**Decisión (US-FE-030, T-121):** Las siguientes detracciones de DP se aplican **localmente** en el FE con `incrementDisciplinePoints()` pero **no se registran en `bt2_dp_ledger` del servidor** hasta que el BE las implemente:
+
+| Evento | Δ DP local | Backend pendiente |
+|--------|-----------|------------------|
+| Desbloqueo pick premium (`takeApiPick`) | −50 | `reason: 'pick_premium_unlock'` — Sprint 05 |
+| Penalización estación sin cerrar | −50 | `reason: 'penalty_station_unclosed'` — Sprint 05 |
+| Penalización picks sin liquidar | −25 | `reason: 'penalty_unsettled_picks'` — Sprint 05 |
+
+**Comportamiento actual:** Tras la deducción local, el FE llama `syncDpBalance()` (GET /bt2/user/dp-balance). Como el servidor no registró la deducción, retorna el saldo pre-deducción, restaurando el valor en pantalla. El usuario ve el saldo del servidor (más alto) en lugar del localmente penalizado.
+
+**Trade-off:** El chip de DP muestra siempre el saldo del servidor (fuente de verdad), no una estimación local potencialmente errónea. Cuando el BE implemente los tres eventos anteriores, el `syncDpBalance()` post-deducción devolverá el valor ya reducido por el servidor y todo coincidirá.
+
+**Acción pendiente BE:** Implementar `POST /bt2/session/close` con cálculo de penalización por estación sin cerrar, y `POST /bt2/picks/penalize-unsettled` (o integrar en `checkDayBoundary`). Para premium unlock: añadir registro en `bt2_dp_ledger` cuando se crea el pick (en `POST /bt2/picks`).
+
+---
+
+## D-04-012: Modelo de 7 opciones diarias — picks + parlays (backlog Sprint 06)
+
+**Decisión de producto acordada en Sprint 04:**
+
+La bóveda del usuario expone hasta **7 opciones por día operativo**:
+
+| # | Tipo | Acceso | Sprint |
+|---|------|--------|--------|
+| 1–3 | Picks simples `standard` | Libre | Sprint 04 ✅ |
+| 4–5 | Picks simples `premium` | Requiere saldo ≥ `dp_unlock_premium_threshold` (default 50 DP) | Sprint 04 ✅ |
+| P1 | Parlay 2-legs | Milestone permanente + costo diario −25 DP | Sprint 06 |
+| P2 | Parlay 3-legs | Milestone permanente + costo diario −50 DP | Sprint 06 |
+
+**Reglas de los parlays (a implementar en Sprint 06):**
+- Los parlays se construyen combinando picks del snapshot del día. P1 usa 2 picks, P2 usa 3. DSR elige cuáles combinan estadísticamente mejor (Sprint 05 = DSR genera picks con edge; Sprint 06 = DSR propone combinaciones).
+- Máximo 2 parlays activos por día (1 de 2-legs + 1 de 3-legs). Sin excepción aunque el usuario tenga DP de sobra.
+- Los legs de parlay se limitan a **2 y 3 máximo** en MVP. 4+ legs queda fuera del alcance inicial (varianza excesiva, contraria al protocolo conductual).
+
+**Razón:** La bóveda no debe ser un casino de combinaciones infinitas. El límite diario duro es parte del protocolo conductual — el acceso a herramientas más potentes requiere demostrar disciplina, no solo tener saldo DP.
+
+---
+
+## D-04-013: Milestone de desbloqueo de parlays + tabla canónica DP extendida (backlog Sprint 06)
+
+**Desbloqueo permanente (una sola vez):**
+
+El feature de parlays se activa para un usuario cuando se cumplen **ambas condiciones simultáneamente** al abrir sesión (`POST /bt2/session/open`):
+
+| Condición | Umbral |
+|-----------|--------|
+| DP lifetime acumulados (`SUM(delta_dp)` histórico) | ≥ 200 DP |
+| Días operativos activos (`COUNT DISTINCT operating_day_key`) | ≥ 10 días |
+
+Al cumplirse: `bt2_user_settings.parlays_unlocked = true`, `parlays_unlocked_at = now()`. La respuesta de `POST /bt2/session/open` incluye `parlays_just_unlocked: true` (solo la primera vez). El FE muestra modal explicativo con reglas de parlays.
+
+**Costo diario por uso:**
+
+| Acción | `reason` en ledger | Δ DP |
+|--------|-------------------|------|
+| Activar parlay 2-legs | `parlay_activation_2l` | −25 |
+| Activar parlay 3-legs | `parlay_activation_3l` | −50 |
+
+Si el usuario no tiene saldo suficiente, el parlay aparece visualmente bloqueado en la bóveda con mensaje "Necesitas X DP para activar este parlay hoy".
+
+**Tablas nuevas requeridas en Sprint 06:**
+- `bt2_parlays`: `id, user_id, operating_day_key, status, total_odds, stake, pnl, created_at, settled_at`.
+- `bt2_parlay_legs`: `id, parlay_id FK, event_id FK, market, selection, odd_value, leg_order`.
+- `bt2_user_settings` — nuevas columnas: `parlays_unlocked bool default false`, `parlays_unlocked_at timestamptz null`, `dp_cost_parlay_2legs int default 25`, `dp_cost_parlay_3legs int default 50`.
+
+**Tabla canónica DP completa (D-04-011 extendida con parlays):**
+
+| Evento | `reason` | Δ DP |
+|--------|---------|------|
+| Liquidación won | `pick_settle` | +10 |
+| Liquidación lost | `pick_settle` | +5 |
+| Liquidación void | `pick_settle` | 0 |
+| Activar parlay 2-legs | `parlay_activation_2l` | −25 |
+| Activar parlay 3-legs | `parlay_activation_3l` | −50 |
+| Desbloqueo pick premium | `pick_premium_unlock` | −50 |
+| Onboarding único | `onboarding_welcome` | +250 |
+| Penalización estación sin cerrar | `penalty_station_unclosed` | −50 |
+| Penalización picks sin liquidar | `penalty_unsettled_picks` | −25 |
+
+**Razón:** Documentar ahora evita contradicciones entre FE (tours, copy de DP), BE y el motor DSR cuando se implemente en Sprint 05-06. Todo movimiento futuro al ledger debe referenciar esta tabla.

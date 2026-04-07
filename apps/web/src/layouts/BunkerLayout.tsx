@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { EconomyTourModal } from '@/components/EconomyTourModal'
+import { GlossaryModal } from '@/components/GlossaryModal'
 import { OnboardingCompleteModal } from '@/components/OnboardingCompleteModal'
 import { TreasuryModal } from '@/components/TreasuryModal'
 import {
@@ -60,8 +61,9 @@ export default function BunkerLayout() {
     location.pathname.startsWith('/v2/sanctuary')
   const navLogPath = useRef('')
 
-  const { operatorName, disciplinePoints, incrementDisciplinePoints } =
-    useUserStore()
+  const operatorName = useUserStore((s) => s.operatorName)
+  const disciplinePoints = useUserStore((s) => s.disciplinePoints)
+  const syncDpBalance = useUserStore((s) => s.syncDpBalance)
   const endSession = useUserStore((s) => s.endSession)
   const onboardingPhaseAComplete = useUserStore((s) => s.onboardingPhaseAComplete)
   const hasSeenEconomyTour = useUserStore((s) => s.hasSeenEconomyTour)
@@ -74,6 +76,7 @@ export default function BunkerLayout() {
   const [treasuryOpen, setTreasuryOpen] = useState(false)
   const [onboardingPhaseAOpen, setOnboardingPhaseAOpen] = useState(false)
   const [economyTourOpen, setEconomyTourOpen] = useState(false)
+  const [glossaryOpen, setGlossaryOpen] = useState(false)
 
   const treasuryBlocking = confirmedBankrollCop <= 0
 
@@ -124,8 +127,14 @@ export default function BunkerLayout() {
     }
   }
 
-  const handleOnboardingPhaseAComplete = () => {
-    completeOnboardingPhaseA()
+  const handleOnboardingPhaseAComplete = async () => {
+    const { ok } = await completeOnboardingPhaseA()
+    if (!ok) {
+      window.alert(
+        'No se pudo acreditar el bono en el servidor. Revisa la conexión e inténtalo de nuevo.',
+      )
+      return
+    }
     setOnboardingPhaseAOpen(false)
     if (!hasSeenEconomyTour) {
       setEconomyTourOpen(true)
@@ -138,13 +147,12 @@ export default function BunkerLayout() {
   }
 
   const rankLabel = useMemo(
-    () => bunkerRankLabel(disciplinePoints),
+    () => bunkerRankLabel(disciplinePoints ?? 0),
     [disciplinePoints],
   )
 
-  const incPositiveAction = () => {
-    incrementDisciplinePoints(25)
-    setDpPulseKey((k) => k + 1)
+  const refreshDpFromServer = () => {
+    void syncDpBalance().then(() => setDpPulseKey((k) => k + 1))
   }
 
   const openTreasury = () => setTreasuryOpen(true)
@@ -205,7 +213,7 @@ export default function BunkerLayout() {
               transition={{ duration: 0.15 }}
               className="font-mono text-xs font-bold tabular-nums text-[#26343d] sm:text-sm"
             >
-              {disciplinePoints.toLocaleString('es-CO')} DP
+              {(disciplinePoints ?? 0).toLocaleString('es-CO')} DP
             </motion.span>
           </div>
           <button
@@ -435,16 +443,23 @@ export default function BunkerLayout() {
             </NavLink>
           </nav>
 
-          <div className="mt-auto">
+          <div className="mt-auto space-y-2">
             <button
               type="button"
-              onClick={incPositiveAction}
+              onClick={() => setGlossaryOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#a4b4be]/30 bg-white/70 py-2.5 text-xs font-bold tracking-tight text-[#52616a] uppercase hover:bg-white transition-colors"
+            >
+              Glosario
+            </button>
+            <button
+              type="button"
+              onClick={refreshDpFromServer}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-3 text-xs font-bold tracking-tight text-white uppercase shadow-lg shadow-[#8B5CF6]/20"
             >
               <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-white">
                 <Bt2PlusIcon className="h-5 w-5" />
               </span>
-              Nueva Disciplina
+              Sincronizar DP
             </button>
           </div>
         </aside>
@@ -505,6 +520,12 @@ export default function BunkerLayout() {
       <EconomyTourModal
         open={economyTourOpen}
         onComplete={handleEconomyTourComplete}
+      />
+
+      {/* US-FE-029: glosario de términos del protocolo */}
+      <GlossaryModal
+        open={glossaryOpen}
+        onClose={() => setGlossaryOpen(false)}
       />
     </div>
   )

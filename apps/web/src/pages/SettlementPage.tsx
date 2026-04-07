@@ -13,6 +13,7 @@ import {
 } from '@/components/bt2StitchIcons'
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { vaultMockPicks } from '@/data/vaultMockPicks'
+import type { Bt2VaultPickOut } from '@/lib/bt2Types'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
 import { getMarketLabelEs } from '@/lib/marketLabels'
 import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
@@ -32,6 +33,18 @@ import { useTradeStore } from '@/store/useTradeStore'
 import { useUserStore } from '@/store/useUserStore'
 import { useVaultStore } from '@/store/useVaultStore'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+
+type AnyPick = {
+  id: string
+  marketClass: string
+  marketLabelEs?: string
+  eventLabel: string
+  titulo: string
+  suggestedDecimalOdds: number
+  selectionSummaryEs: string
+  traduccionHumana: string
+  accessTier: string
+}
 
 const SETTLEMENT_TOUR = getTourScript('settlement')!
 
@@ -100,21 +113,45 @@ function vaultLevelLabel(dp: number): string {
 export default function SettlementPage() {
   const { pickId = '' } = useParams<{ pickId: string }>()
   const navigate = useNavigate()
-  const pick = useMemo(
-    () => vaultMockPicks.find((p) => p.id === pickId) ?? null,
-    [pickId],
+
+  // Buscar pick: API primero. En entorno dev, fallback a mock local si no hay pick API.
+  const apiPicks = useVaultStore((s) => s.apiPicks)
+  const takenApiPicks = useVaultStore((s) => s.takenApiPicks)
+  const pick: AnyPick | null = useMemo(() => {
+    const apiPick = apiPicks.find((p) => p.id === pickId)
+    if (apiPick) return apiPick
+    if (import.meta.env.DEV) {
+      const mockPick = vaultMockPicks.find((p) => p.id === pickId)
+      if (mockPick) return { ...mockPick, marketLabelEs: undefined }
+    }
+    return null
+  }, [pickId, apiPicks])
+
+  // bt2PickId para settlement API (null si es mock o no tomado aún)
+  const bt2PickRecord = useMemo(
+    () => takenApiPicks.find((r) => r.vaultPickId === pickId) ?? null,
+    [takenApiPicks, pickId],
   )
+
   const stationLocked = useSessionStore(selectStationLocked)
-  // Leer estado crudo — evita llamar get() dentro de un selector (loop en useSyncExternalStore)
   const unlockedPickIds = useVaultStore((s) => s.unlockedPickIds)
   const unlocked = useMemo(() => {
-    const p = vaultMockPicks.find((x) => x.id === pickId)
-    if (p?.accessTier === 'open') return true
-    return unlockedPickIds.includes(pickId)
-  }, [unlockedPickIds, pickId])
+    const apiPick = apiPicks.find((p) => p.id === pickId)
+    if (apiPick?.accessTier === 'standard') return true
+    if (apiPick?.accessTier === 'premium') {
+      return takenApiPicks.some((r) => r.vaultPickId === pickId)
+    }
+    if (import.meta.env.DEV) {
+      const mockPick = vaultMockPicks.find((x) => x.id === pickId)
+      if (mockPick?.accessTier === 'open') return true
+      return unlockedPickIds.includes(pickId)
+    }
+    return false
+  }, [unlockedPickIds, pickId, apiPicks, takenApiPicks])
   const settled = useTradeStore((s) => s.settledPickIds.includes(pickId))
   const ledger = useTradeStore((s) => s.ledger)
   const finalizeSettlement = useTradeStore((s) => s.finalizeSettlement)
+  const settleApiPick = useTradeStore((s) => s.settleApiPick)
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
 
   const bankroll = useBankrollStore((s) => s.confirmedBankrollCop)
@@ -125,6 +162,9 @@ export default function SettlementPage() {
   const [bookOddsRaw, setBookOddsRaw] = useState('')
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [settling, setSettling] = useState(false)
+  const [settleError, setSettleError] = useState<string | null>(null)
+  const [earnedDpFinal, setEarnedDpFinal] = useState<number | null>(null)
 
   const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('settlement'))
   const markTourSeen = useTourStore((s) => s.markTourSeen)
@@ -153,7 +193,9 @@ export default function SettlementPage() {
 
   // US-FE-022: cuota sugerida directamente del CDM
   const suggestedOdds = pick?.suggestedDecimalOdds ?? Number.NaN
-  const marketLabelEs = pick ? getMarketLabelEs(pick.marketClass) : '—'
+  const marketLabelEs = pick
+    ? (pick.marketLabelEs || getMarketLabelEs(pick.marketClass))
+    : '—'
 
   // T-057: cuota capturada en casa
   const bookOddsParsed = parseFloat(bookOddsRaw.replace(',', '.'))
@@ -196,22 +238,58 @@ export default function SettlementPage() {
     setConfirmOpen(true)
   }
 
-  const onConfirmAudit = () => {
-    if (!canSubmit || outcome == null) return
-    const res = finalizeSettlement({
-      pickId,
-      outcome,
-      reflection,
-      stakeCop,
-      decimalCuota: activeOdds,
-      bookDecimalOdds: Number.isFinite(bookOdds) ? bookOdds : undefined,
-    })
+  const onConfirmAudit = async () => {
+    if (!canSubmit || outcome == null || settling) return
+    setSettling(true)
+    setSettleError(null)
     setConfirmOpen(false)
-    if (!res.ok) return
+
+    let res: { ok: boolean; earnedDp?: number; reason?: string }
+
+    if (bt2PickRecord) {
+      // US-FE-028: flujo real con API
+      res = await settleApiPick({
+        vaultPickId: pickId,
+        bt2PickId: bt2PickRecord.bt2PickId,
+        outcome,
+        reflection,
+        stakeCop,
+        decimalCuota: activeOdds,
+        bookDecimalOdds: Number.isFinite(bookOdds) ? bookOdds : undefined,
+        market: bt2PickRecord.market,
+        selection: bt2PickRecord.selection,
+      })
+    } else {
+      // Flujo local (mock picks)
+      res = finalizeSettlement({
+        pickId,
+        outcome,
+        reflection,
+        stakeCop,
+        decimalCuota: activeOdds,
+        bookDecimalOdds: Number.isFinite(bookOdds) ? bookOdds : undefined,
+      })
+    }
+
+    setSettling(false)
+
+    if (!res.ok) {
+      if ('reason' in res && res.reason === 'api_error') {
+        setSettleError('Error al conectar con el servidor. Verifica tu conexión.')
+      }
+      return
+    }
+
+    const dp = res.earnedDp ?? 0
+    setEarnedDpFinal(dp)
     console.info(
-      `[BT2] settlement mode: ${SETTLEMENT_VERIFICATION_MODE} · pick ${pickId}`,
+      `[BT2] settlement mode: ${SETTLEMENT_VERIFICATION_MODE} · pick ${pickId} · +${dp} DP`,
     )
-    setToast('Protocolo cumplido. La disciplina es el verdadero profit.')
+    setToast(
+      dp > 0
+        ? `Protocolo cumplido. +${dp} DP acreditados.`
+        : 'Protocolo cumplido. La disciplina es el verdadero profit.',
+    )
     window.setTimeout(() => navigate('/v2/vault', { replace: true }), 2200)
   }
 
@@ -223,6 +301,22 @@ export default function SettlementPage() {
           role="status"
         >
           {toast}
+        </div>
+      ) : null}
+
+      {settleError ? (
+        <div
+          className="fixed bottom-24 left-1/2 z-[80] max-w-md -translate-x-1/2 rounded-lg border border-[#fee2e2] bg-[#fff1f2] px-5 py-3 text-center text-sm font-medium text-[#9b1c1c] shadow-lg lg:bottom-8"
+          role="alert"
+        >
+          {settleError}
+          <button
+            type="button"
+            className="ml-3 text-xs font-semibold underline"
+            onClick={() => setSettleError(null)}
+          >
+            Cerrar
+          </button>
         </div>
       ) : null}
 
@@ -360,7 +454,7 @@ export default function SettlementPage() {
                   className="font-mono text-xs font-bold tracking-tight text-[#6d3bd7]"
                   style={monoStyle}
                 >
-                  Recompensa: +25 DP
+                  Recompensa: +10/+5 DP
                 </span>
               </div>
             </div>
@@ -542,7 +636,7 @@ export default function SettlementPage() {
           </div>
           <div className="relative z-10 text-right">
             <p className="font-mono text-3xl font-bold" style={monoStyle}>
-              {disciplinePoints.toLocaleString('es-CO')}{' '}
+              {(disciplinePoints ?? 0).toLocaleString('es-CO')}{' '}
               <span className="text-sm font-normal opacity-70">DP</span>
             </p>
           </div>
@@ -577,7 +671,7 @@ export default function SettlementPage() {
               <span className="font-semibold text-[#26343d]">
                 {outcome ? OUTCOME_LABEL[outcome] : ''}
               </span>
-              . PnL estimado:{' '}
+              . Resultado neto estimado:{' '}
               <span className="font-mono text-[#26343d]" style={monoStyle}>
                 {Number.isFinite(pnlPreview)
                   ? `${pnlPreview >= 0 ? '+' : ''}${Math.round(pnlPreview)} COP`
@@ -589,7 +683,7 @@ export default function SettlementPage() {
                   ? `${Math.round(newBankrollPreview)} COP`
                   : '—'}
               </span>
-              . +25 DP.
+              {bt2PickRecord ? '. +10 DP si ganancia, +5 DP si pérdida.' : '. DP según resultado.'}
             </p>
             {Number.isFinite(bookOdds) ? (
               <p className="mt-2 text-[11px] text-[#52616a]">
@@ -618,9 +712,13 @@ export default function SettlementPage() {
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-[#8B5CF6] px-4 py-2 text-sm font-semibold text-white"
-                onClick={onConfirmAudit}
+                disabled={settling}
+                className="flex items-center gap-2 rounded-lg bg-[#8B5CF6] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                onClick={() => void onConfirmAudit()}
               >
+                {settling ? (
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : null}
                 Persistir liquidación
               </button>
             </div>

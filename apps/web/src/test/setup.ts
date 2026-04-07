@@ -1,5 +1,17 @@
-import '@testing-library/jest-dom/vitest'
 import { afterEach, vi } from 'vitest'
+
+// Spy sobre bt2FetchJson para tests que necesiten mockear; por defecto delega al real.
+vi.mock('@/lib/api', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@/lib/api')>()
+  return {
+    ...mod,
+    bt2FetchJson: vi.fn(
+      (...args: Parameters<typeof mod.bt2FetchJson>) => mod.bt2FetchJson(...args),
+    ),
+  }
+})
+
+import '@testing-library/jest-dom/vitest'
 
 class ResizeObserverStub {
   observe() {}
@@ -10,13 +22,14 @@ class ResizeObserverStub {
 if (typeof globalThis.ResizeObserver === 'undefined') {
   vi.stubGlobal('ResizeObserver', ResizeObserverStub)
 }
-import { useBankrollStore } from '@/store/useBankrollStore'
-import { useSessionStore } from '@/store/useSessionStore'
-import { useTradeStore } from '@/store/useTradeStore'
-import { useUserStore } from '@/store/useUserStore'
-import { useVaultStore } from '@/store/useVaultStore'
 
-afterEach(() => {
+afterEach(async () => {
+  const { useUserStore } = await import('@/store/useUserStore')
+  const { useBankrollStore } = await import('@/store/useBankrollStore')
+  const { useVaultStore } = await import('@/store/useVaultStore')
+  const { useTradeStore } = await import('@/store/useTradeStore')
+  const { useSessionStore } = await import('@/store/useSessionStore')
+
   useUserStore.getState().reset()
   useUserStore.persist.clearStorage()
   useBankrollStore.getState().reset()

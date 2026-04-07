@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
 import { STAKE_PCT_DEFAULT } from '@/lib/treasuryMath'
+import { bt2FetchJson } from '@/lib/api'
+import type { Bt2UserProfileOut, Bt2UserSettingsOut } from '@/lib/bt2Types'
 
 export type BankrollStoreState = {
   /** Capital confirmado en COP (0 = sin configurar; dispara modal automático). */
@@ -18,6 +20,19 @@ export type BankrollStoreActions = {
   applyBankrollDelta: (deltaCop: number) => void
   /** US-FE-007: alinea el capital confirmado al saldo real reportado en cierre. */
   reconcileToExchangeBalance: (cop: number) => void
+  /**
+   * US-FE-027: sincroniza bankroll desde API tras login.
+   * Lee GET /bt2/user/profile y GET /bt2/user/settings.
+   */
+  syncFromApi: () => Promise<void>
+  /**
+   * US-FE-027: guarda bankroll en servidor vía POST /bt2/user/bankroll.
+   */
+  persistBankrollToApi: (cop: number, currency?: string) => Promise<void>
+  /**
+   * US-FE-027: guarda stake % en servidor vía PUT /bt2/user/settings.
+   */
+  persistStakePctToApi: (stakePct: number) => Promise<void>
   reset: () => void
 }
 
@@ -62,6 +77,50 @@ export const useBankrollStore = create<BankrollStore>()(
       reconcileToExchangeBalance: (cop) => {
         if (!Number.isFinite(cop) || cop < 0) return
         set({ confirmedBankrollCop: cop })
+      },
+      syncFromApi: async () => {
+        try {
+          const [profile, settings] = await Promise.all([
+            bt2FetchJson<Bt2UserProfileOut>('/bt2/user/profile'),
+            bt2FetchJson<Bt2UserSettingsOut>('/bt2/user/settings'),
+          ])
+          const bankrollCop = profile.bankrollAmount ?? 0
+          const stakePct = settings.riskPerPickPct ?? STAKE_PCT_DEFAULT
+          if (bankrollCop > 0 || stakePct !== STAKE_PCT_DEFAULT) {
+            set({
+              confirmedBankrollCop: bankrollCop,
+              selectedStakePct: stakePct,
+              lastCalculatedAt: new Date().toISOString(),
+            })
+            console.info(`[BT2] Bankroll sincronizado desde API: ${bankrollCop} COP · stake ${stakePct}%`)
+          }
+        } catch (e) {
+          console.warn('[BT2] syncFromApi bankroll error:', e instanceof Error ? e.message : e)
+        }
+      },
+      persistBankrollToApi: async (cop, currency = 'COP') => {
+        try {
+          await bt2FetchJson('/bt2/user/bankroll', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: cop, currency }),
+          })
+          console.info(`[BT2] Bankroll persistido en servidor: ${cop} ${currency}`)
+        } catch (e) {
+          console.warn('[BT2] persistBankrollToApi error:', e instanceof Error ? e.message : e)
+        }
+      },
+      persistStakePctToApi: async (stakePct) => {
+        try {
+          await bt2FetchJson('/bt2/user/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ risk_per_pick_pct: stakePct }),
+          })
+          console.info(`[BT2] Stake % persistido en servidor: ${stakePct}%`)
+        } catch (e) {
+          console.warn('[BT2] persistStakePctToApi error:', e instanceof Error ? e.message : e)
+        }
       },
       reset: () => set(initial),
     }),

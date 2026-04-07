@@ -227,7 +227,7 @@ Sprint 01 cerró en **US-FE-024**. Sprint 04 FE comienza en **US-FE-025** y cont
 - Identificar qué vistas del Sprint 01 necesitan cambios de schema cuando los datos sean reales (p.ej. ¿`curvaEquidad` real vs. calculada? ¿cómo se renderiza un pick sin odds todavía?).
 - Marcar gaps: si algún contrato de §1 no cubre lo que el frontend necesita, documentarlo como `US-DX-###` pendiente de validación con el backend.
 
-**No ejecutar código hasta que Sprint 03 esté verificado y se abra Sprint 04 formalmente.**
+**Ejecución FE:** Backend Sprint 04 cerrado según `TASKS.md` (T-096 … T-110). El desarrollo frontend (**US-FE-025 … 029**) puede iniciar en rama `sprint-04`, en el orden del brief (§8 y `US.md`).
 
 ---
 
@@ -244,3 +244,103 @@ Sprint 01 cerró en **US-FE-024**. Sprint 04 FE comienza en **US-FE-025** y cont
 | Contrato de US | `docs/bettracker2/01_CONTRATO_US.md` |
 | Handoff backend (stub → CDM, contexto API) | `docs/bettracker2/HANDOFF_BA_PM_BACKEND.md` |
 | Numeración US-FE-025…028 (coordinación) | `docs/bettracker2/sprints/sprint-03/US.md` (pie del documento) |
+
+---
+
+## 8. Actualizaciones al cierre de Sprint 04 Backend — leer antes de ejecutar US-FE
+
+> Este documento se entregó como pre-handoff anticipado. Sprint 04 BE ya está **completamente ejecutado** (T-096 a T-107 + correcciones T-108/T-109/T-110 pendientes). Esta sección corrige y amplía lo dicho en §1–§4 con la realidad de lo implementado.
+
+### 8.1 Estado real del backend al cierre
+
+| US | Estado |
+|----|--------|
+| US-BE-009 — Schema conductual (6 tablas) | ✅ Completo |
+| US-BE-010 — API picks (crear, listar, liquidar) | ✅ Completo |
+| US-BE-011 — Sesión operativa (open, close, day) | ✅ Completo |
+| US-BE-012 — Settings y DP Ledger | ✅ Completo |
+| US-BE-013 — Ingesta diaria eventos futuros (fetch_upcoming.py) | ✅ Completo — 82 eventos futuros en BD |
+| US-BE-014 — Pick snapshot diario (bt2_daily_picks) | ✅ Completo |
+| US-BE-015 — Corrección escala DP + filtro odds | ✅ Completo (T-108 … T-110 en `sprints/sprint-04/TASKS.md`) |
+
+### 8.2 Contrato actualizado de `GET /bt2/vault/picks`
+
+El contrato original en §1 decía "picks vacíos si no hay partidos en las próximas 24h". El contrato real en Sprint 04 es distinto — **el FE debe consumir este schema, no el anterior**:
+
+```json
+GET /bt2/vault/picks   [protegido — requiere sesión abierta]
+200: {
+  "picks": [
+    {
+      "id": 1,
+      "eventId": 123,
+      "league": "Premier League",
+      "homeTeam": "Arsenal",
+      "awayTeam": "Chelsea",
+      "kickoffUtc": "2026-04-07T20:00:00Z",
+      "market": "1X2",
+      "suggestedSelection": "1",
+      "suggestedDecimalOdds": 2.10,
+      "accessTier": "standard",
+      "isAvailable": true,
+      "externalSearchUrl": "https://www.google.com/search?q=Arsenal+vs+Chelsea+2026-04-07"
+    }
+  ],
+  "message": "No hay eventos disponibles para hoy. El sistema actualiza la cartelera cada mañana."
+}
+```
+
+**Notas para el FE:**
+- `accessTier`: `"standard"` (picks 1–3, acceso libre) o `"premium"` (picks 4–5, requiere saldo DP ≥ `dpUnlockPremiumThreshold`). El backend los devuelve siempre; el FE decide si mostrar los premium como bloqueados según `GET /bt2/user/dp-balance`.
+- `isAvailable`: `true` si el partido aún no empezó (`status='scheduled'`). `false` si ya inició o terminó.
+- `externalSearchUrl`: enlace Google para ver el resultado del partido. Usar en Settlement y en la card del pick.
+- Si no hay snapshot (sesión no abierta aún), retorna `picks: []` con `message` informativo — nunca error 5xx.
+- **La sesión debe estar abierta** (`POST /bt2/session/open`) para que exista el snapshot. Si el FE llama a vault/picks sin sesión abierta, recibirá lista vacía.
+
+### 8.3 Escala de DP — valores correctos para el FE
+
+El documento anterior no especificaba los valores numéricos. Los valores canónicos confirmados en D-04-011 son:
+
+| Evento | Δ DP visible en UI |
+|--------|-------------------|
+| Liquidar pick ganado | **+10 DP** |
+| Liquidar pick perdido | **+5 DP** (recompensa por disciplina de registro) |
+| Liquidar pick void | 0 DP |
+| Usar pick premium | **−50 DP** |
+| Bonus onboarding (futuro) | **+250 DP** |
+| Penalización estación sin cerrar | **−50 DP** |
+| Penalización picks sin liquidar | **−25 DP** |
+
+El copy de los tours y vistas debe reflejar `+10` o `+5` según el resultado — no un valor plano. El campo `earnedDp` en `LedgerRow` contiene el valor real por pick.
+
+### 8.4 Modelo de 7 opciones diarias — visión de producto
+
+El FE debe diseñar la bóveda con este modelo en mente (los parlays son Sprint 06, pero el layout de la bóveda debe contemplar el espacio):
+
+```
+Picks estándar (3):   [1] [2] [3]     ← acceso libre
+Picks premium (2):    [4] [5]          ← requieren DP threshold
+Parlays (Sprint 06):  [P1] [P2]        ← milestone + costo DP diario
+```
+
+**Para Sprint 04 FE:** mostrar solo picks 1–5 según `accessTier`. Los slots P1/P2 pueden aparecer como "Próximamente — desbloquea parlays con tu historial" si el FE quiere anticipar el feature.
+
+### 8.5 Nueva tabla en BD: `bt2_daily_picks`
+
+La tabla que alimenta `GET /bt2/vault/picks` desde Sprint 04:
+
+```sql
+bt2_daily_picks
+  id (serial PK)
+  user_id (uuid FK bt2_users)
+  event_id (int FK bt2_events)
+  operating_day_key (varchar 10)   -- "2026-04-07"
+  access_tier (varchar 10)         -- "standard" | "premium"
+  is_available (bool default true)
+  suggested_at (timestamptz)
+  UNIQUE (user_id, event_id, operating_day_key)
+```
+
+### 8.6 Rama activa
+
+Todo el desarrollo está en la rama `sprint-04` (pusheada a `origin/sprint-04`). El FE debe trabajar en esa misma rama. Al terminar Sprint 04 se abre PR `sprint-04 → main`.

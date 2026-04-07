@@ -3,6 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
 import { useBankrollStore } from '@/store/useBankrollStore'
 import { useUserStore } from '@/store/useUserStore'
+import { bt2FetchJson } from '@/lib/api'
+import type { Bt2SessionDayOut } from '@/lib/bt2Types'
 import {
   getOperatingDayKey,
   graceExpiresIso,
@@ -126,6 +128,11 @@ export type SessionStoreActions = {
    * @param hasUnsettledPicks  true si hay picks activos sin liquidar del día anterior.
    */
   checkDayBoundary: (nowIso: string, hasUnsettledPicks: boolean) => void
+  /**
+   * US-FE-027: hidrata el store desde GET /bt2/session/day.
+   * Sincroniza operatingDayKey, graceActiveUntilIso y stationLockedForOperatingDay.
+   */
+  hydrateFromApi: () => Promise<void>
   /** Solo tests / soporte */
   reset: () => void
 }
@@ -291,6 +298,22 @@ export const useSessionStore = create<SessionStore>()(
           })
         }
       },
+      hydrateFromApi: async () => {
+        try {
+          const data = await bt2FetchJson<Bt2SessionDayOut>('/bt2/session/day')
+          const dayKey = data.operatingDayKey as DayKey
+          set((s) => ({
+            operatingDayKey: dayKey,
+            graceActiveUntilIso: data.graceUntilIso ?? null,
+            // stationClosedForOperatingDay → si cerrada, stationLockedUntilIso se mantiene
+            // No sobreescribir stationLockedUntilIso con data de API (se gestiona localmente)
+            closedForDayKey: data.stationClosedForOperatingDay ? dayKey : s.closedForDayKey,
+          }))
+          console.info(`[BT2] Sesión del día sincronizada: ${dayKey}`)
+        } catch (e) {
+          console.warn('[BT2] hydrateFromApi session error:', e instanceof Error ? e.message : e)
+        }
+      },
       reset: () => set(initial),
     }),
     {
@@ -334,7 +357,7 @@ function applyPenalties(
     newPenalties.push(record)
     useUserStore.getState().incrementDisciplinePoints(-50)
     console.warn(
-      `[BT2] Penalización aplicada — estación sin cerrar · día ${dayKey} · -50 DP`,
+      `[BT2] Penalización aplicada — estación sin cerrar · día ${dayKey} · -50 DP (local)`,
     )
   }
 
@@ -351,7 +374,7 @@ function applyPenalties(
     newPenalties.push(record)
     useUserStore.getState().incrementDisciplinePoints(-25)
     console.warn(
-      `[BT2] Penalización aplicada — picks sin liquidar · día ${dayKey} · -25 DP`,
+      `[BT2] Penalización aplicada — picks sin liquidar · día ${dayKey} · -25 DP (local)`,
     )
   }
 
@@ -360,6 +383,11 @@ function applyPenalties(
     previousDayPendingItems: [],
     graceActiveUntilIso: null,
   })
+
+  // T-121 (US-FE-030): reconciliar DP con servidor tras penalizaciones locales.
+  // Hasta que BE registre penalty_station_unclosed y penalty_unsettled_picks en dp_ledger,
+  // syncDpBalance devolverá el saldo pre-penalización (gap documentado en D-04-FE-003).
+  void useUserStore.getState().syncDpBalance()
 }
 
 /**

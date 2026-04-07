@@ -29,6 +29,8 @@ export function TreasuryModal({ open, onClose, blocking, onConfirm }: TreasuryMo
   const confirmedBankrollCop = useBankrollStore((s) => s.confirmedBankrollCop)
   const selectedStakePct = useBankrollStore((s) => s.selectedStakePct)
   const confirmTreasury = useBankrollStore((s) => s.confirmTreasury)
+  const persistBankrollToApi = useBankrollStore((s) => s.persistBankrollToApi)
+  const persistStakePctToApi = useBankrollStore((s) => s.persistStakePctToApi)
 
   const [draftBankroll, setDraftBankroll] = useState('')
   const [draftStake, setDraftStake] = useState(selectedStakePct)
@@ -70,6 +72,8 @@ export function TreasuryModal({ open, onClose, blocking, onConfirm }: TreasuryMo
     e.preventDefault()
     if (!canConfirm) return
     confirmTreasury(bankrollNum, draftStake)
+    void persistBankrollToApi(bankrollNum)
+    void persistStakePctToApi(draftStake)
     onConfirm?.()
     onClose()
   }

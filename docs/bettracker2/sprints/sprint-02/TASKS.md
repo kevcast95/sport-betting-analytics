@@ -159,3 +159,13 @@ Las tareas **T-001 … T-062** corresponden al Sprint 01 (FE + BE stub). Las tar
 - No iniciar T-066…T-068 sin que T-063…T-065 y T-069…T-071 estén completas.
 - No iniciar T-072…T-074 sin que T-066…T-068 hayan producido un reporte `✅ Proceder`.
 - El agente ejecutor verifica tasks por número: filtrar `[ ]` en este archivo para ver pendientes.
+
+---
+
+## Nota — Frontend V2 (DP / métricas del Búnker)
+
+Las tareas de **alineación de Discipline Points**, **cierre del día** y **métricas** en rutas `/v2/*` **no** se numeran en Sprint 02 (este archivo cubre infra, schema y Atraco). Ver **Sprint 04**:
+
+- **US-FE-030** y tareas **T-119 … T-124** en [`../sprint-04/TASKS.md`](../sprint-04/TASKS.md)
+- Historia de usuario en [`../sprint-04/US.md`](../sprint-04/US.md)
+- Auditoría en [`../sprint-04/AUDITORIA_DP_Y_METRICAS_VISTAS_V2.md`](../sprint-04/AUDITORIA_DP_Y_METRICAS_VISTAS_V2.md)

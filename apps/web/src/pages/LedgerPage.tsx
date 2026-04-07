@@ -100,7 +100,7 @@ export default function LedgerPage() {
   )
 
   const totalDpFiltered = useMemo(
-    () => filtered.reduce((s, r) => s + (r.earnedDp ?? 25), 0),
+    () => filtered.reduce((s, r) => s + (r.earnedDp ?? 0), 0),
     [filtered],
   )
 
@@ -289,7 +289,7 @@ export default function LedgerPage() {
           <p className="mt-3 text-xs text-[#52616a]">
             Basado en{' '}
             <span className="font-mono font-semibold" style={monoStyle}>
-              {disciplinePoints.toLocaleString('es-CO')}
+              {(disciplinePoints ?? 0).toLocaleString('es-CO')}
             </span>{' '}
             DP en perfil.
           </p>

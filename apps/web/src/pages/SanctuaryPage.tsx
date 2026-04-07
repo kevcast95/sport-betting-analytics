@@ -258,7 +258,7 @@ export default function SanctuaryPage() {
                 Riqueza de carácter
               </p>
               <p className="mt-1 font-mono text-xl font-bold tabular-nums tracking-tight text-[#8B5CF6]">
-                {disciplinePoints.toLocaleString('es-CO')}{' '}
+                {(disciplinePoints ?? 0).toLocaleString('es-CO')}{' '}
                 <span className="text-base font-bold">DP</span>
               </p>
               <p className="mt-1 text-[11px] leading-relaxed text-[#6e7d86]">

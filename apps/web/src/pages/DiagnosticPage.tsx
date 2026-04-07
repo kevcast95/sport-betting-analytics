@@ -8,7 +8,6 @@ import {
   DIAGNOSTIC_INITIAL_INTEGRITY,
   OPERATOR_PROFILE_LABEL_ES,
   computeOperatorProfile,
-  disciplinePointsPreview,
   integrityAfterAnswer,
   type OperatorProfileId,
 } from '@/lib/diagnosticScoring'
@@ -284,11 +283,6 @@ export default function DiagnosticPage() {
     return computeOperatorProfile(slice)
   }, [answers, pendingOption])
 
-  const previewDp = useMemo(
-    () => disciplinePointsPreview(disciplinePoints, previewIntegrity),
-    [disciplinePoints, previewIntegrity],
-  )
-
   const progressPct = ((step + 1) / QUESTIONS.length) * 100
 
   const flushAdvance = useCallback(
@@ -431,7 +425,7 @@ export default function DiagnosticPage() {
                 Sube con opciones alineadas al protocolo; baja con las más impulsivas.
               </p>
             </div>
-            {/* Puntos de disciplina: DP + nota de vista previa */}
+            {/* Puntos de disciplina: saldo real del store/API */}
             <div className="border-b border-[#a4b4be]/10 pb-4">
               <div className="flex items-end justify-between">
                 <span
@@ -446,12 +440,12 @@ export default function DiagnosticPage() {
                     className="font-mono text-lg font-bold text-[#26343d]"
                     style={monoStyle}
                   >
-                    {previewDp.toLocaleString('es-CO')} DP
+                    {(disciplinePoints ?? 0).toLocaleString('es-CO')} DP
                   </span>
                 </div>
               </div>
               <p className="mt-1 text-[11px] leading-relaxed text-[#6e7d86]">
-                Vista previa — refleja el ajuste del cuestionario sobre tu saldo actual.
+                Saldo real — se acredita al liquidar picks (no cambia con este cuestionario).
               </p>
             </div>
             {/* Estado operador: etiqueta en español, sin código interno */}

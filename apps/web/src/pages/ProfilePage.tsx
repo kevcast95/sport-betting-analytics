@@ -72,17 +72,18 @@ export default function ProfilePage() {
   )
 
   const metrics = useMemo(() => ledgerAggregateMetrics(ledger), [ledger])
-  const tier = tierFromDp(disciplinePoints)
+  const dp = disciplinePoints ?? 0
+  const tier = tierFromDp(dp)
   const pctToNext =
-    tier.next <= disciplinePoints
+    tier.next <= dp
       ? 100
-      : Math.min(100, (disciplinePoints / tier.next) * 100)
+      : Math.min(100, (dp / tier.next) * 100)
 
   const rSvg = 88
   const c = 2 * Math.PI * rSvg
   const dashOffset = c * (1 - pctToNext / 100)
 
-  const rankTopPct = Math.max(0.1, 100 - disciplinePoints / 50).toFixed(1)
+  const rankTopPct = Math.max(0.1, 100 - dp / 50).toFixed(1)
   const activeStreakDays = useMemo(() => {
     if (ledger.length === 0) return 0
     const days = new Set(
@@ -117,7 +118,7 @@ export default function ProfilePage() {
     {
       id: 'm2',
       title: 'Drawdown máximo contenido',
-      unlocked: disciplinePoints >= 2000,
+      unlocked: dp >= 2000,
       icon: IconShieldHeart,
     },
     {
@@ -129,7 +130,7 @@ export default function ProfilePage() {
     {
       id: 'm4',
       title: 'Guardián de la bóveda',
-      unlocked: disciplinePoints >= 4000,
+      unlocked: dp >= 4000,
       icon: IconLock,
     },
   ]
@@ -253,7 +254,7 @@ export default function ProfilePage() {
           <p className="text-sm font-medium text-[#52616a]">
             Próximo hito:{' '}
             <span className="text-[#26343d]">
-              {tier.next > disciplinePoints
+              {tier.next > dp
                 ? `${tier.next.toLocaleString('es-CO')} DP`
                 : 'Apex desbloqueado'}
             </span>
@@ -295,7 +296,7 @@ export default function ProfilePage() {
               className="text-3xl font-bold text-[#6d3bd7]"
               style={monoStyle}
             >
-              {disciplinePoints.toLocaleString('es-CO')}
+              {(disciplinePoints ?? 0).toLocaleString('es-CO')}
             </span>
             <IconWallet className="h-7 w-7 text-[#6d3bd7]" />
           </div>
@@ -435,7 +436,7 @@ export default function ProfilePage() {
                   Protocolo Sigma-2
                 </h5>
                 <p className="mt-1 text-xs font-medium text-[#914d00]">
-                  {disciplinePoints >= 2000
+                  {dp >= 2000
                     ? 'Desbloqueado'
                     : 'Desbloqueo a 2.000 DP'}
                 </p>
@@ -492,7 +493,7 @@ export default function ProfilePage() {
                 Escudo de disciplina
               </p>
               <p className="text-lg font-bold text-[#26343d]" style={monoStyle}>
-                {disciplinePoints.toLocaleString('es-CO')}{' '}
+                {(disciplinePoints ?? 0).toLocaleString('es-CO')}{' '}
                 <span className="text-xs font-normal">pts</span>
               </p>
             </div>

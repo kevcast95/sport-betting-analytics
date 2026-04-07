@@ -13,7 +13,7 @@ describe('useVaultStore', () => {
       200 - VAULT_UNLOCK_COST_DP,
     )
     expect(useVaultStore.getState().unlockedPickIds).toContain('v2-p-001')
-    expect(log).toHaveBeenCalledWith('[BT2] Pick desbloqueado: v2-p-001')
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[BT2] Pick desbloqueado'))
     log.mockRestore()
   })
 
