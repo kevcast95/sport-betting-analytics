@@ -14,9 +14,9 @@ class Bt2MetaOut(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     contract_version: str = Field(
-        default="bt2-dx-001-stub-1",
+        default="bt2-dx-001-s5",
         serialization_alias="contractVersion",
-        description="Versión del contrato stub; bump al cambiar shape.",
+        description="Versión del contrato; bump Sprint 05 (ledger premium, penalizaciones, operating-day/summary, DX-001).",
     )
     settlement_verification_mode: Literal["trust", "verified"] = Field(
         ...,
@@ -119,6 +119,23 @@ class DiagnosticOut(BaseModel):
     operator_profile: str = Field(..., serialization_alias="operatorProfile")
     system_integrity: float = Field(..., serialization_alias="systemIntegrity")
     completed_at: str = Field(..., serialization_alias="completedAt")
+
+
+class OperatingDaySummaryOut(BaseModel):
+    """US-BE-018 — agregados del día operativo (zona horaria del usuario)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(..., serialization_alias="operatingDayKey")
+    user_time_zone: str = Field(..., serialization_alias="userTimeZone")
+    picks_opened_count: int = Field(0, serialization_alias="picksOpenedCount")
+    picks_settled_count: int = Field(0, serialization_alias="picksSettledCount")
+    won_count: int = Field(0, serialization_alias="wonCount")
+    lost_count: int = Field(0, serialization_alias="lostCount")
+    void_count: int = Field(0, serialization_alias="voidCount")
+    total_stake_units_settled: float = Field(0.0, serialization_alias="totalStakeUnitsSettled")
+    net_pnl_units: float = Field(0.0, serialization_alias="netPnlUnits")
+    dp_earned_from_settlements: int = Field(0, serialization_alias="dpEarnedFromSettlements")
 
 
 class Bt2BehavioralMetricsOut(BaseModel):

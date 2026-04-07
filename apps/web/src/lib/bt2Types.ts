@@ -128,7 +128,45 @@ export interface Bt2OnboardingPhaseACompleteOut {
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 export interface Bt2MetaOut {
+  contractVersion?: string
   settlementVerificationMode: 'trust' | 'verified'
+}
+
+// ─── US-DX-001 — Razones canónicas bt2_dp_ledger.reason (Sprint 05) ─────────
+
+export type Bt2DpLedgerReason =
+  | 'pick_settle'
+  | 'pick_premium_unlock'
+  | 'onboarding_welcome'
+  | 'onboarding_phase_a'
+  | 'penalty_station_unclosed'
+  | 'penalty_unsettled_picks'
+  /** Reservado Sprint 07 */
+  | 'parlay_activation_2l'
+  /** Reservado Sprint 07 */
+  | 'parlay_activation_3l'
+
+/** 402 POST /bt2/picks — saldo insuficiente para pick_premium_unlock (D-05-005). */
+export interface Bt2DpInsufficientPremiumDetail {
+  code: 'dp_insufficient_for_premium_unlock'
+  message: string
+  requiredDp: number
+  currentDp: number
+}
+
+// ─── Operating day summary (US-BE-018) ────────────────────────────────────────
+
+export interface Bt2OperatingDaySummaryOut {
+  operatingDayKey: string
+  userTimeZone: string
+  picksOpenedCount: number
+  picksSettledCount: number
+  wonCount: number
+  lostCount: number
+  voidCount: number
+  totalStakeUnitsSettled: number
+  netPnlUnits: number
+  dpEarnedFromSettlements: number
 }
 
 // ─── Taken picks (local tracking de picks API tomados) ────────────────────────
