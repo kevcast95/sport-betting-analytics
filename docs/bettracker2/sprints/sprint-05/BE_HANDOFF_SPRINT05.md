@@ -14,7 +14,9 @@
 
 ## Catálogo `reason` (US-DX-001 / D-05-003)
 
-Ver `docs/bettracker2/sprints/sprint-05/DECISIONES.md` tabla `reason` → `reasonLabelEs`. Incluye `onboarding_phase_a` (valor real en BD del bono onboarding).
+Ver `docs/bettracker2/sprints/sprint-05/DECISIONES.md` tabla `reason` → `reasonLabelEs`.
+
+**Onboarding:** En el ledger pueden figurar **`onboarding_welcome`** o **`onboarding_phase_a`** (esta última es la que persiste el endpoint actual de onboarding). El FE debe **mapear ambas al mismo texto** de UI (mismo copy que una sola fila de catálogo), para no duplicar ni dejar una sin etiqueta.
 
 ## FE: evitar doble descuento de DP
 

@@ -29,13 +29,15 @@
 | `pick_settle` | Liquidación de pick |
 | `pick_premium_unlock` | Desbloqueo pick premium |
 | `onboarding_welcome` | Bienvenida — onboarding fase A |
-| `onboarding_phase_a` | Bienvenida — onboarding fase A (valor persistido en API actual) |
+| `onboarding_phase_a` | Bienvenida — onboarding fase A (valor persistido hoy por `POST /bt2/user/onboarding-phase-a-complete`) |
 | `penalty_station_unclosed` | Penalización: estación sin cerrar |
 | `penalty_unsettled_picks` | Penalización: picks sin liquidar (tras gracia) |
 | `parlay_activation_2l` | *(reservado Sprint 07)* Activación parlay 2 eventos |
 | `parlay_activation_3l` | *(reservado Sprint 07)* Activación parlay 3 eventos |
 
 **Nota:** Si el BE añade una razón nueva, debe actualizarse esta tabla y `US-DX-001` / `bt2Types.ts` en el mismo PR.
+
+**FE — onboarding:** Pueden aparecer en ledger **`onboarding_welcome`** o **`onboarding_phase_a`** según versión de flujo/API; el **copy en UI debe ser el mismo** para ambas claves (p. ej. “Bienvenida — onboarding fase A”). Mapear las dos al mismo `reasonLabelEs` en el cliente.
 
 ---
 
