@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Bt2MetaOut(BaseModel):
@@ -58,6 +58,7 @@ class Bt2VaultPickOut(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     id: str
+    event_id: int = Field(serialization_alias="eventId")
     market_class: str = Field(serialization_alias="marketClass")
     market_label_es: str = Field(serialization_alias="marketLabelEs")
     event_label: str = Field(serialization_alias="eventLabel")
@@ -84,6 +85,40 @@ class Bt2VaultPicksPageOut(BaseModel):
         description="Marca temporal de generación.",
     )
     message: Optional[str] = Field(None, serialization_alias="message")
+
+
+OPERATOR_PROFILE_VALUES = {
+    "DISCIPLINE_TRADER",
+    "IMPULSE_REACTIVE",
+    "SYSTEMATIC_ANALYST",
+    "RISK_SEEKER",
+    "CONSERVATIVE_OBSERVER",
+}
+
+
+class DiagnosticIn(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    operator_profile: str = Field(..., serialization_alias="operatorProfile")
+    system_integrity: float = Field(..., ge=0.0, le=1.0, serialization_alias="systemIntegrity")
+    answers_hash: Optional[str] = Field(None, serialization_alias="answersHash")
+
+    @field_validator("operator_profile")
+    @classmethod
+    def validate_operator_profile(cls, v: str) -> str:
+        if v not in OPERATOR_PROFILE_VALUES:
+            raise ValueError(
+                f"operator_profile debe ser uno de: {sorted(OPERATOR_PROFILE_VALUES)}"
+            )
+        return v
+
+
+class DiagnosticOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    operator_profile: str = Field(..., serialization_alias="operatorProfile")
+    system_integrity: float = Field(..., serialization_alias="systemIntegrity")
+    completed_at: str = Field(..., serialization_alias="completedAt")
 
 
 class Bt2BehavioralMetricsOut(BaseModel):

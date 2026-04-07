@@ -20,11 +20,17 @@ from apps.api.bt2_schemas import (
     Bt2SessionDayOut,
     Bt2VaultPickOut,
     Bt2VaultPicksPageOut,
+    DiagnosticIn,
+    DiagnosticOut,
 )
 from apps.api.bt2_settings import bt2_settings
 from apps.api.deps import Bt2UserId
 
 router = APIRouter(prefix="/bt2", tags=["bt2"])
+
+# Bono único al completar onboarding fase A (ledger como fuente de verdad; US-FE-011).
+ONBOARDING_PHASE_A_DP_GRANT = 250
+ONBOARDING_PHASE_A_LEDGER_REASON = "onboarding_phase_a"
 
 
 # ── Helpers DB sync ───────────────────────────────────────────────────────────
@@ -478,6 +484,7 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
         picks.append(
             Bt2VaultPickOut(
                 id=f"dp-{row['dp_id']}",
+                event_id=int(row["event_id"]),
                 market_class=mc,
                 market_label_es=_MARKET_LABEL_ES.get(mc, mc),
                 event_label=f"{home_team} vs {away_team}",
@@ -1202,6 +1209,13 @@ class DpBalanceOut(BaseModel):
     behavioral_block_count: int
 
 
+class OnboardingPhaseACompleteOut(BaseModel):
+    """Respuesta idempotente: primera vez inserta +250 en bt2_dp_ledger."""
+
+    dp_balance: int
+    granted_dp: int
+
+
 class DpLedgerEntry(BaseModel):
     id: int
     delta_dp: int
@@ -1301,6 +1315,48 @@ def bt2_update_settings(body: SettingsIn, user_id: Bt2UserId) -> SettingsOut:
     )
 
 
+@router.post(
+    "/user/onboarding-phase-a-complete",
+    response_model=OnboardingPhaseACompleteOut,
+    status_code=200,
+)
+def bt2_onboarding_phase_a_complete(user_id: Bt2UserId) -> OnboardingPhaseACompleteOut:
+    """Acredita una sola vez el bono de fase A en el ledger; el saldo es siempre la suma del ledger."""
+    conn = _db_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """SELECT 1 FROM bt2_dp_ledger
+               WHERE user_id = %s::uuid AND reason = %s
+               LIMIT 1""",
+            (user_id, ONBOARDING_PHASE_A_LEDGER_REASON),
+        )
+        already = cur.fetchone() is not None
+        granted = 0
+        if not already:
+            balance_before = _get_dp_balance(cur, user_id)
+            new_balance = balance_before + ONBOARDING_PHASE_A_DP_GRANT
+            cur.execute(
+                """INSERT INTO bt2_dp_ledger
+                   (user_id, delta_dp, reason, reference_id, balance_after_dp)
+                   VALUES (%s::uuid, %s, %s, NULL, %s)""",
+                (
+                    user_id,
+                    ONBOARDING_PHASE_A_DP_GRANT,
+                    ONBOARDING_PHASE_A_LEDGER_REASON,
+                    new_balance,
+                ),
+            )
+            granted = ONBOARDING_PHASE_A_DP_GRANT
+        conn.commit()
+        dp_balance = _get_dp_balance(cur, user_id)
+    finally:
+        cur.close()
+        conn.close()
+
+    return OnboardingPhaseACompleteOut(dp_balance=dp_balance, granted_dp=granted)
+
+
 @router.get("/user/dp-balance", response_model=DpBalanceOut)
 def bt2_dp_balance(user_id: Bt2UserId) -> DpBalanceOut:
     conn = _db_conn()
@@ -1364,4 +1420,59 @@ def bt2_dp_ledger(user_id: Bt2UserId, limit: int = Query(default=20, ge=1, le=20
             )
             for r in rows
         ]
+    )
+
+
+# ── Diagnóstico conductual (US-BE-016) ───────────────────────────────────────
+
+@router.post("/user/diagnostic", status_code=200, response_model=DiagnosticOut, response_model_by_alias=True)
+def bt2_post_diagnostic(body: DiagnosticIn, user_id: Bt2UserId) -> DiagnosticOut:
+    conn = _db_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """INSERT INTO bt2_user_diagnostics
+               (user_id, operator_profile, system_integrity, answers_hash)
+               VALUES (%s::uuid, %s, %s, %s)
+               RETURNING operator_profile, system_integrity, created_at""",
+            (user_id, body.operator_profile, body.system_integrity, body.answers_hash),
+        )
+        row = cur.fetchone()
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
+
+    return DiagnosticOut(
+        operator_profile=row[0],
+        system_integrity=float(row[1]),
+        completed_at=row[2].isoformat(),
+    )
+
+
+@router.get("/user/diagnostic", status_code=200, response_model=DiagnosticOut, response_model_by_alias=True)
+def bt2_get_diagnostic(user_id: Bt2UserId) -> DiagnosticOut:
+    conn = _db_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """SELECT operator_profile, system_integrity, created_at
+               FROM bt2_user_diagnostics
+               WHERE user_id = %s::uuid
+               ORDER BY created_at DESC
+               LIMIT 1""",
+            (user_id,),
+        )
+        row = cur.fetchone()
+    finally:
+        cur.close()
+        conn.close()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="El usuario aún no ha completado el diagnóstico conductual")
+
+    return DiagnosticOut(
+        operator_profile=row[0],
+        system_integrity=float(row[1]),
+        completed_at=row[2].isoformat(),
     )

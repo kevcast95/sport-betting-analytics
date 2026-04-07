@@ -324,6 +324,25 @@ class Bt2UserSettings(Base):
     )
 
 
+class Bt2UserDiagnostic(Base):
+    __tablename__ = "bt2_user_diagnostics"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("bt2_users.id", ondelete="CASCADE"), nullable=False
+    )
+    operator_profile: Mapped[str] = mapped_column(String(50), nullable=False)
+    system_integrity: Mapped[Any] = mapped_column(Numeric(4, 3), nullable=False)
+    answers_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        Index("ix_user_diagnostics_user_created", "user_id", "created_at"),
+    )
+
+
 class Bt2DailyPick(Base):
     __tablename__ = "bt2_daily_picks"
 
