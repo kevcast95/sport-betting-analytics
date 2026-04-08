@@ -20,6 +20,9 @@ export interface Bt2MeResponse {
 
 // ─── Vault ────────────────────────────────────────────────────────────────────
 
+/** Franja local del kickoff (Sprint 05.2 / D-05.2-002). */
+export type Bt2VaultTimeBand = 'morning' | 'afternoon' | 'evening' | 'overnight'
+
 /** Schema real de GET /bt2/vault/picks (bt2_schemas.py Bt2VaultPickOut). */
 export interface Bt2VaultPickOut {
   id: string
@@ -37,13 +40,37 @@ export interface Bt2VaultPickOut {
   unlockCostDp: number
   operatingDayKey: string
   isAvailable: boolean
+  /** ISO 8601 UTC (…Z). Vacío si el CDM no tiene kickoff (D-05-011). */
+  kickoffUtc: string
+  /** Valor crudo `bt2_events.status` (scheduled, inplay, finished, …). */
+  eventStatus: string
   externalSearchUrl: string
+  /** US-BE-029: desbloqueo premium ya pagado (o legado: pick abierto en el evento). */
+  premiumUnlocked: boolean
+  /** US-BE-030: franja horaria local del kickoff (TZ usuario). */
+  timeBand: Bt2VaultTimeBand
+}
+
+/** POST /bt2/vault/premium-unlock (US-BE-029). */
+export interface Bt2VaultPremiumUnlockBody {
+  vaultPickId: string
+}
+
+export interface Bt2VaultPremiumUnlockOut {
+  vaultPickId: string
+  premiumUnlocked: boolean
+  dpBalanceAfter: number
 }
 
 export interface Bt2VaultPicksPageOut {
   picks: Bt2VaultPickOut[]
   generatedAtUtc: string
   message?: string
+  /** Objetivo de ítems en pool (típ. 15) — US-BE-030. */
+  poolTargetCount: number
+  poolHardCap: number
+  poolItemCount: number
+  poolBelowTarget: boolean
 }
 
 // ─── Picks (bt2_picks) ────────────────────────────────────────────────────────
@@ -68,7 +95,14 @@ export interface Bt2PickOut {
   selection: string
   settled_at: string | null
   pnl_units: number | null
+  /** Suma ledger `pick_settle` para este pick; null si sigue abierto. */
   earned_dp: number | null
+  /** camelCase desde API (`response_model_by_alias`). */
+  resultHome?: number | null
+  resultAway?: number | null
+  kickoffUtc?: string | null
+  eventStatus?: string | null
+  settlementSource?: string
 }
 
 export interface Bt2PicksListOut {
@@ -92,6 +126,16 @@ export interface Bt2SessionDayOut {
   graceUntilIso: string | null
   pendingSettlementsPreviousDay: number
   stationClosedForOperatingDay: boolean
+}
+
+/** POST /bt2/session/close — campos nuevos con alias camelCase. */
+export interface Bt2SessionCloseOut {
+  session_id: number
+  status: string
+  grace_until_iso: string
+  pending_settlements: number
+  earnedDpSessionClose: number
+  dpBalanceAfter: number
 }
 
 // ─── User ─────────────────────────────────────────────────────────────────────
@@ -137,6 +181,7 @@ export interface Bt2MetaOut {
 export type Bt2DpLedgerReason =
   | 'pick_settle'
   | 'pick_premium_unlock'
+  | 'session_close_discipline'
   | 'onboarding_welcome'
   | 'onboarding_phase_a'
   | 'penalty_station_unclosed'
@@ -167,6 +212,22 @@ export interface Bt2OperatingDaySummaryOut {
   totalStakeUnitsSettled: number
   netPnlUnits: number
   dpEarnedFromSettlements: number
+  dpEarnedFromSessionClose: number
+}
+
+// ─── DP ledger (GET /bt2/user/dp-ledger) — snake_case como devuelve FastAPI ────
+
+export interface Bt2DpLedgerEntry {
+  id: number
+  delta_dp: number
+  reason: string
+  reference_id: number | null
+  created_at: string
+  balance_after_dp: number
+}
+
+export interface Bt2DpLedgerOut {
+  entries: Bt2DpLedgerEntry[]
 }
 
 // ─── Taken picks (local tracking de picks API tomados) ────────────────────────
@@ -187,4 +248,7 @@ export interface Bt2TakenPickRecord {
   stakeUnits: number
   openedAt: string
   eventLabel: string
+  /** Sprint 05.2 — cupo diario; copiado del ítem de bóveda al tomar. */
+  operatingDayKey?: string
+  accessTier?: 'standard' | 'premium'
 }

@@ -9,14 +9,21 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from apps.api.bt2_vault_pool import VAULT_POOL_HARD_CAP, VAULT_POOL_TARGET
+
+VaultTimeBandLiteral = Literal["morning", "afternoon", "evening", "overnight"]
+
 
 class Bt2MetaOut(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     contract_version: str = Field(
-        default="bt2-dx-001-s5",
+        default="bt2-dx-001-s5.4",
         serialization_alias="contractVersion",
-        description="Versión del contrato; bump Sprint 05 (ledger premium, penalizaciones, operating-day/summary, DX-001).",
+        description=(
+            "s5.4 = Sprint 05.2 US-BE-030/031: vault pool ~15 + timeBand + meta pool; "
+            "isAvailable/POST picks estrictos al kickoff (D-05.2-001 A)."
+        ),
     )
     settlement_verification_mode: Literal["trust", "verified"] = Field(
         ...,
@@ -72,7 +79,49 @@ class Bt2VaultPickOut(BaseModel):
     unlock_cost_dp: int = Field(serialization_alias="unlockCostDp")
     operating_day_key: str = Field(serialization_alias="operatingDayKey")
     is_available: bool = Field(True, serialization_alias="isAvailable")
+    kickoff_utc: str = Field(
+        "",
+        serialization_alias="kickoffUtc",
+        description="ISO 8601 UTC (…Z). Vacío si bt2_events.kickoff_utc es NULL.",
+    )
+    event_status: str = Field(
+        "",
+        serialization_alias="eventStatus",
+        description="Valor crudo bt2_events.status (CDM).",
+    )
     external_search_url: str = Field("", serialization_alias="externalSearchUrl")
+    premium_unlocked: bool = Field(
+        False,
+        serialization_alias="premiumUnlocked",
+        description="True si el usuario ya desbloqueó este ítem premium hoy (US-BE-029) o legado con pick abierto.",
+    )
+    time_band: VaultTimeBandLiteral = Field(
+        ...,
+        serialization_alias="timeBand",
+        description=(
+            "Franja local del kickoff (TZ usuario). Bordes D-05.2-002: mañana [08:00,12:00), "
+            "tarde [12:00,18:00), noche [18:00,23:00), overnight resto (23:00–08:00)."
+        ),
+    )
+
+
+class VaultPremiumUnlockIn(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vault_pick_id: str = Field(
+        ...,
+        min_length=1,
+        serialization_alias="vaultPickId",
+        description="Id del ítem en vault (p. ej. dp-7).",
+    )
+
+
+class VaultPremiumUnlockOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vault_pick_id: str = Field(..., serialization_alias="vaultPickId")
+    premium_unlocked: bool = Field(True, serialization_alias="premiumUnlocked")
+    dp_balance_after: int = Field(..., serialization_alias="dpBalanceAfter")
 
 
 class Bt2VaultPicksPageOut(BaseModel):
@@ -85,6 +134,26 @@ class Bt2VaultPicksPageOut(BaseModel):
         description="Marca temporal de generación.",
     )
     message: Optional[str] = Field(None, serialization_alias="message")
+    pool_target_count: int = Field(
+        VAULT_POOL_TARGET,
+        serialization_alias="poolTargetCount",
+        description="Objetivo de negocio de ítems en pool (D-05.2-002 §6).",
+    )
+    pool_hard_cap: int = Field(
+        VAULT_POOL_HARD_CAP,
+        serialization_alias="poolHardCap",
+        description="Tope duro de ítems en una respuesta vault.",
+    )
+    pool_item_count: int = Field(
+        ...,
+        serialization_alias="poolItemCount",
+        description="Cantidad de ítems devueltos en `picks` para este día operativo.",
+    )
+    pool_below_target: bool = Field(
+        ...,
+        serialization_alias="poolBelowTarget",
+        description="True si hay menos ítems que `poolTargetCount` (falta de stock CDM u otra causa).",
+    )
 
 
 OPERATOR_PROFILE_VALUES = {
@@ -136,6 +205,11 @@ class OperatingDaySummaryOut(BaseModel):
     total_stake_units_settled: float = Field(0.0, serialization_alias="totalStakeUnitsSettled")
     net_pnl_units: float = Field(0.0, serialization_alias="netPnlUnits")
     dp_earned_from_settlements: int = Field(0, serialization_alias="dpEarnedFromSettlements")
+    dp_earned_from_session_close: int = Field(
+        0,
+        serialization_alias="dpEarnedFromSessionClose",
+        description="Suma delta_dp con reason session_close_discipline en la ventana (US-BE-021 / US-BE-018).",
+    )
 
 
 class Bt2BehavioralMetricsOut(BaseModel):

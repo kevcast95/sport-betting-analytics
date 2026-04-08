@@ -80,10 +80,12 @@ describe('V2 rutas protegidas (US-FE-004)', () => {
     v2Harness('/v2/sanctuary')
     expect(
       screen.getByRole('heading', {
-        name: /Calma en el ruido del cambio/i,
+        name: /Santuario/i,
       }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/Santuario Zurich/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Calma en el ruido del cambio/i),
+    ).toBeInTheDocument()
   })
 
   it('muestra La Bóveda en /v2/vault', () => {

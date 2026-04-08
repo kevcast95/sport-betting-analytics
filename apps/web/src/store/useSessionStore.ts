@@ -9,7 +9,6 @@ import {
   getOperatingDayKey,
   graceExpiresIso,
   isGraceExpired,
-  isWithinGrace,
   type DayKey,
 } from '@/lib/operatingDay'
 
@@ -105,6 +104,12 @@ export type SessionStoreState = {
   previousDayPendingItems: PreviousDayItem[]
   /** US-FE-012 / T-044: registro auditado de penalizaciones aplicadas. */
   penaltiesApplied: PenaltyRecord[]
+  /**
+   * GET /bt2/session/day (T-184): liquidaciones pendientes del día anterior en servidor.
+   */
+  sessionPendingPrevDaySettlements: number | null
+  /** GET /bt2/session/day: estación ya cerrada para el día operativo actual. */
+  sessionStationClosedToday: boolean | null
 }
 
 export type SessionStoreActions = {
@@ -147,6 +152,8 @@ const initial: SessionStoreState = {
   graceActiveUntilIso: null,
   previousDayPendingItems: [],
   penaltiesApplied: [],
+  sessionPendingPrevDaySettlements: null,
+  sessionStationClosedToday: null,
 }
 
 /**
@@ -305,6 +312,9 @@ export const useSessionStore = create<SessionStore>()(
           set((s) => ({
             operatingDayKey: dayKey,
             graceActiveUntilIso: data.graceUntilIso ?? null,
+            sessionPendingPrevDaySettlements:
+              data.pendingSettlementsPreviousDay ?? null,
+            sessionStationClosedToday: data.stationClosedForOperatingDay ?? null,
             // stationClosedForOperatingDay → si cerrada, stationLockedUntilIso se mantiene
             // No sobreescribir stationLockedUntilIso con data de API (se gestiona localmente)
             closedForDayKey: data.stationClosedForOperatingDay ? dayKey : s.closedForDayKey,
@@ -324,13 +334,10 @@ export const useSessionStore = create<SessionStore>()(
 )
 
 /**
- * US-FE-012 / T-044: aplica las penalizaciones conductuales tras expirar la gracia.
- *
- * Tabla (DECISIONES.md 2026-04-04):
- * - Estación sin cerrar   → -50 DP (pérdida del bono de cierre + penalización conductual)
- * - Picks sin liquidar    → -25 DP (por cada día con picks rezagados)
- *
- * Cada penalización queda auditada en `penaltiesApplied`.
+ * US-FE-012 / Sprint 05: tras expirar la gracia, registra pendientes en `penaltiesApplied`.
+ * Los cargos −50 / −25 DP los aplica solo el servidor en `POST /bt2/session/open`
+ * (penalty_station_unclosed, penalty_unsettled_picks); el cliente no llama a
+ * `incrementDisciplinePoints` aquí.
  */
 function applyPenalties(
   set: (partial: Partial<SessionStoreState>) => void,
@@ -355,9 +362,8 @@ function applyPenalties(
         'Penalización: -50 DP. Completa el After-Action Review para reanudar operativa.',
     }
     newPenalties.push(record)
-    useUserStore.getState().incrementDisciplinePoints(-50)
     console.warn(
-      `[BT2] Penalización aplicada — estación sin cerrar · día ${dayKey} · -50 DP (local)`,
+      `[BT2] Pendiente conductual registrado — estación sin cerrar · día ${dayKey} · la penalización DP la aplica el servidor en session/open (Sprint 05).`,
     )
   }
 
@@ -372,9 +378,8 @@ function applyPenalties(
         'Penalización: -25 DP. Liquida los picks pendientes para mantener la integridad.',
     }
     newPenalties.push(record)
-    useUserStore.getState().incrementDisciplinePoints(-25)
     console.warn(
-      `[BT2] Penalización aplicada — picks sin liquidar · día ${dayKey} · -25 DP (local)`,
+      `[BT2] Pendiente conductual registrado — picks sin liquidar · día ${dayKey} · la penalización DP la aplica el servidor en session/open (Sprint 05).`,
     )
   }
 
@@ -384,9 +389,6 @@ function applyPenalties(
     graceActiveUntilIso: null,
   })
 
-  // T-121 (US-FE-030): reconciliar DP con servidor tras penalizaciones locales.
-  // Hasta que BE registre penalty_station_unclosed y penalty_unsettled_picks en dp_ledger,
-  // syncDpBalance devolverá el saldo pre-penalización (gap documentado en D-04-FE-003).
   void useUserStore.getState().syncDpBalance()
 }
 

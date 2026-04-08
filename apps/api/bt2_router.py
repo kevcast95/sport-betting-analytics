@@ -13,16 +13,21 @@ from typing import List, Literal, Optional, Tuple, cast
 import psycopg2
 import psycopg2.extras
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 from apps.api.bt2_dx_constants import (
     BT2_ERR_DP_INSUFFICIENT_PREMIUM,
+    BT2_ERR_PICK_KICKOFF_ELAPSED,
     DP_PREMIUM_UNLOCK_COST,
+    PICK_SETTLE_DP_REWARD,
     PENALTY_STATION_UNCLOSED_DP,
     PENALTY_UNSETTLED_DP,
     REASON_PENALTY_STATION_UNCLOSED,
     REASON_PENALTY_UNSETTLED_PICKS,
     REASON_PICK_PREMIUM_UNLOCK,
+    REASON_PICK_SETTLE,
+    REASON_SESSION_CLOSE_DISCIPLINE,
+    SESSION_CLOSE_DISCIPLINE_REWARD_DP,
 )
 from apps.api.bt2_schemas import (
     Bt2BehavioralMetricsOut,
@@ -33,8 +38,16 @@ from apps.api.bt2_schemas import (
     DiagnosticIn,
     DiagnosticOut,
     OperatingDaySummaryOut,
+    VaultPremiumUnlockIn,
+    VaultPremiumUnlockOut,
 )
 from apps.api.bt2_settings import bt2_settings
+from apps.api.bt2_vault_pool import (
+    VAULT_POOL_TARGET,
+    compose_vault_daily_picks,
+    is_event_available_for_pick_strict,
+    kickoff_utc_to_time_band,
+)
 from apps.api.deps import Bt2UserId
 
 router = APIRouter(prefix="/bt2", tags=["bt2"])
@@ -437,11 +450,19 @@ def bt2_operating_day_summary(
 
         cur.execute(
             """SELECT COALESCE(SUM(delta_dp), 0) FROM bt2_dp_ledger
-               WHERE user_id = %s::uuid AND reason = 'pick_settle'
+               WHERE user_id = %s::uuid AND reason = %s
                  AND created_at >= %s AND created_at < %s""",
-            (user_id, start_utc, end_utc),
+            (user_id, REASON_PICK_SETTLE, start_utc, end_utc),
         )
         dp_settle = int(cur.fetchone()[0])
+
+        cur.execute(
+            """SELECT COALESCE(SUM(delta_dp), 0) FROM bt2_dp_ledger
+               WHERE user_id = %s::uuid AND reason = %s
+                 AND created_at >= %s AND created_at < %s""",
+            (user_id, REASON_SESSION_CLOSE_DISCIPLINE, start_utc, end_utc),
+        )
+        dp_session_close = int(cur.fetchone()[0])
     finally:
         cur.close()
         conn.close()
@@ -458,13 +479,146 @@ def bt2_operating_day_summary(
         total_stake_units_settled=float(agg[4] or 0),
         net_pnl_units=float(agg[5] or 0),
         dp_earned_from_settlements=dp_settle,
+        dp_earned_from_session_close=dp_session_close,
     )
+
+
+def _kickoff_utc_iso_z(ko: Optional[datetime]) -> str:
+    """ISO 8601 UTC con sufijo Z; vacío si no hay instante (US-BE-019)."""
+    if ko is None:
+        return ""
+    if ko.tzinfo is None:
+        ko = ko.replace(tzinfo=timezone.utc)
+    else:
+        ko = ko.astimezone(timezone.utc)
+    return ko.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _parse_vault_daily_pick_id(vault_pick_id: str) -> int:
+    """Acepta `dp-7` o `7` (US-BE-029)."""
+    raw = vault_pick_id.strip()
+    if raw.lower().startswith("dp-"):
+        raw = raw[3:].strip()
+    try:
+        return int(raw)
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail="vaultPickId debe ser el id del snapshot (p. ej. dp-12 o 12).",
+        )
+
+
+@router.post(
+    "/vault/premium-unlock",
+    status_code=200,
+    response_model=VaultPremiumUnlockOut,
+    response_model_by_alias=True,
+)
+def bt2_vault_premium_unlock(
+    body: VaultPremiumUnlockIn, user_id: Bt2UserId
+) -> VaultPremiumUnlockOut:
+    """
+    US-BE-029 / D-05.1-002: cobra pick_premium_unlock (−50 DP) sin crear bt2_picks.
+    Idempotente: segundo POST mismo ítem/día → 200 sin duplicar ledger.
+    """
+    dp_id = _parse_vault_daily_pick_id(body.vault_pick_id)
+    odk = _operating_day_key_for_user(user_id)
+    canonical_id = f"dp-{dp_id}"
+    conn = _db_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """SELECT id, access_tier FROM bt2_daily_picks
+               WHERE id = %s AND user_id = %s::uuid AND operating_day_key = %s""",
+            (dp_id, user_id, odk),
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(
+                status_code=404,
+                detail="Ítem de bóveda no encontrado o no pertenece al snapshot del día",
+            )
+        if row[1] != "premium":
+            raise HTTPException(
+                status_code=404,
+                detail="El ítem no es premium en el snapshot del día operativo",
+            )
+
+        cur.execute(
+            """SELECT 1 FROM bt2_vault_premium_unlocks
+               WHERE user_id = %s::uuid AND daily_pick_id = %s""",
+            (user_id, dp_id),
+        )
+        if cur.fetchone():
+            conn.commit()
+            return VaultPremiumUnlockOut(
+                vault_pick_id=canonical_id,
+                premium_unlocked=True,
+                dp_balance_after=_get_dp_balance(cur, user_id),
+            )
+
+        bal_raw = _get_dp_ledger_sum(cur, user_id)
+        if bal_raw < DP_PREMIUM_UNLOCK_COST:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail={
+                    "code": BT2_ERR_DP_INSUFFICIENT_PREMIUM,
+                    "message": (
+                        "Saldo de Discipline Points insuficiente para desbloquear la señal premium "
+                        f"del día (se requieren {DP_PREMIUM_UNLOCK_COST} DP)."
+                    ),
+                    "requiredDp": DP_PREMIUM_UNLOCK_COST,
+                    "currentDp": max(0, bal_raw),
+                },
+            )
+
+        cur.execute(
+            """INSERT INTO bt2_vault_premium_unlocks (user_id, daily_pick_id, operating_day_key)
+               VALUES (%s::uuid, %s, %s)""",
+            (user_id, dp_id, odk),
+        )
+        _append_dp_ledger_move(
+            cur,
+            user_id,
+            -DP_PREMIUM_UNLOCK_COST,
+            REASON_PICK_PREMIUM_UNLOCK,
+            None,
+        )
+        logger.info(
+            "vault_premium_unlock: user=%s daily_pick_id=%s delta_dp=-%s (US-BE-029, sin bt2_picks)",
+            user_id,
+            dp_id,
+            DP_PREMIUM_UNLOCK_COST,
+        )
+        conn.commit()
+        return VaultPremiumUnlockOut(
+            vault_pick_id=canonical_id,
+            premium_unlocked=True,
+            dp_balance_after=_get_dp_balance(cur, user_id),
+        )
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
 
 
 @router.get("/vault/picks", response_model=Bt2VaultPicksPageOut, response_model_by_alias=True)
 def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_utc_dt = datetime.now(timezone.utc)
     odk = _operating_day_key_for_user(user_id)
+    tz_name = _user_timezone(user_id)
+    try:
+        from zoneinfo import ZoneInfo
+
+        user_tz = ZoneInfo(tz_name)
+    except Exception:
+        user_tz = timezone.utc
 
     conn = _db_conn()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -511,6 +665,19 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
                 dp.suggested_at ASC
         """, (user_id, odk))
         rows = cur.fetchall()
+
+        cur.execute(
+            """SELECT daily_pick_id FROM bt2_vault_premium_unlocks
+               WHERE user_id = %s::uuid AND operating_day_key = %s""",
+            (user_id, odk),
+        )
+        unlocked_dp_ids = {int(r["daily_pick_id"]) for r in cur.fetchall()}
+        cur.execute(
+            """SELECT DISTINCT event_id FROM bt2_picks
+               WHERE user_id = %s::uuid AND status = 'open'""",
+            (user_id,),
+        )
+        legacy_open_event_ids = {int(r["event_id"]) for r in cur.fetchall()}
     finally:
         cur.close()
         conn.close()
@@ -520,6 +687,8 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
             picks=[],
             generated_at_utc=now,
             message="No hay eventos disponibles para hoy. El sistema actualiza la cartelera cada mañana.",
+            pool_item_count=0,
+            pool_below_target=True,
         )
 
     picks: list[Bt2VaultPickOut] = []
@@ -528,8 +697,15 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
         away_team = row["away_team"] or "Visitante"
         league_name = row["league_name"] or "Liga"
         kickoff = row["kickoff_utc"]
-        event_status = row["event_status"] or "scheduled"
-        is_available = (event_status == "scheduled")
+        event_status_raw = row["event_status"]
+        event_status_str = event_status_raw if event_status_raw is not None else ""
+        time_band = kickoff_utc_to_time_band(kickoff, user_tz)
+        is_available = is_event_available_for_pick_strict(
+            event_status=str(event_status_raw or ""),
+            kickoff_utc=kickoff,
+            now_utc=now_utc_dt,
+        )
+        kickoff_iso = _kickoff_utc_iso_z(kickoff)
 
         # Odds
         odds_home = float(row["odds_home"] or 0.0)
@@ -562,11 +738,16 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
 
         titulo = f"{league_name} · {kickoff.strftime('%d/%m') if kickoff else odk}"
         tier_label = row["access_tier"]  # "standard" | "premium"
+        dp_id = int(row["dp_id"])
+        ev_id = int(row["event_id"])
+        premium_unlocked = False
+        if tier_label == "premium":
+            premium_unlocked = dp_id in unlocked_dp_ids or ev_id in legacy_open_event_ids
 
         picks.append(
             Bt2VaultPickOut(
-                id=f"dp-{row['dp_id']}",
-                event_id=int(row["event_id"]),
+                id=f"dp-{dp_id}",
+                event_id=ev_id,
                 market_class=mc,
                 market_label_es=_MARKET_LABEL_ES.get(mc, mc),
                 event_label=f"{home_team} vs {away_team}",
@@ -580,11 +761,21 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
                 unlock_cost_dp=0 if tier_label == "standard" else _UNLOCK_DP_PREMIUM,
                 operating_day_key=odk,
                 is_available=is_available,
+                kickoff_utc=kickoff_iso,
+                event_status=event_status_str,
                 external_search_url=external_url,
+                premium_unlocked=premium_unlocked,
+                time_band=time_band,
             )
         )
 
-    return Bt2VaultPicksPageOut(picks=picks, generated_at_utc=now)
+    n = len(picks)
+    return Bt2VaultPicksPageOut(
+        picks=picks,
+        generated_at_utc=now,
+        pool_item_count=n,
+        pool_below_target=n < VAULT_POOL_TARGET,
+    )
 
 
 @router.get("/metrics/behavioral", response_model=Bt2BehavioralMetricsOut, response_model_by_alias=True)
@@ -879,6 +1070,9 @@ def _determine_outcome(market: str, selection: str, result_home: int, result_awa
     Soportado hoy (sinónimos en selection):
     - Match Winner / 1X2 / Winner: selección 1|Home|home, X|Draw|…, 2|Away|away.
     - Over/Under goals: selección con OVER|UNDER y umbral numérico (default 2.5).
+    Entrada típica ya normalizada vía `_normalize_market_selection_for_pick` (POST /bt2/picks): ML_SIDE,
+    ML_AWAY, ML_TOTAL, textos «Más de …», «Victoria {equipo}», etc.
+
     Sprint 06: enum único en CDM/API.
     """
     m = market.upper()
@@ -906,6 +1100,128 @@ def _determine_outcome(market: str, selection: str, result_home: int, result_awa
     return "void"
 
 
+def _normalize_market_selection_for_pick(
+    cur,
+    event_id: int,
+    market: str,
+    selection: str,
+) -> Tuple[str, str]:
+    """
+    US-BE-023: mapea mercado/selección del cliente hacia forma entendida por `_determine_outcome`.
+    Falla con 422 si no hay mapeo determinista.
+    """
+    m0 = market.strip()
+    s0 = selection.strip()
+    if not m0 or not s0:
+        raise HTTPException(
+            status_code=422,
+            detail="market y selection no pueden estar vacíos tras normalizar",
+        )
+    mu = m0.upper()
+    sl = s0.lower()
+
+    cur.execute(
+        """SELECT COALESCE(th.name,''), COALESCE(ta.name,'')
+           FROM bt2_events e
+           LEFT JOIN bt2_teams th ON e.home_team_id = th.id
+           LEFT JOIN bt2_teams ta ON e.away_team_id = ta.id
+           WHERE e.id = %s""",
+        (event_id,),
+    )
+    row = cur.fetchone()
+    home = (row[0] or "").strip()
+    away = (row[1] or "").strip()
+    hl = home.lower()
+    al = away.lower()
+
+    is_total = any(
+        k in mu
+        for k in (
+            "ML_TOTAL",
+            "TOTAL_OVER",
+            "TOTAL_UNDER",
+            "TOTAL",
+            "GOALS",
+            "OVER",
+            "UNDER",
+            "O/U",
+            "OU",
+        )
+    )
+    if is_total:
+        num_m = re.search(r"(\d+\.?\d*)", s0)
+        line = float(num_m.group(1)) if num_m else 2.5
+        overish = (
+            "mas" in sl
+            or "más" in sl
+            or "over" in sl
+            or "more" in sl
+            or mu.endswith("_OVER")
+            or "TOTAL_OVER" in mu
+        )
+        underish = (
+            "menos" in sl
+            or "under" in sl
+            or mu.endswith("_UNDER")
+            or "TOTAL_UNDER" in mu
+        )
+        if overish and not underish:
+            return ("TOTAL GOALS", f"OVER {line}")
+        if underish and not overish:
+            return ("TOTAL GOALS", f"UNDER {line}")
+        if overish and underish:
+            raise HTTPException(
+                status_code=422,
+                detail="Selección de totales ambigua (mezcla over/under).",
+            )
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "No se pudo normalizar mercado de totales: indique explícitamente más/menos, "
+                "over/under, o use ML_TOTAL / TOTAL_OVER / TOTAL_UNDER."
+            ),
+        )
+
+    if any(k in mu for k in ("SPREAD", "PROP", "HANDICAP", "PLAYER")):
+        raise HTTPException(
+            status_code=422,
+            detail="Mercado no soportado para registro de pick en esta versión (spread / prop / hándicap).",
+        )
+
+    # 1X2 / moneyline
+    canon_market = "1X2"
+    if s0 in ("1", "2", "X", "x"):
+        return (canon_market, "X" if s0.lower() == "x" else s0)
+    if s0 in ("Home", "home", "Away", "away", "Draw", "draw"):
+        return (canon_market, s0[0].upper() + s0[1:].lower() if s0.lower() != "draw" else "Draw")
+
+    if "empate" in sl or sl in ("draw", "x"):
+        return (canon_market, "X")
+    if hl and hl in sl:
+        return (canon_market, "1")
+    if al and al in sl:
+        return (canon_market, "2")
+    if "local" in sl and "visitante" not in sl:
+        return (canon_market, "1")
+    if "visitante" in sl:
+        return (canon_market, "2")
+    if mu in ("ML_AWAY",) or "ML_AWAY" in mu:
+        return (canon_market, "2")
+    if "victoria" in sl or "gana" in sl:
+        if al and al in sl:
+            return (canon_market, "2")
+        if hl and hl in sl:
+            return (canon_market, "1")
+
+    raise HTTPException(
+        status_code=422,
+        detail=(
+            "No se pudo mapear market/selection a un mercado soportado para liquidación. "
+            "Use 1X2 (1/X/2, local/visitante, empate) o totales explícitos (más/menos, over/under)."
+        ),
+    )
+
+
 # ── Picks schemas (Sprint 04 US-BE-010) ──────────────────────────────────────
 
 class PickIn(BaseModel):
@@ -917,6 +1233,10 @@ class PickIn(BaseModel):
 
 
 class PickOut(BaseModel):
+    """US-BE-018 §9 / US-BE-022 — campos nuevos con alias camelCase (rutas con response_model_by_alias)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
     pick_id: int
     status: str
     opened_at: str
@@ -929,6 +1249,11 @@ class PickOut(BaseModel):
     settled_at: Optional[str] = None
     pnl_units: Optional[float] = None
     earned_dp: Optional[int] = None
+    result_home: Optional[int] = Field(None, serialization_alias="resultHome")
+    result_away: Optional[int] = Field(None, serialization_alias="resultAway")
+    kickoff_utc: Optional[str] = Field(None, serialization_alias="kickoffUtc")
+    event_status: Optional[str] = Field(None, serialization_alias="eventStatus")
+    settlement_source: str = Field("user", serialization_alias="settlementSource")
 
 
 class PicksListOut(BaseModel):
@@ -951,7 +1276,12 @@ class SettleOut(BaseModel):
 
 # ── Picks endpoints (T-098, T-099) ───────────────────────────────────────────
 
-@router.post("/picks", status_code=201, response_model=PickOut)
+@router.post(
+    "/picks",
+    status_code=201,
+    response_model=PickOut,
+    response_model_by_alias=True,
+)
 def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
     if body.odds_accepted <= 1.0:
         raise HTTPException(status_code=422, detail="odds_accepted debe ser > 1.0")
@@ -964,39 +1294,83 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
     try:
         # Validar que el evento existe y está scheduled
         cur.execute(
-            "SELECT id, status FROM bt2_events WHERE id = %s",
+            "SELECT id, status, kickoff_utc FROM bt2_events WHERE id = %s",
             (body.event_id,),
         )
         ev = cur.fetchone()
         if not ev:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
-        if ev[1] != "scheduled":
+        ev_status = ev[1]
+        ev_kickoff = ev[2]
+        if ev_status != "scheduled":
             raise HTTPException(
                 status_code=422,
-                detail=f"El evento no está disponible para picks (status={ev[1]})",
+                detail=f"El evento no está disponible para picks (status={ev_status})",
+            )
+        now_pick = datetime.now(timezone.utc)
+        if not is_event_available_for_pick_strict(
+            event_status=str(ev_status or ""),
+            kickoff_utc=ev_kickoff,
+            now_utc=now_pick,
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": BT2_ERR_PICK_KICKOFF_ELAPSED,
+                    "message": (
+                        "El partido ya inició respecto al horario de kickoff; "
+                        "no es posible tomar el pick (D-05.2-001)."
+                    ),
+                    "kickoffUtc": _kickoff_utc_iso_z(ev_kickoff),
+                },
             )
 
-        # Prevenir pick duplicado (mismo usuario, evento, mercado)
+        norm_market, norm_selection = _normalize_market_selection_for_pick(
+            cur, body.event_id, body.market, body.selection
+        )
+
+        # Prevenir pick duplicado (mismo usuario, evento, mercado canónico)
         cur.execute(
             """SELECT id FROM bt2_picks
                WHERE user_id = %s::uuid AND event_id = %s
                  AND market = %s AND selection = %s AND status = 'open'""",
-            (user_id, body.event_id, body.market, body.selection),
+            (user_id, body.event_id, norm_market, norm_selection),
         )
         if cur.fetchone():
             raise HTTPException(status_code=409, detail="Ya existe un pick abierto para este evento/mercado/selección")
 
-        # Desbloqueo premium del snapshot (D-05-004): −50 DP en el mismo commit que el pick; sin pick si falla saldo.
+        # Premium snapshot (D-05-004 / US-BE-029): −50 solo si no hubo unlock previo ni legado con pick abierto.
         cur.execute(
-            """SELECT 1 FROM bt2_daily_picks
+            """SELECT id FROM bt2_daily_picks
                WHERE user_id = %s::uuid AND operating_day_key = %s AND event_id = %s
                  AND access_tier = 'premium'
                LIMIT 1""",
             (user_id, odk, body.event_id),
         )
-        needs_premium_unlock = cur.fetchone() is not None
+        dp_prem = cur.fetchone()
+        needs_premium_snapshot = dp_prem is not None
+        daily_pick_id = int(dp_prem[0]) if dp_prem else None
 
-        if needs_premium_unlock:
+        already_premium_unlocked = False
+        if needs_premium_snapshot and daily_pick_id is not None:
+            cur.execute(
+                """SELECT 1 FROM bt2_vault_premium_unlocks
+                   WHERE user_id = %s::uuid AND daily_pick_id = %s""",
+                (user_id, daily_pick_id),
+            )
+            already_premium_unlocked = cur.fetchone() is not None
+            if not already_premium_unlocked:
+                cur.execute(
+                    """SELECT 1 FROM bt2_picks
+                       WHERE user_id = %s::uuid AND event_id = %s AND status = 'open'
+                       LIMIT 1""",
+                    (user_id, body.event_id),
+                )
+                already_premium_unlocked = cur.fetchone() is not None
+
+        charge_premium_unlock = needs_premium_snapshot and not already_premium_unlocked
+
+        if charge_premium_unlock:
             bal_raw = _get_dp_ledger_sum(cur, user_id)
             if bal_raw < DP_PREMIUM_UNLOCK_COST:
                 raise HTTPException(
@@ -1017,13 +1391,13 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
                (user_id, event_id, market, selection, odds_taken, stake_units, status)
                VALUES (%s::uuid, %s, %s, %s, %s, %s, 'open')
                RETURNING id, status, opened_at""",
-            (user_id, body.event_id, body.market, body.selection,
+            (user_id, body.event_id, norm_market, norm_selection,
              body.odds_accepted, body.stake_units),
         )
         row = cur.fetchone()
         pick_id, pick_status, opened_at = row
 
-        if needs_premium_unlock:
+        if charge_premium_unlock:
             _append_dp_ledger_move(
                 cur,
                 user_id,
@@ -1032,23 +1406,39 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
                 pick_id,
             )
             logger.info(
-                "pick_premium_unlock: user=%s pick_id=%s delta_dp=-%s (desbloqueo señal premium snapshot)",
+                "pick_premium_unlock: user=%s pick_id=%s delta_dp=-%s (desbloqueo + pick mismo commit)",
                 user_id,
                 pick_id,
                 DP_PREMIUM_UNLOCK_COST,
+            )
+        elif needs_premium_snapshot:
+            logger.info(
+                "pick_create_skip_premium_charge: user=%s pick_id=%s event_id=%s (US-BE-029 unlock previo o legado)",
+                user_id,
+                pick_id,
+                body.event_id,
             )
 
         conn.commit()
 
         cur.execute(
-            """SELECT th.name, ta.name FROM bt2_events e
+            """SELECT th.name, ta.name, e.kickoff_utc, e.status FROM bt2_events e
                JOIN bt2_teams th ON e.home_team_id = th.id
                JOIN bt2_teams ta ON e.away_team_id = ta.id
                WHERE e.id = %s""",
             (body.event_id,),
         )
         teams = cur.fetchone()
-        event_label = f"{teams[0]} vs {teams[1]}" if teams else f"Evento {body.event_id}"
+        if teams:
+            event_label = f"{teams[0]} vs {teams[1]}"
+            kickoff_iso = (
+                _kickoff_utc_iso_z(teams[2]) if teams[2] is not None else ""
+            )
+            ev_status = str(teams[3]) if teams[3] is not None else ""
+        else:
+            event_label = f"Evento {body.event_id}"
+            kickoff_iso = ""
+            ev_status = ""
     except HTTPException:
         conn.rollback()
         raise
@@ -1067,12 +1457,19 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
         odds_accepted=float(body.odds_accepted),
         event_label=event_label,
         event_id=body.event_id,
-        market=body.market,
-        selection=body.selection,
+        market=norm_market,
+        selection=norm_selection,
+        settlement_source="user",
+        kickoff_utc=kickoff_iso if kickoff_iso else None,
+        event_status=ev_status if ev_status else None,
     )
 
 
-@router.get("/picks", response_model=PicksListOut)
+@router.get(
+    "/picks",
+    response_model=PicksListOut,
+    response_model_by_alias=True,
+)
 def bt2_list_picks(
     user_id: Bt2UserId,
     status: Optional[str] = Query(default="all"),
@@ -1096,18 +1493,29 @@ def bt2_list_picks(
             except ValueError:
                 pass
 
+        ledger_params = [user_id, REASON_PICK_SETTLE]
         cur.execute(
             f"""SELECT p.id, p.event_id, p.market, p.selection,
                        p.odds_taken, p.stake_units, p.status,
                        p.opened_at, p.settled_at, p.pnl_units,
-                       COALESCE(th.name,'?') || ' vs ' || COALESCE(ta.name,'?') AS event_label
+                       p.result_home, p.result_away, p.settlement_source,
+                       e.kickoff_utc, e.status AS ev_status,
+                       COALESCE(th.name,'?') || ' vs ' || COALESCE(ta.name,'?') AS event_label,
+                       CASE WHEN p.status = 'open' THEN NULL
+                            ELSE COALESCE(l.delta_sum, 0)::int END AS earned_dp
                 FROM bt2_picks p
                 LEFT JOIN bt2_events e ON p.event_id = e.id
                 LEFT JOIN bt2_teams th ON e.home_team_id = th.id
                 LEFT JOIN bt2_teams ta ON e.away_team_id = ta.id
+                LEFT JOIN (
+                    SELECT reference_id, SUM(delta_dp) AS delta_sum
+                    FROM bt2_dp_ledger
+                    WHERE user_id = %s::uuid AND reason = %s AND reference_id IS NOT NULL
+                    GROUP BY reference_id
+                ) l ON l.reference_id = p.id
                 WHERE {' AND '.join(where)}
                 ORDER BY p.opened_at DESC""",
-            params,
+            ledger_params + params,
         )
         rows = cur.fetchall()
     finally:
@@ -1127,13 +1535,23 @@ def bt2_list_picks(
             opened_at=r["opened_at"].isoformat(),
             settled_at=r["settled_at"].isoformat() if r["settled_at"] else None,
             pnl_units=float(r["pnl_units"]) if r["pnl_units"] is not None else None,
+            earned_dp=r["earned_dp"],
+            result_home=r["result_home"],
+            result_away=r["result_away"],
+            settlement_source=r["settlement_source"] or "user",
+            kickoff_utc=_kickoff_utc_iso_z(r["kickoff_utc"]) or None,
+            event_status=str(r["ev_status"]) if r["ev_status"] is not None else None,
         )
         for r in rows
     ]
     return PicksListOut(picks=picks)
 
 
-@router.get("/picks/{pick_id}", response_model=PickOut)
+@router.get(
+    "/picks/{pick_id}",
+    response_model=PickOut,
+    response_model_by_alias=True,
+)
 def bt2_get_pick(pick_id: int, user_id: Bt2UserId) -> PickOut:
     conn = _db_conn()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -1142,13 +1560,23 @@ def bt2_get_pick(pick_id: int, user_id: Bt2UserId) -> PickOut:
             """SELECT p.id, p.event_id, p.market, p.selection,
                       p.odds_taken, p.stake_units, p.status,
                       p.opened_at, p.settled_at, p.pnl_units,
-                      COALESCE(th.name,'?') || ' vs ' || COALESCE(ta.name,'?') AS event_label
+                      p.result_home, p.result_away, p.settlement_source,
+                      e.kickoff_utc, e.status AS ev_status,
+                      COALESCE(th.name,'?') || ' vs ' || COALESCE(ta.name,'?') AS event_label,
+                      CASE WHEN p.status = 'open' THEN NULL
+                           ELSE COALESCE(l.delta_sum, 0)::int END AS earned_dp
                FROM bt2_picks p
                LEFT JOIN bt2_events e ON p.event_id = e.id
                LEFT JOIN bt2_teams th ON e.home_team_id = th.id
                LEFT JOIN bt2_teams ta ON e.away_team_id = ta.id
+               LEFT JOIN (
+                   SELECT reference_id, SUM(delta_dp) AS delta_sum
+                   FROM bt2_dp_ledger
+                   WHERE user_id = %s::uuid AND reason = %s AND reference_id IS NOT NULL
+                   GROUP BY reference_id
+               ) l ON l.reference_id = p.id
                WHERE p.id = %s AND p.user_id = %s::uuid""",
-            (pick_id, user_id),
+            (user_id, REASON_PICK_SETTLE, pick_id, user_id),
         )
         r = cur.fetchone()
     finally:
@@ -1170,6 +1598,12 @@ def bt2_get_pick(pick_id: int, user_id: Bt2UserId) -> PickOut:
         opened_at=r["opened_at"].isoformat(),
         settled_at=r["settled_at"].isoformat() if r["settled_at"] else None,
         pnl_units=float(r["pnl_units"]) if r["pnl_units"] is not None else None,
+        earned_dp=r["earned_dp"],
+        result_home=r["result_home"],
+        result_away=r["result_away"],
+        settlement_source=r["settlement_source"] or "user",
+        kickoff_utc=_kickoff_utc_iso_z(r["kickoff_utc"]) or None,
+        event_status=str(r["ev_status"]) if r["ev_status"] is not None else None,
     )
 
 
@@ -1194,29 +1628,28 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
 
         if outcome == "won":
             pnl = round(stake * (odds - 1), 2)
-            dp_earned = 10  # D-04-011: misma proporción 2:1 que +2/+1, escala ×5 (múltiplos de 5)
             event_type = "pick_win"
         elif outcome == "lost":
             pnl = round(-stake, 2)
-            dp_earned = 5
             event_type = "pick_loss"
         else:
             pnl = 0.0
-            dp_earned = 0
             event_type = "pick_void"
+
+        # US-BE-020 (D-04-011 / D-05-012): +10 DP en ledger para won, lost y void.
+        dp_earned = PICK_SETTLE_DP_REWARD
 
         now = datetime.now(tz=timezone.utc)
 
-        # Actualizar pick
         cur.execute(
             """UPDATE bt2_picks
                SET status = %s, settled_at = %s,
-                   result_home = %s, result_away = %s, pnl_units = %s
+                   result_home = %s, result_away = %s, pnl_units = %s,
+                   settlement_source = 'user'
                WHERE id = %s""",
             (outcome, now, body.result_home, body.result_away, pnl, pick_id),
         )
 
-        # Actualizar bankroll_amount del usuario
         cur.execute(
             """UPDATE bt2_users SET bankroll_amount = COALESCE(bankroll_amount, 0) + %s
                WHERE id = %s::uuid
@@ -1224,9 +1657,12 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
             (pnl, user_id),
         )
         bankroll_row = cur.fetchone()
-        new_bankroll = float(bankroll_row[0]) if bankroll_row and bankroll_row[0] else None
+        new_bankroll = (
+            float(bankroll_row[0])
+            if bankroll_row is not None and bankroll_row[0] is not None
+            else None
+        )
 
-        # Snapshot de bankroll
         cur.execute(
             """INSERT INTO bt2_bankroll_snapshots
                (user_id, snapshot_date, balance_units, event_type, reference_id)
@@ -1234,18 +1670,18 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
             (user_id, now.date(), new_bankroll or 0, event_type, pick_id),
         )
 
-        # Acreditar DP si corresponde
+        _append_dp_ledger_move(
+            cur, user_id, PICK_SETTLE_DP_REWARD, REASON_PICK_SETTLE, pick_id
+        )
         dp_balance_after = _get_dp_balance(cur, user_id)
-        if dp_earned > 0:
-            dp_balance_after += dp_earned
-            cur.execute(
-                """INSERT INTO bt2_dp_ledger
-                   (user_id, delta_dp, reason, reference_id, balance_after_dp)
-                   VALUES (%s::uuid, %s, 'pick_settle', %s, %s)""",
-                (user_id, dp_earned, pick_id, dp_balance_after),
-            )
 
         conn.commit()
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         cur.close()
         conn.close()
@@ -1270,21 +1706,31 @@ class SessionOpenOut(BaseModel):
 
 
 class SessionCloseOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     session_id: int
     status: str
     grace_until_iso: str
     pending_settlements: int
+    earned_dp_session_close: int = Field(
+        ...,
+        serialization_alias="earnedDpSessionClose",
+        description="DP acreditados por este cierre (session_close_discipline; típicamente +20).",
+    )
+    dp_balance_after: int = Field(
+        ...,
+        serialization_alias="dpBalanceAfter",
+        description="Saldo DP tras el movimiento (suma ledger, clamp ≥0 en lectura).",
+    )
 
 
 # ── Sesión endpoints (T-100, T-101) ──────────────────────────────────────────
 
 def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) -> int:
     """
-    Genera el snapshot diario de hasta 5 picks en bt2_daily_picks.
+    US-BE-030 / D-05.2-002: pool diario ~15 candidatos (tope 20), franjas por TZ usuario.
     Idempotente: si ya existe snapshot para (user_id, odk), no hace nada.
-    Retorna el número de picks insertados (0 si ya existía snapshot).
     """
-    # Verificar si ya existe snapshot
     cur.execute(
         "SELECT COUNT(*) FROM bt2_daily_picks WHERE user_id = %s::uuid AND operating_day_key = %s",
         (user_id, odk),
@@ -1292,9 +1738,9 @@ def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) ->
     if int(cur.fetchone()[0]) > 0:
         return 0
 
-    # Calcular rango del día en UTC
     try:
         from zoneinfo import ZoneInfo
+
         tz = ZoneInfo(tz_name)
     except Exception:
         tz = timezone.utc
@@ -1303,15 +1749,11 @@ def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) ->
     day_start_utc = datetime.combine(local_today, datetime.min.time(), tzinfo=tz).astimezone(timezone.utc)
     day_end_utc = day_start_utc + timedelta(hours=24)
 
-    # Buscar eventos del día con status='scheduled' y al menos 1 odd disponible
-    cur.execute("""
+    cur.execute(
+        """
         SELECT
             e.id AS event_id,
-            l.tier,
-            e.home_team_id,
-            e.away_team_id,
             e.kickoff_utc,
-            -- Margen de casa: inversa del odds home (menor = más balanceado)
             COALESCE((
                 SELECT MIN(1.0 / NULLIF(o.odds, 0))
                 FROM bt2_odds_snapshot o
@@ -1334,23 +1776,31 @@ def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) ->
         ORDER BY
             CASE l.tier WHEN 'S' THEN 1 WHEN 'A' THEN 2 WHEN 'B' THEN 3 ELSE 4 END ASC,
             house_margin ASC
-        LIMIT 5
-    """, (day_start_utc, day_end_utc))
+        LIMIT 80
+        """,
+        (day_start_utc, day_end_utc),
+    )
 
     rows = cur.fetchall()
     if not rows:
         return 0
 
+    composed = compose_vault_daily_picks(
+        [(int(r[0]), r[1], float(r[2])) for r in rows],
+        tz,
+    )
     inserted = 0
-    for i, row in enumerate(rows):
-        event_id = row[0]
-        access_tier = "standard" if i < 3 else "premium"
-        cur.execute("""
+    for event_id, access_tier, _band in composed:
+        cur.execute(
+            """
             INSERT INTO bt2_daily_picks (user_id, event_id, operating_day_key, access_tier)
             VALUES (%s::uuid, %s, %s, %s)
             ON CONFLICT (user_id, event_id, operating_day_key) DO NOTHING
-        """, (user_id, event_id, odk, access_tier))
-        inserted += 1
+            """,
+            (user_id, event_id, odk, access_tier),
+        )
+        if cur.rowcount:
+            inserted += 1
 
     return inserted
 
@@ -1403,7 +1853,12 @@ def bt2_session_open(user_id: Bt2UserId) -> SessionOpenOut:
     )
 
 
-@router.post("/session/close", status_code=200, response_model=SessionCloseOut)
+@router.post(
+    "/session/close",
+    status_code=200,
+    response_model=SessionCloseOut,
+    response_model_by_alias=True,
+)
 def bt2_session_close(user_id: Bt2UserId) -> SessionCloseOut:
     odk = _operating_day_key_for_user(user_id)
     conn = _db_conn()
@@ -1428,9 +1883,22 @@ def bt2_session_close(user_id: Bt2UserId) -> SessionCloseOut:
                RETURNING id, grace_until_iso""",
             (now, grace, session_id),
         )
+        _ = cur.fetchone()
+
+        # US-BE-021 / D-05-018: recompensa por cierre con protocolo (no en cierre huérfano session/open).
+        earned_close = 0
+        if not _ledger_move_exists(cur, user_id, REASON_SESSION_CLOSE_DISCIPLINE, session_id):
+            _append_dp_ledger_move(
+                cur,
+                user_id,
+                SESSION_CLOSE_DISCIPLINE_REWARD_DP,
+                REASON_SESSION_CLOSE_DISCIPLINE,
+                session_id,
+            )
+            earned_close = SESSION_CLOSE_DISCIPLINE_REWARD_DP
+
         conn.commit()
 
-        # picks pendientes del día actual
         cur.execute(
             """SELECT COUNT(*) FROM bt2_picks
                WHERE user_id = %s::uuid AND status = 'open'
@@ -1438,6 +1906,13 @@ def bt2_session_close(user_id: Bt2UserId) -> SessionCloseOut:
             (user_id, date.fromisoformat(odk)),
         )
         pending = int(cur.fetchone()[0])
+        dp_balance_after = _get_dp_balance(cur, user_id)
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         cur.close()
         conn.close()
@@ -1447,6 +1922,8 @@ def bt2_session_close(user_id: Bt2UserId) -> SessionCloseOut:
         status="closed",
         grace_until_iso=grace.isoformat(),
         pending_settlements=pending,
+        earned_dp_session_close=earned_close,
+        dp_balance_after=dp_balance_after,
     )
 
 

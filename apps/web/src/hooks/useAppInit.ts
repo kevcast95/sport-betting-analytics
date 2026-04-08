@@ -11,6 +11,7 @@ import { getStoredJwt } from '@/lib/api'
 import { useUserStore } from '@/store/useUserStore'
 import { useBankrollStore } from '@/store/useBankrollStore'
 import { useSessionStore } from '@/store/useSessionStore'
+import { useTradeStore } from '@/store/useTradeStore'
 
 export function useAppInit() {
   const isAuthenticated = useUserStore((s) => s.isAuthenticated)
@@ -19,6 +20,7 @@ export function useAppInit() {
   const syncDpBalance = useUserStore((s) => s.syncDpBalance)
   const syncFromApi = useBankrollStore((s) => s.syncFromApi)
   const hydrateFromApi = useSessionStore((s) => s.hydrateFromApi)
+  const hydrateLedgerFromApi = useTradeStore((s) => s.hydrateLedgerFromApi)
 
   const syncedRef = useRef(false)
 
@@ -39,6 +41,7 @@ export function useAppInit() {
         syncFromApi(),
         syncDpBalance(),
         hydrateFromApi(),
+        hydrateLedgerFromApi(),
       ]).catch((e) => {
         console.warn('[BT2] useAppInit sync error:', e)
       })
@@ -48,5 +51,13 @@ export function useAppInit() {
     if (!isAuthenticated) {
       syncedRef.current = false
     }
-  }, [isAuthenticated, userId, refreshMe, syncDpBalance, syncFromApi, hydrateFromApi])
+  }, [
+    isAuthenticated,
+    userId,
+    refreshMe,
+    syncDpBalance,
+    syncFromApi,
+    hydrateFromApi,
+    hydrateLedgerFromApi,
+  ])
 }

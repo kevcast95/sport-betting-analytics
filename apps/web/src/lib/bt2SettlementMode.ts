@@ -13,11 +13,10 @@
  * Para cambiar a 'verified': coordinar con US-DX-001 y US-BE, no modificar
  * solo este archivo.
  */
-export const SETTLEMENT_VERIFICATION_MODE = 'trust' as const
+export type SettlementVerificationMode = 'trust' | 'verified'
 
-export type SettlementVerificationMode =
-  | typeof SETTLEMENT_VERIFICATION_MODE
-  | 'verified'
+/** Valor actual del modo; el tipo amplio permite ramas UI para `verified` sin errores TS. */
+export const SETTLEMENT_VERIFICATION_MODE: SettlementVerificationMode = 'trust'
 
 /** Etiqueta legible en español para el modo actual (US-FE-013 §6, criterio 1). */
 export const SETTLEMENT_MODE_LABEL_ES: Record<SettlementVerificationMode, string> = {

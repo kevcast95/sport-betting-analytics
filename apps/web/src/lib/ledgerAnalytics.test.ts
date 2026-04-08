@@ -17,7 +17,7 @@ const sample: LedgerRow[] = [
     stakeCop: 1000,
     decimalCuota: 1.1,
     settledAt: '2026-04-01T10:00:00.000Z',
-    earnedDp: 10, // D-04-011: +10 por ganancia
+    earnedDp: 10, // D-05-012: +10 gestión por liquidación
   },
   {
     pickId: 'b',
@@ -29,7 +29,7 @@ const sample: LedgerRow[] = [
     stakeCop: 500,
     decimalCuota: 2,
     settledAt: '2026-04-01T12:00:00.000Z',
-    earnedDp: 5, // D-04-011: +5 por pérdida
+    earnedDp: 10, // D-05-012 / US-BE-020: +10 gestión también en pérdida
   },
 ]
 
@@ -44,7 +44,7 @@ describe('ledgerAnalytics', () => {
     const m = ledgerAggregateMetrics(sample)
     expect(m.netPnlCop).toBe(-400)
     expect(m.winRatePct).toBe(50)
-    expect(m.disciplineDpFromSettlements).toBe(15) // 10 (PROFIT) + 5 (LOSS) — D-04-011
+    expect(m.disciplineDpFromSettlements).toBe(20) // +10 +10 — D-05-012
   })
 
   it('earnedDp undefined cuenta como 0, no como 25', () => {

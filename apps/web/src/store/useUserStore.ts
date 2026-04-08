@@ -68,7 +68,7 @@ export type UserStoreActions = {
   /** US-FE-026: refresca perfil desde GET /bt2/auth/me. */
   refreshMe: () => Promise<void>
   /** US-FE-026: sincroniza saldo DP desde GET /bt2/user/dp-balance. */
-  syncDpBalance: () => Promise<void>
+  syncDpBalance: () => Promise<boolean>
   /** US-FE-026: cierra sesión y limpia JWT + estado. */
   logoutAndClear: () => void
   /** POC (compatibilidad Sprint 01): marca sesión autenticada sin API. */
@@ -194,7 +194,10 @@ export const useUserStore = create<UserStore>()(
           const balance =
             typeof data.dp_balance === 'number' ? data.dp_balance : 0
           set({ disciplinePoints: balance })
-        } catch { /* no interrumpir UI en fallo de sync */ }
+          return true
+        } catch {
+          return false
+        }
       },
 
       logoutAndClear: () => {

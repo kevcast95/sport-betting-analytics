@@ -108,21 +108,23 @@
 
 | Evento (concepto) | `reason` sugerido | Δ DP | Nota |
 |-------------------|-------------------|------|------|
-| Liquidación pick — resultado **won** | `pick_settle` | **+10** | Múltiplo de 10; **2×** el de lost (misma razón 2:1 que +2/+1 inicial). |
-| Liquidación pick — resultado **lost** | `pick_settle` | **+5** | Múltiplo de 5. Recompensa por **disciplina de registro**, no por acierto. |
-| Liquidación pick — **void** / push | `pick_settle` | **0** | Sin cambio. |
-| Desbloqueo / toma pick **premium** (coste) | `pick_premium_unlock` *(o nombre cerrado en US-DX)* | **−50** | Múltiplo de 10; el coste debe **doler** frente a ganancias típicas +5/+10 por liquidación. |
+| Liquidación pick — resultado **won** | `pick_settle` | **+10** | Recompensa única por **gestión de cierre** (D-05-012 / US-BE-020); mismo valor en los tres outcomes contables. |
+| Liquidación pick — resultado **lost** | `pick_settle` | **+10** | *(Enmienda Sprint 05 — antes +5; ver nota abajo.)* |
+| Liquidación pick — **void** / push | `pick_settle` | **+10** | *(Enmienda Sprint 05 — antes 0; ver nota abajo.)* |
+| Desbloqueo / toma pick **premium** (coste) | `pick_premium_unlock` *(o nombre cerrado en US-DX)* | **−50** | Múltiplo de 10; el coste debe **doler** frente a ganancias típicas por liquidación (ver enmienda abajo). |
 | Onboarding fase A (abono único) | `onboarding_welcome` *(servidor cuando exista)* | **+250** | Múltiplo de 10; hoy solo FE; BE debe reflejarlo en ledger cuando se centralice. |
 | Penalización — estación sin cerrar (tras gracia) | `penalty_station_unclosed` *(servidor cuando exista)* | **−50** | Alineado a FE actual; múltiplo de 10. |
 | Penalización — picks sin liquidar (tras gracia) | `penalty_unsettled_picks` *(servidor cuando exista)* | **−25** | Múltiplo de 5. |
 
 **Razón de producto (UX + backend):**  
-- **Múltiplos de 5 y 10:** el usuario percibe **progreso legible** (decenas, quincenas) sin “centavos de DP”; al mismo tiempo el **coste** de abrir premium (−50) y las **recompensas** por liquidar (+5 / +10) quedan en **la misma escala**, así la dimensión cambia respecto a +2/+1 pero **no la lógica económica** (premiar consistencia, cobrar decisiones caras).  
-- **Proporción 2:1** se conserva respecto al diseño ya codificado en `bt2_router` (+2 won / +1 lost): es un **cambio de escala** (×5), no de política.
+- **Múltiplos de 5 y 10:** el usuario percibe **progreso legible** (decenas, quincenas) sin “centavos de DP”; el **coste** de abrir premium (−50) y las **recompensas** por liquidar quedan en **la misma escala**.  
+- **Enmienda Sprint 05 (D-05-012):** la proporción **2:1 won:lost en DP** deja de aplicarse a la recompensa de liquidación: el producto premia **cerrar el ciclo** con **+10 DP** en **won, lost y void** (`pick_settle`). Ver [`sprint-05/DECISIONES.md`](./../sprint-05/DECISIONES.md) **D-05-012** y **US-BE-020**.
 
-**Acción técnica:** Actualizar `POST /bt2/picks/{id}/settle` para usar **+10 / +5 / 0** en lugar de +2 / +1 / 0; documentar `reason` en OpenAPI; FE y textos de tours deben dejar de asumir **+25** plano por liquidación y reflejar **+10 / +5** según resultado (US-FE integración + US-FE-029 copy).
+**Acción técnica:** `POST /bt2/picks/{id}/settle` debe persistir **+10** DP (`pick_settle`) para los tres outcomes; documentar `reason` en OpenAPI; FE y tours alineados a **+10 por gestión de liquidación** (US-FE-035).
 
 **Trade-off:** Saldo histórico de usuarios de prueba que ya tengan ledger con +2/+1 queda en escala vieja hasta migración o “reset” de entorno; aceptable en dev.
+
+**Enmienda de producto (cerrada en Sprint 05):** ver **`docs/bettracker2/sprints/sprint-05/DECISIONES.md` — D-05-012**. La tabla de filas *Liquidación won/lost/void* queda en **+10 / +10 / +10** DP (`pick_settle`). Las penalizaciones de protocolo (−50 / −25 / −50 premium) no cambian. Implementación: **US-BE-020** / **T-143**.
 
 ---
 
@@ -138,9 +140,11 @@
 
 ## D-04-FE-002: Copy de DP — terminología en UI
 
-**Decisión (US-FE-029):** Toda la UI usa "Resultado neto" en lugar de "PnL" en textos visibles al usuario (páginas, modales, confirmaciones). "PnL" se mantiene en código interno (variables, comentarios técnicos, libs). Los tours y modales de onboarding reflejan **+10 DP (ganancia) / +5 DP (pérdida)** — no "+25 DP" plano.
+**Decisión (US-FE-029):** Toda la UI usa "Resultado neto" en lugar de "PnL" en textos visibles al usuario (páginas, modales, confirmaciones). "PnL" se mantiene en código interno (variables, comentarios técnicos, libs). Los tours y modales de onboarding reflejan **+10 DP por completar la liquidación** (gestión), para **won, lost y void** — no "+25 DP" plano ni par +10/+5 por resultado del mercado (**D-05-012**).
 
-**Razón:** "PnL" es jerga financiera anglosajona; el producto está en español. La distinción +10/+5 comunica que el protocolo recompensa el proceso sin importar el resultado.
+**Enmienda:** copy de tours y toasts alineados a **US-FE-035** / **T-142**.
+
+**Razón:** "PnL" es jerga financiera anglosajona; el producto está en español. Tras **D-05-012**, el protocolo recompensa **el acto de cerrar el pick** con la misma magnitud en DP, sin gradiente que asocie “menos DP” a “perdiste el mercado”.
 
 **Campos solo locales (sin sync BE en Sprint 04):** `reflection` (campo libre en settlement), `bookDecimalOdds` (cuota capturada en casa). Ambos se persisten en el ledger local pero no se envían al servidor. Sprint 05 puede añadir estos campos a `POST /bt2/picks/{id}/settle`.
 
@@ -218,8 +222,8 @@ Si el usuario no tiene saldo suficiente, el parlay aparece visualmente bloqueado
 | Evento | `reason` | Δ DP |
 |--------|---------|------|
 | Liquidación won | `pick_settle` | +10 |
-| Liquidación lost | `pick_settle` | +5 |
-| Liquidación void | `pick_settle` | 0 |
+| Liquidación lost | `pick_settle` | +10 |
+| Liquidación void | `pick_settle` | +10 |
 | Activar parlay 2-legs | `parlay_activation_2l` | −25 |
 | Activar parlay 3-legs | `parlay_activation_3l` | −50 |
 | Desbloqueo pick premium | `pick_premium_unlock` | −50 |

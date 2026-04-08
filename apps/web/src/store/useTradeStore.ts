@@ -2,7 +2,7 @@
  * US-FE-006 / US-FE-028 (Sprint 04): ledger de liquidaciones.
  * - finalizeSettlement: flujo local (mock picks, modo trust local).
  * - settleApiPick: flujo real vía POST /bt2/picks/{id}/settle.
- * - earnedDp proviene del servidor (D-04-011: +10 won, +5 lost, 0 void).
+ * - earnedDp desde API / mock alineado a US-BE-020: +10 DP por liquidación (won/lost/void).
  */
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
@@ -15,11 +15,11 @@ import { useSessionStore } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
 import { useVaultStore } from '@/store/useVaultStore'
 import { bt2FetchJson } from '@/lib/api'
-import type { Bt2SettleOut } from '@/lib/bt2Types'
+import { parseBt2SettleOut } from '@/lib/bt2SettleParse'
+import type { Bt2PicksListOut, Bt2PickOut } from '@/lib/bt2Types'
 
-/** D-04-011: recompensa local para flujo mock (sin API). */
-const SETTLEMENT_DP_REWARD_WON = 10
-const SETTLEMENT_DP_REWARD_LOST = 5
+/** US-BE-020: misma recompensa DP en mock local que en servidor (+10 cualquier resultado). */
+const SETTLEMENT_DP_REWARD = 10
 
 export type LedgerRow = {
   pickId: string
@@ -41,7 +41,7 @@ export type LedgerRow = {
   /** Cuota real capturada en la casa del operador (US-FE-022 T-057). */
   bookDecimalOdds?: number
   settledAt: string
-  /** DP ganados por liquidación (D-04-011: +10 won, +5 lost, 0 void). */
+  /** DP ganados por liquidación (US-BE-020: +10 won/lost/void). */
   earnedDp?: number
   /** bt2_picks.id del servidor (US-FE-028; null para picks mock). */
   bt2PickId?: number
@@ -92,6 +92,11 @@ export type TradeStoreActions = {
     market: string
     selection: string
   }) => Promise<FinalizeSettlementResult>
+  /**
+   * US-FE-032: hidrata ledger y settledPickIds desde GET /bt2/picks (servidor).
+   * Conserva filas mock locales sin bt2PickId; sustituye por API si hay mismo bt2PickId.
+   */
+  hydrateLedgerFromApi: () => Promise<void>
   reset: () => void
 }
 
@@ -102,11 +107,9 @@ const initial: TradeStoreState = {
   ledger: [],
 }
 
-/** D-04-011: mapea outcome local a delta DP (flujo mock sin API). */
-function earnDpForOutcome(outcome: SettlementOutcome): number {
-  if (outcome === 'PROFIT') return SETTLEMENT_DP_REWARD_WON
-  if (outcome === 'LOSS') return SETTLEMENT_DP_REWARD_LOST
-  return 0
+/** US-BE-020: +10 DP por liquidación en flujo mock (sin API). */
+function earnDpForOutcome(_outcome: SettlementOutcome): number {
+  return SETTLEMENT_DP_REWARD
 }
 
 /**
@@ -156,6 +159,37 @@ function outcomeToScores(
 
   // Fallback genérico
   return won ? { result_home: 2, result_away: 0 } : { result_home: 0, result_away: 2 }
+}
+
+function bt2PickStatusToOutcome(st: string): SettlementOutcome {
+  if (st === 'won') return 'PROFIT'
+  if (st === 'lost') return 'LOSS'
+  return 'PUSH'
+}
+
+function bt2PickToLedgerRow(
+  p: Bt2PickOut,
+  vaultPickId: string | undefined,
+): LedgerRow {
+  const pickId = vaultPickId ?? `bt2-pick-${p.pick_id}`
+  const stakeCop = Number.isFinite(p.stake_units) ? p.stake_units : 0
+  const pnlCop =
+    p.pnl_units != null && Number.isFinite(p.pnl_units) ? p.pnl_units : 0
+  return {
+    pickId,
+    marketClass: p.market,
+    titulo: p.event_label,
+    eventLabel: p.event_label,
+    selectionSummaryEs: p.selection,
+    outcome: bt2PickStatusToOutcome(p.status),
+    reflection: 'Sincronizado desde el servidor',
+    pnlCop,
+    stakeCop,
+    decimalCuota: p.odds_accepted,
+    settledAt: p.settled_at ?? p.opened_at,
+    earnedDp: p.earned_dp ?? 0,
+    bt2PickId: p.pick_id,
+  }
 }
 
 export const useTradeStore = create<TradeStore>()(
@@ -228,7 +262,7 @@ export const useTradeStore = create<TradeStore>()(
         const scores = outcomeToScores(input.market, input.selection, input.outcome)
 
         try {
-          const res = await bt2FetchJson<Bt2SettleOut>(
+          const raw = await bt2FetchJson<unknown>(
             `/bt2/picks/${input.bt2PickId}/settle`,
             {
               method: 'POST',
@@ -236,21 +270,30 @@ export const useTradeStore = create<TradeStore>()(
               body: JSON.stringify(scores),
             },
           )
+          const res = parseBt2SettleOut(raw)
+          if (!res) {
+            console.error('[BT2] settle: respuesta JSON inválida', raw)
+            return { ok: false, reason: 'api_error' }
+          }
 
-          // Actualizar bankroll desde respuesta servidor
-          if (res.bankroll_after_units != null) {
+          // Bankroll: prioridad servidor; 0 es válido (no usar truthiness).
+          if (res.bankroll_after_units != null && Number.isFinite(res.bankroll_after_units)) {
             useBankrollStore.getState().reconcileToExchangeBalance(res.bankroll_after_units)
           } else {
-            // Fallback: aplicar delta local
             const pnlCop = computeSettlementPnlCop(input.stakeCop, input.decimalCuota, input.outcome)
             useBankrollStore.getState().applyBankrollDelta(pnlCop)
           }
 
-          // Actualizar DP desde respuesta servidor
           const earnedDp = res.earned_dp ?? 0
-          useUserStore.getState().setDisciplinePoints(res.dp_balance_after ?? useUserStore.getState().disciplinePoints + earnedDp)
+          if (Number.isFinite(res.dp_balance_after)) {
+            useUserStore.getState().setDisciplinePoints(res.dp_balance_after)
+          } else {
+            useUserStore.getState().setDisciplinePoints(
+              useUserStore.getState().disciplinePoints + earnedDp,
+            )
+          }
 
-          const pnlCop = res.pnl_units != null
+          const pnlCop = Number.isFinite(res.pnl_units)
             ? res.pnl_units
             : computeSettlementPnlCop(input.stakeCop, input.decimalCuota, input.outcome)
 
@@ -283,6 +326,10 @@ export const useTradeStore = create<TradeStore>()(
           console.info(
             `[BT2] Liquidación (API): ${input.vaultPickId} → bt2PickId=${input.bt2PickId} · status=${res.status} · +${earnedDp} DP`,
           )
+          void get().hydrateLedgerFromApi()
+          // Fuente de verdad servidor (evita drift si el shape del JSON varió).
+          void useUserStore.getState().syncDpBalance()
+          void useBankrollStore.getState().syncFromApi()
           return { ok: true, earnedDp }
         } catch (e) {
           const msg = e instanceof Error ? e.message : ''
@@ -297,6 +344,37 @@ export const useTradeStore = create<TradeStore>()(
           }
           console.error('[BT2] settleApiPick error:', e)
           return { ok: false, reason: 'api_error' }
+        }
+      },
+
+      hydrateLedgerFromApi: async () => {
+        try {
+          const data = await bt2FetchJson<Bt2PicksListOut>('/bt2/picks')
+          const taken = useVaultStore.getState().takenApiPicks
+          const byBt2 = new Map(
+            taken.map((r) => [r.bt2PickId, r.vaultPickId] as const),
+          )
+          const settled = data.picks.filter((p) => p.status !== 'open')
+          const apiLedger = settled.map((p) =>
+            bt2PickToLedgerRow(p, byBt2.get(p.pick_id)),
+          )
+          const apiBt2Ids = new Set(
+            apiLedger.map((r) => r.bt2PickId).filter((x): x is number => x != null),
+          )
+          const mockOnly = get().ledger.filter(
+            (r) => r.bt2PickId == null || !apiBt2Ids.has(r.bt2PickId),
+          )
+          const merged = [...apiLedger, ...mockOnly]
+          set({
+            ledger: merged,
+            settledPickIds: [...new Set(merged.map((r) => r.pickId))],
+          })
+          console.info(`[BT2] Ledger hidratado desde API: ${apiLedger.length} filas`)
+        } catch (e) {
+          console.warn(
+            '[BT2] hydrateLedgerFromApi:',
+            e instanceof Error ? e.message : e,
+          )
         }
       },
 

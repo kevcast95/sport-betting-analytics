@@ -6,7 +6,7 @@ import { useUserStore } from '@/store/useUserStore'
 import { useVaultStore } from '@/store/useVaultStore'
 
 describe('useTradeStore (US-FE-006)', () => {
-  it('liquida pick desbloqueado: ledger, bankroll, +10 DP (D-04-011)', () => {
+  it('liquida pick desbloqueado: ledger, bankroll, +10 DP (D-05-012)', () => {
     useUserStore.setState({ disciplinePoints: 1000 })
     useBankrollStore.setState({
       confirmedBankrollCop: 100_000,

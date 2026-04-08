@@ -10,16 +10,21 @@ import {
   IconTrendingUp,
   IconWallet,
 } from '@/components/bt2StitchIcons'
+import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { todayRoiPercent, todaySessionPnlAndStake } from '@/lib/dayLedgerMetrics'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
 import { parseCopIntegerInput } from '@/lib/treasuryMath'
+import { bt2FetchJson, getStoredJwt } from '@/lib/api'
+import type { Bt2OperatingDaySummaryOut } from '@/lib/bt2Types'
+import { SESSION_CLOSE_DISCIPLINE_REWARD_DP } from '@/lib/bt2SessionConstants'
 import { useBankrollStore } from '@/store/useBankrollStore'
 import {
   selectStationLocked,
   useSessionStore,
 } from '@/store/useSessionStore'
 import { useTradeStore } from '@/store/useTradeStore'
+import { useUserStore } from '@/store/useUserStore'
 
 const DAILY_REVIEW_TOUR = getTourScript('daily-review')!
 
@@ -48,6 +53,37 @@ export default function DailyReviewPage() {
   const graceActiveUntilIso = useSessionStore((s) => s.graceActiveUntilIso)
   const pendingItems = useSessionStore((s) => s.previousDayPendingItems)
 
+  const [daySummary, setDaySummary] = useState<Bt2OperatingDaySummaryOut | null>(
+    null,
+  )
+  const [daySummaryError, setDaySummaryError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!operatingDayKey) return
+    let cancelled = false
+    const q = new URLSearchParams({ operatingDayKey })
+    void bt2FetchJson<Bt2OperatingDaySummaryOut>(
+      `/bt2/operating-day/summary?${q.toString()}`,
+    )
+      .then((data) => {
+        if (!cancelled) {
+          setDaySummary(data)
+          setDaySummaryError(null)
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setDaySummary(null)
+          setDaySummaryError(
+            e instanceof Error ? e.message : 'No se pudo cargar el resumen del día',
+          )
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [operatingDayKey])
+
   // Tiempo restante calculado localmente — NO usar Date.now() en selectores Zustand
   const [nowMs, setNowMs] = useState(Date.now)
   useEffect(() => {
@@ -71,6 +107,9 @@ export default function DailyReviewPage() {
   const [reflection, setReflection] = useState('')
   const [discrepancyNote, setDiscrepancyNote] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [sessionCloseBanner, setSessionCloseBanner] = useState<string | null>(
+    null,
+  )
 
   const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('daily-review'))
   const markTourSeen = useTourStore((s) => s.markTourSeen)
@@ -128,6 +167,13 @@ export default function DailyReviewPage() {
     Math.max(12, 45 + roiToday * 1.8),
   )
 
+  const serverRoiPct = useMemo(() => {
+    if (!daySummary || daySummary.totalStakeUnitsSettled <= 0) return 0
+    return (
+      (daySummary.netPnlUnits / daySummary.totalStakeUnitsSettled) * 100
+    )
+  }, [daySummary])
+
   const sessionLabel = useMemo(() => {
     if (operatingDayKey) return operatingDayKey
     const d = new Date()
@@ -140,6 +186,7 @@ export default function DailyReviewPage() {
 
   const onClose = () => {
     setError(null)
+    setSessionCloseBanner(null)
     if (!Number.isFinite(exchangeCop) || exchangeCop < 0) {
       setError('Indica un saldo real válido en la casa.')
       return
@@ -164,6 +211,31 @@ export default function DailyReviewPage() {
         setError('No se pudo cerrar la estación. Revisa los datos.')
       }
       return
+    }
+
+    if (getStoredJwt()) {
+      void (async () => {
+        try {
+          const out = await bt2FetchJson<{
+            earnedDpSessionClose?: number
+            earned_dp_session_close?: number
+          }>('/bt2/session/close', { method: 'POST' })
+          const earned =
+            typeof out.earnedDpSessionClose === 'number'
+              ? out.earnedDpSessionClose
+              : typeof out.earned_dp_session_close === 'number'
+                ? out.earned_dp_session_close
+                : 0
+          await useUserStore.getState().syncDpBalance()
+          if (earned > 0) {
+            setSessionCloseBanner(
+              `Servidor: +${earned} DP por cierre de sesión (recompensa de disciplina).`,
+            )
+          }
+        } catch {
+          /* 404 u otro: sesión ya cerrada en servidor o sin sesión abierta */
+        }
+      })()
     }
   }
 
@@ -228,6 +300,15 @@ export default function DailyReviewPage() {
 
       <div className="mx-auto flex min-h-0 max-w-7xl flex-col items-center px-6 pb-24 pt-8 md:px-12">
         {/* US-FE-012: aviso de gracia activa con ítems pendientes */}
+        {sessionCloseBanner ? (
+          <div
+            className="mb-6 w-full rounded-xl border border-[#d1fae5] bg-[#ecfdf5] px-5 py-3 text-center text-sm font-medium text-[#065f46]"
+            role="status"
+          >
+            {sessionCloseBanner}
+          </div>
+        ) : null}
+
         {hasPendingWithGrace && (
           <div
             className="mb-8 w-full rounded-xl border border-[#FACC15]/40 bg-[#FACC15]/10 px-5 py-4"
@@ -250,32 +331,87 @@ export default function DailyReviewPage() {
           </div>
         )}
 
-        <div className="mb-12 w-full text-center md:mb-16">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#52616a]">
-            Revisión final
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <h1 className="text-4xl font-extrabold leading-none tracking-tight text-[#26343d] md:text-5xl">
-              Análisis post-sesión
-            </h1>
-            <button
-              type="button"
-              onClick={() => { resetTour('daily-review'); setTourOpen(true) }}
-              className="inline-flex items-center gap-1 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
-              title="Ver cómo funciona esta vista"
-            >
-              <span aria-hidden className="text-[11px]">?</span>
-              Cómo funciona
-            </button>
-          </div>
-          <p className="mt-4 font-medium text-[#52616a]">
-            {/* US-FE-014: día operativo calendario */}
-            Día operativo: <span className="font-mono">{sessionLabel}</span> · Estación activa
+        <div className="mb-12 w-full md:mb-16">
+          <BunkerViewHeader
+            title="Análisis post-sesión"
+            subtitle={`Revisión final · Día operativo: ${sessionLabel} · Estación activa`}
+            onHelpClick={() => {
+              resetTour('daily-review')
+              setTourOpen(true)
+            }}
+          />
+          <p className="max-w-xl text-sm leading-relaxed text-[#52616a]">
+            Al confirmar el cierre con datos coherentes, el servidor puede acreditar hasta{' '}
+            <span className="font-mono font-semibold text-[#26343d]">
+              +{SESSION_CLOSE_DISCIPLINE_REWARD_DP} DP
+            </span>{' '}
+            vía <span className="font-mono text-xs">POST /bt2/session/close</span> (idempotente).
+            Cerrar a tiempo también reduce el riesgo de penalizaciones por estación sin cerrar (p. ej.{' '}
+            <span className="font-mono">−50 DP</span> tras gracia, según reglas del protocolo).
           </p>
         </div>
 
         <div className="grid w-full grid-cols-1 items-start gap-8 lg:grid-cols-12">
           <div className="space-y-8 lg:col-span-7">
+            {daySummaryError ? (
+              <p className="rounded-lg border border-[#fee2e2] bg-[#fff1f2] px-4 py-3 text-sm text-[#9b1c1c]">
+                Resumen servidor: {daySummaryError}
+              </p>
+            ) : null}
+            {daySummary ? (
+              <div className="rounded-xl border border-[#6d3bd7]/20 bg-[#f6fafe] p-6">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#6d3bd7]">
+                  Día operativo (servidor)
+                </p>
+                <p className="mt-1 font-mono text-xs text-[#52616a]" style={monoStyle}>
+                  {daySummary.operatingDayKey} · {daySummary.userTimeZone}
+                </p>
+                <dl className="mt-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase text-[#6e7d86]">
+                      Abiertos
+                    </dt>
+                    <dd className="font-mono text-lg font-semibold" style={monoStyle}>
+                      {daySummary.picksOpenedCount}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase text-[#6e7d86]">
+                      Liquidados
+                    </dt>
+                    <dd className="font-mono text-lg font-semibold" style={monoStyle}>
+                      {daySummary.picksSettledCount}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase text-[#6e7d86]">
+                      ROI (u.)
+                    </dt>
+                    <dd className="font-mono text-lg font-semibold" style={monoStyle}>
+                      {serverRoiPct >= 0 ? '+' : ''}
+                      {serverRoiPct.toFixed(1)}%
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase text-[#6e7d86]">
+                      DP liquidaciones
+                    </dt>
+                    <dd className="font-mono text-lg font-semibold text-[#6d3bd7]" style={monoStyle}>
+                      +{daySummary.dpEarnedFromSettlements.toLocaleString('es-CO')}
+                    </dd>
+                  </div>
+                </dl>
+                <p className="mt-3 text-[10px] leading-relaxed text-[#6e7d86]">
+                  Unidades de bankroll (servidor). G/P/V: {daySummary.wonCount}/
+                  {daySummary.lostCount}/{daySummary.voidCount} · PnL neto{' '}
+                  <span className="font-mono">
+                    {daySummary.netPnlUnits >= 0 ? '+' : ''}
+                    {daySummary.netPnlUnits.toFixed(2)} u.
+                  </span>
+                </p>
+              </div>
+            ) : null}
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="flex aspect-square flex-col justify-between rounded-xl bg-[#eef4fa] p-8 md:aspect-auto">
                 <div className="flex items-start justify-between">

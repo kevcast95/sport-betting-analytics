@@ -3,7 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
 import { STAKE_PCT_DEFAULT } from '@/lib/treasuryMath'
 import { bt2FetchJson } from '@/lib/api'
-import type { Bt2UserProfileOut, Bt2UserSettingsOut } from '@/lib/bt2Types'
 
 export type BankrollStoreState = {
   /** Capital confirmado en COP (0 = sin configurar; dispara modal automático). */
@@ -81,11 +80,28 @@ export const useBankrollStore = create<BankrollStore>()(
       syncFromApi: async () => {
         try {
           const [profile, settings] = await Promise.all([
-            bt2FetchJson<Bt2UserProfileOut>('/bt2/user/profile'),
-            bt2FetchJson<Bt2UserSettingsOut>('/bt2/user/settings'),
+            bt2FetchJson<Record<string, unknown>>('/bt2/user/profile'),
+            bt2FetchJson<Record<string, unknown>>('/bt2/user/settings'),
           ])
-          const bankrollCop = profile.bankrollAmount ?? 0
-          const stakePct = settings.riskPerPickPct ?? STAKE_PCT_DEFAULT
+          // FastAPI sin response_model_by_alias devuelve snake_case.
+          const bankrollRaw =
+            profile.bankroll_amount ?? profile.bankrollAmount ?? 0
+          const bankrollNum =
+            typeof bankrollRaw === 'number' && Number.isFinite(bankrollRaw)
+              ? bankrollRaw
+              : Number(bankrollRaw)
+          const bankrollCop = Number.isFinite(bankrollNum) ? bankrollNum : 0
+
+          const stakeRaw =
+            settings.risk_per_pick_pct ?? settings.riskPerPickPct
+          const stakeNum =
+            typeof stakeRaw === 'number' && Number.isFinite(stakeRaw)
+              ? stakeRaw
+              : Number(stakeRaw)
+          const stakePct = Number.isFinite(stakeNum)
+            ? stakeNum
+            : STAKE_PCT_DEFAULT
+
           if (bankrollCop > 0 || stakePct !== STAKE_PCT_DEFAULT) {
             set({
               confirmedBankrollCop: bankrollCop,

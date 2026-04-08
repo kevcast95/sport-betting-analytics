@@ -4,10 +4,9 @@
  * cuota sugerida, estación, etc.
  */
 import { AnimatePresence, motion } from 'framer-motion'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
-import { useEffect } from 'react'
 
 type GlossaryEntry = {
   term: string
@@ -21,7 +20,7 @@ const GLOSSARY: GlossaryEntry[] = [
     term: 'Puntos de Disciplina',
     abbr: 'DP',
     definition:
-      'Moneda interna del búnker. Representan coherencia operativa, no capital real. El servidor acredita +10 DP por liquidación ganada y +5 por liquidación con pérdida; onboarding +250 DP una vez. Se gastan al tomar picks premium (típicamente −50 DP). Otras reglas (cierre de estación) dependen del despliegue.',
+      'Moneda interna del búnker. Representan coherencia operativa, no capital real. El servidor acredita +10 DP por cada liquidación registrada con reflexión (recompensa de gestión, mismo valor para ganancia, pérdida o empate/anulado); onboarding +250 DP una vez. Las señales premium suelen costar −50 DP en un paso de desbloqueo en la bóveda, antes de registrar la posición. Otras reglas (cierre de estación) dependen del despliegue.',
     tag: 'Economía',
   },
   {
@@ -127,6 +126,9 @@ export type GlossaryModalProps = {
 }
 
 export function GlossaryModal({ open, onClose }: GlossaryModalProps) {
+  const [queryRaw, setQueryRaw] = useState('')
+  const [queryDebounced, setQueryDebounced] = useState('')
+
   const monoStyle = useMemo<CSSProperties>(
     () => ({
       fontFamily: `'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`,
@@ -137,6 +139,33 @@ export function GlossaryModal({ open, onClose }: GlossaryModalProps) {
   useEffect(() => {
     ensureBt2FontLinks()
   }, [])
+
+  useEffect(() => {
+    if (!open) {
+      setQueryRaw('')
+      setQueryDebounced('')
+      return
+    }
+    const t = window.setTimeout(() => {
+      setQueryDebounced(queryRaw.trim().toLowerCase())
+    }, 220)
+    return () => window.clearTimeout(t)
+  }, [open, queryRaw])
+
+  const filteredGlossary = useMemo(() => {
+    if (!queryDebounced) return GLOSSARY
+    return GLOSSARY.filter((entry) => {
+      const blob = [
+        entry.term,
+        entry.abbr ?? '',
+        entry.definition,
+        entry.tag ?? '',
+      ]
+        .join(' ')
+        .toLowerCase()
+      return blob.includes(queryDebounced)
+    })
+  }, [queryDebounced])
 
   return (
     <AnimatePresence>
@@ -188,8 +217,26 @@ export function GlossaryModal({ open, onClose }: GlossaryModalProps) {
 
             {/* Content */}
             <div className="overflow-y-auto px-6 pb-6 pt-4">
+              <label className="mb-4 block">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                  Buscar en el glosario
+                </span>
+                <input
+                  type="search"
+                  value={queryRaw}
+                  onChange={(e) => setQueryRaw(e.target.value)}
+                  placeholder="Término o fragmento…"
+                  className="w-full rounded-xl border border-[#a4b4be]/25 bg-white px-4 py-2.5 text-sm text-[#26343d] placeholder:text-[#6e7d86]/70 focus:border-[#8B5CF6]/40 focus:outline-none focus:ring-1 focus:ring-[#8B5CF6]/30"
+                  autoComplete="off"
+                />
+              </label>
+              {filteredGlossary.length === 0 ? (
+                <p className="rounded-xl border border-[#a4b4be]/15 bg-[#eef4fa] px-4 py-6 text-center text-sm text-[#52616a]">
+                  Sin coincidencias. Prueba otra palabra clave.
+                </p>
+              ) : null}
               <div className="space-y-3">
-                {GLOSSARY.map((entry) => (
+                {filteredGlossary.map((entry) => (
                   <div
                     key={entry.term}
                     className="rounded-xl border border-[#a4b4be]/15 bg-white p-4"

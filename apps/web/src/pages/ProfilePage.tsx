@@ -22,6 +22,8 @@ import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { OPERATOR_PROFILE_LABEL_ES } from '@/lib/diagnosticScoring'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
 import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
+import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
+import { DpLedgerSection } from '@/components/profile/DpLedgerSection'
 import { useTradeStore } from '@/store/useTradeStore'
 import { useUserStore } from '@/store/useUserStore'
 
@@ -83,7 +85,6 @@ export default function ProfilePage() {
   const c = 2 * Math.PI * rSvg
   const dashOffset = c * (1 - pctToNext / 100)
 
-  const rankTopPct = Math.max(0.1, 100 - dp / 50).toFixed(1)
   const activeStreakDays = useMemo(() => {
     if (ledger.length === 0) return 0
     const days = new Set(
@@ -147,26 +148,24 @@ export default function ProfilePage() {
       className="mx-auto w-full max-w-7xl space-y-12"
       aria-label="Perfil operador"
     >
+      <BunkerViewHeader
+        title="Perfil operador"
+        subtitle="Identidad, disciplina y ledger de DP."
+        onHelpClick={() => {
+          resetTour('profile')
+          setTourOpen(true)
+        }}
+      />
+
       <section className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-12">
         <div className="relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-10 lg:col-span-8">
           <div className="relative z-10">
-            <div className="mb-2 flex items-center gap-3">
-              <h3 className="text-xs font-medium uppercase tracking-[0.1em] text-[#52616a]">
-                Usuario autenticado
-              </h3>
-              <button
-                type="button"
-                onClick={() => { resetTour('profile'); setTourOpen(true) }}
-                className="inline-flex items-center gap-1 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
-                title="Ver cómo funciona esta vista"
-              >
-                <span aria-hidden className="text-[11px]">?</span>
-                Cómo funciona
-              </button>
-            </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-[#26343d]">
+            <p className="mb-2 text-xs font-medium uppercase tracking-[0.1em] text-[#52616a]">
+              Usuario autenticado
+            </p>
+            <h2 className="text-4xl font-extrabold tracking-tight text-[#26343d]">
               {operatorName ?? 'Operador'}
-            </h1>
+            </h2>
             <p className="mt-2 flex items-center gap-2 font-medium text-[#6d3bd7]">
               <IconVerified className="h-5 w-5 shrink-0 text-[#6d3bd7]" />
               {operatorTitle}
@@ -181,10 +180,10 @@ export default function ProfilePage() {
                 className="text-xl font-bold text-[#26343d]"
                 style={monoStyle}
               >
-                Top {rankTopPct}%
+                —
               </p>
               <p className="mt-1 text-[10px] leading-relaxed text-[#6e7d86]">
-                Basado en DP acumulado.
+                Ranking global no disponible en MVP (D-05-008).
               </p>
             </div>
             <div>
@@ -285,6 +284,8 @@ export default function ProfilePage() {
           </div>
         </div>
       ) : null}
+
+      <DpLedgerSection monoStyle={monoStyle} />
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="rounded-xl border border-transparent bg-[#eef4fa] p-6 transition-all hover:border-[#6d3bd7]/20">

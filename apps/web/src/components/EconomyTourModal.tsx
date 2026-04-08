@@ -58,10 +58,10 @@ function buildTourSteps(dpBalance: number): TourStep[] {
       id: 'ganar-gastar',
       title: 'Cómo ganar y gastar DP',
       body: [
-        'Ganas DP al liquidar con reflexión: +10 DP si ganancia, +5 DP si pérdida (acreditado por el servidor). El onboarding abona +250 DP una sola vez.',
+        'Ganas +10 DP al liquidar con reflexión (misma recompensa de gestión si declaras ganancia, pérdida o empate/anulado; acreditado por el servidor). El onboarding abona +250 DP una sola vez.',
         'Gastas DP desbloqueando picks premium (−50 DP). La clave es el hábito, no el volumen.',
       ],
-      highlight: { label: 'DP por liquidación (ganancia / pérdida)', value: '+10 / +5 DP' },
+      highlight: { label: 'DP por liquidación', value: '+10 DP' },
     },
     {
       id: 'dia-calendario',

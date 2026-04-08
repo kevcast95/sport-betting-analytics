@@ -1,34 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
+import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { ViewTourModal } from '@/components/tours/ViewTourModal'
 import { getTourScript } from '@/components/tours/tourScripts'
+import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
 import { useBankrollStore } from '@/store/useBankrollStore'
-import { useSessionStore } from '@/store/useSessionStore'
+import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
 import { useTourStore } from '@/store/useTourStore'
+import { useTradeStore } from '@/store/useTradeStore'
 import { useUserStore } from '@/store/useUserStore'
-
-const DAILY_MISSIONS_PROGRESS_PCT = 84
-
-function HeartIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M12 20.5s-6.5-4.35-9-8.25C1.25 9.1 2.51 6 5.25 6c1.74 0 3.05 1.12 3.75 2.5C9.7 7.12 11.01 6 12.75 6 15.49 6 16.75 9.1 15 12.25 12.5 16.15 12 20.5 12 20.5Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
 
 /**
  * US-FE-004: Santuario. Hero + tarjetas alineadas al mock Stitch (ref compuesta;
@@ -38,6 +19,7 @@ const SANCTUARY_TOUR = getTourScript('sanctuary')!
 
 export default function SanctuaryPage() {
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
+  const hasCompletedDiagnostic = useUserStore((s) => s.hasCompletedDiagnostic)
   const onboardingPhaseAComplete = useUserStore((s) => s.onboardingPhaseAComplete)
   const confirmedBankrollCop = useBankrollStore((s) => s.confirmedBankrollCop)
   const graceActiveUntilIso = useSessionStore((s) => s.graceActiveUntilIso)
@@ -63,6 +45,13 @@ export default function SanctuaryPage() {
   )
   const operatingDayKey = useSessionStore((s) => s.operatingDayKey)
   const penaltiesApplied = useSessionStore((s) => s.penaltiesApplied)
+  const stationLocked = useSessionStore(selectStationLocked)
+  const sessionPendingPrev = useSessionStore(
+    (s) => s.sessionPendingPrevDaySettlements,
+  )
+  const sessionStationClosed = useSessionStore(
+    (s) => s.sessionStationClosedToday,
+  )
 
   // US-FE-016: tour de primera visita
   const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('sanctuary'))
@@ -91,6 +80,22 @@ export default function SanctuaryPage() {
 
   const graceHoursLeft = Math.ceil(graceRemainingMs / (60 * 60 * 1000))
   const lastPenalty = penaltiesApplied[penaltiesApplied.length - 1] ?? null
+
+  const ledger = useTradeStore((s) => s.ledger)
+  const patrimonioMetrics = useMemo(() => ledgerAggregateMetrics(ledger), [ledger])
+  /**
+   * D-05-006: indicadores solo con al menos una liquidación en ledger (fuente local/API hidratada).
+   * Sin historial → "—" y microcopy honesto; prohibido reintroducir literales decorativos.
+   */
+  const hasSettlementHistory = ledger.length > 0
+  const growthPatrimonialDisplay = hasSettlementHistory
+    ? `${patrimonioMetrics.roiPct >= 0 ? '+' : ''}${patrimonioMetrics.roiPct.toFixed(1)}%`
+    : '—'
+  const drawdownDisplay = hasSettlementHistory
+    ? confirmedBankrollCop > 0
+      ? `${((patrimonioMetrics.maxDrawdownCop / confirmedBankrollCop) * 100).toFixed(1)}%`
+      : `${patrimonioMetrics.maxDrawdownCop.toLocaleString('es-CO')} COP`
+    : '—'
 
   const equityFormatted =
     confirmedBankrollCop <= 0
@@ -173,31 +178,11 @@ export default function SanctuaryPage() {
         </div>
       )}
 
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
-        <div className="min-w-0 space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8B5CF6]">
-            Santuario Zurich
-          </p>
-          <h1 className="max-w-4xl text-4xl font-bold tracking-tighter text-[#26343d] sm:text-5xl lg:text-6xl">
-            Calma en el ruido del cambio.
-          </h1>
-        </div>
-        <div className="flex shrink-0 items-center gap-3 self-end sm:self-auto">
-          {/* US-FE-016: botón de ayuda contextual */}
-          <button
-            type="button"
-            onClick={handleForceShowTour}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
-            title="Ver cómo funciona esta vista"
-          >
-            <span aria-hidden="true" className="text-[11px]">?</span>
-            Cómo funciona
-          </button>
-          <span className="inline-flex rounded-full border border-[#a4b4be]/30 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86]">
-            Actualizado ahora
-          </span>
-        </div>
-      </header>
+      <BunkerViewHeader
+        title="Santuario"
+        subtitle="Calma en el ruido del cambio."
+        onHelpClick={handleForceShowTour}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-[#a4b4be]/20 bg-white p-6 shadow-sm">
@@ -213,34 +198,83 @@ export default function SanctuaryPage() {
           <div className="mt-6 grid grid-cols-2 gap-6 border-t border-[#a4b4be]/15 pt-6">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
-                Crecimiento patrimonial
+                ROI sobre stake liquidado
               </p>
-              <p className="mt-1 font-mono text-lg font-bold tabular-nums text-[#8B5CF6]">
-                +14.2%
+              <p
+                className={`mt-1 font-mono text-lg font-bold tabular-nums ${
+                  !hasSettlementHistory
+                    ? 'text-[#6e7d86]'
+                    : patrimonioMetrics.roiPct >= 0
+                      ? 'text-[#8B5CF6]'
+                      : 'text-[#914d00]'
+                }`}
+              >
+                {growthPatrimonialDisplay}
               </p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
-                Caída máxima
+                Drawdown máx. (serie PnL)
               </p>
-              <p className="mt-1 font-mono text-lg font-bold tabular-nums text-[#914d00]">
-                -4.2%
+              <p
+                className={`mt-1 font-mono text-lg font-bold tabular-nums ${
+                  !hasSettlementHistory ? 'text-[#6e7d86]' : 'text-[#914d00]'
+                }`}
+              >
+                {drawdownDisplay}
               </p>
             </div>
           </div>
+          {!hasSettlementHistory ? (
+            <p className="mt-4 text-[11px] leading-relaxed text-[#6e7d86]">
+              Sin historial aún. Se calculará con tus liquidaciones registradas en el protocolo.
+            </p>
+          ) : null}
         </div>
 
-        <div className="rounded-xl border border-[#8B5CF6]/20 bg-[#e9ddff]/35 p-6 shadow-sm backdrop-blur-sm">
-          <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#8B5CF6]/15 text-[#8B5CF6]">
-            <HeartIcon className="h-5 w-5" />
-          </div>
-          <h2 className="text-lg font-bold tracking-tight text-[#26343d]">
-            Estado: óptimo y disciplinado
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-[#52616a]">
-            Tu perfil de riesgo y tus métricas de disciplina están dentro de
-            parámetros. Opera con estrategia, no con impulso.
+        <div className="rounded-xl border border-[#a4b4be]/20 bg-white p-6 shadow-sm">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#6e7d86]">
+            Día operativo (protocolo)
           </p>
+          <p className="mt-2 font-mono text-lg font-bold tabular-nums text-[#26343d]">
+            {operatingDayKey ?? '—'}
+          </p>
+          <p className="mt-3 text-sm text-[#52616a]">
+            Estación:{' '}
+            <span className="font-semibold text-[#26343d]">
+              {stationLocked
+                ? 'Cerrada para nuevas señales (ciclo actual)'
+                : 'Abierta'}
+            </span>
+          </p>
+          {sessionStationClosed === true ? (
+            <p className="mt-2 text-xs text-[#52616a]">
+              Cierre del día registrado en servidor para este día operativo.
+            </p>
+          ) : null}
+          {sessionPendingPrev != null && sessionPendingPrev > 0 ? (
+            <p className="mt-2 text-xs font-medium text-[#914d00]">
+              Pendientes reportados (día anterior):{' '}
+              <span className="font-mono tabular-nums">{sessionPendingPrev}</span>
+            </p>
+          ) : null}
+          <NavLink
+            to="/v2/daily-review"
+            className="mt-5 inline-flex rounded-xl border border-[#8B5CF6]/35 bg-[#e9ddff]/25 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-[#6d3bd7] transition-colors hover:bg-[#e9ddff]/45"
+          >
+            Ir a cierre del día →
+          </NavLink>
+          {!hasCompletedDiagnostic ? (
+            <p className="mt-4 text-xs text-[#6e7d86]">
+              <Link
+                to="/v2/diagnostic"
+                className="font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
+              >
+                Completar diagnóstico
+              </Link>{' '}
+              para calibrar el perfil de operador.
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -268,70 +302,49 @@ export default function SanctuaryPage() {
           </div>
 
           <div className="min-w-0 flex-1">
+            {/* D-05-007: sin % inventado ni checklist simulado hasta contrato BE de misiones */}
             <div className="flex flex-wrap items-end justify-between gap-2">
               <h2 className="text-[10px] font-bold uppercase tracking-wider text-[#26343d]">
                 Misiones diarias
               </h2>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
-                {DAILY_MISSIONS_PROGRESS_PCT}% completado
+                0% · en definición
               </p>
             </div>
             <div
               className="mt-3 h-3 overflow-hidden rounded-full bg-[#e5eff7]"
               role="progressbar"
-              aria-valuenow={DAILY_MISSIONS_PROGRESS_PCT}
+              aria-valuenow={0}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-label="Progreso de misiones diarias"
             >
               <div
-                className="h-full rounded-full bg-[#8B5CF6] transition-[width] duration-500"
-                style={{ width: `${DAILY_MISSIONS_PROGRESS_PCT}%` }}
+                className="h-full w-0 rounded-full bg-[#8B5CF6] transition-[width] duration-500"
               />
             </div>
-            <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3 text-xs font-semibold">
-              <li className="flex items-center gap-2 text-[#26343d]">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#8B5CF6]" />
-                Mantener el stake
-              </li>
-              <li className="flex items-center gap-2 text-[#26343d]">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#8B5CF6]" />
-                Consistencia de sesión
-              </li>
-              <li className="flex items-center gap-2 text-[#52616a]">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#a4b4be]" />
-                Paciencia de mercado
-              </li>
-            </ul>
+            <p className="mt-4 text-xs leading-relaxed text-[#52616a]">
+              El módulo de misiones está en definición de producto. Mientras tanto, prioriza
+              liquidar picks y cerrar la estación según el protocolo.
+            </p>
           </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-[#a4b4be]/30 bg-[#eef4fa]/40 p-6">
-          <h2 className="text-sm font-bold tracking-tight text-[#26343d]">
-            Próximo paso
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-[#52616a]">
-            Revisa oportunidades con valor esperado positivo en la bóveda. Cada
-            desbloqueo consume DP de tu saldo de disciplina.
-          </p>
-          <NavLink
-            to="/v2/vault"
-            className="mt-4 inline-flex rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] px-5 py-2.5 text-xs font-bold uppercase tracking-wide text-white shadow-md shadow-[#8B5CF6]/20"
-          >
-            Ir a La Bóveda
-          </NavLink>
-        </div>
-        <div className="rounded-xl border border-[#a4b4be]/30 bg-white/80 p-6">
-          <h2 className="text-sm font-bold tracking-tight text-[#26343d]">
-            Estado del entorno
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-[#52616a]">
-            Panel de control conductual V2. Sin datos de proveedor en esta
-            vista: métricas locales del dispositivo.
-          </p>
-        </div>
+      <div className="rounded-xl border border-[#a4b4be]/30 bg-[#eef4fa]/40 p-6">
+        <h2 className="text-sm font-bold tracking-tight text-[#26343d]">
+          Próximo paso
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-[#52616a]">
+          Revisa oportunidades con valor esperado positivo en la bóveda. Cada
+          desbloqueo consume DP de tu saldo de disciplina.
+        </p>
+        <NavLink
+          to="/v2/vault"
+          className="mt-4 inline-flex rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] px-5 py-2.5 text-xs font-bold uppercase tracking-wide text-white shadow-md shadow-[#8B5CF6]/20"
+        >
+          Ir a La Bóveda
+        </NavLink>
       </div>
 
       {/* US-FE-016: tour contextual del Santuario */}

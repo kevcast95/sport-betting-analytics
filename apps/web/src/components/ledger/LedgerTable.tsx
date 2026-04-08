@@ -62,7 +62,7 @@ export function LedgerTable(props: {
                 Fecha
               </th>
               <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.1em] text-[#52616a]">
-                Protocolo
+                Clase de mercado
               </th>
               <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.1em] text-[#52616a]">
                 Outcome
@@ -89,7 +89,7 @@ export function LedgerTable(props: {
               props.rows.map((row) => {
                 const mc = row.marketClass ?? 'CDM'
                 const od = outcomeDisplay(row)
-                const dp = row.earnedDp ?? 25
+                const dp = row.earnedDp ?? 0
                 return (
                   <tr
                     key={`${row.pickId}-${row.settledAt}`}

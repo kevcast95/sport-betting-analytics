@@ -3,14 +3,26 @@
  * US-FE-016 (T-048): tour contextual de primera visita + botón de ayuda.
  * US-FE-025 (Sprint 04): picks desde GET /bt2/vault/picks; fallback mock en dev.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { PickCard } from '@/components/vault/PickCard'
+import { VaultBandSwitcher } from '@/components/vault/VaultBandSwitcher'
 import { ViewTourModal } from '@/components/tours/ViewTourModal'
 import { getTourScript } from '@/components/tours/tourScripts'
 import { useTourStore } from '@/store/useTourStore'
+import { useSessionStore } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
 import { useVaultStore } from '@/store/useVaultStore'
 import type { Bt2VaultPickOut } from '@/lib/bt2Types'
+import {
+  computeVaultQuota,
+  VAULT_DAILY_CAP_PREMIUM,
+  VAULT_DAILY_CAP_STANDARD,
+} from '@/lib/vaultQuota'
+import type { VaultBandTab } from '@/lib/vaultTimeBand'
+import { sortVaultPicksForDisplay } from '@/lib/vaultTimeBand'
+import { useTradeStore } from '@/store/useTradeStore'
 
 const VAULT_TOUR = getTourScript('vault')!
 
@@ -57,6 +69,7 @@ function VaultLoadingState() {
 }
 
 export default function VaultPage() {
+  const location = useLocation()
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
   const onboardingPhaseAComplete = useUserStore((s) => s.onboardingPhaseAComplete)
 
@@ -66,8 +79,24 @@ export default function VaultPage() {
   const takenApiPicks = useVaultStore((s) => s.takenApiPicks)
   const unlockedPickIds = useVaultStore((s) => s.unlockedPickIds)
   const loadApiPicks = useVaultStore((s) => s.loadApiPicks)
+  const invalidateVaultIfOperatingDayMismatch = useVaultStore(
+    (s) => s.invalidateVaultIfOperatingDayMismatch,
+  )
+  const operatingDayKey = useSessionStore((s) => s.operatingDayKey)
   const takeApiPick = useVaultStore((s) => s.takeApiPick)
+  const unlockPremiumVaultPick = useVaultStore((s) => s.unlockPremiumVaultPick)
   const tryUnlockPick = useVaultStore((s) => s.tryUnlockPick)
+  const hydrateLedgerFromApi = useTradeStore((s) => s.hydrateLedgerFromApi)
+  const vaultPoolMeta = useVaultStore((s) => s.vaultPoolMeta)
+
+  const [vaultToast, setVaultToast] = useState<string | null>(null)
+  const [bandTab, setBandTab] = useState<VaultBandTab>('mix')
+
+  const userTimeZone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Bogota',
+    [],
+  )
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // US-FE-016: tour de primera visita — solo tras onboarding completo
   const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('vault'))
@@ -75,12 +104,23 @@ export default function VaultPage() {
   const resetTour = useTourStore((s) => s.resetTour)
   const [tourOpen, setTourOpen] = useState(false)
 
-  // Cargar picks de API al montar
+  // T-169: al cambiar día operativo vs último snapshot persistido, forzar nuevo GET.
+  useEffect(() => {
+    invalidateVaultIfOperatingDayMismatch(operatingDayKey)
+  }, [operatingDayKey, invalidateVaultIfOperatingDayMismatch])
+
+  // Cargar picks de API al montar o tras invalidación (picksLoadStatus → idle).
   useEffect(() => {
     if (picksLoadStatus === 'idle') {
       void loadApiPicks()
     }
   }, [picksLoadStatus, loadApiPicks])
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current)
+    }
+  }, [])
 
   useEffect(() => {
     if (!hasSeenTour && onboardingPhaseAComplete) {
@@ -99,12 +139,13 @@ export default function VaultPage() {
     setTourOpen(true)
   }
 
-  // Determina si un pick API está desbloqueado (standard = siempre, premium = si tomado)
-  const isApiPickUnlocked = useCallback(
-    (pick: Bt2VaultPickOut) => {
-      if (pick.accessTier === 'standard') return true
-      return takenApiPicks.some((r) => r.vaultPickId === pick.id)
-    },
+  /**
+   * US-FE-033: estándar y premium requieren POST /bt2/picks (compromiso / desbloqueo)
+   * antes de ver contenido y liquidar.
+   */
+  const isApiPickCommitted = useCallback(
+    (pick: Bt2VaultPickOut) =>
+      takenApiPicks.some((r) => r.vaultPickId === pick.id),
     [takenApiPicks],
   )
 
@@ -125,27 +166,148 @@ export default function VaultPage() {
     [apiPicks],
   )
 
-  const handleRequestUnlock = useCallback(
+  const quota = useMemo(
+    () => computeVaultQuota(takenApiPicks, operatingDayKey, apiPicks),
+    [takenApiPicks, operatingDayKey, apiPicks],
+  )
+
+  const displayedPicks = useMemo(
+    () => sortVaultPicksForDisplay(apiPicks, bandTab, userTimeZone),
+    [apiPicks, bandTab, userTimeZone],
+  )
+
+  const takeBlockedByQuota = useCallback(
+    (pick: Bt2VaultPickOut, taken: boolean) => {
+      if (taken) return false
+      if (pick.accessTier === 'standard') return quota.atStandardCap
+      return quota.atPremiumCap
+    },
+    [quota.atPremiumCap, quota.atStandardCap],
+  )
+
+  const showVaultToast = useCallback((msg: string) => {
+    setVaultToast(msg)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => {
+      setVaultToast(null)
+      toastTimer.current = null
+    }, 6000)
+  }, [])
+
+  useEffect(() => {
+    const st = location.state as { settlementBlocked?: string } | null | undefined
+    const msg = st?.settlementBlocked
+    if (!msg) return
+    showVaultToast(msg)
+    window.history.replaceState({}, document.title)
+  }, [location.state, showVaultToast])
+
+  const handlePremiumUnlock = useCallback(
+    async (pickId: string) => {
+      const res = await unlockPremiumVaultPick(pickId)
+      if (res.ok) {
+        showVaultToast('Señal premium desbloqueada. Ya puedes registrar la posición.')
+        void hydrateLedgerFromApi()
+        return
+      }
+      if (res.reason === 'insufficient_dp_premium' && res.premiumDetail) {
+        showVaultToast(res.premiumDetail.message)
+        return
+      }
+      if (res.reason === 'station_locked') {
+        showVaultToast('Estación cerrada: no puedes desbloquear señales en este ciclo.')
+        return
+      }
+      if (res.reason === 'already_unlocked') return
+      if (res.reason === 'not_premium' || res.reason === 'pick_not_found') return
+      if (res.reason === 'kickoff_elapsed') {
+        showVaultToast(
+          res.apiMessage ??
+            'El partido ya inició; no puedes desbloquear esta señal.',
+        )
+        return
+      }
+      showVaultToast('No se pudo desbloquear la señal premium. Reintenta o revisa tu conexión.')
+    },
+    [unlockPremiumVaultPick, showVaultToast, hydrateLedgerFromApi],
+  )
+
+  const handleTakePick = useCallback(
     async (pickId: string) => {
       const apiPick = apiPicks.find((p) => p.id === pickId)
       if (apiPick) {
-        await takeApiPick(apiPick)
+        const res = await takeApiPick(apiPick)
+        if (res.ok) {
+          showVaultToast('Señal registrada en el protocolo.')
+          void hydrateLedgerFromApi()
+          return
+        }
+        if (res.reason === 'insufficient_dp_premium' && res.premiumDetail) {
+          showVaultToast(res.premiumDetail.message)
+          return
+        }
+        if (res.reason === 'premium_not_unlocked') {
+          showVaultToast('Desbloquea primero la señal premium (deslizar en la tarjeta).')
+          return
+        }
+        if (res.reason === 'station_locked') {
+          showVaultToast('Estación cerrada: no puedes registrar señales en este ciclo.')
+          return
+        }
+        if (res.reason === 'already_unlocked') return
+        if (res.reason === 'pick_unavailable') {
+          showVaultToast('Este pick no está disponible para registro.')
+          return
+        }
+        if (res.reason === 'kickoff_elapsed') {
+          showVaultToast(
+            res.apiMessage ??
+              'El partido ya inició; el servidor no permite registrar el pick.',
+          )
+          return
+        }
+        if (res.reason === 'quota_standard_exhausted') {
+          showVaultToast(
+            'Cupo diario de señales estándar agotado (3 por día operativo).',
+          )
+          return
+        }
+        if (res.reason === 'quota_premium_exhausted') {
+          showVaultToast(
+            'Cupo diario de señales premium agotado (2 por día operativo).',
+          )
+          return
+        }
+        showVaultToast(
+          res.apiMessage ??
+            'No se pudo registrar la señal. Reintenta o revisa tu conexión.',
+        )
       } else {
         tryUnlockPick(pickId)
       }
     },
-    [apiPicks, takeApiPick, tryUnlockPick],
+    [apiPicks, takeApiPick, tryUnlockPick, showVaultToast, hydrateLedgerFromApi],
   )
 
   return (
     <section aria-label="Bóveda de picks" className="space-y-6">
-      {/* Cabecera con conteo standard/premium y botón de ayuda */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          {picksLoadStatus === 'loaded' ? (
-            <>
+      {vaultToast ? (
+        <div
+          role="status"
+          className="rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] px-4 py-3 text-sm text-[#26343d]"
+        >
+          {vaultToast}
+        </div>
+      ) : null}
+      <BunkerViewHeader
+        title="La Bóveda"
+        subtitle="Oportunidades con valor esperado positivo (modelo canónico CDM); desbloqueo premium con DP y registro aparte."
+        onHelpClick={handleForceShowTour}
+        rightActions={
+          picksLoadStatus === 'loaded' ? (
+            <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                {apiPicks.length} señales disponibles
+                {apiPicks.length} señales
               </p>
               <span className="rounded-full bg-[#d1fae5] px-2.5 py-0.5 text-[10px] font-bold text-[#065f46]">
                 {standardCount} estándar
@@ -153,23 +315,61 @@ export default function VaultPage() {
               <span className="rounded-full bg-[#e9ddff] px-2.5 py-0.5 text-[10px] font-bold text-[#6d3bd7]">
                 {premiumCount} premium
               </span>
-            </>
-          ) : (
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-              La Bóveda
+            </div>
+          ) : null
+        }
+      />
+
+      {picksLoadStatus === 'loaded' && apiPicks.length > 0 ? (
+        <div className="space-y-4 rounded-xl border border-[#a4b4be]/20 bg-white/70 p-4 shadow-sm">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <VaultBandSwitcher value={bandTab} onChange={setBandTab} />
+            <div
+              className="font-mono text-[11px] leading-relaxed text-[#52616a]"
+              role="status"
+            >
+              <span className="font-sans font-semibold text-[#26343d]">
+                Cupo de tomas hoy:{' '}
+              </span>
+              estándar{' '}
+              <span className="tabular-nums text-[#065f46]">
+                {quota.standardRemaining}/{VAULT_DAILY_CAP_STANDARD}
+              </span>{' '}
+              restantes · premium{' '}
+              <span className="tabular-nums text-[#6d3bd7]">
+                {quota.premiumRemaining}/{VAULT_DAILY_CAP_PREMIUM}
+              </span>{' '}
+              restantes.
+              <span className="mt-1 block text-[10px] text-[#6e7d86]">
+                El desbloqueo premium (DP) no cuenta como toma hasta que pulses
+                «Tomar pick». Límite alineado a reglas del protocolo (3+2 por día
+                operativo).
+              </span>
+            </div>
+          </div>
+          {vaultPoolMeta ? (
+            <p className="text-[10px] leading-snug text-[#6e7d86]">
+              Pool del día:{' '}
+              <span className="font-mono tabular-nums">
+                {vaultPoolMeta.poolItemCount}
+              </span>{' '}
+              candidatos (objetivo{' '}
+              <span className="font-mono">{vaultPoolMeta.poolTargetCount}</span>, tope{' '}
+              <span className="font-mono">{vaultPoolMeta.poolHardCap}</span>
+              ).
+              {vaultPoolMeta.poolBelowTarget
+                ? ' Por debajo del objetivo: el CDM aportó menos eventos válidos.'
+                : null}
             </p>
-          )}
+          ) : null}
+          {bandTab !== 'mix' && displayedPicks.length === 0 ? (
+            <p className="text-sm text-[#52616a]" role="status">
+              No hay señales en esta franja. Prueba «Mezcla» o otra franja; los
+              partidos en madrugada (23:00–08:00) solo aparecen en mezcla.
+            </p>
+          ) : null}
         </div>
-        <button
-          type="button"
-          onClick={handleForceShowTour}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
-          title="Ver cómo funciona La Bóveda"
-        >
-          <span aria-hidden="true" className="text-[11px]">?</span>
-          Cómo funciona
-        </button>
-      </div>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {picksLoadStatus === 'loading' ? (
@@ -179,13 +379,21 @@ export default function VaultPage() {
         ) : (picksLoadStatus === 'empty' || (picksLoadStatus === 'loaded' && apiPicks.length === 0)) ? (
           <VaultEmptyState message={picksMessage} />
         ) : (
-          apiPicks.map((pick) => (
+          displayedPicks.map((pick) => (
             <PickCard
               key={pick.id}
               pick={pick}
-              isUnlocked={isApiPickUnlocked(pick)}
+              pickTaken={isApiPickCommitted(pick)}
+              premiumUnlocked={
+                pick.accessTier === 'standard' ? true : pick.premiumUnlocked
+              }
               disciplinePoints={disciplinePoints}
-              onRequestUnlock={(id) => void handleRequestUnlock(id)}
+              onPremiumUnlock={(id) => void handlePremiumUnlock(id)}
+              onTakePick={(id) => void handleTakePick(id)}
+              takeBlockedByDailyQuota={takeBlockedByQuota(
+                pick,
+                isApiPickCommitted(pick),
+              )}
             />
           ))
         )}
