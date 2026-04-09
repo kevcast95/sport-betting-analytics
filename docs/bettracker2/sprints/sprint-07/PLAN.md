@@ -14,6 +14,13 @@
 
 Al cerrar **Sprint 06**, crear `sprint-07/US.md`, `TASKS.md`, `DECISIONES.md` y continuar numeración US/tareas desde el último id S6.
 
+## Deuda arrastrada desde Sprint 06 (coordinación PO)
+
+- **US-DX-002 — T-153:** catálogo `MarketCanonical` en DX (`bt2_dx_constants.py` + `bt2Types.ts`) y documentación DECISIONES; cierre depende de acuerdo FE/PO.
+- **US-DX-002 — T-155:** `operatorProfile` + OpenAPI (`label_es`, alias camelCase, coherencia `reason` ledger); puede cerrarse en S7 sin bloquear **T-169** ya entregado.
+
+*Motivo:* el cierre BE **T-169** no exige bump de `contractVersion`; el **merge masivo** de FE que asuma contrato “final” sigue gobernado por hito DX (**D-06-017**).
+
 ---
 
-*Última actualización: 2026-04-04 — stub solo PLAN.*
+*Última actualización: 2026-04-08 — deuda DX T-153/T-155; stub resto PLAN.*

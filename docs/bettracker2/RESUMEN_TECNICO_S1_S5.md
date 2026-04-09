@@ -76,6 +76,17 @@
 
 Carpeta **`sprints/sprint-05.1/`**: **RFB-09** — premium desbloqueo vs tomar (**US-BE-029**, **US-FE-040**, **T-170–T-173**, **D-05.1-001/002**); **RFB-01/10** — cabecera V2 (**US-FE-043**, **T-174–T-176**, **D-05.1-003**); **RFB-07/08** — `PickCard` post-inicio + premium bloqueado (**US-FE-044**, **T-177–T-179**, **D-05.1-004/005**); **RFB-11/12/13** — ledger/rendimiento copy honesto (**US-FE-045**, **T-180–T-182**, **D-05.1-006–008**); **RFB-02/03/04/14/15** — Santuario, glosario, sync DP, doble fetch (**US-FE-046 … US-FE-049**, **T-183–T-187**, **D-05.1-009–013**). **RFB-05/06** — bóveda post–kickoff y franjas: backlog **[`sprints/sprint-05.2/`](./sprints/sprint-05.2/PLAN.md)** (**US-BE-030/031**, **US-FE-050/051**, **T-188+**). Índice refinement: [`refinement_feedback_s1_s5/DECISIONES.md`](./refinement_feedback_s1_s5/DECISIONES.md).
 
+### 6.2 Sprint 06 — Motor DSR + CDM + operación + analytics (**en ejecución**, doc 2026-04-08)
+
+**Estado:** green light **D-06-017** — backlog completo **`sprints/sprint-06/TASKS.md` T-153–T-168** en el mismo sprint; paralelismo **FE ∥ BE** (y DX/OPS) según dependencias por tarea. Fuentes: [`sprints/sprint-06/PLAN.md`](./sprints/sprint-06/PLAN.md) §6, [`EJECUCION.md`](./sprints/sprint-06/EJECUCION.md), [`DECISIONES.md`](./sprints/sprint-06/DECISIONES.md) **D-06-015 … D-06-017**.
+
+| Pilar | Contenido (resumen) |
+|-------|---------------------|
+| **BE** | **US-BE-025** DSR+CDM; **US-BE-026** cron `fetch_upcoming`; **US-BE-027** mercados canónicos; **US-BE-028** analytics MVP. |
+| **FE** | **US-FE-052** narrativa bóveda; **US-FE-053** analytics / admin DSR; **US-FE-054** labels canónicos. |
+| **DX** | **US-DX-002** — **T-153–T-156**. |
+| **OPS** | **US-OPS-001** — **T-160** (baseline **D-06-013**). |
+
 ---
 
 ## 7. Mapa rápido de código
@@ -93,7 +104,7 @@ Carpeta **`sprints/sprint-05.1/`**: **RFB-09** — premium desbloqueo vs tomar (
 ## 8. Hacia dónde vamos (después de S5)
 
 1. **Cerrar S5** con contratos y UI alineados (ledger, vault, settle, operating-day, extensiones pick/settlement/bankroll según `TASKS.md`).
-2. **Sprint 06:** DSR + CDM operativo, ingesta programada, normalización de mercados en serio, OpenAPI/DX, MVP analytics — ver `sprints/sprint-06/US.md` y `TASKS.md` (**T-153+**).
+2. **Sprint 06 en ejecución (2026-04-08):** DSR + CDM, ingesta programada, normalización mercados, OpenAPI/DX, MVP analytics — `sprints/sprint-06/US.md`, `TASKS.md` (**T-153+**), arranque **D-06-017**.
 3. **Sprint 07:** parlays, límites diarios, evolución diagnóstico, deudas tipo `unit_value_cop` si se priorizan.
 
 ---
@@ -114,4 +125,4 @@ Carpeta **`sprints/sprint-05.1/`**: **RFB-09** — premium desbloqueo vs tomar (
 
 ---
 
-*Última actualización: 2026-04-08 — hilo de avances; alineado a `sprints/sprint-01` … `sprint-05`, `sprint-06/PLAN.md`. Tras cerrar S5: §6 en Done, §8 al siguiente hito, bloque del sprint nuevo según §10 (puntos 2 y 5), pie actualizado.*
+*Última actualización: 2026-04-08 — hilo de avances; **S6 en ejecución** (**D-06-017**, §6.2). Alineado a `sprints/sprint-01` … `sprint-06`. Tras cerrar S5: §6 S5 en Done; §8 puntero a S6.*

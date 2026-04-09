@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     String,
+    Text,
     UniqueConstraint,
     func,
 )
@@ -224,6 +225,10 @@ class Bt2Pick(Base):
     settlement_source: Mapped[str] = mapped_column(
         String(32), nullable=False, server_default="user"
     )
+    market_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    model_market_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    model_selection_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    model_prediction_result: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
 
     __table_args__ = (
         Index("ix_bt2_picks_user_status", "user_id", "status"),
@@ -366,6 +371,13 @@ class Bt2DailyPick(Base):
     suggested_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+    pipeline_version: Mapped[str] = mapped_column(String(40), nullable=False)
+    dsr_input_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    dsr_narrative_es: Mapped[Optional[str]] = mapped_column(Text(), nullable=True)
+    dsr_confidence_label: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    model_market_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    model_selection_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    dsr_source: Mapped[str] = mapped_column(String(24), nullable=False)
 
     __table_args__ = (
         UniqueConstraint("user_id", "event_id", "operating_day_key", name="uq_daily_picks_user_event_day"),

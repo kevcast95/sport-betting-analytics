@@ -5,8 +5,8 @@
 
 ## Estado del sprint
 
-- Fecha inicio / fin: *(definir al arrancar S6)*  
-- Estado: **En definición** (documentación y criterios de arranque en [`PLAN.md`](./PLAN.md) §6 y [`EJECUCION.md`](./EJECUCION.md)).  
+- Fecha inicio: **2026-04-08** · Fecha fin: *(definir al cerrar S6)*  
+- Estado: **En ejecución** — arranque pleno backlog **T-153–T-168**; criterio formal [`PLAN.md`](./PLAN.md) §6 + **D-06-017**.  
 - Dependencia: **Sprints 05 / 05.1 / 05.2** cerrados en documentación (2026-04-08).
 
 ## Resumen — US Frontend
@@ -112,31 +112,42 @@ Coherencia visual y semántica cuando el backend expone **`marketCanonical`** (u
 
 #### 1) Objetivo de negocio
 
-Generar **justificación y ranking** de señales usando el razonador con **barreras documentadas** entre entrenamiento/backtest y producción diaria (**D-06-002**).
+Generar **justificación y ranking** de señales usando el razonador con **barreras documentadas** entre entrenamiento/backtest y producción diaria (**D-06-002**), con **trazabilidad** de si la señal vino de **reglas locales** o de **API DeepSeek** (**D-06-018**).
 
 #### 2) Alcance
 
-- Incluye: contrato de **entrada** a DSR por día operativo; **salida** estructurada persistida (tablas o JSON versionado); integración con `build_candidates` o sucesor; logs/huella de versión pipeline.
-- Excluye: parlays; recalibración diagnóstico.
+- Incluye: contrato de **entrada** a DSR por día operativo; **salida** estructurada persistida (tablas o JSON versionado); integración con `build_candidates` o sucesor; logs/huella de versión pipeline; campo **`dsr_source`** (`rules_fallback` \| `dsr_api`).
+- Incluye (**T-169** + **T-170**): DeepSeek en vivo (**D-06-018**) y **orquestación por lotes v1-equivalentes** (`picks_by_event` / candidatos comparados en el mismo prompt cuando aplique) — **D-06-019**; referencia [`jobs/deepseek_batches_to_telegram_payload_parts.py`](../../../../jobs/deepseek_batches_to_telegram_payload_parts.py).
+- Excluye: parlays; recalibración diagnóstico; cola async **desacoplada** de `session/open` y dashboard de coste (backlog / S6.1 salvo decisión contraria).
 
-#### 3) Contexto técnico *(orientativo)*
+#### 3) Léxico *(BE / PO)*
 
-- Scripts `scripts/bt2_cdm/`, jobs existentes S3/S4; claves API y límites en config secreta.
+- **`rules_fallback`:** mercado, selección y narrativa generados **sin** LLM en ese camino (`bt2_dsr_suggest.py`). Válido para dev/CI y **degradación** si la API falla (**D-06-018**).
+- **`dsr_api`:** señal atribuible a **respuesta DeepSeek** (HTTP) mapeada a los mismos campos persistidos.
 
-#### 4) Reglas de dominio
+#### 4) Contexto técnico *(orientativo)*
 
-- **Regla 1:** Ningún campo prohibido por **D-06-002** en el payload de producción.
+- Scripts `scripts/bt2_cdm/`, jobs existentes S3/S4; credenciales **`DEEPSEEK_API_KEY`** en `.env` (equipo); variables **`BT2_DSR_*`** — lista en **D-06-018** y [`.env.example`](../../../../.env.example).
+
+#### 5) Reglas de dominio
+
+- **Regla 1:** Ningún campo prohibido por **D-06-002** en el payload de producción (ni al LLM).
 - **Regla 2:** Idempotencia: re-ejecutar día **D** no duplica picks publicados sin política explícita.
+- **Regla 3:** Sin **PII** en prompts (**D-06-014**).
 
-#### 5) Criterios de aceptación *(mínimos)*
+#### 6) Criterios de aceptación *(mínimos)*
 
 1. Given candidatos día **D**, When corre pipeline, Then se persiste salida vinculable a `operating_day_key` y `pipeline_version`.
 2. Given intento de incluir resultado futuro en input producción, When valida esquema, Then **422** o rechazo en job.
+3. Given **`BT2_DSR_PROVIDER=rules`** (o sin key), When genera snapshot, Then `dsr_source` es `rules_fallback` y el FE puede mostrar narrativa coherente.
+4. Given **`BT2_DSR_PROVIDER=deepseek`** y **`DEEPSEEK_API_KEY`** válida, When genera snapshot, Then al menos un flujo de prueba produce **`dsr_source=dsr_api`** y canónicos persistidos; Given la API falla, When política default **D-06-018**, Then degradación documentada.
+5. Given **T-170** cerrada, When genera snapshot, Then el modelo recibe **lotes** alineados a **D-06-019** (no solo 1 evento por request como diseño final, salvo excepción PO firmada).
 
-#### 6) Definition of Done
+#### 7) Definition of Done
 
-- [ ] Tareas **US-BE-025** en [`TASKS.md`](./TASKS.md).
-- [ ] Documento de **fase A/B** en `DECISIONES.md` o anexo citado en **D-06-002**.
+- [x] Tareas **US-BE-025** en [`TASKS.md`](./TASKS.md) (**T-157**, **T-158**, **T-169**, **T-170**).
+- [x] **D-06-018** y **D-06-019** aplicadas por BE; env en **`.env.example`**; handoff [`BE_HANDOFF_SPRINT06.md`](./BE_HANDOFF_SPRINT06.md).
+- [ ] Documento de **fase A/B** en `DECISIONES.md` o anexo citado en **D-06-002** (si aún pendiente).
 
 ---
 

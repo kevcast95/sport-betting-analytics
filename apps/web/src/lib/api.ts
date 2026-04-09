@@ -1,4 +1,5 @@
 import type {
+  Bt2AdminDsrDayOut,
   Bt2DpInsufficientPremiumDetail,
   Bt2PickOut,
   Bt2PickRegisterBody,
@@ -305,4 +306,24 @@ export async function bt2PostVaultPremiumUnlock(
     premiumInsufficient,
     message,
   }
+}
+
+/**
+ * GET /bt2/admin/analytics/dsr-day (US-BE-028).
+ * Requiere `VITE_BT2_ADMIN_API_KEY` alineada con `BT2_ADMIN_API_KEY` del API.
+ */
+export async function fetchBt2AdminDsrDay(
+  operatingDayKey: string,
+): Promise<Bt2AdminDsrDayOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams({ operatingDayKey })
+  return fetchJson<Bt2AdminDsrDayOut>(
+    `/bt2/admin/analytics/dsr-day?${qs.toString()}`,
+    { headers: { 'X-BT2-Admin-Key': key } },
+  )
 }

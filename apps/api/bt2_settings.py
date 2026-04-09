@@ -10,6 +10,17 @@ class BT2Settings(BaseSettings):
     bt2_database_url: str
     bt2_secret_key: str = "dev-secret-change-me"
     bt2_environment: str = "development"
+    # Leído desde .env vía Pydantic (no depende de os.environ; ver _require_bt2_admin).
+    bt2_admin_api_key: str = ""
+    # T-169 / D-06-018 — proveedor DSR en snapshot (rules | deepseek).
+    bt2_dsr_provider: str = "rules"
+    deepseek_api_key: str = ""
+    bt2_dsr_deepseek_base_url: str = "https://api.deepseek.com"
+    bt2_dsr_deepseek_model: str = "deepseek-chat"
+    bt2_dsr_timeout_sec: int = 120
+    bt2_dsr_max_retries: int = 1
+    # T-170 / D-06-019 — eventos por lote HTTP (v1-equivalente).
+    bt2_dsr_batch_size: int = 15
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

@@ -365,6 +365,7 @@ def run_fetch(hours_ahead: int = 48, dry_run: bool = False) -> dict:
     # Mapa: sportmonks_id → registro completo de la liga
     sm_id_to_league = {lg["sportmonks_id"]: lg for lg in active_leagues}
 
+    download_ok = True
     with httpx.Client() as client:
         logger.info("[FU] Descargando todos los fixtures del rango en una sola pasada…")
         try:
@@ -372,6 +373,7 @@ def run_fetch(hours_ahead: int = 48, dry_run: bool = False) -> dict:
                 start_date, end_date, api_key, client, active_sm_ids
             )
         except Exception as exc:
+            download_ok = False
             logger.error("[FU] Error fatal al descargar fixtures: %s", exc)
             all_fixtures, n_requests = [], 0
 
@@ -433,6 +435,7 @@ def run_fetch(hours_ahead: int = 48, dry_run: bool = False) -> dict:
         "events_futuros_antes": events_before,
         "events_futuros_despues": events_after,
         "reporte": str(report_path),
+        "download_ok": download_ok,
     }
 
 

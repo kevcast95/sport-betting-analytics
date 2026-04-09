@@ -49,6 +49,15 @@ export interface Bt2VaultPickOut {
   premiumUnlocked: boolean
   /** US-BE-030: franja horaria local del kickoff (TZ usuario). */
   timeBand: Bt2VaultTimeBand
+  /** Sprint 06 — DSR / pipeline (US-BE-025, US-DX-002). */
+  pipelineVersion?: string
+  dsrNarrativeEs?: string
+  dsrConfidenceLabel?: string
+  dsrSource?: string
+  marketCanonical?: string
+  marketCanonicalLabelEs?: string
+  modelMarketCanonical?: string
+  modelSelectionCanonical?: string
 }
 
 /** POST /bt2/vault/premium-unlock (US-BE-029). */
@@ -103,6 +112,11 @@ export interface Bt2PickOut {
   kickoffUtc?: string | null
   eventStatus?: string | null
   settlementSource?: string
+  marketCanonical?: string | null
+  marketCanonicalLabelEs?: string | null
+  modelMarketCanonical?: string | null
+  modelSelectionCanonical?: string | null
+  modelPredictionResult?: string | null
 }
 
 export interface Bt2PicksListOut {
@@ -174,6 +188,36 @@ export interface Bt2OnboardingPhaseACompleteOut {
 export interface Bt2MetaOut {
   contractVersion?: string
   settlementVerificationMode: 'trust' | 'verified'
+}
+
+// ─── Admin analytics (US-BE-028 / T-163) — header X-BT2-Admin-Key ─────────────
+
+export interface Bt2AdminDsrDaySummaryOut {
+  operatingDayKey: string
+  distinctEventsInVault: number
+  picksSettledWithModel: number
+  modelHits: number
+  modelMisses: number
+  modelVoids: number
+  modelNa: number
+  hitRatePct: number | null
+  summaryHumanEs: string
+}
+
+export interface Bt2AdminDsrAuditRowOut {
+  pickId: number
+  userId: string
+  eventId: number
+  operatingDayKey: string
+  status: string
+  modelPredictionResult?: string | null
+  modelMarketCanonical?: string | null
+  modelSelectionCanonical?: string | null
+}
+
+export interface Bt2AdminDsrDayOut {
+  summary: Bt2AdminDsrDaySummaryOut
+  auditRows: Bt2AdminDsrAuditRowOut[]
 }
 
 // ─── US-DX-001 — Razones canónicas bt2_dp_ledger.reason (Sprint 05) ─────────

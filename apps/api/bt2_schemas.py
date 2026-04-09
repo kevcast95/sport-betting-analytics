@@ -18,11 +18,10 @@ class Bt2MetaOut(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     contract_version: str = Field(
-        default="bt2-dx-001-s5.4",
+        default="bt2-dx-001-s6.0",
         serialization_alias="contractVersion",
         description=(
-            "s5.4 = Sprint 05.2 US-BE-030/031: vault pool ~15 + timeBand + meta pool; "
-            "isAvailable/POST picks estrictos al kickoff (D-05.2-001 A)."
+            "s6.0 = Sprint 06: DSR stub en snapshot, mercados canónicos, analytics admin, fetch job."
         ),
     )
     settlement_verification_mode: Literal["trust", "verified"] = Field(
@@ -103,6 +102,49 @@ class Bt2VaultPickOut(BaseModel):
             "tarde [12:00,18:00), noche [18:00,23:00), overnight resto (23:00–08:00)."
         ),
     )
+    pipeline_version: str = Field(
+        "",
+        serialization_alias="pipelineVersion",
+        description=(
+            "Versión del pipeline DSR (US-BE-025 / T-170): p. ej. `s6-rules-v0`, `s6-deepseek-v1` "
+            "cuando la señal vino de DeepSeek por lote (`picks_by_event`) con éxito."
+        ),
+    )
+    dsr_narrative_es: str = Field(
+        "",
+        serialization_alias="dsrNarrativeEs",
+        description="Narrativa modelo en español (sin payload crudo de proveedor).",
+    )
+    dsr_confidence_label: str = Field(
+        "",
+        serialization_alias="dsrConfidenceLabel",
+        description="Etiqueta simbólica de confianza (p. ej. low, medium).",
+    )
+    dsr_source: str = Field(
+        "",
+        serialization_alias="dsrSource",
+        description="Origen de la señal: rules_fallback, dsr_api, …",
+    )
+    market_canonical: str = Field(
+        "",
+        serialization_alias="marketCanonical",
+        description="Código mercado canónico (US-BE-027).",
+    )
+    market_canonical_label_es: str = Field(
+        "",
+        serialization_alias="marketCanonicalLabelEs",
+        description="Etiqueta humana del mercado canónico.",
+    )
+    model_market_canonical: str = Field(
+        "",
+        serialization_alias="modelMarketCanonical",
+        description="Mercado de la sugerencia DSR (canónico).",
+    )
+    model_selection_canonical: str = Field(
+        "",
+        serialization_alias="modelSelectionCanonical",
+        description="Selección sugerida por el modelo (canónico).",
+    )
 
 
 class VaultPremiumUnlockIn(BaseModel):
@@ -153,6 +195,66 @@ class Bt2VaultPicksPageOut(BaseModel):
         ...,
         serialization_alias="poolBelowTarget",
         description="True si hay menos ítems que `poolTargetCount` (falta de stock CDM u otra causa).",
+    )
+
+
+class Bt2AdminDsrDaySummaryOut(BaseModel):
+    """US-BE-028 — agregados MVP para vista admin precisión DSR (D-06-004 / D-06-015)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(..., serialization_alias="operatingDayKey")
+    distinct_events_in_vault: int = Field(
+        ...,
+        serialization_alias="distinctEventsInVault",
+        description="Eventos distintos en snapshot del día (todas las filas daily_picks).",
+    )
+    picks_settled_with_model: int = Field(
+        0,
+        serialization_alias="picksSettledWithModel",
+    )
+    model_hits: int = Field(0, serialization_alias="modelHits")
+    model_misses: int = Field(0, serialization_alias="modelMisses")
+    model_voids: int = Field(0, serialization_alias="modelVoids")
+    model_na: int = Field(0, serialization_alias="modelNa")
+    hit_rate_pct: Optional[float] = Field(
+        None,
+        serialization_alias="hitRatePct",
+        description="Aciertos / (hits+misses) × 100 si hay denominador.",
+    )
+    summary_human_es: str = Field(
+        "",
+        serialization_alias="summaryHumanEs",
+        description="Resumen legible para operador (US-BE-028 / identidad §B).",
+    )
+
+
+class Bt2AdminDsrAuditRowOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    pick_id: int = Field(..., serialization_alias="pickId")
+    user_id: str = Field(..., serialization_alias="userId")
+    event_id: int = Field(..., serialization_alias="eventId")
+    operating_day_key: str = Field(..., serialization_alias="operatingDayKey")
+    status: str
+    model_prediction_result: Optional[str] = Field(
+        None, serialization_alias="modelPredictionResult"
+    )
+    model_market_canonical: Optional[str] = Field(
+        None, serialization_alias="modelMarketCanonical"
+    )
+    model_selection_canonical: Optional[str] = Field(
+        None, serialization_alias="modelSelectionCanonical"
+    )
+
+
+class Bt2AdminDsrDayOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    summary: Bt2AdminDsrDaySummaryOut
+    audit_rows: List[Bt2AdminDsrAuditRowOut] = Field(
+        default_factory=list,
+        serialization_alias="auditRows",
     )
 
 

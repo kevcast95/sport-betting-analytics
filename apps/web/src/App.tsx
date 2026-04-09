@@ -25,6 +25,7 @@ import DiagnosticPage from '@/pages/DiagnosticPage'
 import DailyReviewPage from '@/pages/DailyReviewPage'
 import LedgerPage from '@/pages/LedgerPage'
 import PerformancePage from '@/pages/PerformancePage'
+import AdminDsrAccuracyPage from '@/pages/AdminDsrAccuracyPage'
 import ProfilePage from '@/pages/ProfilePage'
 import SettlementPage from '@/pages/SettlementPage'
 import PickDetailPage from '@/pages/PickDetailPage'
@@ -289,6 +290,10 @@ function AppLayout() {
                     <Route path="daily-review" element={<DailyReviewPage />} />
                     <Route path="ledger" element={<LedgerPage />} />
                     <Route path="performance" element={<PerformancePage />} />
+                    <Route
+                      path="admin/dsr-accuracy"
+                      element={<AdminDsrAccuracyPage />}
+                    />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="dashboard" element={<V2DashboardPage />} />
                     <Route path="settings" element={<V2SettingsOutlet />} />

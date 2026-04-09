@@ -6,13 +6,14 @@ Sprint 04 añade dominio conductual: picks, sesión operativa, settings, DP ledg
 from __future__ import annotations
 
 import logging
+import os
 import re
 from datetime import date, datetime, timedelta, timezone
 from typing import List, Literal, Optional, Tuple, cast
 
 import psycopg2
 import psycopg2.extras
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from apps.api.bt2_dx_constants import (
@@ -29,7 +30,25 @@ from apps.api.bt2_dx_constants import (
     REASON_SESSION_CLOSE_DISCIPLINE,
     SESSION_CLOSE_DISCIPLINE_REWARD_DP,
 )
+from apps.api.bt2_dsr_contract import (
+    PIPELINE_VERSION_DEFAULT,
+    assert_no_forbidden_ds_keys,
+    hash_dsr_input_payload,
+)
+from apps.api.bt2_dsr_deepseek import DsrBatchCandidate, deepseek_suggest_batch
+from apps.api.bt2_dsr_suggest import (
+    PIPELINE_VERSION_DEEPSEEK,
+    suggest_for_snapshot_row,
+)
+from apps.api.bt2_market_canonical import (
+    evaluate_model_vs_result,
+    market_canonical_label_es,
+    normalized_pick_to_canonical,
+)
 from apps.api.bt2_schemas import (
+    Bt2AdminDsrDayOut,
+    Bt2AdminDsrAuditRowOut,
+    Bt2AdminDsrDaySummaryOut,
     Bt2BehavioralMetricsOut,
     Bt2MetaOut,
     Bt2SessionDayOut,
@@ -628,6 +647,12 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
                 dp.id           AS dp_id,
                 dp.access_tier,
                 dp.suggested_at,
+                dp.pipeline_version,
+                dp.dsr_narrative_es,
+                dp.dsr_confidence_label,
+                dp.dsr_source,
+                dp.model_market_canonical,
+                dp.model_selection_canonical,
                 e.id            AS event_id,
                 e.status        AS event_status,
                 e.kickoff_utc,
@@ -744,6 +769,19 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
         if tier_label == "premium":
             premium_unlocked = dp_id in unlocked_dp_ids or ev_id in legacy_open_event_ids
 
+        mmc = row.get("model_market_canonical") or ""
+        msc = row.get("model_selection_canonical") or ""
+        mcl_es = market_canonical_label_es(mmc or None)
+        dsr_narr = (row.get("dsr_narrative_es") or "").strip()
+        trad_human = (
+            dsr_narr
+            if dsr_narr
+            else "Señal basada en reglas CDM — sin narrativa DSR extendida para este ítem."
+        )
+        pipe_v = str(row.get("pipeline_version") or PIPELINE_VERSION_DEFAULT)
+        dsr_src = str(row.get("dsr_source") or "rules_fallback")
+        dsr_conf = str(row.get("dsr_confidence_label") or "")
+
         picks.append(
             Bt2VaultPickOut(
                 id=f"dp-{dp_id}",
@@ -755,7 +793,7 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
                 suggested_decimal_odds=round(float(odds_val), 2),
                 edge_bps=0,
                 selection_summary_es=selection,
-                traduccion_humana="Selección basada en datos CDM BT2 — modelo en construcción.",
+                traduccion_humana=trad_human,
                 curva_equidad=[0.0],
                 access_tier=tier_label,
                 unlock_cost_dp=0 if tier_label == "standard" else _UNLOCK_DP_PREMIUM,
@@ -766,6 +804,14 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
                 external_search_url=external_url,
                 premium_unlocked=premium_unlocked,
                 time_band=time_band,
+                pipeline_version=pipe_v,
+                dsr_narrative_es=dsr_narr,
+                dsr_confidence_label=dsr_conf,
+                dsr_source=dsr_src,
+                market_canonical=mmc or "UNKNOWN",
+                market_canonical_label_es=mcl_es,
+                model_market_canonical=mmc,
+                model_selection_canonical=msc,
             )
         )
 
@@ -1254,6 +1300,19 @@ class PickOut(BaseModel):
     kickoff_utc: Optional[str] = Field(None, serialization_alias="kickoffUtc")
     event_status: Optional[str] = Field(None, serialization_alias="eventStatus")
     settlement_source: str = Field("user", serialization_alias="settlementSource")
+    market_canonical: Optional[str] = Field(None, serialization_alias="marketCanonical")
+    market_canonical_label_es: Optional[str] = Field(
+        None, serialization_alias="marketCanonicalLabelEs"
+    )
+    model_market_canonical: Optional[str] = Field(
+        None, serialization_alias="modelMarketCanonical"
+    )
+    model_selection_canonical: Optional[str] = Field(
+        None, serialization_alias="modelSelectionCanonical"
+    )
+    model_prediction_result: Optional[str] = Field(
+        None, serialization_alias="modelPredictionResult"
+    )
 
 
 class PicksListOut(BaseModel):
@@ -1328,6 +1387,19 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
         norm_market, norm_selection = _normalize_market_selection_for_pick(
             cur, body.event_id, body.market, body.selection
         )
+        m_canon, s_canon = normalized_pick_to_canonical(norm_market, norm_selection)
+        m_label_es = market_canonical_label_es(m_canon)
+
+        cur.execute(
+            """SELECT model_market_canonical, model_selection_canonical
+               FROM bt2_daily_picks
+               WHERE user_id = %s::uuid AND operating_day_key = %s AND event_id = %s
+               ORDER BY id DESC LIMIT 1""",
+            (user_id, odk, body.event_id),
+        )
+        snap_model = cur.fetchone()
+        snap_mm = snap_model[0] if snap_model else None
+        snap_ms = snap_model[1] if snap_model else None
 
         # Prevenir pick duplicado (mismo usuario, evento, mercado canónico)
         cur.execute(
@@ -1388,11 +1460,21 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
 
         cur.execute(
             """INSERT INTO bt2_picks
-               (user_id, event_id, market, selection, odds_taken, stake_units, status)
-               VALUES (%s::uuid, %s, %s, %s, %s, %s, 'open')
+               (user_id, event_id, market, selection, odds_taken, stake_units, status,
+                market_canonical, model_market_canonical, model_selection_canonical)
+               VALUES (%s::uuid, %s, %s, %s, %s, %s, 'open', %s, %s, %s)
                RETURNING id, status, opened_at""",
-            (user_id, body.event_id, norm_market, norm_selection,
-             body.odds_accepted, body.stake_units),
+            (
+                user_id,
+                body.event_id,
+                norm_market,
+                norm_selection,
+                body.odds_accepted,
+                body.stake_units,
+                m_canon,
+                snap_mm,
+                snap_ms,
+            ),
         )
         row = cur.fetchone()
         pick_id, pick_status, opened_at = row
@@ -1462,6 +1544,11 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
         settlement_source="user",
         kickoff_utc=kickoff_iso if kickoff_iso else None,
         event_status=ev_status if ev_status else None,
+        market_canonical=m_canon,
+        market_canonical_label_es=m_label_es,
+        model_market_canonical=snap_mm,
+        model_selection_canonical=snap_ms,
+        model_prediction_result=None,
     )
 
 
@@ -1499,6 +1586,8 @@ def bt2_list_picks(
                        p.odds_taken, p.stake_units, p.status,
                        p.opened_at, p.settled_at, p.pnl_units,
                        p.result_home, p.result_away, p.settlement_source,
+                       p.market_canonical, p.model_market_canonical,
+                       p.model_selection_canonical, p.model_prediction_result,
                        e.kickoff_utc, e.status AS ev_status,
                        COALESCE(th.name,'?') || ' vs ' || COALESCE(ta.name,'?') AS event_label,
                        CASE WHEN p.status = 'open' THEN NULL
@@ -1541,6 +1630,13 @@ def bt2_list_picks(
             settlement_source=r["settlement_source"] or "user",
             kickoff_utc=_kickoff_utc_iso_z(r["kickoff_utc"]) or None,
             event_status=str(r["ev_status"]) if r["ev_status"] is not None else None,
+            market_canonical=r.get("market_canonical"),
+            market_canonical_label_es=market_canonical_label_es(r.get("market_canonical"))
+            if r.get("market_canonical")
+            else None,
+            model_market_canonical=r.get("model_market_canonical"),
+            model_selection_canonical=r.get("model_selection_canonical"),
+            model_prediction_result=r.get("model_prediction_result"),
         )
         for r in rows
     ]
@@ -1561,6 +1657,8 @@ def bt2_get_pick(pick_id: int, user_id: Bt2UserId) -> PickOut:
                       p.odds_taken, p.stake_units, p.status,
                       p.opened_at, p.settled_at, p.pnl_units,
                       p.result_home, p.result_away, p.settlement_source,
+                      p.market_canonical, p.model_market_canonical,
+                      p.model_selection_canonical, p.model_prediction_result,
                       e.kickoff_utc, e.status AS ev_status,
                       COALESCE(th.name,'?') || ' vs ' || COALESCE(ta.name,'?') AS event_label,
                       CASE WHEN p.status = 'open' THEN NULL
@@ -1604,6 +1702,13 @@ def bt2_get_pick(pick_id: int, user_id: Bt2UserId) -> PickOut:
         settlement_source=r["settlement_source"] or "user",
         kickoff_utc=_kickoff_utc_iso_z(r["kickoff_utc"]) or None,
         event_status=str(r["ev_status"]) if r["ev_status"] is not None else None,
+        market_canonical=r.get("market_canonical"),
+        market_canonical_label_es=market_canonical_label_es(r.get("market_canonical"))
+        if r.get("market_canonical")
+        else None,
+        model_market_canonical=r.get("model_market_canonical"),
+        model_selection_canonical=r.get("model_selection_canonical"),
+        model_prediction_result=r.get("model_prediction_result"),
     )
 
 
@@ -1613,7 +1718,9 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
     cur = conn.cursor()
     try:
         cur.execute(
-            "SELECT id, status, market, selection, odds_taken, stake_units FROM bt2_picks WHERE id = %s AND user_id = %s::uuid",
+            """SELECT id, status, market, selection, odds_taken, stake_units,
+                      model_market_canonical, model_selection_canonical
+               FROM bt2_picks WHERE id = %s AND user_id = %s::uuid""",
             (pick_id, user_id),
         )
         pick = cur.fetchone()
@@ -1623,6 +1730,13 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
             raise HTTPException(status_code=409, detail="El pick ya está liquidado")
 
         outcome = _determine_outcome(pick[2], pick[3], body.result_home, body.result_away)
+        model_pred = evaluate_model_vs_result(
+            pick[6],
+            pick[7],
+            body.result_home,
+            body.result_away,
+            _determine_outcome,
+        )
         odds = float(pick[4])
         stake = float(pick[5])
 
@@ -1645,9 +1759,10 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
             """UPDATE bt2_picks
                SET status = %s, settled_at = %s,
                    result_home = %s, result_away = %s, pnl_units = %s,
-                   settlement_source = 'user'
+                   settlement_source = 'user',
+                   model_prediction_result = %s
                WHERE id = %s""",
-            (outcome, now, body.result_home, body.result_away, pnl, pick_id),
+            (outcome, now, body.result_home, body.result_away, pnl, model_pred, pick_id),
         )
 
         cur.execute(
@@ -1726,6 +1841,47 @@ class SessionCloseOut(BaseModel):
 
 # ── Sesión endpoints (T-100, T-101) ──────────────────────────────────────────
 
+
+def _fetch_event_context_for_dsr(cur, event_id: int) -> Optional[tuple]:
+    """Odds 1X2 + O/U 2.5 y metadatos para stub DSR (US-BE-025)."""
+    cur.execute(
+        """
+        SELECT
+            COALESCE(th.name, ''),
+            COALESCE(ta.name, ''),
+            COALESCE(l.name, ''),
+            (SELECT MAX(o.odds) FROM bt2_odds_snapshot o
+             WHERE o.event_id = e.id
+               AND lower(o.market) IN ('1x2','match winner','full time result','fulltime result')
+               AND (o.selection IN ('1','Home') OR lower(o.selection) LIKE '%%home%%')),
+            (SELECT MAX(o.odds) FROM bt2_odds_snapshot o
+             WHERE o.event_id = e.id
+               AND lower(o.market) IN ('1x2','match winner','full time result','fulltime result')
+               AND (o.selection IN ('X','Draw') OR lower(o.selection) LIKE '%%draw%%')),
+            (SELECT MAX(o.odds) FROM bt2_odds_snapshot o
+             WHERE o.event_id = e.id
+               AND lower(o.market) IN ('1x2','match winner','full time result','fulltime result')
+               AND (o.selection IN ('2','Away') OR lower(o.selection) LIKE '%%away%%')),
+            (SELECT MAX(o.odds) FROM bt2_odds_snapshot o
+             WHERE o.event_id = e.id
+               AND (lower(o.market) LIKE '%%goals over/under%%' OR lower(o.market) LIKE '%%over%%under%%')
+               AND (lower(o.selection) LIKE '%%over%%' AND lower(o.selection) NOT LIKE '%%under%%')),
+            (SELECT MAX(o.odds) FROM bt2_odds_snapshot o
+             WHERE o.event_id = e.id
+               AND (lower(o.market) LIKE '%%goals over/under%%' OR lower(o.market) LIKE '%%over%%under%%')
+               AND lower(o.selection) LIKE '%%under%%')
+        FROM bt2_events e
+        JOIN bt2_leagues l ON l.id = e.league_id
+        LEFT JOIN bt2_teams th ON th.id = e.home_team_id
+        LEFT JOIN bt2_teams ta ON ta.id = e.away_team_id
+        WHERE e.id = %s
+        """,
+        (event_id,),
+    )
+    row = cur.fetchone()
+    return row
+
+
 def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) -> int:
     """
     US-BE-030 / D-05.2-002: pool diario ~15 candidatos (tope 20), franjas por TZ usuario.
@@ -1789,15 +1945,137 @@ def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) ->
         [(int(r[0]), r[1], float(r[2])) for r in rows],
         tz,
     )
+
+    def _dsr_hash(
+        eid: int,
+        oh: Optional[float],
+        od: Optional[float],
+        oa: Optional[float],
+        ov: Optional[float],
+        un: Optional[float],
+    ) -> str:
+        payload = {
+            "event_id": eid,
+            "odds": {
+                "home": oh,
+                "draw": od,
+                "away": oa,
+                "over25": ov,
+                "under25": un,
+            },
+        }
+        assert_no_forbidden_ds_keys(payload)
+        return hash_dsr_input_payload(payload)
+
+    plan: list[
+        tuple[int, str, Any, Optional[tuple]]
+    ] = []
+    for event_id, access_tier, band in composed:
+        ctx = _fetch_event_context_for_dsr(cur, event_id)
+        plan.append((event_id, access_tier, band, ctx))
+
+    ds_by_eid: dict[int, tuple[str, str, str, str]] = {}
+    prov = (bt2_settings.bt2_dsr_provider or "rules").strip().lower()
+    dkey = (bt2_settings.deepseek_api_key or "").strip()
+    if prov == "deepseek" and dkey:
+        batch_size = max(1, int(bt2_settings.bt2_dsr_batch_size))
+        eligible = [(eid, at, b, ctx) for eid, at, b, ctx in plan if ctx]
+        for i in range(0, len(eligible), batch_size):
+            chunk = eligible[i : i + batch_size]
+            cands: list[DsrBatchCandidate] = []
+            for eid, _at, _b, ctx in chunk:
+                assert ctx is not None
+                home, away, league, oh, od, oa, ov, un = ctx
+                cands.append(
+                    DsrBatchCandidate(
+                        event_id=eid,
+                        tournament=league or "Liga",
+                        home_team=home or "Local",
+                        away_team=away or "Visitante",
+                        odds_home=float(oh) if oh is not None else None,
+                        odds_draw=float(od) if od is not None else None,
+                        odds_away=float(oa) if oa is not None else None,
+                        odds_over25=float(ov) if ov is not None else None,
+                        odds_under25=float(un) if un is not None else None,
+                    )
+                )
+            part = deepseek_suggest_batch(
+                cands,
+                operating_day_key=odk,
+                api_key=dkey,
+                base_url=bt2_settings.bt2_dsr_deepseek_base_url,
+                model=bt2_settings.bt2_dsr_deepseek_model,
+                timeout_sec=int(bt2_settings.bt2_dsr_timeout_sec),
+                max_retries=int(bt2_settings.bt2_dsr_max_retries),
+            )
+            for eid, _at, _b, _ctx in chunk:
+                tup = part.get(eid)
+                if tup is not None:
+                    ds_by_eid[eid] = tup
+    elif prov == "deepseek" and not dkey:
+        logging.getLogger(__name__).warning(
+            "bt2_dsr_missing_api_key provider=deepseek (lotes no invocados)"
+        )
+
     inserted = 0
-    for event_id, access_tier, _band in composed:
+    for event_id, access_tier, _band, ctx in plan:
+        if ctx:
+            home, away, league, oh, od, oa, ov, un = ctx
+            oh_f = float(oh) if oh is not None else None
+            od_f = float(od) if od is not None else None
+            oa_f = float(oa) if oa is not None else None
+            ov_f = float(ov) if ov is not None else None
+            un_f = float(un) if un is not None else None
+            batch_hit = ds_by_eid.get(event_id)
+            if batch_hit is not None:
+                narr, conf, mmc, msc = batch_hit
+                pver = PIPELINE_VERSION_DEEPSEEK
+                dsrc = "dsr_api"
+                dhash = _dsr_hash(event_id, oh_f, od_f, oa_f, ov_f, un_f)
+            else:
+                narr, conf, mmc, msc, pver, dsrc, dhash = suggest_for_snapshot_row(
+                    event_id,
+                    oh_f,
+                    od_f,
+                    oa_f,
+                    ov_f,
+                    un_f,
+                    home or "Local",
+                    away or "Visitante",
+                    league or "Liga",
+                )
+        else:
+            narr = "Evento sin contexto CDM para DSR."
+            conf = "low"
+            mmc = "UNKNOWN"
+            msc = "unknown_side"
+            pver = PIPELINE_VERSION_DEFAULT
+            dsrc = "rules_fallback"
+            dhash = None
+
         cur.execute(
             """
-            INSERT INTO bt2_daily_picks (user_id, event_id, operating_day_key, access_tier)
-            VALUES (%s::uuid, %s, %s, %s)
+            INSERT INTO bt2_daily_picks (
+                user_id, event_id, operating_day_key, access_tier,
+                pipeline_version, dsr_input_hash, dsr_narrative_es, dsr_confidence_label,
+                model_market_canonical, model_selection_canonical, dsr_source
+            )
+            VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (user_id, event_id, operating_day_key) DO NOTHING
             """,
-            (user_id, event_id, odk, access_tier),
+            (
+                user_id,
+                event_id,
+                odk,
+                access_tier,
+                pver,
+                dhash,
+                narr,
+                conf,
+                mmc,
+                msc,
+                dsrc,
+            ),
         )
         if cur.rowcount:
             inserted += 1
@@ -2214,4 +2492,133 @@ def bt2_get_diagnostic(user_id: Bt2UserId) -> DiagnosticOut:
         operator_profile=row[0],
         system_integrity=float(row[1]),
         completed_at=row[2].isoformat(),
+    )
+
+
+def _require_bt2_admin(
+    x_bt2_admin_key: Optional[str] = Header(None, alias="X-BT2-Admin-Key"),
+) -> None:
+    """US-BE-028 — MVP admin (D-06-015); sustituir por rol de usuario en S6.1+."""
+    # Usar bt2_settings: el .env raíz solo lo hidrata Pydantic en campos del modelo;
+    # BT2_ADMIN_API_KEY no llegaba a os.environ y la clave parecía “no funcionar”.
+    expected = (bt2_settings.bt2_admin_api_key or "").strip()
+    if not expected:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin analytics deshabilitado: defina BT2_ADMIN_API_KEY en el entorno.",
+        )
+    if (x_bt2_admin_key or "").strip() != expected:
+        raise HTTPException(status_code=401, detail="Clave admin inválida")
+
+
+@router.get(
+    "/admin/analytics/dsr-day",
+    response_model=Bt2AdminDsrDayOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_analytics_dsr_day(
+    operating_day_key: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKey",
+        description="YYYY-MM-DD día operativo a auditar.",
+    ),
+) -> Bt2AdminDsrDayOut:
+    """
+    US-BE-028 / D-06-004 — agregados y filas de auditoría para vista admin precisión DSR.
+    Header: **X-BT2-Admin-Key** = `BT2_ADMIN_API_KEY`.
+    """
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        cur.execute(
+            """SELECT COUNT(DISTINCT event_id) AS n FROM bt2_daily_picks
+               WHERE operating_day_key = %s""",
+            (operating_day_key,),
+        )
+        n_events = int(cur.fetchone()["n"] or 0)
+
+        cur.execute(
+            """
+            SELECT DISTINCT ON (p.id)
+                   p.id AS pick_id, p.user_id::text AS user_id, p.event_id,
+                   dp.operating_day_key, p.status, p.model_prediction_result,
+                   p.model_market_canonical, p.model_selection_canonical
+            FROM bt2_picks p
+            INNER JOIN bt2_daily_picks dp
+              ON dp.user_id = p.user_id AND dp.event_id = p.event_id
+             AND dp.operating_day_key = %s
+            WHERE p.settled_at IS NOT NULL
+            ORDER BY p.id, dp.suggested_at DESC
+            LIMIT 500
+            """,
+            (operating_day_key,),
+        )
+        audit_rows = cur.fetchall()
+
+        cur.execute(
+            """
+            SELECT p.model_prediction_result AS r, COUNT(*) AS c
+            FROM bt2_picks p
+            INNER JOIN bt2_daily_picks dp
+              ON dp.user_id = p.user_id AND dp.event_id = p.event_id
+             AND dp.operating_day_key = %s
+            WHERE p.settled_at IS NOT NULL AND p.model_prediction_result IS NOT NULL
+            GROUP BY p.model_prediction_result
+            """,
+            (operating_day_key,),
+        )
+        agg = {str(row["r"]): int(row["c"]) for row in cur.fetchall()}
+    finally:
+        cur.close()
+        conn.close()
+
+    hits = agg.get("hit", 0)
+    misses = agg.get("miss", 0)
+    voids = agg.get("void", 0)
+    na_c = agg.get("n_a", 0)
+    denom = hits + misses
+    rate = round(100.0 * hits / denom, 2) if denom else None
+    settled_model = hits + misses + voids + na_c
+
+    summary_human = (
+        f"Día operativo {operating_day_key}: {n_events} eventos distintos publicados en snapshots. "
+        f"Picks liquidados vinculados a ese día: {len(audit_rows)} filas de auditoría. "
+        f"Modelo — aciertos: {hits}, fallos: {misses}, void: {voids}, sin dato: {na_c}."
+    )
+    if rate is not None:
+        summary_human += f" Tasa de acierto (aciertos / aciertos+fallos): {rate} %."
+    else:
+        summary_human += " Aún no hay aciertos+fallos para calcular tasa."
+
+    rows_out = [
+        Bt2AdminDsrAuditRowOut(
+            pick_id=int(r["pick_id"]),
+            user_id=r["user_id"],
+            event_id=int(r["event_id"]),
+            operating_day_key=r["operating_day_key"],
+            status=r["status"],
+            model_prediction_result=r.get("model_prediction_result"),
+            model_market_canonical=r.get("model_market_canonical"),
+            model_selection_canonical=r.get("model_selection_canonical"),
+        )
+        for r in audit_rows
+    ]
+
+    return Bt2AdminDsrDayOut(
+        summary=Bt2AdminDsrDaySummaryOut(
+            operating_day_key=operating_day_key,
+            distinct_events_in_vault=n_events,
+            picks_settled_with_model=settled_model,
+            model_hits=hits,
+            model_misses=misses,
+            model_voids=voids,
+            model_na=na_c,
+            hit_rate_pct=rate,
+            summary_human_es=summary_human,
+        ),
+        audit_rows=rows_out,
     )

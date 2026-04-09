@@ -44,3 +44,14 @@ PICK_SETTLE_DP_REWARD: Final[int] = 10
 
 PENALTY_UNSETTLED_DP: Final[int] = -25
 PENALTY_STATION_UNCLOSED_DP: Final[int] = -50
+
+# ── Sprint 06 — mercados canónicos (US-DX-002 / US-BE-027) ─────────────────────
+MARKET_CANONICAL_FT_1X2: Final[str] = "FT_1X2"
+MARKET_CANONICAL_OU_GOALS_2_5: Final[str] = "OU_GOALS_2_5"
+MARKET_CANONICAL_UNKNOWN: Final[str] = "UNKNOWN"
+
+# Resultado medición modelo vs marcador (D-06-015)
+MODEL_PREDICTION_HIT: Final[str] = "hit"
+MODEL_PREDICTION_MISS: Final[str] = "miss"
+MODEL_PREDICTION_VOID: Final[str] = "void"
+MODEL_PREDICTION_NA: Final[str] = "n_a"

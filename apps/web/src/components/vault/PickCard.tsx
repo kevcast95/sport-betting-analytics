@@ -8,8 +8,14 @@ import { NavLink } from 'react-router-dom'
 import type { VaultPickCdm } from '@/data/vaultMockPicks'
 import { VAULT_UNLOCK_COST_DP } from '@/data/vaultMockPicks'
 import type { Bt2VaultPickOut } from '@/lib/bt2Types'
+import {
+  dsrConfidenceLabelEs,
+  dsrSourceDescriptionEs,
+} from '@/lib/bt2ProtocolLabels'
+import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
 import { getMarketLabelEs } from '@/lib/marketLabels'
 import { isKickoffUtcInPast } from '@/lib/vaultKickoff'
+import { unifiedApiModelReading } from '@/lib/vaultModelReading'
 import { vaultPickEventPresentation } from '@/lib/vaultPickEventUi'
 import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
 import { useTradeStore } from '@/store/useTradeStore'
@@ -65,7 +71,12 @@ function pickDisplay(p: AnyPick) {
   if (isApiPick(p)) {
     return {
       id: p.id,
-      marketLabel: p.marketLabelEs || getMarketLabelEs(p.marketClass),
+      marketLabel: displayMarketLabelEs({
+        marketCanonicalLabelEs: p.marketCanonicalLabelEs,
+        marketLabelEs: p.marketLabelEs,
+        marketClass: p.marketClass,
+        marketCanonical: p.marketCanonical,
+      }),
       marketRaw: p.marketClass,
       selectionSummaryEs: p.selectionSummaryEs,
       eventLabel: p.eventLabel,
@@ -81,6 +92,15 @@ function pickDisplay(p: AnyPick) {
       kickoffUtc: p.kickoffUtc,
       eventStatus: p.eventStatus ?? null,
       premiumUnlocked: p.premiumUnlocked === true,
+      dsrNarrativeEs: (p.dsrNarrativeEs ?? '').trim(),
+      dsrSource: (p.dsrSource ?? '').trim(),
+      dsrConfidenceLabel: (p.dsrConfidenceLabel ?? '').trim(),
+      pipelineVersion: (p.pipelineVersion ?? '').trim(),
+      modelCanonicalHint:
+        [p.modelMarketCanonical, p.modelSelectionCanonical]
+          .map((x) => (typeof x === 'string' ? x.trim() : ''))
+          .filter(Boolean)
+          .join(' · ') || '',
     }
   }
   return {
@@ -101,6 +121,11 @@ function pickDisplay(p: AnyPick) {
     kickoffUtc: undefined as string | undefined,
     eventStatus: null as string | null,
     premiumUnlocked: false,
+    dsrNarrativeEs: '',
+    dsrSource: '',
+    dsrConfidenceLabel: '',
+    pipelineVersion: '',
+    modelCanonicalHint: '',
   }
 }
 
@@ -321,14 +346,33 @@ export function PickCard({
    * aunque el BE tarde en poner `isAvailable: false` (refuerzo coherente con POST 422).
    */
   const kickoffPast = !pickTaken && isKickoffUtcInPast(d.kickoffUtc)
-  const previewText = d.traduccionHumana
-    ? excerptTraduccion(d.traduccionHumana)
-    : ''
-
   const isPremium = !isPickFreeAccess(d.accessTier)
   const premiumOpen = !isPremium || premiumUnlocked
   const showPreviewOnly = !pickTaken && !premiumOpen
   const premiumLockedSurface = isPremium && showPreviewOnly
+  const unifiedApiBody = isApi
+    ? unifiedApiModelReading({
+        dsrNarrativeEs: d.dsrNarrativeEs,
+        traduccionHumana: d.traduccionHumana,
+      })
+    : null
+  const previewText =
+    unifiedApiBody != null
+      ? excerptTraduccion(unifiedApiBody.body)
+      : d.traduccionHumana
+        ? excerptTraduccion(d.traduccionHumana)
+        : ''
+  const hideDsrBecausePremiumLocked =
+    isPremium && !pickTaken && !premiumUnlocked
+  const dsrMetaLine = [
+    d.dsrConfidenceLabel
+      ? `Confianza simbólica: ${dsrConfidenceLabelEs(d.dsrConfidenceLabel)}`
+      : '',
+    dsrSourceDescriptionEs(d.dsrSource),
+    d.pipelineVersion ? `Versión pipeline: ${d.pipelineVersion}` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   const takeBlockedVisual = kickoffPast
   const takeBlockedTitle =
@@ -363,6 +407,14 @@ export function PickCard({
           {d.selectionSummaryEs ? (
             <p className="mt-0.5 text-xs font-semibold text-[#26343d]">
               {d.selectionSummaryEs}
+            </p>
+          ) : null}
+          {d.modelCanonicalHint && !premiumLockedSurface ? (
+            <p
+              className="mt-0.5 font-mono text-[9px] leading-snug text-[#6e7d86]"
+              title="Sugerencia DSR (mercado y selección canónicos)"
+            >
+              Modelo (canónico): {d.modelCanonicalHint}
             </p>
           ) : null}
           <h2 className="mt-1 text-base font-bold leading-snug tracking-tight text-[#26343d]">
@@ -466,7 +518,7 @@ export function PickCard({
             ) : (
               <div className="relative mt-auto min-h-[88px] flex-1 overflow-hidden rounded-lg border border-[#26343d]/10 bg-[#f6fafe]/80 p-3">
                 <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
-                  Vista previa · lectura del modelo
+                  Vista previa · modelo
                 </p>
                 <p className="mb-2 font-mono text-[10px] text-[#52616a]">
                   Inicio: <span className="font-semibold text-[#26343d]">{eventStartLabel ?? '—'}</span>
@@ -479,8 +531,14 @@ export function PickCard({
                   ) : null}
                 </p>
                 <p className="line-clamp-4 text-xs leading-relaxed text-[#26343d]">
-                  {previewText || 'Sin extracto de lectura del modelo en este pick.'}
+                  {previewText ||
+                    'Sin criterio DSR ni extracto de lectura en este pick.'}
                 </p>
+                {dsrMetaLine && !premiumLockedSurface ? (
+                  <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
+                    {dsrMetaLine}
+                  </p>
+                ) : null}
               </div>
             )
           ) : (
@@ -490,7 +548,21 @@ export function PickCard({
               transition={{ duration: 0.3, ease: 'easeOut' }}
               className="mt-auto flex flex-1 flex-col gap-2"
             >
-              {d.traduccionHumana ? (
+              {isApi && !hideDsrBecausePremiumLocked && unifiedApiBody ? (
+                <div className="rounded-lg border border-[#6d3bd7]/15 bg-[#f6fafe]/90 p-3">
+                  <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
+                    {unifiedApiBody.title}
+                  </p>
+                  <p className="line-clamp-6 text-xs leading-relaxed text-[#26343d]">
+                    {unifiedApiBody.body}
+                  </p>
+                  {dsrMetaLine ? (
+                    <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
+                      {dsrMetaLine}
+                    </p>
+                  ) : null}
+                </div>
+              ) : !isApi && d.traduccionHumana ? (
                 <div className="rounded-lg border border-[#26343d]/10 bg-[#f6fafe]/80 p-3">
                   <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
                     Lectura del modelo
@@ -589,7 +661,27 @@ export function PickCard({
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="mt-2 flex flex-1 flex-col gap-3"
         >
-          {d.traduccionHumana ? (
+          {isApi && !hideDsrBecausePremiumLocked && unifiedApiBody ? (
+            <div className="rounded-lg border border-[#6d3bd7]/15 bg-[#f6fafe]/90 p-3">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#6e7d86]">
+                {unifiedApiBody.title}
+              </p>
+              <p className="line-clamp-5 text-sm leading-relaxed text-[#26343d]">
+                {unifiedApiBody.body}
+              </p>
+              {dsrMetaLine ? (
+                <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
+                  {dsrMetaLine}
+                </p>
+              ) : null}
+              <NavLink
+                to={`/v2/settlement/${d.id}?phase=review`}
+                className="mt-2 inline-block text-xs font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
+              >
+                Ver ficha completa
+              </NavLink>
+            </div>
+          ) : !isApi && d.traduccionHumana ? (
             <div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#6e7d86]">
                 Lectura del modelo

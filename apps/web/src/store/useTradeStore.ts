@@ -25,6 +25,8 @@ export type LedgerRow = {
   pickId: string
   /** US-FE-008: protocolo CDM (clase de mercado). */
   marketClass?: string
+  /** US-FE-054: etiqueta humana mercado canónico (API). */
+  marketCanonicalLabelEs?: string
   titulo?: string
   /** Etiqueta de evento (US-FE-022). */
   eventLabel?: string
@@ -45,6 +47,8 @@ export type LedgerRow = {
   earnedDp?: number
   /** bt2_picks.id del servidor (US-FE-028; null para picks mock). */
   bt2PickId?: number
+  /** Sprint 06 — resultado modelo tras liquidar (GET /bt2/picks). */
+  modelPredictionResult?: string | null
 }
 
 export type FinalizeSettlementResult =
@@ -167,17 +171,27 @@ function bt2PickStatusToOutcome(st: string): SettlementOutcome {
   return 'PUSH'
 }
 
+function bt2NumericPickId(p: Bt2PickOut): number {
+  const ext = p as Bt2PickOut & { pickId?: number }
+  if (typeof ext.pickId === 'number' && Number.isFinite(ext.pickId)) {
+    return ext.pickId
+  }
+  return p.pick_id
+}
+
 function bt2PickToLedgerRow(
   p: Bt2PickOut,
   vaultPickId: string | undefined,
 ): LedgerRow {
-  const pickId = vaultPickId ?? `bt2-pick-${p.pick_id}`
+  const numericId = bt2NumericPickId(p)
+  const pickId = vaultPickId ?? `bt2-pick-${numericId}`
   const stakeCop = Number.isFinite(p.stake_units) ? p.stake_units : 0
   const pnlCop =
     p.pnl_units != null && Number.isFinite(p.pnl_units) ? p.pnl_units : 0
   return {
     pickId,
     marketClass: p.market,
+    marketCanonicalLabelEs: p.marketCanonicalLabelEs ?? undefined,
     titulo: p.event_label,
     eventLabel: p.event_label,
     selectionSummaryEs: p.selection,
@@ -188,7 +202,8 @@ function bt2PickToLedgerRow(
     decimalCuota: p.odds_accepted,
     settledAt: p.settled_at ?? p.opened_at,
     earnedDp: p.earned_dp ?? 0,
-    bt2PickId: p.pick_id,
+    bt2PickId: numericId,
+    modelPredictionResult: p.modelPredictionResult ?? null,
   }
 }
 
@@ -303,6 +318,7 @@ export const useTradeStore = create<TradeStore>()(
           const row: LedgerRow = {
             pickId: input.vaultPickId,
             marketClass: vaultPick?.marketClass ?? input.market,
+            marketCanonicalLabelEs: vaultPick?.marketCanonicalLabelEs,
             titulo: vaultPick?.titulo ?? input.selection,
             eventLabel: vaultPick?.eventLabel,
             selectionSummaryEs: vaultPick?.selectionSummaryEs ?? input.selection,
@@ -356,7 +372,7 @@ export const useTradeStore = create<TradeStore>()(
           )
           const settled = data.picks.filter((p) => p.status !== 'open')
           const apiLedger = settled.map((p) =>
-            bt2PickToLedgerRow(p, byBt2.get(p.pick_id)),
+            bt2PickToLedgerRow(p, byBt2.get(bt2NumericPickId(p))),
           )
           const apiBt2Ids = new Set(
             apiLedger.map((r) => r.bt2PickId).filter((x): x is number => x != null),

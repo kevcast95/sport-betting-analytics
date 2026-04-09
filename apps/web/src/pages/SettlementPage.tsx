@@ -14,7 +14,13 @@ import {
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { vaultMockPicks } from '@/data/vaultMockPicks'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
-import { getMarketLabelEs } from '@/lib/marketLabels'
+import {
+  dsrConfidenceLabelEs,
+  dsrSourceDescriptionEs,
+  modelPredictionResultEs,
+} from '@/lib/bt2ProtocolLabels'
+import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
+import { unifiedApiModelReading } from '@/lib/vaultModelReading'
 import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
 import {
   computeSettlementPnlCop,
@@ -50,6 +56,8 @@ type AnyPick = {
   id: string
   marketClass: string
   marketLabelEs?: string
+  marketCanonical?: string
+  marketCanonicalLabelEs?: string
   eventLabel: string
   titulo: string
   suggestedDecimalOdds: number
@@ -61,6 +69,13 @@ type AnyPick = {
   kickoffUtc?: string
   unlockCostDp?: number
   eventId?: number
+  dsrNarrativeEs?: string
+  dsrSource?: string
+  dsrConfidenceLabel?: string
+  pipelineVersion?: string
+  modelMarketCanonical?: string
+  modelSelectionCanonical?: string
+  modelPredictionResult?: string | null
 }
 
 const DEFAULT_EVENT_TZ = 'America/Bogota'
@@ -159,9 +174,11 @@ function anyPickFromLedgerRow(row: LedgerRow, vaultPickId: string): AnyPick {
   return {
     id: vaultPickId,
     marketClass: row.marketClass ?? '—',
-    marketLabelEs: row.marketClass
-      ? getMarketLabelEs(row.marketClass)
-      : undefined,
+    marketLabelEs: displayMarketLabelEs({
+      marketCanonicalLabelEs: row.marketCanonicalLabelEs,
+      marketClass: row.marketClass,
+    }),
+    marketCanonicalLabelEs: row.marketCanonicalLabelEs,
     eventLabel: row.eventLabel ?? vaultPickId,
     titulo: row.titulo ?? '—',
     suggestedDecimalOdds: Number.isFinite(odds) && odds > 1 ? odds : Number.NaN,
@@ -172,6 +189,7 @@ function anyPickFromLedgerRow(row: LedgerRow, vaultPickId: string): AnyPick {
     kickoffUtc: undefined,
     unlockCostDp: undefined,
     eventId: undefined,
+    modelPredictionResult: row.modelPredictionResult ?? null,
   }
 }
 
@@ -364,8 +382,41 @@ export default function SettlementPage() {
   // US-FE-022: cuota sugerida directamente del CDM
   const suggestedOdds = displayPick?.suggestedDecimalOdds ?? Number.NaN
   const marketLabelEs = displayPick
-    ? (displayPick.marketLabelEs || getMarketLabelEs(displayPick.marketClass))
+    ? displayMarketLabelEs({
+        marketCanonicalLabelEs: displayPick.marketCanonicalLabelEs,
+        marketLabelEs: displayPick.marketLabelEs,
+        marketClass: displayPick.marketClass,
+        marketCanonical: displayPick.marketCanonical,
+      })
     : '—'
+
+  const modelVsPickLabel =
+    settled && ledgerRowForPick?.modelPredictionResult != null
+      ? modelPredictionResultEs(ledgerRowForPick.modelPredictionResult)
+      : null
+
+  const settlementApiUnified = useMemo(() => {
+    if (!apiPickMatch || !displayPick) return null
+    return unifiedApiModelReading({
+      dsrNarrativeEs: (displayPick.dsrNarrativeEs ?? '').trim(),
+      traduccionHumana: displayPick.traduccionHumana ?? null,
+    })
+  }, [apiPickMatch, displayPick])
+
+  const settlementDsrMetaLine = useMemo(() => {
+    if (!apiPickMatch || !displayPick) return ''
+    return [
+      displayPick.dsrConfidenceLabel
+        ? `Confianza simbólica: ${dsrConfidenceLabelEs(displayPick.dsrConfidenceLabel)}`
+        : '',
+      dsrSourceDescriptionEs(displayPick.dsrSource ?? ''),
+      displayPick.pipelineVersion
+        ? `Versión pipeline: ${displayPick.pipelineVersion}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' · ')
+  }, [apiPickMatch, displayPick])
 
   // T-057: cuota capturada en casa
   const bookOddsParsed = parseFloat(bookOddsRaw.replace(',', '.'))
@@ -623,6 +674,15 @@ export default function SettlementPage() {
                     {displayPick.selectionSummaryEs}
                   </p>
                 ) : null}
+                {modelVsPickLabel ? (
+                  <p className="mb-3 rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa]/80 px-3 py-2 text-xs font-semibold text-[#435368]">
+                    Resultado vs modelo (liquidado):{' '}
+                    <span className="font-mono text-[#26343d]">
+                      {modelVsPickLabel}
+                    </span>
+                  </p>
+                ) : null}
+                {/* DSR + CDM: un solo bloque en la tarjeta inferior (evitar duplicar con “Lectura del modelo”). */}
                 {/* Tesis/narrativa del modelo como subtítulo */}
                 <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
                   Sugerencia del modelo
@@ -674,20 +734,29 @@ export default function SettlementPage() {
             </div>
           </div>
 
-          {/* US-FE-022: "Lectura del modelo" (antes "Traducción humana") */}
+          {/* US-FE-022 / T-165: una sola voz CDM+DSR (misma regla que PickCard). */}
           <div className="rounded-xl bg-[#eef4fa] p-8">
             <div className="mb-6 flex items-center gap-3">
               <IconPsychology className="shrink-0 text-[#6d3bd7]" />
               <h3 className="text-lg font-bold tracking-tight text-[#26343d]">
-                Lectura del modelo
+                {settlementApiUnified
+                  ? settlementApiUnified.title
+                  : 'Lectura del modelo'}
               </h3>
             </div>
             <div className="space-y-4 text-sm leading-relaxed text-[#52616a]">
-              <p>
-                {displayPick.traduccionHumana?.trim()
-                  ? displayPick.traduccionHumana
-                  : 'Sin lectura del modelo en archivo local. Consulta el libro mayor para el detalle registrado al liquidar.'}
+              <p className="text-[#26343d]">
+                {settlementApiUnified
+                  ? settlementApiUnified.body
+                  : displayPick.traduccionHumana?.trim()
+                    ? displayPick.traduccionHumana
+                    : 'Sin lectura del modelo en archivo local. Consulta el libro mayor para el detalle registrado al liquidar.'}
               </p>
+              {settlementDsrMetaLine ? (
+                <p className="font-mono text-xs leading-snug text-[#6e7d86]">
+                  {settlementDsrMetaLine}
+                </p>
+              ) : null}
               <p>
                 La sugerencia actúa como{' '}
                 <span className="font-semibold text-[#26343d]">
