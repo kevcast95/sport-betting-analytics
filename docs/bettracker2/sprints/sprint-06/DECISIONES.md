@@ -344,4 +344,14 @@ El debate **1 llamada / evento** vs **lotes como v1** no se resuelve por criteri
 
 ---
 
-*Última incorporación: **D-06-019** (lotes v1-equivalentes); **D-06-018**; **D-06-017**; **D-06-015** + **D-06-016**; [`pregts_definiciones.md`](./pregts_definiciones.md) v1.2.*
+## D-06-020 — Calidad de señal DSR: edge medible vs etiquetas del LLM (backlog **Sprint 06.1**)
+
+**Contexto:** Conversación BE/PO: el producto quiere **priorizar menos picks con mejor señal** usando **métricas y reglas audibles en backend**, no confundir **“Baja / Media / Alta”** del modelo con **probabilidad de acierto** ni con **calidad de ingesta SportMonks**.
+
+**Decisión:** El detalle de trabajo (elegibilidad dura en datos, volumen, edge en servidor, alineación de prompt, semántica UX/analytics) **no** se cierra en Sprint 06 núcleo; se planifica y ejecuta en **[`../sprint-06.1/OBJETIVO_SENAL_Y_EDGE_DSR.md`](../sprint-06.1/OBJETIVO_SENAL_Y_EDGE_DSR.md)** con **US y umbrales** que el BA elabore con PO. Relacionado: [`../../notas/BACKTESTING_RECONCILIACION_CDM.md`](../../notas/BACKTESTING_RECONCILIACION_CDM.md) (verdad de odds en el tiempo).
+
+**Trazabilidad:** [`../sprint-06.1/PLAN.md`](../sprint-06.1/PLAN.md).
+
+---
+
+*Última incorporación: **D-06-020** (S6.1 señal/edge); **D-06-019**; **D-06-018**; **D-06-017**; **D-06-015** + **D-06-016**; [`pregts_definiciones.md`](./pregts_definiciones.md) v1.2.*

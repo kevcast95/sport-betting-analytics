@@ -5,8 +5,8 @@
 
 ## Estado del sprint
 
-- Fecha inicio: **2026-04-08** · Fecha fin: *(definir al cerrar S6)*  
-- Estado: **En ejecución** — arranque pleno backlog **T-153–T-168**; criterio formal [`PLAN.md`](./PLAN.md) §6 + **D-06-017**.  
+- Fecha inicio: **2026-04-08** · Fecha fin: **2026-04-08**  
+- Estado: **Cerrado (alcance acordado)** — núcleo **T-157–T-170**, **T-159–T-168** y **T-154**, **T-156** completados en código y verificación FE (`npm test`, `npm run build`). **T-153**, **T-155** (US-DX-002) y validación formal runbook en staging/on-call (**D-06-011**) quedan explícitas en [`TASKS.md`](./TASKS.md) checklist de cierre y Sprint 07 / operación.  
 - Dependencia: **Sprints 05 / 05.1 / 05.2** cerrados en documentación (2026-04-08).
 
 ## Resumen — US Frontend
@@ -59,8 +59,8 @@ Que el operador vea **por qué** el protocolo propone cada señal: criterio del 
 
 #### 5) Definition of Done
 
-- [ ] Tareas **US-FE-052** en [`TASKS.md`](./TASKS.md).
-- [ ] `npm test` sin regresión rutas V2.
+- [x] Tareas **US-FE-052** en [`TASKS.md`](./TASKS.md) (**T-165**).
+- [x] `npm test` sin regresión rutas V2; **T-168** incluye `npm run build` en `apps/web`.
 
 ---
 
@@ -81,7 +81,7 @@ Visibilidad **conductual y de calidad** del snapshot (distribuciones, tendencias
 
 #### 4) Definition of Done
 
-- [ ] Tareas **US-FE-053** en [`TASKS.md`](./TASKS.md).
+- [x] Tareas **US-FE-053** en [`TASKS.md`](./TASKS.md) (**T-166**).
 
 ---
 
@@ -102,7 +102,7 @@ Coherencia visual y semántica cuando el backend expone **`marketCanonical`** (u
 
 #### 4) Definition of Done
 
-- [ ] Tareas **US-FE-054** en [`TASKS.md`](./TASKS.md).
+- [x] Tareas **US-FE-054** en [`TASKS.md`](./TASKS.md) (**T-167**).
 
 ---
 
@@ -147,7 +147,7 @@ Generar **justificación y ranking** de señales usando el razonador con **barre
 
 - [x] Tareas **US-BE-025** en [`TASKS.md`](./TASKS.md) (**T-157**, **T-158**, **T-169**, **T-170**).
 - [x] **D-06-018** y **D-06-019** aplicadas por BE; env en **`.env.example`**; handoff [`BE_HANDOFF_SPRINT06.md`](./BE_HANDOFF_SPRINT06.md).
-- [ ] Documento de **fase A/B** en `DECISIONES.md` o anexo citado en **D-06-002** (si aún pendiente).
+- [x] Marco **fase A/B** y anti-fuga en [`DECISIONES.md`](./DECISIONES.md) (**D-06-002**).
 
 ---
 
@@ -164,8 +164,8 @@ Ingesta de fixtures **sin intervención manual** diaria, con reintentos y señal
 
 #### 3) Definition of Done
 
-- [ ] Tareas **US-BE-026** en [`TASKS.md`](./TASKS.md).
-- [ ] Runbook **US-OPS-001** enlazado y revisado.
+- [x] Tareas **US-BE-026** en [`TASKS.md`](./TASKS.md) (**T-159**).
+- [x] Runbook **US-OPS-001** en repo y enlazado (**T-160** / [`../../runbooks/bt2_fetch_upcoming_cron.md`](../../runbooks/bt2_fetch_upcoming_cron.md)); validación staging/prod + on-call → **D-06-011** (operación).
 
 ---
 
@@ -186,7 +186,7 @@ Eliminar fragilidad de **strings** en settle y en vault: un **código canónico*
 
 #### 4) Definition of Done
 
-- [ ] Tareas **US-BE-027** en [`TASKS.md`](./TASKS.md).
+- [x] Tareas **US-BE-027** en [`TASKS.md`](./TASKS.md) (**T-161**, **T-162**).
 
 ---
 
@@ -203,7 +203,7 @@ Exponer **agregados** para **US-FE-053** sin lógica de negocio en cliente (**D-
 
 #### 3) Definition of Done
 
-- [ ] Tareas **US-BE-028** en [`TASKS.md`](./TASKS.md).
+- [x] Tareas **US-BE-028** en [`TASKS.md`](./TASKS.md) (**T-163**, **T-164**).
 
 ---
 
@@ -222,7 +222,7 @@ Un único lugar para **mercados canónicos**, **shape DSR** entrada/salida, valo
 
 #### 3) Definition of Done
 
-- [ ] Tareas **US-DX-002** en [`TASKS.md`](./TASKS.md).
+- [ ] Cierre **parcial:** **T-154**, **T-156** hechas; **T-153**, **T-155** diferidas a Sprint 07 (ver [`TASKS.md`](./TASKS.md) checklist cierre y [`../sprint-07/PLAN.md`](../sprint-07/PLAN.md)).
 
 ---
 
@@ -241,7 +241,8 @@ Operación **reproducible** de ingesta diaria y escalación si falla.
 
 #### 3) Definition of Done
 
-- [ ] Documento en repo (ruta acordada) enlazado desde [`PLAN.md`](./PLAN.md) y **D-06-005**.
+- [x] Documento en repo enlazado desde [`PLAN.md`](./PLAN.md) y **D-06-005** (**T-160**).
+- [ ] Runbook **validado** en staging/prod y canal on-call real cuando la org lo asigne (**D-06-011**).
 
 ---
 
