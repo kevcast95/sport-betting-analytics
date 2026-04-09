@@ -61,7 +61,7 @@ export default function BunkerLayout() {
   const operatorName = useUserStore((s) => s.operatorName)
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
   const syncDpBalance = useUserStore((s) => s.syncDpBalance)
-  const endSession = useUserStore((s) => s.endSession)
+  const logoutAndClear = useUserStore((s) => s.logoutAndClear)
   const onboardingPhaseAComplete = useUserStore((s) => s.onboardingPhaseAComplete)
   const hasSeenEconomyTour = useUserStore((s) => s.hasSeenEconomyTour)
   const completeOnboardingPhaseA = useUserStore((s) => s.completeOnboardingPhaseA)
@@ -163,7 +163,8 @@ export default function BunkerLayout() {
   const openTreasury = () => setTreasuryOpen(true)
 
   const handleLogout = () => {
-    endSession()
+    // Debe borrar JWT: useAppInit restaura sesión si hay token y isAuthenticated=false (US-FE-026).
+    logoutAndClear()
     navigate('/v2/session', { replace: true })
   }
 

@@ -2102,14 +2102,42 @@ def bt2_session_open(user_id: Bt2UserId) -> SessionOpenOut:
         _close_orphan_sessions_and_station_penalties(cur, user_id, odk, now)
         _apply_grace_unsettled_penalties(cur, user_id, now)
 
+        # Una fila por (user_id, operating_day_key) — el cierre solo pone status=closed.
+        # Reabrir el mismo día operativo debe ser UPDATE, no INSERT (evita UniqueViolation).
         cur.execute(
-            """INSERT INTO bt2_operating_sessions (user_id, operating_day_key, status)
-               VALUES (%s::uuid, %s, 'open')
-               RETURNING id, station_opened_at""",
+            """SELECT id FROM bt2_operating_sessions
+               WHERE user_id = %s::uuid AND operating_day_key = %s""",
             (user_id, odk),
         )
-        row = cur.fetchone()
-        session_id, opened_at = row
+        existing_row = cur.fetchone()
+        if existing_row:
+            session_id = int(existing_row[0])
+            cur.execute(
+                """UPDATE bt2_operating_sessions
+                   SET status = 'open',
+                       station_opened_at = %s,
+                       station_closed_at = NULL,
+                       grace_until_iso = NULL
+                   WHERE id = %s AND user_id = %s::uuid
+                   RETURNING station_opened_at""",
+                (now, session_id, user_id),
+            )
+            upd = cur.fetchone()
+            if not upd:
+                raise HTTPException(
+                    status_code=500,
+                    detail="No se pudo reabrir la sesión operativa del día.",
+                )
+            opened_at = upd[0]
+        else:
+            cur.execute(
+                """INSERT INTO bt2_operating_sessions (user_id, operating_day_key, status)
+                   VALUES (%s::uuid, %s, 'open')
+                   RETURNING id, station_opened_at""",
+                (user_id, odk),
+            )
+            row = cur.fetchone()
+            session_id, opened_at = int(row[0]), row[1]
 
         # Generar snapshot diario de picks (idempotente)
         _generate_daily_picks_snapshot(cur, user_id, odk, tz_name)

@@ -3,7 +3,14 @@
  * US-FE-016 (T-048): tour contextual de primera visita + botón de ayuda.
  * US-FE-025 (Sprint 04): picks desde GET /bt2/vault/picks; fallback mock en dev.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useLocation } from 'react-router-dom'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { PickCard } from '@/components/vault/PickCard'
@@ -26,13 +33,29 @@ import { useTradeStore } from '@/store/useTradeStore'
 
 const VAULT_TOUR = getTourScript('vault')!
 
-function VaultEmptyState({ message }: { message: string | null }) {
+function VaultEmptyState({
+  message,
+  onRefresh,
+}: {
+  message: string | null
+  /** Tras cerrar sesión / ingesta CDM, forzar otro `session/open` + GET vault. */
+  onRefresh?: () => void
+}) {
   return (
     <div className="col-span-full flex flex-col items-center justify-center rounded-xl border border-[#a4b4be]/20 bg-[#f6fafe] py-16 text-center">
       <p className="mb-2 text-lg font-bold text-[#26343d]">Sin señales disponibles</p>
       <p className="max-w-sm text-sm text-[#52616a]">
         {message ?? 'El sistema actualiza la cartelera cada mañana. Vuelve pronto.'}
       </p>
+      {onRefresh ? (
+        <button
+          type="button"
+          onClick={onRefresh}
+          className="mt-6 rounded-lg border border-[#a4b4be]/40 bg-white px-5 py-2 text-sm font-semibold text-[#26343d] transition hover:bg-[#eef4fa]"
+        >
+          Volver a cargar
+        </button>
+      ) : null}
     </div>
   )
 }
@@ -108,6 +131,18 @@ export default function VaultPage() {
   useEffect(() => {
     invalidateVaultIfOperatingDayMismatch(operatingDayKey)
   }, [operatingDayKey, invalidateVaultIfOperatingDayMismatch])
+
+  /**
+   * Si la última carga dejó `empty` en persistencia, el efecto siguiente solo corre con `idle`
+   * y nunca se vuelve a pedir la API (p. ej. tras `session/close` + CDM nuevo sin cambiar de ruta).
+   * Al montar la bóveda, normalizar a `idle` para disparar un GET fresco.
+   */
+  useLayoutEffect(() => {
+    const s = useVaultStore.getState().picksLoadStatus
+    if (s === 'empty') {
+      useVaultStore.setState({ picksLoadStatus: 'idle' })
+    }
+  }, [])
 
   // Cargar picks de API al montar o tras invalidación (picksLoadStatus → idle).
   useEffect(() => {
@@ -377,7 +412,10 @@ export default function VaultPage() {
         ) : picksLoadStatus === 'error' ? (
           <VaultErrorState onRetry={() => void loadApiPicks()} />
         ) : (picksLoadStatus === 'empty' || (picksLoadStatus === 'loaded' && apiPicks.length === 0)) ? (
-          <VaultEmptyState message={picksMessage} />
+          <VaultEmptyState
+            message={picksMessage}
+            onRefresh={() => void loadApiPicks()}
+          />
         ) : (
           displayedPicks.map((pick) => (
             <PickCard

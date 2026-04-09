@@ -350,7 +350,8 @@ El debate **1 llamada / evento** vs **lotes como v1** no se resuelve por criteri
 
 **Decisión:** El detalle de trabajo (elegibilidad dura en datos, volumen, edge en servidor, alineación de prompt, semántica UX/analytics) **no** se cierra en Sprint 06 núcleo; se planifica y ejecuta en **[`../sprint-06.1/OBJETIVO_SENAL_Y_EDGE_DSR.md`](../sprint-06.1/OBJETIVO_SENAL_Y_EDGE_DSR.md)** con **US y umbrales** que el BA elabore con PO. Relacionado: [`../../notas/BACKTESTING_RECONCILIACION_CDM.md`](../../notas/BACKTESTING_RECONCILIACION_CDM.md) (verdad de odds en el tiempo).
 
-**Trazabilidad:** [`../sprint-06.1/PLAN.md`](../sprint-06.1/PLAN.md).
+**Trazabilidad:** [`../sprint-06.1/PLAN.md`](../sprint-06.1/PLAN.md).  
+**Actualización:** recalibración premisa v1/BT2 `ds_input` — **D-06-021** en [`../sprint-06.1/DECISIONES.md`](../sprint-06.1/DECISIONES.md).
 
 ---
 

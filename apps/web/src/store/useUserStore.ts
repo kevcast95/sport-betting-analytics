@@ -73,7 +73,11 @@ export type UserStoreActions = {
   logoutAndClear: () => void
   /** POC (compatibilidad Sprint 01): marca sesión autenticada sin API. */
   initSession: () => void
-  /** Solo cierra la sesión; no borra DP, contrato, nombre ni equity persistidos. */
+  /**
+   * Solo pone `isAuthenticated: false` **sin** borrar JWT — con token en localStorage,
+   * `useAppInit` llamará `refreshMe()` y volverás a quedar autenticado. Para “Cerrar sesión”
+   * en UI usar **`logoutAndClear`**.
+   */
   endSession: () => void
   completeDiagnostic: (payload: {
     profile: OperatorProfileId
