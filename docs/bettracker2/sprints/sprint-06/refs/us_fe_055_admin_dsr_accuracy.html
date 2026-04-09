@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#999da1",
+                    "primary-container": "#e9ddff",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#fe932c",
+                    "error-container": "#ff8b9a",
+                    "on-tertiary": "#fff7f4",
+                    "on-secondary-container": "#435368",
+                    "error-dim": "#4f0116",
+                    "background": "#f6fafe",
+                    "error": "#9e3f4e",
+                    "primary-fixed-dim": "#ddcdff",
+                    "surface-container-highest": "#d5e5ef",
+                    "on-tertiary-fixed-variant": "#572c00",
+                    "secondary-fixed-dim": "#c5d6f0",
+                    "secondary-fixed": "#d3e4fe",
+                    "primary": "#6d3bd7",
+                    "on-primary": "#fcf5ff",
+                    "secondary-container": "#d3e4fe",
+                    "on-tertiary-fixed": "#240f00",
+                    "on-tertiary-container": "#4a2500",
+                    "tertiary-dim": "#804300",
+                    "inverse-surface": "#0a0f12",
+                    "outline-variant": "#a4b4be",
+                    "tertiary-fixed-dim": "#ed871e",
+                    "inverse-primary": "#a078ff",
+                    "surface-container-low": "#eef4fa",
+                    "on-primary-container": "#6029c9",
+                    "secondary": "#506076",
+                    "on-secondary": "#f7f9ff",
+                    "surface-variant": "#d5e5ef",
+                    "primary-dim": "#612aca",
+                    "on-secondary-fixed-variant": "#4d5d73",
+                    "on-secondary-fixed": "#314055",
+                    "on-error": "#fff7f7",
+                    "surface-dim": "#cadde9",
+                    "outline": "#6e7d86",
+                    "on-background": "#26343d",
+                    "on-primary-fixed": "#4d00b7",
+                    "surface-container-high": "#ddeaf3",
+                    "primary-fixed": "#e9ddff",
+                    "on-primary-fixed-variant": "#6a37d4",
+                    "on-error-container": "#782232",
+                    "tertiary-fixed": "#fe932c",
+                    "surface": "#f6fafe",
+                    "secondary-dim": "#44546a",
+                    "on-surface": "#26343d",
+                    "on-surface-variant": "#52616a",
+                    "surface-tint": "#6d3bd7",
+                    "surface-bright": "#f6fafe",
+                    "tertiary": "#914d00",
+                    "surface-container": "#e5eff7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"],
+                    "mono": ["Geist Mono"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono-data { font-family: 'Geist Mono', monospace; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tonal-shift { transition: background-color 0.2s ease; }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (Authority: JSON + Design System) -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-6 px-4 bg-slate-50 dark:bg-slate-900 h-screen w-64 border-r border-slate-200/50 dark:border-slate-800/50 z-50">
+<div class="mb-10 px-2 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-sm">account_balance</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tighter text-slate-900 dark:text-slate-100">BetTracker 2.0</h1>
+<p class="font-['Geist_Mono'] text-[10px] uppercase tracking-wider text-slate-500">Institutional Portal</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Nav Item: Auditoría DSR (Active as per logic) -->
+<a class="flex items-center gap-3 px-3 py-2 text-violet-700 dark:text-violet-400 font-bold border-r-2 border-violet-600 dark:border-violet-400 bg-slate-200/50 dark:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-['Geist_Mono'] text-xs uppercase tracking-wider">Auditoría DSR</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/30 dark:hover:bg-slate-800/30 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span class="font-['Geist_Mono'] text-xs uppercase tracking-wider">Santuario</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/30 dark:hover:bg-slate-800/30 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="lock">lock</span>
+<span class="font-['Geist_Mono'] text-xs uppercase tracking-wider">Bóveda</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/30 dark:hover:bg-slate-800/30 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-['Geist_Mono'] text-xs uppercase tracking-wider">Ledger</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-slate-200/50 dark:border-slate-800/50 pt-6">
+<div class="flex items-center gap-3 px-2 mb-4">
+<img alt="Admin Avatar" class="w-8 h-8 rounded-full object-cover" data-alt="Close up portrait of a middle-aged professional man in a clean white shirt with soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIO5DUwRmTM2s-kpH_r3PDptuEDCwSY1qJjSFWGxr0bcj7YbiTYTsWwYvAGQomcZSMljXmVwIoc0ES17_DTCIIKh2lMrtde55QTYoEC66pUOj4eHv_5SmRyxb9Dqx-MMpBr1fS6lqLRZiuaWhBlUqnO7w-CDnXZHL_YQNSN_tbPnygg7rrd4tPya8wnSHYFRw-hZCVy2rUIg45DMQnDYiCUjDPLkjozSpBblt2ZUYPQOWohtqkI455QgjusFQGehlnqPhkVuVspGc"/>
+<div class="overflow-hidden">
+<p class="text-xs font-semibold text-on-background truncate">Admin</p>
+<p class="text-[10px] text-on-surface-variant mono-data">ID-8842-DSR</p>
+</div>
+</div>
+<button class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-xl font-medium text-sm hover:opacity-90 transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Entry
+            </button>
+</div>
+</aside>
+<!-- TopNavBar (Authority: JSON + Design System) -->
+<header class="sticky top-0 z-40 flex items-center justify-between px-8 ml-64 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md w-full h-16 border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm shadow-slate-200/20 dark:shadow-none">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full pl-10 pr-4 py-1.5 bg-surface-container-high border-none rounded-lg text-sm focus:ring-1 focus:ring-primary/20 transition-all" placeholder="Buscar registros..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-slate-400">
+<span class="material-symbols-outlined hover:text-violet-600 cursor-pointer transition-all" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined hover:text-violet-600 cursor-pointer transition-all" data-icon="settings">settings</span>
+</div>
+<div class="h-6 w-px bg-slate-200 dark:bg-slate-800"></div>
+<div class="flex items-center gap-2">
+<span class="font-['Geist_Mono'] text-xs font-medium text-slate-900">Admin</span>
+<span class="material-symbols-outlined text-primary" data-icon="verified">verified</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-10 min-h-screen">
+<!-- Section Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h2 class="text-3xl font-extrabold tracking-tight text-on-background">Precisión del modelo (DSR)</h2>
+<span class="px-2 py-0.5 border border-outline-variant/30 rounded-lg text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Admin</span>
+</div>
+<p class="text-on-surface-variant">Solo uso interno · Día operativo seleccionado</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<div class="flex items-center gap-2 bg-surface-container-low p-1.5 rounded-xl border border-outline-variant/10">
+<label class="text-[10px] uppercase font-mono tracking-tighter text-on-surface-variant px-2">Día operativo</label>
+<input class="bg-surface-container-lowest border-none rounded-lg text-xs font-mono py-1 px-3 focus:ring-primary focus:ring-1" type="date" value="2023-10-27"/>
+</div>
+<p class="text-[10px] font-mono text-on-surface-variant/70">Pipeline version: bt2-dsr-v4.2</p>
+</div>
+</div>
+<!-- KPI Grid - Asymmetric Layout -->
+<div class="grid grid-cols-12 gap-6 mb-10">
+<!-- Major Metric -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="insights">insights</span>
+</div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-[11px] uppercase tracking-[0.1em] font-mono font-semibold text-on-surface-variant">Tasa de acierto</h3>
+<span class="material-symbols-outlined text-sm text-outline cursor-help" title="Porcentaje de picks con resultado Acierto vs Total finalizado">info</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-5xl font-mono font-bold text-primary">75%</span>
+<span class="text-sm font-mono text-tertiary">+2.4% vs med.</span>
+</div>
+<div class="mt-4 w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-3/4 rounded-full"></div>
+</div>
+</div>
+<!-- Supporting Metrics -->
+<div class="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 flex flex-col justify-between">
+<p class="text-[10px] uppercase tracking-wider font-mono text-on-surface-variant mb-4">Picks publicados (N)</p>
+<div>
+<p class="text-3xl font-mono font-semibold">18</p>
+<p class="text-[10px] text-on-surface-variant/80 mt-1">Meta 15; N puede ser menor</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 flex flex-col justify-between">
+<p class="text-[10px] uppercase tracking-wider font-mono text-on-surface-variant mb-4">Aciertos (hit)</p>
+<div>
+<p class="text-3xl font-mono font-semibold text-primary">12</p>
+<p class="text-[10px] text-on-surface-variant/80 mt-1">Registrados en pipeline</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 flex flex-col justify-between">
+<p class="text-[10px] uppercase tracking-wider font-mono text-on-surface-variant mb-4">Fallos (miss)</p>
+<div>
+<p class="text-3xl font-mono font-semibold text-on-surface-variant">4</p>
+<p class="text-[10px] text-on-surface-variant/80 mt-1">Cierre automático</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 flex flex-col justify-between">
+<p class="text-[10px] uppercase tracking-wider font-mono text-on-surface-variant mb-4">Void / N/A</p>
+<div>
+<p class="text-3xl font-mono font-semibold text-on-surface-variant">2</p>
+<p class="text-[10px] text-on-surface-variant/80 mt-1">Reembolsos detectados</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Audit Table (Zurich Calm Style) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/15 overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between">
+<h3 class="text-sm font-semibold tracking-tight">Registro Detallado de Auditoría</h3>
+<button class="text-[11px] font-mono uppercase tracking-widest text-primary hover:underline">Descargar CSV</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-3 text-[10px] uppercase font-mono tracking-wider text-on-surface-variant">#</th>
+<th class="px-6 py-3 text-[10px] uppercase font-mono tracking-wider text-on-surface-variant">Event</th>
+<th class="px-6 py-3 text-[10px] uppercase font-mono tracking-wider text-on-surface-variant">Market</th>
+<th class="px-6 py-3 text-[10px] uppercase font-mono tracking-wider text-on-surface-variant">Model pick</th>
+<th class="px-6 py-3 text-[10px] uppercase font-mono tracking-wider text-on-surface-variant text-center">Final result</th>
+<th class="px-6 py-3 text-[10px] uppercase font-mono tracking-wider text-on-surface-variant">vs model</th>
+<th class="px-6 py-3 text-[10px] uppercase font-mono tracking-wider text-on-surface-variant">Settled at</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="px-6 py-4 font-mono text-xs text-on-surface-variant">001</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Real Madrid vs Barcelona</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-mono">La Liga</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs">Total Goals Over 2.5</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-mono text-xs font-semibold">Over 2.5</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center font-mono text-sm font-bold">2-1</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-tighter">
+                                    Acierto
+                                </span>
+</td>
+<td class="px-6 py-4 font-mono text-[10px] text-on-surface-variant">2023-10-27 21:55</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="px-6 py-4 font-mono text-xs text-on-surface-variant">002</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Man. City vs Liverpool</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-mono">Premier League</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs">BTTS (Ambos Marcan)</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-mono text-xs font-semibold">SÍ</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center font-mono text-sm font-bold">1-1</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-tighter">
+                                    Acierto
+                                </span>
+</td>
+<td class="px-6 py-4 font-mono text-[10px] text-on-surface-variant">2023-10-27 15:30</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="px-6 py-4 font-mono text-xs text-on-surface-variant">003</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Milan vs Juventus</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-mono">Serie A</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs">Local Win (1)</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-mono text-xs font-semibold">1</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center font-mono text-sm font-bold">0-1</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">
+                                    Fallo
+                                </span>
+</td>
+<td class="px-6 py-4 font-mono text-[10px] text-on-surface-variant">2023-10-27 18:45</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="px-6 py-4 font-mono text-xs text-on-surface-variant">004</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Bayern vs Dortmund</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-mono">Bundesliga</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs">Asian HandicapBayern -1</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-mono text-xs font-semibold">-1.0</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center font-mono text-sm font-bold">2-1</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">
+                                    Void
+                                </span>
+</td>
+<td class="px-6 py-4 font-mono text-[10px] text-on-surface-variant">2023-10-27 20:30</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-3 bg-surface-container-low/20 border-t border-outline-variant/5">
+<div class="flex items-center justify-between">
+<p class="text-[10px] font-mono text-on-surface-variant italic">Mostrando 4 de 18 registros activos.</p>
+<div class="flex gap-2">
+<button class="p-1 rounded hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footnote -->
+<footer class="mt-12 py-8 border-t border-outline-variant/10">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-primary-container/30 rounded-lg">
+<span class="material-symbols-outlined text-primary text-base">shield_with_heart</span>
+</div>
+<p class="text-xs text-on-surface-variant max-w-lg leading-relaxed">
+                    Los datos provienen del pipeline DSR. Sin datos personales enviados al modelo. 
+                    El sistema cumple con la directiva de seguridad bancaria <span class="font-mono">BT2-SEC-10</span>. 
+                    Cualquier discrepancia debe ser reportada al equipo de ingeniería.
+                </p>
+</div>
+</footer>
+</main>
+<!-- Contextual FAB (Logic: Suppressed on Details/Transaction) - Not rendered here as it's a dashboard view -->
+</body></html>

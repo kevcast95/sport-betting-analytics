@@ -1,6 +1,8 @@
 """
-API de lectura (y escritura mínima) sobre SQLite del scrapper.
-Ejecutar desde la raíz del repo: PYTHONPATH=. uvicorn apps.api.main:app --reload
+API de lectura (y escritura mínima) sobre SQLite del scrapper + rutas BetTracker `/bt2` (Postgres).
+
+Ejecutar desde la raíz del repo: `PYTHONPATH="${PWD}" python3 -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000 --reload`
+(o `npm run dev:api`). Requiere `.env` para BT2 — ver `docs/bettracker2/LOCAL_API.md` y `.env.example`.
 """
 
 import sqlite3

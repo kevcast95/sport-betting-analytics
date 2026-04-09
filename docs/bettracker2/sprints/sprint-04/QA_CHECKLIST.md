@@ -37,12 +37,12 @@
 - [ ] Pick inexistente → `404`.
 
 ### POST /bt2/picks/{id}/settle
-- [x] Pick open + resultado → `200` con `status='won'`, `pnl_units=stake*(odds-1)`, `earned_dp=2`.
+- [x] Pick open + resultado → `200` con `status='won'`, `pnl_units=stake*(odds-1)`, `earned_dp=10` (D-04-011).
 - [x] Pick ya liquidado → `409`.
 - [x] `bankroll_amount` del usuario actualizado en BD.
 - [x] Entrada en `bt2_bankroll_snapshots` con `event_type='pick_win'`.
-- [x] Entrada en `bt2_dp_ledger` con `delta_dp=2`, `reason='pick_settle'`.
-- [ ] Pick lost: `pnl_units=-stake`, `earned_dp=1`, `event_type='pick_loss'`.
+- [x] Entrada en `bt2_dp_ledger` con `delta_dp=10`, `reason='pick_settle'` (won).
+- [ ] Pick lost: `pnl_units=-stake`, `earned_dp=5`, `event_type='pick_loss'`.
 - [ ] Pick void: `pnl_units=0`, `earned_dp=0`, `event_type='pick_void'`.
 
 ```sql
@@ -143,4 +143,56 @@ curl /bt2/user/dp-balance
 
 # 6. Cerrar sesión
 curl -X POST /bt2/session/close
+```
+
+---
+
+## US-BE-013 — Ingesta diaria de eventos futuros
+
+- [x] `python scripts/bt2_cdm/fetch_upcoming.py` ejecuta sin error.
+- [x] `SELECT COUNT(*) FROM bt2_events WHERE kickoff_utc > now()` retorna > 0 tras ejecución.
+- [x] Idempotencia: segunda ejecución → conteo NO crece (82 → 82 verificado).
+- [x] Reporte generado en `docs/bettracker2/recon_results/upcoming_{fecha}.md`.
+- [x] Solo ligas con `is_active=true` procesadas (27 ligas).
+- [x] V1 health: `{"ok": true}`.
+
+```bash
+# Verificar eventos futuros
+python3 -c "
+import psycopg2, os; from dotenv import load_dotenv; load_dotenv('.env')
+c = psycopg2.connect(os.getenv('BT2_DATABASE_URL','').replace('postgresql+asyncpg://','postgresql://')).cursor()
+c.execute(\"SELECT COUNT(*) FROM bt2_events WHERE kickoff_utc > now()\")
+print('Eventos futuros:', c.fetchone()[0])
+"
+```
+
+---
+
+## US-BE-014 — Pick snapshot diario
+
+- [x] Migración `bt2_daily_picks` aplicada (T-105).
+- [x] `alembic current` muestra `33ad702e05ab (head)`.
+- [x] `POST /bt2/session/open` genera snapshot en `bt2_daily_picks` si hay eventos hoy.
+- [x] Snapshot tiene hasta 5 filas: 3 `access_tier='standard'`, 2 `access_tier='premium'`.
+- [x] Segunda apertura de sesión el mismo día → 409 y picks NO cambian.
+- [x] `GET /bt2/vault/picks` retorna picks con `isAvailable`, `accessTier`, `externalSearchUrl`.
+- [x] Sin snapshot (sesión no abierta) → lista vacía + mensaje informativo, sin 5xx.
+- [x] Picks `premium` aparecen siempre en la lista (backend no los oculta).
+- [x] `externalSearchUrl` formato: `https://www.google.com/search?q={home}+vs+{away}+{YYYY-MM-DD}`.
+- [x] V1 health final: `{"ok": true}`.
+
+```bash
+# Abrir sesión y verificar snapshot
+TOKEN=$(curl -s -X POST http://127.0.0.1:8000/bt2/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@bt2.com","password":"test1234"}' | python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token',''))")
+
+# Abrir sesión
+curl -s -X POST http://127.0.0.1:8000/bt2/session/open -H "Authorization: Bearer $TOKEN"
+
+# Ver picks del día
+curl -s http://127.0.0.1:8000/bt2/vault/picks -H "Authorization: Bearer $TOKEN"
+
+# 2do intento (debe ser 409)
+curl -s -X POST http://127.0.0.1:8000/bt2/session/open -H "Authorization: Bearer $TOKEN"
 ```

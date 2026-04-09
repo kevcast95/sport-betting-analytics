@@ -10,6 +10,7 @@ import {
   IconVerified,
   IconWarning,
 } from '@/components/bt2StitchIcons'
+import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { EquityChart } from '@/components/analytics/EquityChart'
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
@@ -72,10 +73,11 @@ export default function PerformancePage() {
     return Date.now() - t < 24 * 60 * 60 * 1000
   }, [lastClose])
 
+  const dp = disciplinePoints ?? 0
   const protection =
-    disciplinePoints >= 2000
+    dp >= 2000
       ? 'MÁXIMO'
-      : disciplinePoints >= 1200
+      : dp >= 1200
         ? 'ALTO'
         : 'ESTÁNDAR'
 
@@ -110,25 +112,14 @@ export default function PerformancePage() {
       className="mx-auto w-full max-w-7xl space-y-12"
       aria-label="Rendimiento y estrategia"
     >
-      <header className="mb-2">
-        <div className="flex items-center gap-3">
-          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[#26343d]">
-            Estrategia y rendimiento
-          </h1>
-          <button
-            type="button"
-            onClick={() => { resetTour('performance'); setTourOpen(true) }}
-            className="mb-2 inline-flex items-center gap-1 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
-            title="Ver cómo funciona esta vista"
-          >
-            <span aria-hidden className="text-[11px]">?</span>
-            Cómo funciona
-          </button>
-        </div>
-        <p className="text-sm font-medium uppercase tracking-wide text-[#52616a] opacity-70">
-          Resumen ejecutivo del protocolo Alpha
-        </p>
-      </header>
+      <BunkerViewHeader
+        title="Estrategia y rendimiento"
+        subtitle="Indicadores calculados desde tu ledger registrado."
+        onHelpClick={() => {
+          resetTour('performance')
+          setTourOpen(true)
+        }}
+      />
 
       <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-4">
         <div className="rounded-xl border border-[#a4b4be]/15 bg-white p-6 transition-shadow hover:shadow-md">
@@ -145,7 +136,8 @@ export default function PerformancePage() {
             <IconTrendingUp className="h-4 w-4 shrink-0 text-[#059669]" />
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-[#6e7d86]">
-            Retorno sobre el capital total en riesgo. Refleja eficiencia del protocolo, no suerte aislada.
+            Retorno sobre el capital total en riesgo en el ledger. Interpretar
+            con muestra suficiente; no sustituye análisis estadístico externo.
           </p>
         </div>
         <div className="rounded-xl border border-[#a4b4be]/15 bg-white p-6 transition-shadow hover:shadow-md">
@@ -161,7 +153,9 @@ export default function PerformancePage() {
             </span>
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-[#6e7d86]">
-            Porcentaje de liquidaciones positivas. En protocolos sanos tiende a superar el 50 %.
+            Porcentaje de liquidaciones con resultado positivo en el historial
+            cargado. Comparar con el break-even implícito en tus cuotas cuando
+            la muestra sea representativa.
           </p>
         </div>
         <div className="rounded-xl border border-[#a4b4be]/15 bg-white p-6 transition-shadow hover:shadow-md">
@@ -282,7 +276,7 @@ export default function PerformancePage() {
         <div className="space-y-8">
           <section className="rounded-xl border border-[#a4b4be]/15 bg-white p-8 shadow-sm">
             <h2 className="mb-8 text-sm font-bold uppercase tracking-widest text-[#6d3bd7]">
-              Protocolo Alpha
+              Chequeo operativo
             </h2>
             <ul className="space-y-6">
               <li className="flex items-center justify-between gap-3">
@@ -372,17 +366,11 @@ export default function PerformancePage() {
                   </span>
                 ) : null}
               </li>
-              <li className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-6 w-6 items-center justify-center rounded bg-[#e9ddff] text-[#6d3bd7]">
-                    <IconSmallCheck className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-semibold text-[#26343d]">
-                    Recalibración de tamaño de unidad
-                  </span>
-                </div>
-              </li>
             </ul>
+            <p className="mt-6 border-t border-[#a4b4be]/15 pt-4 text-[11px] leading-relaxed text-[#6e7d86]">
+              El tamaño de unidad y el capital de trabajo se ajustan en el
+              protocolo de capital (modal de tesorería), no en esta tarjeta.
+            </p>
           </section>
 
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#6d3bd7] to-[#612aca] p-8 text-white shadow-xl">
@@ -390,7 +378,7 @@ export default function PerformancePage() {
               <Bt2ShieldCheckIcon className="h-40 w-40 text-white" />
             </div>
             <h3 className="mb-6 text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-              Nivel de protección
+              Nivel por DP (ilustrativo)
             </h3>
             <div className="mb-4 flex items-center gap-4">
               <IconVerified className="h-10 w-10 shrink-0" />
@@ -402,29 +390,13 @@ export default function PerformancePage() {
               </span>
             </div>
             <p className="text-xs leading-relaxed opacity-70">
-              Tu puntuación actual de{' '}
+              Banda derivada en el cliente a partir de tu saldo de{' '}
               <span className="font-mono font-semibold">
-                {disciplinePoints.toLocaleString('es-CO')} DP
-              </span>{' '}
-              define el acceso a informes de precisión y módulos de entrada con
-              control de liquidez.
+                {dp.toLocaleString('es-CO')} DP
+              </span>
+              . No sustituye análisis de riesgo real ni desbloqueos de producto
+              hasta que el servidor los defina.
             </p>
-          </div>
-
-          <div className="relative h-48 overflow-hidden rounded-xl border border-[#a4b4be]/15">
-            <div
-              className="absolute inset-0 bg-gradient-to-br from-[#0a0f12] via-[#26343d] to-[#6d3bd7]/40"
-              aria-hidden
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f12]/85 to-transparent" />
-            <div className="absolute bottom-0 left-0 flex flex-col justify-end p-6">
-              <span className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#e9ddff]">
-                Sentimiento global
-              </span>
-              <span className="text-sm font-bold tracking-tight text-white">
-                Risk-off moderado · estable
-              </span>
-            </div>
           </div>
         </div>
       </div>

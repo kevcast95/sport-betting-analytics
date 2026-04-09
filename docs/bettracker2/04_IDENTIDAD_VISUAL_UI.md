@@ -137,6 +137,20 @@
 
 ---
 
+### 8. Cabecera V2 del Búnker (D-05.1-003 / US-FE-043)
+
+- **Prohibido** usar el texto fijo **«Actualizado ahora»** (u homólogos) como adorno sin timestamp real vinculado a un evento de sincronización explícito.
+- **Patrón de zona superior:** título principal (`<h1>`) → subtítulo opcional solo si aporta → fila de acciones: bloque **Ayuda** alineado al **inicio** del ancho de contenido; acciones secundarias de la vista al **extremo opuesto** cuando existan (prop `rightActions` del shell).
+- **«Cómo funciona»:** control único en todas las vistas V2 que abren tour o modal de ayuda: **icono en círculo** (o `HelpCircle` equivalente) **a la izquierda** del texto «Cómo funciona»; área táctil mínima razonable en móvil.
+- **Implementación:** componente **`BunkerViewHeader`** en `apps/web/src/components/layout/BunkerViewHeader.tsx` (props: `title`, `subtitle?`, `onHelpClick?`, `helpButtonLabel?`, `rightActions?`). Vistas V2 que lo usan: Bóveda, Santuario, Libro mayor, Rendimiento, Perfil, Cierre del día, Liquidación (y nuevas rutas `/v2/*` deben reutilizarlo en lugar de duplicar `<header>` + botón de ayuda). Ver `sprints/sprint-05.1/US.md` **US-FE-043**.
+
+#### 8.1 Bóveda — `PickCard` (D-05.1-004 / D-05.1-005 / US-FE-044)
+
+- Pick **no tomable** por hora de inicio: **atenuación** clara de la tarjeta, **etiqueta corta**; evitar párrafos explicativos en el cuerpo de la card (detalle opcional vía tooltip/`title` en escritorio).
+- Pick **premium no desbloqueado:** sin bloque de “lectura del modelo” ni **edge** como gancho pre-pago; **cuota sugerida** en tipografía mono; mantener disciplina visual **Zurich Calm** (sin urgencia artificial).
+
+---
+
 ### 7. Todo el copy debe estar en español
 
 - Cualquier texto visible en UI (labels, botones, placeholders, títulos, tooltips, mensajes de error, estados vacíos) debe estar en **español**.

@@ -9,6 +9,7 @@ import {
   IconExpandMore,
   IconSearch,
 } from '@/components/bt2StitchIcons'
+import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { LedgerTable } from '@/components/ledger/LedgerTable'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
 import { protocolWinRate } from '@/lib/ledgerAnalytics'
@@ -100,7 +101,7 @@ export default function LedgerPage() {
   )
 
   const totalDpFiltered = useMemo(
-    () => filtered.reduce((s, r) => s + (r.earnedDp ?? 25), 0),
+    () => filtered.reduce((s, r) => s + (r.earnedDp ?? 0), 0),
     [filtered],
   )
 
@@ -121,8 +122,8 @@ export default function LedgerPage() {
     disciplinePoints,
   )
 
-  const protocolIdleCopy =
-    'Selecciona un protocolo en el filtro superior para ver la tasa de acierto sobre las liquidaciones filtradas. La disciplina sigue siendo el principal motor de preservación de capital.'
+  const segmentIdleCopy =
+    'Selecciona una clase de mercado arriba para ver la tasa de acierto sobre las liquidaciones filtradas. Los DP miden consistencia de proceso, no el acierto puntual.'
 
   const startShown = filtered.length === 0 ? 0 : page * PAGE + 1
   const endShown =
@@ -160,64 +161,57 @@ export default function LedgerPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-10" aria-label="Libro mayor estratégico">
-      <section className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[#26343d]">
-              Libro mayor estratégico
-            </h1>
-            <button
-              type="button"
-              onClick={() => { resetTour('ledger'); setTourOpen(true) }}
-              className="mb-2 inline-flex items-center gap-1 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
-              title="Ver cómo funciona esta vista"
-            >
-              <span aria-hidden className="text-[11px]">?</span>
-              Cómo funciona
-            </button>
+      <BunkerViewHeader
+        title="Libro mayor estratégico"
+        subtitle="Registro cronológico de ejecución disciplinada."
+        onHelpClick={() => {
+          resetTour('ledger')
+          setTourOpen(true)
+        }}
+        rightActions={
+          <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1 sm:min-w-[12rem]">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6e7d86]">
+                <IconSearch className="h-4 w-4" />
+              </span>
+              <input
+                type="search"
+                value={idQuery}
+                onChange={(e) => {
+                  setIdQuery(e.target.value)
+                  setPage(0)
+                }}
+                placeholder="Buscar por ID…"
+                className="w-full rounded-xl border-none bg-[#ddeaf3] py-2.5 pl-10 pr-4 text-sm font-medium text-[#26343d] transition-all placeholder:text-[#52616a]/70 focus:bg-white focus:ring-1 focus:ring-[#6d3bd7]"
+                style={monoStyle}
+              />
+            </div>
+            <div className="relative sm:w-48">
+              <label htmlFor="ledger-market-class" className="sr-only">
+                Clase de mercado
+              </label>
+              <select
+                id="ledger-market-class"
+                value={protocol}
+                onChange={(e) => {
+                  setProtocol(e.target.value)
+                  setPage(0)
+                }}
+                className="h-full w-full appearance-none rounded-xl border-none bg-[#ddeaf3] py-2.5 pl-4 pr-10 text-sm font-medium text-[#26343d] transition-all focus:bg-white focus:ring-1 focus:ring-[#6d3bd7]"
+              >
+                {protocols.map((p) => (
+                  <option key={p} value={p}>
+                    {p === 'TODOS' ? 'Todas las clases' : p}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6e7d86]">
+                <IconExpandMore />
+              </span>
+            </div>
           </div>
-          <p className="font-medium text-[#52616a]">
-            Registro cronológico de ejecución disciplinada.
-          </p>
-        </div>
-        <div className="flex w-full flex-col gap-4 sm:flex-row md:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6e7d86]">
-              <IconSearch className="h-4 w-4" />
-            </span>
-            <input
-              type="search"
-              value={idQuery}
-              onChange={(e) => {
-                setIdQuery(e.target.value)
-                setPage(0)
-              }}
-              placeholder="Buscar por ID…"
-              className="w-full rounded-xl border-none bg-[#ddeaf3] py-2.5 pl-10 pr-4 text-sm font-medium text-[#26343d] transition-all placeholder:text-[#52616a]/70 focus:bg-white focus:ring-1 focus:ring-[#6d3bd7]"
-              style={monoStyle}
-            />
-          </div>
-          <div className="relative sm:w-48">
-            <select
-              value={protocol}
-              onChange={(e) => {
-                setProtocol(e.target.value)
-                setPage(0)
-              }}
-              className="h-full w-full appearance-none rounded-xl border-none bg-[#ddeaf3] py-2.5 pl-4 pr-10 text-sm font-medium text-[#26343d] transition-all focus:bg-white focus:ring-1 focus:ring-[#6d3bd7]"
-            >
-              {protocols.map((p) => (
-                <option key={p} value={p}>
-                  {p === 'TODOS' ? 'Filtrar por protocolo' : p}
-                </option>
-              ))}
-            </select>
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6e7d86]">
-              <IconExpandMore />
-            </span>
-          </div>
-        </div>
-      </section>
+        }
+      />
 
       <LedgerTable
         rows={pageRows}
@@ -234,33 +228,34 @@ export default function LedgerPage() {
           />
           <div className="min-w-0 flex-1">
             <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#52616a]">
-              Eficiencia del protocolo
+              Tasa de acierto en el segmento
             </h4>
             <p className="text-sm leading-relaxed text-[#26343d]">
               {protocol !== 'TODOS' ? (
                 <>
-                  El protocolo{' '}
+                  En la clase{' '}
                   <span
                     className="font-mono font-bold text-[#6d3bd7]"
                     style={monoStyle}
                   >
                     {protocol}
-                  </span>{' '}
-                  mantiene un{' '}
+                  </span>
+                  ,{' '}
                   <span
                     className="font-mono font-bold text-[#6d3bd7]"
                     style={monoStyle}
                   >
                     {eff.toFixed(1)}%
                   </span>{' '}
-                  de aciertos sobre el ledger filtrado. DP acumulado en vista:{' '}
+                  de las liquidaciones filtradas fueron positivas. DP acumulado
+                  en esta vista:{' '}
                   <span className="font-mono font-semibold" style={monoStyle}>
                     {totalDpFiltered}
                   </span>
                   .
                 </>
               ) : (
-                protocolIdleCopy
+                segmentIdleCopy
               )}
             </p>
           </div>
@@ -289,7 +284,7 @@ export default function LedgerPage() {
           <p className="mt-3 text-xs text-[#52616a]">
             Basado en{' '}
             <span className="font-mono font-semibold" style={monoStyle}>
-              {disciplinePoints.toLocaleString('es-CO')}
+              {(disciplinePoints ?? 0).toLocaleString('es-CO')}
             </span>{' '}
             DP en perfil.
           </p>

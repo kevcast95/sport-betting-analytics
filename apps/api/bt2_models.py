@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     String,
+    Text,
     UniqueConstraint,
     func,
 )
@@ -211,8 +212,8 @@ class Bt2Pick(Base):
     )
     market: Mapped[str] = mapped_column(String(50), nullable=False)
     selection: Mapped[str] = mapped_column(String(50), nullable=False)
-    odds_taken: Mapped[Any] = mapped_column(Numeric(6, 4), nullable=False)
-    stake_units: Mapped[Any] = mapped_column(Numeric(6, 2), nullable=False)
+    odds_taken: Mapped[Any] = mapped_column(Numeric(10, 4), nullable=False)
+    stake_units: Mapped[Any] = mapped_column(Numeric(14, 2), nullable=False)
     status: Mapped[str] = mapped_column(String(20), server_default="open", nullable=False)
     opened_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -220,7 +221,14 @@ class Bt2Pick(Base):
     settled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     result_home: Mapped[Optional[int]] = mapped_column(Integer)
     result_away: Mapped[Optional[int]] = mapped_column(Integer)
-    pnl_units: Mapped[Optional[Any]] = mapped_column(Numeric(8, 2))
+    pnl_units: Mapped[Optional[Any]] = mapped_column(Numeric(14, 2))
+    settlement_source: Mapped[str] = mapped_column(
+        String(32), nullable=False, server_default="user"
+    )
+    market_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    model_market_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    model_selection_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    model_prediction_result: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
 
     __table_args__ = (
         Index("ix_bt2_picks_user_status", "user_id", "status"),
@@ -321,4 +329,82 @@ class Bt2UserSettings(Base):
     )
     display_currency: Mapped[str] = mapped_column(
         String(10), server_default="COP", nullable=False
+    )
+
+
+class Bt2UserDiagnostic(Base):
+    __tablename__ = "bt2_user_diagnostics"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("bt2_users.id", ondelete="CASCADE"), nullable=False
+    )
+    operator_profile: Mapped[str] = mapped_column(String(50), nullable=False)
+    system_integrity: Mapped[Any] = mapped_column(Numeric(4, 3), nullable=False)
+    answers_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        Index("ix_user_diagnostics_user_created", "user_id", "created_at"),
+    )
+
+
+class Bt2DailyPick(Base):
+    __tablename__ = "bt2_daily_picks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("bt2_users.id"), nullable=False
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_events.id"), nullable=False
+    )
+    operating_day_key: Mapped[str] = mapped_column(String(10), nullable=False)
+    access_tier: Mapped[str] = mapped_column(
+        String(10), nullable=False
+    )
+    is_available: Mapped[bool] = mapped_column(
+        Boolean, server_default="true", nullable=False
+    )
+    suggested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    pipeline_version: Mapped[str] = mapped_column(String(40), nullable=False)
+    dsr_input_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    dsr_narrative_es: Mapped[Optional[str]] = mapped_column(Text(), nullable=True)
+    dsr_confidence_label: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    model_market_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    model_selection_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    dsr_source: Mapped[str] = mapped_column(String(24), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "event_id", "operating_day_key", name="uq_daily_picks_user_event_day"),
+        Index("ix_daily_picks_user_day", "user_id", "operating_day_key"),
+    )
+
+
+class Bt2VaultPremiumUnlock(Base):
+    """US-BE-029: desbloqueo premium sin crear bt2_picks (D-05.1-002)."""
+
+    __tablename__ = "bt2_vault_premium_unlocks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("bt2_users.id", ondelete="CASCADE"), nullable=False
+    )
+    daily_pick_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_daily_picks.id", ondelete="CASCADE"), nullable=False
+    )
+    operating_day_key: Mapped[str] = mapped_column(String(10), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "daily_pick_id", name="uq_vault_premium_unlock_user_dp"
+        ),
+        Index("ix_bt2_vault_premium_unlocks_user_day", "user_id", "operating_day_key"),
     )

@@ -2,13 +2,14 @@ import { motion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { EconomyTourModal } from '@/components/EconomyTourModal'
+import { GlossaryModal } from '@/components/GlossaryModal'
 import { OnboardingCompleteModal } from '@/components/OnboardingCompleteModal'
 import { TreasuryModal } from '@/components/TreasuryModal'
+import { IconRestart } from '@/components/bt2StitchIcons'
 import {
   Bt2ChartBarsIcon,
   Bt2HistoryIcon,
   Bt2HomeIcon,
-  Bt2PlusIcon,
   Bt2SettingsIcon,
   Bt2ShieldCheckIcon,
   Bt2UserIcon,
@@ -55,14 +56,12 @@ export default function BunkerLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const isSettings = location.pathname.startsWith('/v2/settings')
-  const isSanctuaryRoute =
-    location.pathname === '/v2' ||
-    location.pathname.startsWith('/v2/sanctuary')
   const navLogPath = useRef('')
 
-  const { operatorName, disciplinePoints, incrementDisciplinePoints } =
-    useUserStore()
-  const endSession = useUserStore((s) => s.endSession)
+  const operatorName = useUserStore((s) => s.operatorName)
+  const disciplinePoints = useUserStore((s) => s.disciplinePoints)
+  const syncDpBalance = useUserStore((s) => s.syncDpBalance)
+  const logoutAndClear = useUserStore((s) => s.logoutAndClear)
   const onboardingPhaseAComplete = useUserStore((s) => s.onboardingPhaseAComplete)
   const hasSeenEconomyTour = useUserStore((s) => s.hasSeenEconomyTour)
   const completeOnboardingPhaseA = useUserStore((s) => s.completeOnboardingPhaseA)
@@ -71,9 +70,12 @@ export default function BunkerLayout() {
   const checkDayBoundary = useSessionStore((s) => s.checkDayBoundary)
 
   const [dpPulseKey, setDpPulseKey] = useState(0)
+  const [dpSyncing, setDpSyncing] = useState(false)
+  const [dpSyncError, setDpSyncError] = useState<string | null>(null)
   const [treasuryOpen, setTreasuryOpen] = useState(false)
   const [onboardingPhaseAOpen, setOnboardingPhaseAOpen] = useState(false)
   const [economyTourOpen, setEconomyTourOpen] = useState(false)
+  const [glossaryOpen, setGlossaryOpen] = useState(false)
 
   const treasuryBlocking = confirmedBankrollCop <= 0
 
@@ -124,8 +126,14 @@ export default function BunkerLayout() {
     }
   }
 
-  const handleOnboardingPhaseAComplete = () => {
-    completeOnboardingPhaseA()
+  const handleOnboardingPhaseAComplete = async () => {
+    const { ok } = await completeOnboardingPhaseA()
+    if (!ok) {
+      window.alert(
+        'No se pudo acreditar el bono en el servidor. Revisa la conexión e inténtalo de nuevo.',
+      )
+      return
+    }
     setOnboardingPhaseAOpen(false)
     if (!hasSeenEconomyTour) {
       setEconomyTourOpen(true)
@@ -138,19 +146,25 @@ export default function BunkerLayout() {
   }
 
   const rankLabel = useMemo(
-    () => bunkerRankLabel(disciplinePoints),
+    () => bunkerRankLabel(disciplinePoints ?? 0),
     [disciplinePoints],
   )
 
-  const incPositiveAction = () => {
-    incrementDisciplinePoints(25)
-    setDpPulseKey((k) => k + 1)
+  const refreshDpFromServer = () => {
+    setDpSyncError(null)
+    setDpSyncing(true)
+    void syncDpBalance().then((ok) => {
+      setDpSyncing(false)
+      if (ok) setDpPulseKey((k) => k + 1)
+      else setDpSyncError('No se pudo sincronizar el saldo DP. Reintenta.')
+    })
   }
 
   const openTreasury = () => setTreasuryOpen(true)
 
   const handleLogout = () => {
-    endSession()
+    // Debe borrar JWT: useAppInit restaura sesión si hay token y isAuthenticated=false (US-FE-026).
+    logoutAndClear()
     navigate('/v2/session', { replace: true })
   }
 
@@ -205,7 +219,7 @@ export default function BunkerLayout() {
               transition={{ duration: 0.15 }}
               className="font-mono text-xs font-bold tabular-nums text-[#26343d] sm:text-sm"
             >
-              {disciplinePoints.toLocaleString('es-CO')} DP
+              {(disciplinePoints ?? 0).toLocaleString('es-CO')} DP
             </motion.span>
           </div>
           <button
@@ -335,6 +349,19 @@ export default function BunkerLayout() {
           Métricas
         </NavLink>
         <NavLink
+          to="/v2/admin/dsr-accuracy"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Precisión DSR
+        </NavLink>
+        <NavLink
           to="/v2/profile"
           className={({ isActive }) =>
             [
@@ -416,6 +443,15 @@ export default function BunkerLayout() {
               Estrategia
             </NavLink>
             <NavLink
+              to="/v2/admin/dsr-accuracy"
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2ShieldCheckIcon className="h-5 w-5" />
+              </span>
+              Precisión DSR
+            </NavLink>
+            <NavLink
               to="/v2/profile"
               className={({ isActive }) => navItemClass(isActive)}
             >
@@ -435,17 +471,34 @@ export default function BunkerLayout() {
             </NavLink>
           </nav>
 
-          <div className="mt-auto">
+          <div className="mt-auto space-y-2">
             <button
               type="button"
-              onClick={incPositiveAction}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-3 text-xs font-bold tracking-tight text-white uppercase shadow-lg shadow-[#8B5CF6]/20"
+              onClick={() => setGlossaryOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#a4b4be]/30 bg-white/70 py-2.5 text-xs font-bold tracking-tight text-[#52616a] uppercase hover:bg-white transition-colors"
             >
-              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-white">
-                <Bt2PlusIcon className="h-5 w-5" />
-              </span>
-              Nueva Disciplina
+              Glosario
             </button>
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={refreshDpFromServer}
+                disabled={dpSyncing}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-3 text-xs font-bold tracking-tight text-white uppercase shadow-lg shadow-[#8B5CF6]/20 disabled:cursor-wait disabled:opacity-70"
+              >
+                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-white">
+                  <IconRestart
+                    className={`h-5 w-5 ${dpSyncing ? 'animate-spin' : ''}`}
+                  />
+                </span>
+                {dpSyncing ? 'Sincronizando…' : 'Sincronizar DP'}
+              </button>
+              {dpSyncError ? (
+                <p className="text-center text-[10px] font-semibold text-[#9b1c1c]">
+                  {dpSyncError}
+                </p>
+              ) : null}
+            </div>
           </div>
         </aside>
 
@@ -465,21 +518,7 @@ export default function BunkerLayout() {
                   Abrir protocolo de capital
                 </button>
               </header>
-            ) : isSanctuaryRoute ? null : (
-              <header className="mb-10 flex items-end justify-between gap-4">
-                <div>
-                  <h1 className="text-3xl font-bold tracking-tighter text-[#26343d]">
-                    {pageTitle}
-                  </h1>
-                  <p className="mt-1 text-sm text-[#52616a]">{pageSubtitle}</p>
-                </div>
-                <div>
-                  <span className="inline-flex rounded-full border border-[#a4b4be]/30 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86]">
-                    Actualizado ahora
-                  </span>
-                </div>
-              </header>
-            )}
+            ) : null}
 
             <Outlet />
           </div>
@@ -505,6 +544,12 @@ export default function BunkerLayout() {
       <EconomyTourModal
         open={economyTourOpen}
         onComplete={handleEconomyTourComplete}
+      />
+
+      {/* US-FE-029: glosario de términos del protocolo */}
+      <GlossaryModal
+        open={glossaryOpen}
+        onClose={() => setGlossaryOpen(false)}
       />
     </div>
   )

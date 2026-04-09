@@ -1,0 +1,95 @@
+# Vista admin — precisión DSR (referencia Stitch)
+
+**US / tema:** panel interno **solo admin** (Sprint 06, **D-06-015**) para medir cuántos picks generados por **DeepSeek Reasoner (DSR)** **acertaron** al liquidar el evento, frente a **N** picks publicados ese día (meta 15, denominador = N real).
+
+**Refs de diseño existentes (copiar tokens/layout):**  
+`docs/bettracker2/sprints/sprint-01/refs/us_fe_001_bunker_layout.md`, `us_fe_009_strategy_performance.md`, `us_fe_008_strategic_ledger.md` (misma tipografía, colores Tailwind extendidos, sidebar bunker si aplica).
+
+---
+
+## Estructura de pantalla (wireframe lógico)
+
+1. **Shell**  
+   Mismo **layout bunker** que el resto de V2: sidebar izquierda + área principal. En el main, ancho máximo cómodo para tabla (`max-w-6xl` o similar).
+
+2. **Cabecera de página**  
+   - Título: **«Precisión del modelo (DSR)»** o **«Auditoría snapshot DSR»**  
+   - Subtítulo en `on-surface-variant`: *Solo uso interno · Día operativo seleccionado*  
+   - Badge discreto **«Admin»** (outline, no chillón)
+
+3. **Selector de contexto**  
+   - **Día operativo** (`operatingDayKey`): input tipo date o select (un día a la vez en MVP).  
+   - Opcional secundario: **versión de pipeline** (`pipeline_version`) como texto de solo lectura debajo del selector cuando haya datos.
+
+4. **Banda de KPI (4 tarjetas en grid responsive)**  
+   Datos en **Geist Mono** para números; etiquetas en Inter.  
+   | Tarjeta | Contenido | Nota |
+   |---------|-----------|------|
+   | **Picks del día (N)** | Entero | Meta 15; si N&lt;15, mostrar N sin forzar 15. |
+   | **Aciertos** | Entero | `hit` — mercado resuelto según predicción DSR. |
+   | **Fallos** | Entero | `miss` |
+   | **Void / N/A** | Entero | `void` + `n_a` agrupados o dos sublíneas pequeñas |
+   - **Tasa de acierto** (quinta tarjeta o barra bajo el grid): **hits / (hits + misses)** en %, con microcopy: *Excluye void/N/A del denominador* (o la regla que fije BE — documentar en tooltip «i»).
+
+5. **Tabla principal (auditoría)**  
+   Columnas sugeridas:  
+   - `#`  
+   - **Evento** (nombre corto + liga opcional)  
+   - **Mercado** (ej. 1X2, Over/Under 2.5)  
+   - **Selección modelo** (ej. Home, Over 2.5)  
+   - **Resultado** (resumen legible post-partido: ej. «2-1», «3 goles»)  
+   - **vs modelo** — badge: **Acierto** (verde suave / surface) · **Fallo** (error-container tenue) · **Void** · **N/A**  
+   - **Liquidado** — fecha/hora en mono, TZ usuario  
+   - Icono **enlace** a detalle pick (opcional MVP)
+
+   Estados: **loading** skeleton; **vacío** — mensaje claro: *No hay snapshot DSR para este día* (tono similar a empty state bóveda, sin dramatismo).
+
+6. **Pie de página informativo**  
+   Una línea: *Los datos provienen del pipeline DSR. Sin datos personales enviados al modelo.*
+
+---
+
+## Prompt para Google Stitch (copiar tal cual o ajustar)
+
+```
+You are generating a single-page HTML mockup for an internal admin tool inside "BetTracker 2.0".
+
+GOAL
+Design a desktop-first responsive page titled "DSR model accuracy (admin)" — an internal audit view for operators. It answers: for a chosen operating day, of N DSR-generated picks published that day, how many settled as HIT vs MISS vs VOID relative to what the model predicted (e.g. 1X2 home win, over 2.5 goals).
+
+VISUAL SYSTEM (must match existing app)
+- Reuse the same look as BetTracker 2.0 bunker UI: Tailwind CDN, Inter for UI text, Geist Mono for all numeric metrics and dates, Material Symbols Outlined for small icons.
+- Light theme: background #f6fafe, surfaces and containers as in Material-style tokens (primary #6d3bd7, on-surface #26343d, surface containers #e5eff7 / #eef4fa, outline #6e7d86). Same border radius tight (0.125rem–0.5rem) as other BT2 refs.
+- Calm, Swiss-engineering feel: lots of whitespace, 1px hairline borders, no neon, no gaming aesthetics.
+
+LAYOUT
+- Include a simplified left sidebar (icons + labels: Santuario, Bóveda, Ledger, etc.) and a top header bar with app name — same structural pattern as a "bunker" dashboard, but the main content is ONLY this admin module.
+- Main column: page title + subtitle "Internal use only" + small "Admin" badge.
+
+COMPONENTS
+1) Operating day selector: date input or dropdown, label "Día operativo".
+2) Read-only line: "Pipeline version: bt2-dsr-xxx" (placeholder text).
+3) KPI row: 4–5 cards in a responsive grid:
+   - "Picks publicados (N)" — note under: "Meta 15; N puede ser menor"
+   - "Aciertos (hit)"
+   - "Fallos (miss)"
+   - "Void / N/A"
+   - Prominent "Tasa de acierto" = percentage with tooltip hint: denominator excludes void/N/A (show as small info icon).
+4) Data table with 8–10 example rows of fake data (football events, markets 1X2, Over 2.5, BTTS). Columns: #, Event, Market, Model pick, Final result, vs model (colored pill: Acierto / Fallo / Void), Settled at (mono datetime).
+5) Empty state variant: secondary small block showing the same page when N=0 (friendly copy in Spanish: "No hay snapshot DSR para este día").
+
+LANGUAGE
+- UI labels and empty state in Spanish (es). Table can use Spanish headers.
+
+DELIVERABLE
+- One self-contained HTML file with Tailwind CDN, no external API. Output only the HTML document.
+```
+
+---
+
+## Notas para el equipo FE (post-Stitch)
+
+- El HTML de Stitch es **referencia visual**; en React V2 se implementa con los componentes reales (`BunkerLayout`, `BunkerViewHeader` si aplica) y datos de **`GET /bt2/admin/...`** (contrato por definir en **T-163**).
+- **Rol de usuario** para esta ruta: TODO (**D-06-015** §5); hasta entonces flag/env.
+
+*Documento generado para alineación S6 · D-06-015 / D-06-016.*

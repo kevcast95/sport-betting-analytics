@@ -20,6 +20,10 @@ Esta carpeta centraliza la ejecucion de la nueva etapa (API-first + CDM + reglas
 - `HANDOFF_BA_PM_BACKEND.md`: **entrada única** para BA/PM/arquitecto backend (arquitectura V2, contratos CDM, stub `/bt2`, refs a toda la documentación).
 - `sprints/`: trabajo secuencial por sprint.
 
+## API local (V1 + BT2)
+
+Guía única para levantar **FastAPI** (SQLite Copa + `/bt2` en Postgres), variables `.env`, migraciones y comprobación de salud: **[`LOCAL_API.md`](./LOCAL_API.md)**. Plantilla de entorno en la raíz del repo: **`.env.example`**.
+
 ## Flujo recomendado
 
 1. Crear/actualizar `sprints/sprint-XX/US.md`.

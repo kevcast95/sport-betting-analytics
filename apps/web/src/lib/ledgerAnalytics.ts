@@ -40,7 +40,7 @@ export function ledgerAggregateMetrics(ledger: LedgerRow[]): {
     totalStakeCop += r.stakeCop
     netPnlCop += r.pnlCop
     if (r.outcome === 'PROFIT') wins += 1
-    disciplineDpFromSettlements += r.earnedDp ?? 25
+    disciplineDpFromSettlements += r.earnedDp ?? 0
   }
   const roiPct = totalStakeCop > 0 ? (netPnlCop / totalStakeCop) * 100 : 0
   const winRatePct = (wins / ledger.length) * 100

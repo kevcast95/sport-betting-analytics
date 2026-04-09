@@ -14,7 +14,13 @@ import {
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { vaultMockPicks } from '@/data/vaultMockPicks'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
-import { getMarketLabelEs } from '@/lib/marketLabels'
+import {
+  dsrConfidenceLabelEs,
+  dsrSourceDescriptionEs,
+  modelPredictionResultEs,
+} from '@/lib/bt2ProtocolLabels'
+import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
+import { unifiedApiModelReading } from '@/lib/vaultModelReading'
 import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
 import {
   computeSettlementPnlCop,
@@ -28,10 +34,81 @@ import {
 import { computeUnitValue } from '@/lib/treasuryMath'
 import { useBankrollStore } from '@/store/useBankrollStore'
 import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
+import type { LedgerRow } from '@/store/useTradeStore'
 import { useTradeStore } from '@/store/useTradeStore'
 import { useUserStore } from '@/store/useUserStore'
+import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
+import {
+  CommitStandardPick,
+  SlideToUnlock,
+} from '@/components/vault/PickCard'
+import { VAULT_UNLOCK_COST_DP } from '@/data/vaultMockPicks'
 import { useVaultStore } from '@/store/useVaultStore'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import {
+  Navigate,
+  NavLink,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
+
+type AnyPick = {
+  id: string
+  marketClass: string
+  marketLabelEs?: string
+  marketCanonical?: string
+  marketCanonicalLabelEs?: string
+  eventLabel: string
+  titulo: string
+  suggestedDecimalOdds: number
+  selectionSummaryEs: string
+  traduccionHumana: string
+  accessTier: string
+  isAvailable?: boolean
+  /** D-05-011 — ISO UTC desde GET /bt2/vault/picks */
+  kickoffUtc?: string
+  unlockCostDp?: number
+  eventId?: number
+  dsrNarrativeEs?: string
+  dsrSource?: string
+  dsrConfidenceLabel?: string
+  pipelineVersion?: string
+  modelMarketCanonical?: string
+  modelSelectionCanonical?: string
+  modelPredictionResult?: string | null
+}
+
+const DEFAULT_EVENT_TZ = 'America/Bogota'
+
+function formatEventStartUtc(
+  isoUtc: string | undefined,
+  timeZone = DEFAULT_EVENT_TZ,
+): string | null {
+  if (isoUtc == null || typeof isoUtc !== 'string' || isoUtc.trim() === '') {
+    return null
+  }
+  const d = Date.parse(isoUtc)
+  if (Number.isNaN(d)) return null
+  try {
+    return new Intl.DateTimeFormat('es-CO', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone,
+    }).format(new Date(d))
+  } catch {
+    return null
+  }
+}
+
+/** D-05-010: bloqueo de «Tomar» solo con instante contractual; `isAvailable` manda cierre. */
+function isEventStartInPast(isoUtc: string | undefined): boolean {
+  if (isoUtc == null || typeof isoUtc !== 'string' || isoUtc.trim() === '') {
+    return false
+  }
+  const d = Date.parse(isoUtc)
+  if (Number.isNaN(d)) return false
+  return Date.now() >= d
+}
 
 const SETTLEMENT_TOUR = getTourScript('settlement')!
 
@@ -89,6 +166,33 @@ function formatCop(n: number) {
   }).format(n)
 }
 
+/** T-145 / US-FE-036: ficha settlement cuando el pick ya no está en el snapshot del día. */
+function anyPickFromLedgerRow(row: LedgerRow, vaultPickId: string): AnyPick {
+  const sug = row.suggestedDecimalOdds
+  const odds =
+    sug != null && Number.isFinite(sug) && sug > 1 ? sug : row.decimalCuota
+  return {
+    id: vaultPickId,
+    marketClass: row.marketClass ?? '—',
+    marketLabelEs: displayMarketLabelEs({
+      marketCanonicalLabelEs: row.marketCanonicalLabelEs,
+      marketClass: row.marketClass,
+    }),
+    marketCanonicalLabelEs: row.marketCanonicalLabelEs,
+    eventLabel: row.eventLabel ?? vaultPickId,
+    titulo: row.titulo ?? '—',
+    suggestedDecimalOdds: Number.isFinite(odds) && odds > 1 ? odds : Number.NaN,
+    selectionSummaryEs: row.selectionSummaryEs ?? '',
+    traduccionHumana: '',
+    accessTier: 'standard',
+    isAvailable: true,
+    kickoffUtc: undefined,
+    unlockCostDp: undefined,
+    eventId: undefined,
+    modelPredictionResult: row.modelPredictionResult ?? null,
+  }
+}
+
 function vaultLevelLabel(dp: number): string {
   if (dp >= 4000) return 'Vault Master · Nivel 5'
   if (dp >= 3000) return 'Vault Master · Nivel 4'
@@ -100,22 +204,71 @@ function vaultLevelLabel(dp: number): string {
 export default function SettlementPage() {
   const { pickId = '' } = useParams<{ pickId: string }>()
   const navigate = useNavigate()
-  const pick = useMemo(
-    () => vaultMockPicks.find((p) => p.id === pickId) ?? null,
-    [pickId],
-  )
-  const stationLocked = useSessionStore(selectStationLocked)
-  // Leer estado crudo — evita llamar get() dentro de un selector (loop en useSyncExternalStore)
+  const [searchParams] = useSearchParams()
+  const isReviewPhase = searchParams.get('phase') === 'review'
+
+  // Buscar pick: API primero. En entorno dev, fallback a mock local si no hay pick API.
+  const apiPicks = useVaultStore((s) => s.apiPicks)
   const unlockedPickIds = useVaultStore((s) => s.unlockedPickIds)
+  const takeApiPick = useVaultStore((s) => s.takeApiPick)
+  const tryUnlockPick = useVaultStore((s) => s.tryUnlockPick)
+  const takenApiPicks = useVaultStore((s) => s.takenApiPicks)
+  const pick: AnyPick | null = useMemo(() => {
+    const apiPick = apiPicks.find((p) => p.id === pickId)
+    if (apiPick) return apiPick
+    if (import.meta.env.DEV) {
+      const mockPick = vaultMockPicks.find((p) => p.id === pickId)
+      if (mockPick) {
+        return {
+          ...mockPick,
+          marketLabelEs: undefined,
+          isAvailable: true,
+        }
+      }
+    }
+    return null
+  }, [pickId, apiPicks])
+
+  // bt2PickId para settlement API (null si es mock o no tomado aún)
+  const bt2PickRecord = useMemo(
+    () => takenApiPicks.find((r) => r.vaultPickId === pickId) ?? null,
+    [takenApiPicks, pickId],
+  )
+
+  const stationLocked = useSessionStore(selectStationLocked)
   const unlocked = useMemo(() => {
-    const p = vaultMockPicks.find((x) => x.id === pickId)
-    if (p?.accessTier === 'open') return true
-    return unlockedPickIds.includes(pickId)
-  }, [unlockedPickIds, pickId])
+    const apiPick = apiPicks.find((p) => p.id === pickId)
+    if (apiPick?.accessTier === 'standard' || apiPick?.accessTier === 'premium') {
+      return takenApiPicks.some((r) => r.vaultPickId === pickId)
+    }
+    if (import.meta.env.DEV) {
+      const mockPick = vaultMockPicks.find((x) => x.id === pickId)
+      if (mockPick?.accessTier === 'open') return true
+      return unlockedPickIds.includes(pickId)
+    }
+    return false
+  }, [unlockedPickIds, pickId, apiPicks, takenApiPicks])
   const settled = useTradeStore((s) => s.settledPickIds.includes(pickId))
   const ledger = useTradeStore((s) => s.ledger)
+  const ledgerRowForPick = useMemo(() => {
+    const rows = ledger.filter((r) => r.pickId === pickId)
+    if (rows.length === 0) return null
+    return [...rows].sort(
+      (a, b) =>
+        new Date(b.settledAt).getTime() - new Date(a.settledAt).getTime(),
+    )[0]
+  }, [ledger, pickId])
+
+  const displayPick = useMemo((): AnyPick | null => {
+    if (pick) return pick
+    if (ledgerRowForPick) return anyPickFromLedgerRow(ledgerRowForPick, pickId)
+    return null
+  }, [pick, ledgerRowForPick, pickId])
+
   const finalizeSettlement = useTradeStore((s) => s.finalizeSettlement)
+  const settleApiPick = useTradeStore((s) => s.settleApiPick)
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
+  const hydrateLedgerFromApi = useTradeStore((s) => s.hydrateLedgerFromApi)
 
   const bankroll = useBankrollStore((s) => s.confirmedBankrollCop)
   const stakePct = useBankrollStore((s) => s.selectedStakePct)
@@ -125,6 +278,10 @@ export default function SettlementPage() {
   const [bookOddsRaw, setBookOddsRaw] = useState('')
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [settling, setSettling] = useState(false)
+  const [settleError, setSettleError] = useState<string | null>(null)
+  const [reviewTakeError, setReviewTakeError] = useState<string | null>(null)
+  const [reviewTaking, setReviewTaking] = useState(false)
 
   const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('settlement'))
   const markTourSeen = useTourStore((s) => s.markTourSeen)
@@ -132,15 +289,86 @@ export default function SettlementPage() {
   const [tourOpen, setTourOpen] = useState(false)
 
   useEffect(() => {
+    if (isReviewPhase) return
     if (!hasSeenTour) {
       const t = setTimeout(() => setTourOpen(true), 500)
       return () => clearTimeout(t)
     }
-  }, [hasSeenTour])
+  }, [hasSeenTour, isReviewPhase])
 
   useEffect(() => {
     ensureBt2FontLinks()
   }, [])
+
+  const isApiRouteBlocked = useMemo(() => {
+    if (settled) return false
+    const apiPick = apiPicks.find((p) => p.id === pickId)
+    if (!apiPick) return false
+    const mockFallback =
+      import.meta.env.DEV && vaultMockPicks.some((x) => x.id === pickId)
+    if (mockFallback) return false
+    // D-05-010: revisión pre-toma sin POST /bt2/picks aún
+    if (isReviewPhase) return false
+    return !bt2PickRecord
+  }, [apiPicks, pickId, bt2PickRecord, isReviewPhase, settled])
+
+  const apiPickMatch = useMemo(
+    () => apiPicks.find((p) => p.id === pickId) ?? null,
+    [apiPicks, pickId],
+  )
+  const isDevMockPick =
+    import.meta.env.DEV && vaultMockPicks.some((x) => x.id === pickId)
+
+  const premiumReviewAllowed = useMemo(() => {
+    if (!displayPick || displayPick.accessTier !== 'premium') return true
+    if (apiPickMatch?.accessTier === 'premium') {
+      return apiPickMatch.premiumUnlocked === true
+    }
+    if (isDevMockPick) {
+      return unlockedPickIds.includes(pickId)
+    }
+    return false
+  }, [displayPick, apiPickMatch, isDevMockPick, unlockedPickIds, pickId])
+
+  const showReviewTakeCtas =
+    isReviewPhase &&
+    !settled &&
+    displayPick != null &&
+    displayPick.isAvailable !== false &&
+    ((apiPickMatch != null &&
+      !bt2PickRecord &&
+      (apiPickMatch.accessTier === 'standard' ||
+        apiPickMatch.premiumUnlocked)) ||
+      (isDevMockPick &&
+        displayPick.accessTier === 'premium' &&
+        !unlockedPickIds.includes(pickId)))
+
+  const showReviewTakenBridge =
+    isReviewPhase && !settled && unlocked && !showReviewTakeCtas
+
+  const showLiquidationForm = unlocked && !isReviewPhase && !settled
+
+  const eventStartLabel = displayPick
+    ? formatEventStartUtc(displayPick.kickoffUtc)
+    : null
+  const takeBlockedAfterStart =
+    displayPick != null &&
+    displayPick.isAvailable !== false &&
+    isEventStartInPast(displayPick.kickoffUtc)
+
+  const premiumUnlockCost = displayPick?.unlockCostDp ?? VAULT_UNLOCK_COST_DP
+  const insufficientDpPremium = disciplinePoints < premiumUnlockCost
+  const isFreeAccessTier =
+    displayPick?.accessTier === 'standard' ||
+    (import.meta.env.DEV && displayPick?.accessTier === 'open')
+
+  const reviewTakeUsesCommitOnly =
+    isFreeAccessTier ||
+    (apiPickMatch?.accessTier === 'premium' &&
+      apiPickMatch.premiumUnlocked === true) ||
+    (isDevMockPick &&
+      displayPick?.accessTier === 'premium' &&
+      unlockedPickIds.includes(pickId))
 
   const monoStyle = useMemo<CSSProperties>(
     () => ({
@@ -152,8 +380,43 @@ export default function SettlementPage() {
   const metrics = useMemo(() => ledgerAggregateMetrics(ledger), [ledger])
 
   // US-FE-022: cuota sugerida directamente del CDM
-  const suggestedOdds = pick?.suggestedDecimalOdds ?? Number.NaN
-  const marketLabelEs = pick ? getMarketLabelEs(pick.marketClass) : '—'
+  const suggestedOdds = displayPick?.suggestedDecimalOdds ?? Number.NaN
+  const marketLabelEs = displayPick
+    ? displayMarketLabelEs({
+        marketCanonicalLabelEs: displayPick.marketCanonicalLabelEs,
+        marketLabelEs: displayPick.marketLabelEs,
+        marketClass: displayPick.marketClass,
+        marketCanonical: displayPick.marketCanonical,
+      })
+    : '—'
+
+  const modelVsPickLabel =
+    settled && ledgerRowForPick?.modelPredictionResult != null
+      ? modelPredictionResultEs(ledgerRowForPick.modelPredictionResult)
+      : null
+
+  const settlementApiUnified = useMemo(() => {
+    if (!apiPickMatch || !displayPick) return null
+    return unifiedApiModelReading({
+      dsrNarrativeEs: (displayPick.dsrNarrativeEs ?? '').trim(),
+      traduccionHumana: displayPick.traduccionHumana ?? null,
+    })
+  }, [apiPickMatch, displayPick])
+
+  const settlementDsrMetaLine = useMemo(() => {
+    if (!apiPickMatch || !displayPick) return ''
+    return [
+      displayPick.dsrConfidenceLabel
+        ? `Confianza simbólica: ${dsrConfidenceLabelEs(displayPick.dsrConfidenceLabel)}`
+        : '',
+      dsrSourceDescriptionEs(displayPick.dsrSource ?? ''),
+      displayPick.pipelineVersion
+        ? `Versión pipeline: ${displayPick.pipelineVersion}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' · ')
+  }, [apiPickMatch, displayPick])
 
   // T-057: cuota capturada en casa
   const bookOddsParsed = parseFloat(bookOddsRaw.replace(',', '.'))
@@ -186,32 +449,167 @@ export default function SettlementPage() {
       ? Math.max(0, bankroll + pnlPreview)
       : Number.NaN
 
-  if (!pick) return <Navigate to="/v2/vault" replace />
-  if (stationLocked) return <Navigate to="/v2/vault" replace />
-  if (!unlocked) return <Navigate to="/v2/vault" replace />
-  if (settled) return <Navigate to="/v2/vault" replace />
+  if (!displayPick) return <Navigate to="/v2/vault" replace />
+  // Premium: revisión solo si `premiumUnlocked` (vault) o mock desbloqueado; no confundir con pick tomado.
+  if (
+    !settled &&
+    isReviewPhase &&
+    displayPick.accessTier === 'premium' &&
+    !premiumReviewAllowed
+  ) {
+    return (
+      <Navigate
+        to="/v2/vault"
+        replace
+        state={{
+          settlementBlocked:
+            'Desbloquea la señal premium en la bóveda (slider DP) antes de abrir la ficha completa.',
+        }}
+      />
+    )
+  }
+  if (isApiRouteBlocked) {
+    return (
+      <Navigate
+        to="/v2/vault"
+        replace
+        state={{
+          settlementBlocked:
+            'Registra primero la señal en la bóveda (compromiso / desbloqueo) antes de liquidar.',
+        }}
+      />
+    )
+  }
+  // D-05-010: la revisión pre-toma permite ver la ficha aunque la estación esté cerrada;
+  // takeApiPick / UI siguen bloqueando el registro.
+  if (!settled && stationLocked && !isReviewPhase) {
+    return <Navigate to="/v2/vault" replace />
+  }
+  if (!settled && !unlocked) {
+    if (!(isReviewPhase && !bt2PickRecord)) {
+      return <Navigate to="/v2/vault" replace />
+    }
+  }
+
+  const showReadOnlySettled = settled
+
+  const showReviewUnavailableOnly =
+    isReviewPhase && displayPick.isAvailable === false
+
+  const onTakeFromReview = async () => {
+    if (reviewTaking) return
+    setReviewTakeError(null)
+    setReviewTaking(true)
+    try {
+      if (apiPickMatch) {
+        const res = await takeApiPick(apiPickMatch)
+        if (res.ok) {
+          void hydrateLedgerFromApi()
+          navigate(`/v2/settlement/${pickId}`, { replace: true })
+          return
+        }
+        if (res.reason === 'insufficient_dp_premium' && res.premiumDetail) {
+          setReviewTakeError(res.premiumDetail.message)
+        } else if (res.reason === 'insufficient_dp') {
+          setReviewTakeError(
+            'Saldo DP insuficiente para desbloquear esta señal premium.',
+          )
+        } else if (res.reason === 'premium_not_unlocked') {
+          setReviewTakeError(
+            'Desbloquea primero la señal premium en la bóveda (slider).',
+          )
+        } else if (res.reason === 'station_locked') {
+          setReviewTakeError(
+            'Estación cerrada: no puedes registrar señales en este ciclo.',
+          )
+        } else if (res.reason === 'pick_unavailable') {
+          setReviewTakeError('Este pick no está disponible para registro.')
+        } else if (res.reason === 'already_unlocked') {
+          navigate(`/v2/settlement/${pickId}`, { replace: true })
+        } else {
+          setReviewTakeError(
+            'No se pudo registrar la señal. Reintenta o revisa tu conexión.',
+          )
+        }
+      } else if (import.meta.env.DEV && isDevMockPick) {
+        const res = tryUnlockPick(pickId)
+        if (res.ok) {
+          navigate(`/v2/settlement/${pickId}`, { replace: true })
+        } else if (res.reason === 'station_locked') {
+          setReviewTakeError(
+            'Estación cerrada: no puedes registrar señales en este ciclo.',
+          )
+        } else if (res.reason === 'insufficient_dp') {
+          setReviewTakeError('Disciplina insuficiente para desbloquear.')
+        } else if (res.reason === 'already_unlocked') {
+          navigate(`/v2/settlement/${pickId}`, { replace: true })
+        } else {
+          setReviewTakeError('No se pudo desbloquear.')
+        }
+      }
+    } finally {
+      setReviewTaking(false)
+    }
+  }
 
   const onRequestConfirm = () => {
     if (!canSubmit || outcome == null) return
     setConfirmOpen(true)
   }
 
-  const onConfirmAudit = () => {
-    if (!canSubmit || outcome == null) return
-    const res = finalizeSettlement({
-      pickId,
-      outcome,
-      reflection,
-      stakeCop,
-      decimalCuota: activeOdds,
-      bookDecimalOdds: Number.isFinite(bookOdds) ? bookOdds : undefined,
-    })
+  const onConfirmAudit = async () => {
+    if (!canSubmit || outcome == null || settling) return
+    setSettling(true)
+    setSettleError(null)
     setConfirmOpen(false)
-    if (!res.ok) return
+
+    let res: { ok: boolean; earnedDp?: number; reason?: string }
+
+    if (bt2PickRecord) {
+      // US-FE-028: flujo real con API
+      res = await settleApiPick({
+        vaultPickId: pickId,
+        bt2PickId: bt2PickRecord.bt2PickId,
+        outcome,
+        reflection,
+        stakeCop,
+        decimalCuota: activeOdds,
+        bookDecimalOdds: Number.isFinite(bookOdds) ? bookOdds : undefined,
+        market: bt2PickRecord.market,
+        selection: bt2PickRecord.selection,
+      })
+    } else {
+      // Flujo local (mock picks)
+      res = finalizeSettlement({
+        pickId,
+        outcome,
+        reflection,
+        stakeCop,
+        decimalCuota: activeOdds,
+        bookDecimalOdds: Number.isFinite(bookOdds) ? bookOdds : undefined,
+      })
+    }
+
+    setSettling(false)
+
+    if (!res.ok) {
+      if ('reason' in res && res.reason === 'api_error') {
+        setSettleError(
+          'No se pudo registrar la liquidación en el servidor. Revisa la conexión. Si el API responde 422, el mercado o la selección pueden no admitir el resultado enviado (p. ej. void o mapeo no soportado — US-FE-039 / T-150).',
+        )
+      }
+      return
+    }
+
+    const dp = res.earnedDp ?? 0
     console.info(
-      `[BT2] settlement mode: ${SETTLEMENT_VERIFICATION_MODE} · pick ${pickId}`,
+      `[BT2] settlement mode: ${SETTLEMENT_VERIFICATION_MODE} · pick ${pickId} · +${dp} DP`,
     )
-    setToast('Protocolo cumplido. La disciplina es el verdadero profit.')
+    setToast(
+      dp > 0
+        ? `Protocolo cumplido. +${dp} DP acreditados.`
+        : 'Protocolo cumplido. La disciplina es el verdadero profit.',
+    )
     window.setTimeout(() => navigate('/v2/vault', { replace: true }), 2200)
   }
 
@@ -226,36 +624,32 @@ export default function SettlementPage() {
         </div>
       ) : null}
 
-      <div className="mb-10 lg:mb-12">
-        <div className="mb-2 flex items-center justify-between gap-4">
-          <div className="flex items-center text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-            <span>La Bóveda</span>
-            <span className="mx-2 text-[#a4b4be]" aria-hidden>
-              /
-            </span>
-            <span className="text-[#6d3bd7]">Terminal de liquidación</span>
-          </div>
+      {settleError ? (
+        <div
+          className="fixed bottom-24 left-1/2 z-[80] max-w-md -translate-x-1/2 rounded-lg border border-[#fee2e2] bg-[#fff1f2] px-5 py-3 text-center text-sm font-medium text-[#9b1c1c] shadow-lg lg:bottom-8"
+          role="alert"
+        >
+          {settleError}
           <button
             type="button"
-            onClick={() => { resetTour('settlement'); setTourOpen(true) }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#a4b4be]/30 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#6e7d86] transition-colors hover:border-[#8B5CF6]/30 hover:text-[#8B5CF6]"
-            title="Ver cómo funciona esta vista"
+            className="ml-3 text-xs font-semibold underline"
+            onClick={() => setSettleError(null)}
           >
-            <span aria-hidden className="text-[11px]">?</span>
-            Cómo funciona
+            Cerrar
           </button>
         </div>
-        {/* US-FE-022: evento como título principal, pick.titulo como subtítulo */}
-        <h1 className="text-3xl font-black tracking-tight text-[#26343d] sm:text-4xl">
-          {pick.eventLabel}
-        </h1>
-        <p className="mt-1 text-sm font-medium text-[#52616a]">
-          Auditoría ID:{' '}
-          <span className="font-mono font-bold" style={monoStyle}>
-            #{pick.id.toUpperCase()}
-          </span>
-        </p>
-      </div>
+      ) : null}
+
+      <BunkerViewHeader
+        title={displayPick.eventLabel}
+        subtitle={`La Bóveda · ${
+          isReviewPhase ? 'Revisión de señal' : 'Terminal de liquidación'
+        } · Auditoría ID #${displayPick.id.toUpperCase()}`}
+        onHelpClick={() => {
+          resetTour('settlement')
+          setTourOpen(true)
+        }}
+      />
 
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-7">
@@ -271,22 +665,36 @@ export default function SettlementPage() {
                 </p>
                 <div
                   className="mb-1 inline-block rounded-lg bg-[#e9ddff] px-4 py-2 text-sm font-bold text-[#6d3bd7]"
-                  title={pick.marketClass}
+                  title={displayPick.marketClass}
                 >
                   {marketLabelEs}
                 </div>
-                {pick.selectionSummaryEs ? (
+                {displayPick.selectionSummaryEs ? (
                   <p className="mb-3 text-sm font-semibold text-[#26343d]">
-                    {pick.selectionSummaryEs}
+                    {displayPick.selectionSummaryEs}
                   </p>
                 ) : null}
+                {modelVsPickLabel ? (
+                  <p className="mb-3 rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa]/80 px-3 py-2 text-xs font-semibold text-[#435368]">
+                    Resultado vs modelo (liquidado):{' '}
+                    <span className="font-mono text-[#26343d]">
+                      {modelVsPickLabel}
+                    </span>
+                  </p>
+                ) : null}
+                {/* DSR + CDM: un solo bloque en la tarjeta inferior (evitar duplicar con “Lectura del modelo”). */}
                 {/* Tesis/narrativa del modelo como subtítulo */}
                 <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
                   Sugerencia del modelo
                 </p>
                 <h2 className="mt-1 text-lg font-bold tracking-tight text-[#26343d]">
-                  {pick.titulo}
+                  {displayPick.titulo}
                 </h2>
+                {eventStartLabel ? (
+                  <p className="mt-2 font-mono text-xs text-[#52616a]">
+                    Inicio del evento (tu zona): {eventStartLabel}
+                  </p>
+                ) : null}
               </div>
             </div>
             <div className="grid grid-cols-1 gap-6 border-t border-[#a4b4be]/10 pt-6 sm:grid-cols-3">
@@ -326,16 +734,29 @@ export default function SettlementPage() {
             </div>
           </div>
 
-          {/* US-FE-022: "Lectura del modelo" (antes "Traducción humana") */}
+          {/* US-FE-022 / T-165: una sola voz CDM+DSR (misma regla que PickCard). */}
           <div className="rounded-xl bg-[#eef4fa] p-8">
             <div className="mb-6 flex items-center gap-3">
               <IconPsychology className="shrink-0 text-[#6d3bd7]" />
               <h3 className="text-lg font-bold tracking-tight text-[#26343d]">
-                Lectura del modelo
+                {settlementApiUnified
+                  ? settlementApiUnified.title
+                  : 'Lectura del modelo'}
               </h3>
             </div>
             <div className="space-y-4 text-sm leading-relaxed text-[#52616a]">
-              <p>{pick.traduccionHumana}</p>
+              <p className="text-[#26343d]">
+                {settlementApiUnified
+                  ? settlementApiUnified.body
+                  : displayPick.traduccionHumana?.trim()
+                    ? displayPick.traduccionHumana
+                    : 'Sin lectura del modelo en archivo local. Consulta el libro mayor para el detalle registrado al liquidar.'}
+              </p>
+              {settlementDsrMetaLine ? (
+                <p className="font-mono text-xs leading-snug text-[#6e7d86]">
+                  {settlementDsrMetaLine}
+                </p>
+              ) : null}
               <p>
                 La sugerencia actúa como{' '}
                 <span className="font-semibold text-[#26343d]">
@@ -350,6 +771,185 @@ export default function SettlementPage() {
 
         <div className="space-y-6 lg:col-span-5">
           <div className="sticky top-24 rounded-xl border border-[#a4b4be]/15 bg-white p-8 shadow-[0px_20px_40px_rgba(38,52,61,0.06)]">
+            {showReviewUnavailableOnly ? (
+              <>
+                <h3 className="text-xl font-bold tracking-tight text-[#26343d]">
+                  Señal no disponible
+                </h3>
+                <p className="mt-4 text-sm leading-snug text-[#52616a]">
+                  El servidor marcó este pick como no disponible; no se puede registrar
+                  una nueva posición.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/v2/vault')}
+                  className="mt-6 py-3 text-sm font-semibold text-[#52616a] hover:text-[#26343d]"
+                >
+                  Volver a la bóveda
+                </button>
+              </>
+            ) : showReviewTakeCtas ? (
+              <>
+                <h3 className="text-xl font-bold tracking-tight text-[#26343d]">
+                  Registrar en el protocolo
+                </h3>
+                <p className="mt-4 text-sm leading-snug text-[#52616a]">
+                  Confirma la lectura del modelo y registra la señal; mismo efecto que
+                  «Tomar» en la tarjeta de la bóveda.
+                </p>
+                {reviewTakeError ? (
+                  <p
+                    className="mt-4 rounded-lg border border-[#fee2e2] bg-[#fff1f2] px-3 py-2 text-sm text-[#9b1c1c]"
+                    role="alert"
+                  >
+                    {reviewTakeError}
+                  </p>
+                ) : null}
+                {takeBlockedAfterStart ? (
+                  <p className="mt-4 text-sm font-semibold text-[#914d00]">
+                    El evento ya inició según la hora del protocolo: «Tomar» está
+                    desactivado (D-05-010 / US-BE-019).
+                  </p>
+                ) : null}
+                <div className="mt-6">
+                  {reviewTakeUsesCommitOnly ? (
+                    <CommitStandardPick
+                      stationLocked={stationLocked}
+                      disabled={takeBlockedAfterStart || reviewTaking}
+                      onCommitted={() => void onTakeFromReview()}
+                    />
+                  ) : (
+                    <SlideToUnlock
+                      stationLocked={stationLocked}
+                      insufficientDp={insufficientDpPremium}
+                      costDp={premiumUnlockCost}
+                      disabled={takeBlockedAfterStart || reviewTaking}
+                      onUnlocked={() => void onTakeFromReview()}
+                    />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/v2/vault')}
+                  className="mt-6 py-3 text-sm font-semibold text-[#52616a] hover:text-[#26343d]"
+                >
+                  Volver a la bóveda
+                </button>
+              </>
+            ) : showReviewTakenBridge ? (
+              <>
+                <h3 className="text-xl font-bold tracking-tight text-[#26343d]">
+                  Señal en el protocolo
+                </h3>
+                <p className="mt-4 text-sm leading-snug text-[#52616a]">
+                  Ya registraste esta posición. Continúa a liquidación cuando el evento
+                  haya cerrado.
+                </p>
+                <NavLink
+                  to={`/v2/settlement/${pickId}`}
+                  className="mt-6 block rounded-xl border border-[#8B5CF6]/35 bg-[#e9ddff]/25 py-3 text-center text-sm font-bold text-[#6d3bd7] transition-colors hover:bg-[#e9ddff]/45"
+                >
+                  Ir a liquidación
+                </NavLink>
+                <button
+                  type="button"
+                  onClick={() => navigate('/v2/vault')}
+                  className="mt-3 w-full py-3 text-sm font-semibold text-[#52616a] hover:text-[#26343d]"
+                >
+                  Volver a la bóveda
+                </button>
+              </>
+            ) : showReadOnlySettled ? (
+              <>
+                <h3 className="text-xl font-bold tracking-tight text-[#26343d]">
+                  Liquidación archivada
+                </h3>
+                <p className="mt-4 text-sm leading-snug text-[#52616a]">
+                  Vista solo lectura (US-FE-036 / D-05-013). Los datos mostrados provienen del
+                  registro local o del ledger sincronizado.
+                </p>
+                {ledgerRowForPick ? (
+                  <dl className="mt-6 space-y-3 text-sm text-[#26343d]">
+                    <div>
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                        Resultado declarado
+                      </dt>
+                      <dd className="mt-1 font-semibold">
+                        {OUTCOME_LABEL[ledgerRowForPick.outcome]}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                        Resultado neto (COP)
+                      </dt>
+                      <dd className="mt-1 font-mono tabular-nums" style={monoStyle}>
+                        {formatCop(Math.round(ledgerRowForPick.pnlCop))}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                        Stake
+                      </dt>
+                      <dd className="mt-1 font-mono tabular-nums" style={monoStyle}>
+                        {formatCop(Math.round(ledgerRowForPick.stakeCop))}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                        Cuota efectiva
+                      </dt>
+                      <dd className="mt-1 font-mono tabular-nums" style={monoStyle}>
+                        {ledgerRowForPick.decimalCuota.toFixed(2)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                        Reflexión registrada
+                      </dt>
+                      <dd className="mt-1 text-[#52616a] leading-relaxed">
+                        {ledgerRowForPick.reflection || '—'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                        Liquidado
+                      </dt>
+                      <dd className="mt-1 font-mono text-xs text-[#52616a]">
+                        {new Date(ledgerRowForPick.settledAt).toLocaleString('es-CO')}
+                      </dd>
+                    </div>
+                    {ledgerRowForPick.earnedDp != null ? (
+                      <div>
+                        <dt className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                          DP liquidación
+                        </dt>
+                        <dd className="mt-1 font-mono font-semibold text-[#6d3bd7]">
+                          +{ledgerRowForPick.earnedDp} DP
+                        </dd>
+                      </div>
+                    ) : null}
+                  </dl>
+                ) : (
+                  <p className="mt-4 text-sm text-[#6e7d86]">
+                    No hay fila de ledger local para este ID; sincroniza o abre desde el libro mayor.
+                  </p>
+                )}
+                <NavLink
+                  to="/v2/ledger"
+                  className="mt-6 block rounded-xl border border-[#a4b4be]/30 bg-white py-3 text-center text-sm font-bold text-[#26343d] transition-colors hover:bg-[#eef4fa]"
+                >
+                  Ir al libro mayor
+                </NavLink>
+                <button
+                  type="button"
+                  onClick={() => navigate('/v2/vault')}
+                  className="mt-3 w-full py-3 text-sm font-semibold text-[#52616a] hover:text-[#26343d]"
+                >
+                  Volver a la bóveda
+                </button>
+              </>
+            ) : showLiquidationForm ? (
+              <>
             <div className="mb-8 flex items-center justify-between gap-4">
               <h3 className="text-xl font-bold tracking-tight text-[#26343d]">
                 Zona de liquidación
@@ -360,7 +960,7 @@ export default function SettlementPage() {
                   className="font-mono text-xs font-bold tracking-tight text-[#6d3bd7]"
                   style={monoStyle}
                 >
-                  Recompensa: +25 DP
+                  Recompensa: +10 DP (gestión)
                 </span>
               </div>
             </div>
@@ -474,13 +1074,27 @@ export default function SettlementPage() {
               </p>
             </div>
             {/* US-FE-013: nota visible de modo confianza (criterio §6.1) */}
-            <div className="mt-6 rounded-lg border border-[#a4b4be]/20 bg-[#f6fafe] px-4 py-3">
-              <p className="text-[11px] leading-relaxed text-[#52616a]">
-                <span className="font-semibold text-[#26343d]">
-                  Modo confianza activo.
-                </span>{' '}
-                {SETTLEMENT_MODE_LABEL_ES[SETTLEMENT_VERIFICATION_MODE]}
-              </p>
+            <div className="mt-6 space-y-3">
+              <div className="rounded-lg border border-[#a4b4be]/20 bg-[#f6fafe] px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e7d86]">
+                  Modo de verificación
+                </p>
+                <p className="mt-1 text-[11px] leading-relaxed text-[#52616a]">
+                  <span className="font-semibold text-[#26343d]">
+                    {SETTLEMENT_VERIFICATION_MODE === 'trust'
+                      ? 'MVP · Confianza.'
+                      : 'Verificado.'}{' '}
+                  </span>
+                  {SETTLEMENT_MODE_LABEL_ES[SETTLEMENT_VERIFICATION_MODE]}
+                </p>
+              </div>
+              {SETTLEMENT_VERIFICATION_MODE === 'verified' ? (
+                <div className="rounded-lg border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-[11px] leading-snug text-[#92400e]">
+                  Con cruce canónico activo, aquí se mostrará el estado de discrepancia y la fuente
+                  del resultado según contrato (US-FE-038); no usar estados inventados hasta que el
+                  API los exponga.
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-4 flex flex-wrap gap-4">
@@ -500,6 +1114,8 @@ export default function SettlementPage() {
                 Volver a la bóveda
               </button>
             </div>
+              </>
+            ) : null}
           </div>
         </div>
       </div>
@@ -542,7 +1158,7 @@ export default function SettlementPage() {
           </div>
           <div className="relative z-10 text-right">
             <p className="font-mono text-3xl font-bold" style={monoStyle}>
-              {disciplinePoints.toLocaleString('es-CO')}{' '}
+              {(disciplinePoints ?? 0).toLocaleString('es-CO')}{' '}
               <span className="text-sm font-normal opacity-70">DP</span>
             </p>
           </div>
@@ -577,7 +1193,7 @@ export default function SettlementPage() {
               <span className="font-semibold text-[#26343d]">
                 {outcome ? OUTCOME_LABEL[outcome] : ''}
               </span>
-              . PnL estimado:{' '}
+              . Resultado neto estimado:{' '}
               <span className="font-mono text-[#26343d]" style={monoStyle}>
                 {Number.isFinite(pnlPreview)
                   ? `${pnlPreview >= 0 ? '+' : ''}${Math.round(pnlPreview)} COP`
@@ -589,7 +1205,9 @@ export default function SettlementPage() {
                   ? `${Math.round(newBankrollPreview)} COP`
                   : '—'}
               </span>
-              . +25 DP.
+              {bt2PickRecord
+                ? '. +10 DP por registrar la liquidación con reflexión (ganancia, pérdida o empate/anulado).'
+                : '. DP según resultado.'}
             </p>
             {Number.isFinite(bookOdds) ? (
               <p className="mt-2 text-[11px] text-[#52616a]">
@@ -618,9 +1236,13 @@ export default function SettlementPage() {
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-[#8B5CF6] px-4 py-2 text-sm font-semibold text-white"
-                onClick={onConfirmAudit}
+                disabled={settling}
+                className="flex items-center gap-2 rounded-lg bg-[#8B5CF6] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                onClick={() => void onConfirmAudit()}
               >
+                {settling ? (
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : null}
                 Persistir liquidación
               </button>
             </div>

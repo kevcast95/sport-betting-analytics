@@ -38,9 +38,9 @@ const TOUR_SANCTUARY: TourScript = {
       title: 'Riqueza de carácter y DP',
       body: [
         'El indicador de Discipline Points (DP) refleja tu coherencia operativa, no tu capital real. Un saldo alto de DP significa que estás siguiendo el protocolo.',
-        'Cada día completo (liquidaciones, cierre y reconciliación) suma DP a tu saldo.',
+        'Cada liquidación registrada con reflexión acredita +10 DP en el servidor (recompensa de gestión; mismo valor para ganancia, pérdida o empate/anulado). El saldo total sigue otras reglas del protocolo cuando el backend las activa.',
       ],
-      highlight: { label: 'Recompensa por cierre completo', value: '+25 DP' },
+      highlight: { label: 'DP por liquidación', value: '+10 DP' },
     },
     {
       id: 'sanctuary-day',
@@ -70,19 +70,19 @@ const TOUR_VAULT: TourScript = {
       id: 'vault-unlock',
       title: 'Desbloqueo con Discipline Points',
       body: [
-        'Algunos picks son "abiertos" (sin coste) y otros "premium" (requieren DP). El coste se muestra en cada tarjeta bloqueada.',
+        'Hay picks estándar (sin gastar DP) y premium (−50 DP al tomarlos; umbral configurable). El coste se muestra en cada tarjeta.',
         'Desbloquear no garantiza profit — garantiza acceso a más contexto. La disciplina del tamaño y el registro sigue siendo tuya.',
       ],
-      highlight: { label: 'Coste típico de desbloqueo', value: '100 DP' },
+      highlight: { label: 'Coste premium al tomar pick', value: '50 DP' },
     },
     {
       id: 'vault-settle',
       title: 'Liquidar para ganar DP',
       body: [
         'Después de desbloquear un pick, debes liquidarlo en la Terminal de Liquidación cuando conozcas el resultado.',
-        'Cada liquidación completada con reflexión suma +25 DP a tu saldo. El protocolo importa más que el resultado.',
+        'Cada liquidación completada con reflexión suma +10 DP a tu saldo (gestión del protocolo, cualquier resultado declarado). El protocolo importa más que el acierto puntual.',
       ],
-      highlight: { label: 'DP por liquidación', value: '+25 DP' },
+      highlight: { label: 'DP por liquidación', value: '+10 DP' },
     },
   ],
 }
@@ -119,7 +119,7 @@ const TOUR_SETTLEMENT: TourScript = {
         'Escribe tu estado emocional y decisiones clave de la sesión (mínimo 10 caracteres). Esto alimenta tu índice de equilibrio emocional.',
         'Una reflexión genuina te ayuda a identificar patrones de comportamiento que los números solos no revelan.',
       ],
-      highlight: { label: 'DP por liquidación completada', value: '+25 DP' },
+      highlight: { label: 'DP por liquidación (gestión)', value: '+10 DP' },
     },
   ],
 }
@@ -176,8 +176,8 @@ const TOUR_LEDGER: TourScript = {
       id: 'ledger-filters',
       title: 'Filtrar y buscar entradas',
       body: [
-        'Filtra por clase de mercado para analizar segmentos específicos de tu actividad. Usa la búsqueda por ID para localizar posiciones concretas.',
-        'El análisis por segmento revela dónde tu protocolo es más consistente y dónde hay margen de mejora.',
+        'Filtra por clase de mercado (CDM) para analizar segmentos de tu actividad. Usa la búsqueda por ID para localizar posiciones concretas.',
+        'El análisis por segmento muestra dónde la tasa de acierto del ledger difiere; la disciplina (DP) sigue siendo independiente del resultado monetario.',
       ],
     },
     {
@@ -213,10 +213,10 @@ const TOUR_PERFORMANCE: TourScript = {
     },
     {
       id: 'performance-protocol',
-      title: 'Checklist del Protocolo Alpha',
+      title: 'Chequeo operativo',
       body: [
-        'El checklist valida que los tres pilares del protocolo estén activos: liquidez de mercado, varianza aceptable y preparación psicológica.',
-        'Si algún pilar está pendiente, el sistema lo señala para que tomes acción antes de operar.',
+        'Esta tarjeta resume señales simples desde tus datos: capital de trabajo declarado, historial de liquidaciones y cierre de sesión reciente con reflexión.',
+        'Si algo figura como pendiente, revisa tesorería o el flujo de cierre del día. El tamaño de unidad se gestiona en el modal de capital, no aquí.',
       ],
     },
   ],

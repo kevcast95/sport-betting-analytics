@@ -1,13 +1,15 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
-import type { CSSProperties, FormEvent } from 'react'
+import type { FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { DisciplineContract } from '@/components/DisciplineContract'
 import { Bt2HelpIcon, Bt2LockIcon } from '@/components/icons/bt2Icons'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
+import type { CSSProperties } from 'react'
 import { useUserStore } from '@/store/useUserStore'
 
 type AuthMode = 'login' | 'signup'
+type AuthStatus = 'idle' | 'loading' | 'error'
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -43,16 +45,17 @@ export default function AuthPage({
   defaultMode?: AuthMode
 }) {
   const [mode, setMode] = useState<AuthMode>(defaultMode)
-  const [mockAuthStatus, setMockAuthStatus] = useState<
-    'idle' | 'success'
-  >('idle')
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('idle')
+  const [authErrorMsg, setAuthErrorMsg] = useState<string | null>(null)
 
-  const { isAuthenticated, hasAcceptedContract, hasCompletedDiagnostic, initSession } =
-    useUserStore()
-  const setHasAcceptedContract = useUserStore(
-    (s) => s.setHasAcceptedContract,
-  )
-  const setOperatorName = useUserStore((s) => s.setOperatorName)
+  const {
+    isAuthenticated,
+    hasAcceptedContract,
+    hasCompletedDiagnostic,
+    loginWithCredentials,
+    registerWithCredentials,
+  } = useUserStore()
+  const setHasAcceptedContract = useUserStore((s) => s.setHasAcceptedContract)
 
   useEffect(() => {
     ensureBt2FontLinks()
@@ -65,16 +68,37 @@ export default function AuthPage({
     []
   )
 
-  const onSubmitMock = (e: FormEvent) => {
+  const onSubmitLogin = async (e: FormEvent) => {
     e.preventDefault()
-    const form = e.currentTarget as HTMLFormElement
-    const fd = new FormData(form)
-    const name = fd.get('operatorName')
-    if (typeof name === 'string' && name.trim()) {
-      setOperatorName(name.trim())
+    const fd = new FormData(e.currentTarget as HTMLFormElement)
+    const email = (fd.get('email') as string) ?? ''
+    const password = (fd.get('password') as string) ?? ''
+    setAuthStatus('loading')
+    setAuthErrorMsg(null)
+    try {
+      await loginWithCredentials(email, password)
+      setAuthStatus('idle')
+    } catch (err) {
+      setAuthStatus('error')
+      setAuthErrorMsg(err instanceof Error ? err.message : 'Error de autenticación')
     }
-    initSession()
-    setMockAuthStatus('success')
+  }
+
+  const onSubmitRegister = async (e: FormEvent) => {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget as HTMLFormElement)
+    const email = (fd.get('email') as string) ?? ''
+    const password = (fd.get('password') as string) ?? ''
+    const displayName = (fd.get('operatorName') as string) ?? ''
+    setAuthStatus('loading')
+    setAuthErrorMsg(null)
+    try {
+      await registerWithCredentials(email, password, displayName)
+      setAuthStatus('idle')
+    } catch (err) {
+      setAuthStatus('error')
+      setAuthErrorMsg(err instanceof Error ? err.message : 'Error de registro')
+    }
   }
 
   const shouldShowContract = isAuthenticated && !hasAcceptedContract
@@ -137,7 +161,7 @@ export default function AuthPage({
                     </p>
                   </div>
 
-                  <form className="space-y-6" onSubmit={onSubmitMock}>
+                  <form className="space-y-6" onSubmit={onSubmitLogin}>
                     <div className="space-y-2">
                       <label
                         className="px-1 text-[0.70rem] font-semibold uppercase tracking-[0.1em] text-[#52616a]"
@@ -185,8 +209,12 @@ export default function AuthPage({
 
                     <button
                       type="submit"
-                      className="w-full rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-4 text-sm font-semibold tracking-tight text-white shadow-lg shadow-[#8B5CF6]/20 transition-all hover:opacity-90 active:scale-[0.98]"
+                      disabled={authStatus === 'loading'}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-4 text-sm font-semibold tracking-tight text-white shadow-lg shadow-[#8B5CF6]/20 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
                     >
+                      {authStatus === 'loading' ? (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      ) : null}
                       Entrar al protocolo Sentinel
                     </button>
                   </form>
@@ -208,7 +236,7 @@ export default function AuthPage({
                     onClick={() => {
                       // POC: sin OAuth real aún.
                       setMode('login')
-                      setMockAuthStatus('idle')
+                      setAuthStatus('idle')
                     }}
                   >
                     <GoogleIcon className="h-5 w-5" />
@@ -223,7 +251,7 @@ export default function AuthPage({
                         className="ml-1 font-bold text-[#8B5CF6] hover:underline"
                         onClick={() => {
                           setMode('signup')
-                          setMockAuthStatus('idle')
+                          setAuthStatus('idle')
                         }}
                       >
                         Crear cuenta
@@ -231,15 +259,13 @@ export default function AuthPage({
                     </p>
                   </div>
 
-                  {mockAuthStatus === 'success' && (
+                  {authStatus === 'error' && authErrorMsg ? (
                     <p
-                      className="mt-6 rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-2 text-xs text-[#26343d]"
-                      style={monoStyle}
+                      className="mt-4 rounded-lg border border-[#fee2e2] bg-[#fff1f2] px-3 py-2 text-xs text-[#9b1c1c]"
                     >
-                      [POC] Inicio de sesión simulado correcto. Completa el
-                      Contrato de Disciplina en el modal.
+                      {authErrorMsg}
                     </p>
-                  )}
+                  ) : null}
                 </motion.section>
               )}
 
@@ -269,7 +295,7 @@ export default function AuthPage({
                     </p>
                   </header>
 
-                  <form className="space-y-6" onSubmit={onSubmitMock}>
+                  <form className="space-y-6" onSubmit={onSubmitRegister}>
                     <div className="space-y-2">
                       <label
                         className="ml-1 text-[0.7rem] font-bold uppercase tracking-[0.05em] text-[#52616a]"
@@ -367,8 +393,12 @@ export default function AuthPage({
                     <div className="pt-4">
                       <button
                         type="submit"
-                        className="w-full rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-4 text-sm font-bold text-white shadow-[0px_10px_20px_rgba(109,59,215,0.2)] transition-all hover:opacity-95 active:scale-[0.98]"
+                        disabled={authStatus === 'loading'}
+                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#612aca] py-4 text-sm font-bold text-white shadow-[0px_10px_20px_rgba(109,59,215,0.2)] transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-60"
                       >
+                        {authStatus === 'loading' ? (
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        ) : null}
                         Inicializar perfil de riesgo
                       </button>
                     </div>
@@ -397,7 +427,7 @@ export default function AuthPage({
                         className="ml-1 font-bold text-[#8B5CF6] hover:underline"
                         onClick={() => {
                           setMode('login')
-                          setMockAuthStatus('idle')
+                          setAuthStatus('idle')
                         }}
                       >
                         Iniciar sesión
@@ -405,15 +435,11 @@ export default function AuthPage({
                     </p>
                   </footer>
 
-                  {mockAuthStatus === 'success' && (
-                    <p
-                      className="mt-6 rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-2 text-xs text-[#26343d]"
-                      style={monoStyle}
-                    >
-                      [POC] Registro simulado correcto. Completa el Contrato
-                      de Disciplina en el modal.
+                  {authStatus === 'error' && authErrorMsg ? (
+                    <p className="mt-4 rounded-lg border border-[#fee2e2] bg-[#fff1f2] px-3 py-2 text-xs text-[#9b1c1c]">
+                      {authErrorMsg}
                     </p>
-                  )}
+                  ) : null}
                 </motion.section>
               )}
 

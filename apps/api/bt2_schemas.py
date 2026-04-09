@@ -7,16 +7,22 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from apps.api.bt2_vault_pool import VAULT_POOL_HARD_CAP, VAULT_POOL_TARGET
+
+VaultTimeBandLiteral = Literal["morning", "afternoon", "evening", "overnight"]
 
 
 class Bt2MetaOut(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     contract_version: str = Field(
-        default="bt2-dx-001-stub-1",
+        default="bt2-dx-001-s6.0",
         serialization_alias="contractVersion",
-        description="Versión del contrato stub; bump al cambiar shape.",
+        description=(
+            "s6.0 = Sprint 06: DSR stub en snapshot, mercados canónicos, analytics admin, fetch job."
+        ),
     )
     settlement_verification_mode: Literal["trust", "verified"] = Field(
         ...,
@@ -58,6 +64,7 @@ class Bt2VaultPickOut(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     id: str
+    event_id: int = Field(serialization_alias="eventId")
     market_class: str = Field(serialization_alias="marketClass")
     market_label_es: str = Field(serialization_alias="marketLabelEs")
     event_label: str = Field(serialization_alias="eventLabel")
@@ -67,9 +74,96 @@ class Bt2VaultPickOut(BaseModel):
     selection_summary_es: str = Field(serialization_alias="selectionSummaryEs")
     traduccion_humana: str = Field(serialization_alias="traduccionHumana")
     curva_equidad: List[float] = Field(serialization_alias="curvaEquidad")
-    access_tier: Literal["open", "premium"] = Field(serialization_alias="accessTier")
+    access_tier: str = Field(serialization_alias="accessTier")
     unlock_cost_dp: int = Field(serialization_alias="unlockCostDp")
     operating_day_key: str = Field(serialization_alias="operatingDayKey")
+    is_available: bool = Field(True, serialization_alias="isAvailable")
+    kickoff_utc: str = Field(
+        "",
+        serialization_alias="kickoffUtc",
+        description="ISO 8601 UTC (…Z). Vacío si bt2_events.kickoff_utc es NULL.",
+    )
+    event_status: str = Field(
+        "",
+        serialization_alias="eventStatus",
+        description="Valor crudo bt2_events.status (CDM).",
+    )
+    external_search_url: str = Field("", serialization_alias="externalSearchUrl")
+    premium_unlocked: bool = Field(
+        False,
+        serialization_alias="premiumUnlocked",
+        description="True si el usuario ya desbloqueó este ítem premium hoy (US-BE-029) o legado con pick abierto.",
+    )
+    time_band: VaultTimeBandLiteral = Field(
+        ...,
+        serialization_alias="timeBand",
+        description=(
+            "Franja local del kickoff (TZ usuario). Bordes D-05.2-002: mañana [08:00,12:00), "
+            "tarde [12:00,18:00), noche [18:00,23:00), overnight resto (23:00–08:00)."
+        ),
+    )
+    pipeline_version: str = Field(
+        "",
+        serialization_alias="pipelineVersion",
+        description=(
+            "Versión del pipeline DSR (US-BE-025 / T-170): p. ej. `s6-rules-v0`, `s6-deepseek-v1` "
+            "cuando la señal vino de DeepSeek por lote (`picks_by_event`) con éxito."
+        ),
+    )
+    dsr_narrative_es: str = Field(
+        "",
+        serialization_alias="dsrNarrativeEs",
+        description="Narrativa modelo en español (sin payload crudo de proveedor).",
+    )
+    dsr_confidence_label: str = Field(
+        "",
+        serialization_alias="dsrConfidenceLabel",
+        description="Etiqueta simbólica de confianza (p. ej. low, medium).",
+    )
+    dsr_source: str = Field(
+        "",
+        serialization_alias="dsrSource",
+        description="Origen de la señal: rules_fallback, dsr_api, …",
+    )
+    market_canonical: str = Field(
+        "",
+        serialization_alias="marketCanonical",
+        description="Código mercado canónico (US-BE-027).",
+    )
+    market_canonical_label_es: str = Field(
+        "",
+        serialization_alias="marketCanonicalLabelEs",
+        description="Etiqueta humana del mercado canónico.",
+    )
+    model_market_canonical: str = Field(
+        "",
+        serialization_alias="modelMarketCanonical",
+        description="Mercado de la sugerencia DSR (canónico).",
+    )
+    model_selection_canonical: str = Field(
+        "",
+        serialization_alias="modelSelectionCanonical",
+        description="Selección sugerida por el modelo (canónico).",
+    )
+
+
+class VaultPremiumUnlockIn(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vault_pick_id: str = Field(
+        ...,
+        min_length=1,
+        serialization_alias="vaultPickId",
+        description="Id del ítem en vault (p. ej. dp-7).",
+    )
+
+
+class VaultPremiumUnlockOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vault_pick_id: str = Field(..., serialization_alias="vaultPickId")
+    premium_unlocked: bool = Field(True, serialization_alias="premiumUnlocked")
+    dp_balance_after: int = Field(..., serialization_alias="dpBalanceAfter")
 
 
 class Bt2VaultPicksPageOut(BaseModel):
@@ -79,7 +173,144 @@ class Bt2VaultPicksPageOut(BaseModel):
     generated_at_utc: str = Field(
         ...,
         serialization_alias="generatedAtUtc",
-        description="Marca temporal del stub (estática en MVP).",
+        description="Marca temporal de generación.",
+    )
+    message: Optional[str] = Field(None, serialization_alias="message")
+    pool_target_count: int = Field(
+        VAULT_POOL_TARGET,
+        serialization_alias="poolTargetCount",
+        description="Objetivo de negocio de ítems en pool (D-05.2-002 §6).",
+    )
+    pool_hard_cap: int = Field(
+        VAULT_POOL_HARD_CAP,
+        serialization_alias="poolHardCap",
+        description="Tope duro de ítems en una respuesta vault.",
+    )
+    pool_item_count: int = Field(
+        ...,
+        serialization_alias="poolItemCount",
+        description="Cantidad de ítems devueltos en `picks` para este día operativo.",
+    )
+    pool_below_target: bool = Field(
+        ...,
+        serialization_alias="poolBelowTarget",
+        description="True si hay menos ítems que `poolTargetCount` (falta de stock CDM u otra causa).",
+    )
+
+
+class Bt2AdminDsrDaySummaryOut(BaseModel):
+    """US-BE-028 — agregados MVP para vista admin precisión DSR (D-06-004 / D-06-015)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(..., serialization_alias="operatingDayKey")
+    distinct_events_in_vault: int = Field(
+        ...,
+        serialization_alias="distinctEventsInVault",
+        description="Eventos distintos en snapshot del día (todas las filas daily_picks).",
+    )
+    picks_settled_with_model: int = Field(
+        0,
+        serialization_alias="picksSettledWithModel",
+    )
+    model_hits: int = Field(0, serialization_alias="modelHits")
+    model_misses: int = Field(0, serialization_alias="modelMisses")
+    model_voids: int = Field(0, serialization_alias="modelVoids")
+    model_na: int = Field(0, serialization_alias="modelNa")
+    hit_rate_pct: Optional[float] = Field(
+        None,
+        serialization_alias="hitRatePct",
+        description="Aciertos / (hits+misses) × 100 si hay denominador.",
+    )
+    summary_human_es: str = Field(
+        "",
+        serialization_alias="summaryHumanEs",
+        description="Resumen legible para operador (US-BE-028 / identidad §B).",
+    )
+
+
+class Bt2AdminDsrAuditRowOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    pick_id: int = Field(..., serialization_alias="pickId")
+    user_id: str = Field(..., serialization_alias="userId")
+    event_id: int = Field(..., serialization_alias="eventId")
+    operating_day_key: str = Field(..., serialization_alias="operatingDayKey")
+    status: str
+    model_prediction_result: Optional[str] = Field(
+        None, serialization_alias="modelPredictionResult"
+    )
+    model_market_canonical: Optional[str] = Field(
+        None, serialization_alias="modelMarketCanonical"
+    )
+    model_selection_canonical: Optional[str] = Field(
+        None, serialization_alias="modelSelectionCanonical"
+    )
+
+
+class Bt2AdminDsrDayOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    summary: Bt2AdminDsrDaySummaryOut
+    audit_rows: List[Bt2AdminDsrAuditRowOut] = Field(
+        default_factory=list,
+        serialization_alias="auditRows",
+    )
+
+
+OPERATOR_PROFILE_VALUES = {
+    "DISCIPLINE_TRADER",
+    "IMPULSE_REACTIVE",
+    "SYSTEMATIC_ANALYST",
+    "RISK_SEEKER",
+    "CONSERVATIVE_OBSERVER",
+}
+
+
+class DiagnosticIn(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    operator_profile: str = Field(..., serialization_alias="operatorProfile")
+    system_integrity: float = Field(..., ge=0.0, le=1.0, serialization_alias="systemIntegrity")
+    answers_hash: Optional[str] = Field(None, serialization_alias="answersHash")
+
+    @field_validator("operator_profile")
+    @classmethod
+    def validate_operator_profile(cls, v: str) -> str:
+        if v not in OPERATOR_PROFILE_VALUES:
+            raise ValueError(
+                f"operator_profile debe ser uno de: {sorted(OPERATOR_PROFILE_VALUES)}"
+            )
+        return v
+
+
+class DiagnosticOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    operator_profile: str = Field(..., serialization_alias="operatorProfile")
+    system_integrity: float = Field(..., serialization_alias="systemIntegrity")
+    completed_at: str = Field(..., serialization_alias="completedAt")
+
+
+class OperatingDaySummaryOut(BaseModel):
+    """US-BE-018 — agregados del día operativo (zona horaria del usuario)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(..., serialization_alias="operatingDayKey")
+    user_time_zone: str = Field(..., serialization_alias="userTimeZone")
+    picks_opened_count: int = Field(0, serialization_alias="picksOpenedCount")
+    picks_settled_count: int = Field(0, serialization_alias="picksSettledCount")
+    won_count: int = Field(0, serialization_alias="wonCount")
+    lost_count: int = Field(0, serialization_alias="lostCount")
+    void_count: int = Field(0, serialization_alias="voidCount")
+    total_stake_units_settled: float = Field(0.0, serialization_alias="totalStakeUnitsSettled")
+    net_pnl_units: float = Field(0.0, serialization_alias="netPnlUnits")
+    dp_earned_from_settlements: int = Field(0, serialization_alias="dpEarnedFromSettlements")
+    dp_earned_from_session_close: int = Field(
+        0,
+        serialization_alias="dpEarnedFromSessionClose",
+        description="Suma delta_dp con reason session_close_discipline en la ventana (US-BE-021 / US-BE-018).",
     )
 
 

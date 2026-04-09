@@ -5,10 +5,7 @@ import {
   useSessionStore,
 } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
-import {
-  endOfDayLocalIso,
-  graceExpiresIso,
-} from '@/lib/operatingDay'
+import { graceExpiresIso } from '@/lib/operatingDay'
 
 beforeEach(() => {
   useSessionStore.getState().reset()
@@ -97,7 +94,8 @@ describe('useSessionStore (US-FE-012): día operativo y gracia', () => {
     const state = useSessionStore.getState()
     expect(state.penaltiesApplied.length).toBeGreaterThan(0)
     expect(state.penaltiesApplied[0].reason).toBe('grace_expired_station_unclosed')
-    expect(useUserStore.getState().disciplinePoints).toBeLessThan(dpBefore)
+    // Sprint 05: −50/−25 DP solo en servidor (session/open); el cliente no simula el cargo.
+    expect(useUserStore.getState().disciplinePoints).toBe(dpBefore)
   })
 
   it('no registra pendientes si la estación se cerró correctamente el día anterior', () => {

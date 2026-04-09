@@ -25,6 +25,7 @@ import DiagnosticPage from '@/pages/DiagnosticPage'
 import DailyReviewPage from '@/pages/DailyReviewPage'
 import LedgerPage from '@/pages/LedgerPage'
 import PerformancePage from '@/pages/PerformancePage'
+import AdminDsrAccuracyPage from '@/pages/AdminDsrAccuracyPage'
 import ProfilePage from '@/pages/ProfilePage'
 import SettlementPage from '@/pages/SettlementPage'
 import PickDetailPage from '@/pages/PickDetailPage'
@@ -40,6 +41,7 @@ import { SportUrlSync } from '@/components/SportUrlSync'
 import { firstVisibleSport } from '@/lib/uiSportsVisibility'
 import { fetchJson } from '@/lib/api'
 import type { EffectivenessReportStatusOut } from '@/types/api'
+import { useAppInit } from '@/hooks/useAppInit'
 
 function navClass(isActive: boolean) {
   return [
@@ -51,6 +53,7 @@ function navClass(isActive: boolean) {
 }
 
 function AppLayout() {
+  useAppInit()
   const { visible: sportsVisible } = useUiSportsVisibility()
   const [menuOpen, setMenuOpen] = useState(false)
   const [reportNotice, setReportNotice] = useState<string | null>(null)
@@ -287,6 +290,10 @@ function AppLayout() {
                     <Route path="daily-review" element={<DailyReviewPage />} />
                     <Route path="ledger" element={<LedgerPage />} />
                     <Route path="performance" element={<PerformancePage />} />
+                    <Route
+                      path="admin/dsr-accuracy"
+                      element={<AdminDsrAccuracyPage />}
+                    />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="dashboard" element={<V2DashboardPage />} />
                     <Route path="settings" element={<V2SettingsOutlet />} />

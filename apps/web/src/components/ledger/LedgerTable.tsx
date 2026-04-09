@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
+import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
 import type { LedgerRow } from '@/store/useTradeStore'
 
 function formatLedgerDate(iso: string): string {
@@ -62,7 +63,7 @@ export function LedgerTable(props: {
                 Fecha
               </th>
               <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.1em] text-[#52616a]">
-                Protocolo
+                Clase de mercado
               </th>
               <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.1em] text-[#52616a]">
                 Outcome
@@ -88,8 +89,12 @@ export function LedgerTable(props: {
             ) : (
               props.rows.map((row) => {
                 const mc = row.marketClass ?? 'CDM'
+                const marketHuman = displayMarketLabelEs({
+                  marketCanonicalLabelEs: row.marketCanonicalLabelEs,
+                  marketClass: row.marketClass,
+                })
                 const od = outcomeDisplay(row)
-                const dp = row.earnedDp ?? 25
+                const dp = row.earnedDp ?? 0
                 return (
                   <tr
                     key={`${row.pickId}-${row.settledAt}`}
@@ -104,8 +109,9 @@ export function LedgerTable(props: {
                     <td className="px-6 py-6">
                       <span
                         className={`inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${protocolPillClass(mc)}`}
+                        title={mc}
                       >
-                        {mc}
+                        {marketHuman}
                       </span>
                       <p className="mt-1 line-clamp-1 text-xs text-[#52616a]">
                         {row.titulo ?? row.pickId}

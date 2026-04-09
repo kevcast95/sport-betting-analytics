@@ -6,10 +6,11 @@
 
 ## Estado del sprint
 
-- Fecha inicio: (definir)
-- Fecha fin: (definir)
-- Owner: (definir)
-- Estado: Planned / In Progress / Done
+- Fecha inicio: *(histórico — ver control de versiones / equipo)*
+- Fecha fin: **2026-04-04** (cierre administrativo)
+- Owner: *(equipo)*
+- Estado: **Done** (entregables núcleo BE conductual + integración FE V2; mejoras US-FE-030 ejecutadas salvo ítem opcional T-124).
+- **Cierre:** pendiente opcional **T-124** (UI `dp-ledger`) → backlog Sprint 05 o US puntual; ver [`TASKS.md`](./TASKS.md) y [`sprint-05/PLAN.md`](../sprint-05/PLAN.md).
 
 ## Resumen — US Frontend
 
@@ -20,6 +21,7 @@
 | US-FE-027 | Bankroll y sesión conductual persistentes vía API |
 | US-FE-028 | Liquidación con resultados reales y bankroll en BD |
 | US-FE-029 | Lenguaje claro y glosario; marco para sizing futuro |
+| US-FE-030 | [Improvement] DP y métricas V2 alineados a API/DB (post-auditoría) |
 
 ## Resumen — US Backend *(redactar en este mismo archivo)*
 
@@ -118,7 +120,7 @@ Permitir que el usuario tome picks, los consulte y los liquide con un resultado 
 
 - Regla 1: Solo se puede liquidar si `status='open'`.
 - Regla 2: PnL: `won → stake_units * (odds_accepted - 1)`. `lost → -stake_units`. `void → 0`.
-- Regla 3: DP al liquidar: `won → +2`, `lost → +1` (disciplina de registrar), `void → 0`. Registrar en `bt2_dp_ledger` con `reason='pick_settle'`, `reference_id=pick_id`.
+- Regla 3: DP al liquidar (escala canónica, ver **D-04-011**): `won → +10`, `lost → +5` (proporción 2:1, misma política que la implementación inicial +2/+1), `void → 0`. Registrar en `bt2_dp_ledger` con `reason='pick_settle'`, `reference_id=pick_id`.
 - Regla 4: `bt2_bankroll_snapshots` recibe una entrada por settle con `event_type='pick_win'|'pick_loss'|'pick_void'`.
 - Regla 5: El campo `bankrollAfterUnits` en la respuesta = `bt2_users.bankroll_amount` actualizado tras el PnL.
 
@@ -246,7 +248,7 @@ Exponer la configuración conductual del usuario (stake %, timezone, umbral DP p
 
 #### 1) Objetivo de negocio
 
-Que La Bóveda y el flujo de picks **dejen de depender** de datos hardcodeados (`vaultMockPicks` y derivados) y consuman la **misma forma de dominio (CDM)** desde la API, manteniendo la UX del Sprint 01 (tiers abierto/premium, copy en español, `selectionSummaryEs`, etc.).
+Que La Bóveda y el flujo de picks **dejen de depender** de datos hardcodeados (`vaultMockPicks` y derivados) y consuman el contrato real de **`GET /bt2/vault/picks`** (ver [`HANDOFF_BA_PM_FRONTEND_SPRINT04.md`](../../HANDOFF_BA_PM_FRONTEND_SPRINT04.md) **§8.2**), manteniendo la UX del Sprint 01 (tiers **standard** ≈ acceso libre / **premium** ≈ umbral DP, copy en español). El payload actual usa `market`, `suggestedSelection`, equipos, `accessTier`, `isAvailable`, `externalSearchUrl`, etc.; el FE mapea a vistas/PickCard (puede construir `eventLabel` y texto de selección localmente si el API no envía `selectionSummaryEs`).
 
 #### 2) Alcance
 
@@ -269,13 +271,15 @@ Que La Bóveda y el flujo de picks **dejen de depender** de datos hardcodeados (
 #### 4) Contrato de entrada/salida
 
 - Entrada: JWT en requests protegidos (tras US-FE-026).
-- Salida: UI renderiza picks y metadatos compatibles con el cliente actual; campos obligatorios acordados con backend (p. ej. `id`, `marketClass` o equivalente, `eventLabel`, `selectionSummaryEs`, `accessTier`, cuotas sugeridas según CDM).
+- Salida: UI renderiza picks según OpenAPI y **§8.2 del HANDOFF** (`id`, `eventId`, `league`, `homeTeam`, `awayTeam`, `kickoffUtc`, `market`, `suggestedSelection`, `suggestedDecimalOdds`, **`accessTier`** `standard` \| `premium`, **`isAvailable`**, **`externalSearchUrl`**, `message` si lista vacía).
 
 #### 5) Reglas de dominio
 
 - Regla 1: **Sin nombres de proveedor** en payloads mostrados al usuario; solo CDM.
 - Regla 2: **401** → flujo de re-login o sesión expirada (coordinado con US-FE-026).
 - Regla 3: Lista vacía ≠ error de servidor; copy claro al usuario.
+- Regla 4: **`POST /bt2/session/open`** debe ejecutarse para generar snapshot del día; sin sesión abierta, vault puede devolver `picks: []` con mensaje informativo (**§8.2 HANDOFF**).
+- Regla 5: El API usa **`accessTier`: `standard` | `premium`**. El Sprint 01 hablaba de “abierto” vs “premium”: **`standard` = acceso sin gastar DP** (equivalente producto a “abierto”); **`premium`** = bloqueo en UI hasta saldo ≥ `dpUnlockPremiumThreshold` (**`GET /bt2/user/dp-balance`** + **`GET /bt2/user/settings`**). No enviar el literal `open` al backend.
 
 #### 6) Criterios de aceptación (Given / When / Then)
 
@@ -298,9 +302,9 @@ Que La Bóveda y el flujo de picks **dejen de depender** de datos hardcodeados (
 
 #### 10) Definition of Done
 
-- [ ] Sin dependencia de mock en flujo principal de bóveda.
-- [ ] Estados vacío/error/carga cubiertos.
-- [ ] `DECISIONES.md` Sprint 04 anota cualquier transición temporal del ledger.
+- [x] Flujo principal de bóveda vía API; mock solo como fallback acotado (ver `FE_CIERRE_PUNCHLIST.md`).
+- [x] Estados vacío/error/carga cubiertos.
+- [x] Transiciones documentadas en `TASKS.md` T-112 / `DECISIONES.md` según cierre.
 
 ---
 
@@ -377,8 +381,8 @@ Sustituir el **usuario mock** por autenticación real contra el backend BT2: reg
 
 #### 10) Definition of Done
 
-- [ ] Flujo E2E auth mínimo verificado contra API local.
-- [ ] Guards V2 respetan sesión real.
+- [x] Flujo E2E auth mínimo verificado contra API local (T-111).
+- [x] Guards V2 respetan sesión real (JWT + `bt2FetchJson`).
 
 ---
 
@@ -391,7 +395,8 @@ Que **capital de trabajo**, **porcentaje de unidad (stake)** y **estado del día
 #### 2) Alcance
 
 - Incluye:
-  - `useBankrollStore`: lectura inicial desde **`GET /bt2/user/profile`** (u otro contrato acordado que incluya `bankrollAmount` / moneda) y persistencia de cambios vía **`POST /bt2/user/bankroll`** cuando el usuario confirma tesorería; alinear **stake %** si el backend expone ajuste en perfil/settings (si no existe endpoint, documentar en US-DX + `DECISIONES.md` y mantener stake local hasta US posterior).
+  - `useBankrollStore`: lectura inicial desde **`GET /bt2/user/profile`** — **implementado** en `apps/api/bt2_router.py` (`ProfileOut`: `bankrollAmount`, `bankrollCurrency`, email, etc.) — y persistencia vía **`POST /bt2/user/bankroll`** al confirmar tesorería.
+  - **Stake % (riesgo por unidad):** sincronizar con **`GET /bt2/user/settings`** y **`PUT /bt2/user/settings`** (`riskPerPickPct`, etc.; ver US-BE-012 / OpenAPI) para que no quede solo en local persistido.
   - `useSessionStore`: hidratar **`GET /bt2/session/day`** (`operatingDayKey`, `userTimeZone`, `graceUntilIso`, `pendingSettlementsPreviousDay`, `stationClosedForOperatingDay`, etc.) según OpenAPI.
   - `GET /bt2/meta` para **`settlementVerificationMode`** (`trust` | `verified`) coherente con UI existente.
   - Comportamiento offline o desincronización: mensaje claro y reintento (sin corromper estado).
@@ -427,7 +432,8 @@ Que **capital de trabajo**, **porcentaje de unidad (stake)** y **estado del día
 
 #### 8) Riesgos y mitigación
 
-- Riesgo: stake % solo local. Mitigación: US-DX para `bt2_user_settings` expuesto en API.
+- Riesgo: doble fuente de verdad bankroll local vs servidor durante la migración. Mitigación: tras login exitoso, **hidratar stores desde API** antes de mostrar cifras críticas.
+- ~~Riesgo: stake % solo local~~ — Mitigación: **`/bt2/user/settings`** ya expone `riskPerPickPct` (US-BE-012); el FE debe leerlo/actualizarlo.
 
 #### 9) Plan de pruebas
 
@@ -435,8 +441,8 @@ Que **capital de trabajo**, **porcentaje de unidad (stake)** y **estado del día
 
 #### 10) Definition of Done
 
-- [ ] Bankroll y sesión/día operativo sincronizados con API en flujo feliz.
-- [ ] Gaps documentados en `DECISIONES.md` si algún campo sigue local temporalmente.
+- [x] Bankroll y sesión/día operativo sincronizados con API en flujo feliz (`useAppInit`, T-113).
+- [x] `riskPerPickPct` vía `GET`/`PUT /bt2/user/settings` (o gap puntual en `DECISIONES.md`).
 
 ---
 
@@ -494,8 +500,8 @@ Que el **terminal de liquidación** use **resultados reales** del evento (p. ej.
 
 #### 10) Definition of Done
 
-- [ ] Liquidación persistida en servidor; bankroll coherente.
-- [ ] Comportamiento documentado en `DECISIONES.md` para modos trust/verified.
+- [x] Liquidación vía `POST /bt2/picks/{id}/settle`; bankroll desde respuesta servidor (`settleApiPick`, T-114).
+- [x] Modo trust documentado en `DECISIONES.md` / HANDOFF; verified vNext.
 
 ---
 
@@ -520,7 +526,7 @@ Además, **documentar en esta US** el marco de producto para una evolución post
   - **Marco escrito** (sección “Principios para evolución” en esta US o entrada en `DECISIONES.md` al implementar): reglas no negociables para una futura **sugerencia de 1,5 u / 2 u** como recompensa: **techo máximo**, **opt-in o explicación explícita**, **protección al principiante (default 1 u)**, separación entre **recompensa narrativa (DP)** y **aumento de riesgo en dinero**.
 
 - Excluye:
-  - Implementación del **multiplicador de unidades** en liquidación o del motor de “mejor pick → más unidades” (queda para **US-FE-030** o US de sizing, salvo que el equipo decida explícitamente ampliar alcance).
+  - Implementación del **multiplicador de unidades** en liquidación o del motor de “mejor pick → más unidades” (queda para **US-FE-031** o US de sizing, salvo que el equipo decida explícitamente ampliar alcance).
   - Cambiar la fórmula matemática actual de 1 unidad sin nueva US de tesorería.
   - Contenido legal o fiscal; solo educación de producto.
 
@@ -567,11 +573,79 @@ No aplica API nueva. Opcional: claves i18n o constantes de copy centralizadas si
 
 #### 10) Definition of Done
 
-- [ ] Copy actualizado según criterios §6; glosario accesible desde V2.
-- [ ] `DECISIONES.md` (Sprint 04) u sección vinculada con principios para sizing-recompensa futuro.
-- [ ] Sin regresión en tests existentes de `apps/web`.
+- [x] Glosario (`GlossaryModal`) + copy DP +10/+5 en tours y ledger (T-115; ver punchlist cierre).
+- [x] Principios sizing-recompensa: **D-04-011** y **D-04-013** en `DECISIONES.md`.
+- [x] `npm test` en `apps/web` en verde al cierre Sprint 04 FE.
 
 ---
+
+### US-FE-030 — [Improvement] DP y métricas V2 alineados a API y base de datos
+
+> **Tipo:** Improvement respecto a US-FE-025 … US-FE-029 — cierra brechas de **fuente de verdad** detectadas en la auditoría [`./AUDITORIA_DP_Y_METRICAS_VISTAS_V2.md`](./AUDITORIA_DP_Y_METRICAS_VISTAS_V2.md).  
+> **Dependencias BE:** desbloqueo total cuando existan ledger al **take premium** y **penalizaciones de gracia** en servidor (US-BE / decisión en `DECISIONES.md`); hasta entonces el FE debe **reconciliar** con `GET /bt2/user/dp-balance` y **no mostrar números inventados**.
+
+#### 1) Objetivo de negocio
+
+Que **todo valor de DP y métricas conductuales mostrado como “oficial”** sea coherente con **`bt2_dp_ledger`** y respuestas de API, o esté **claramente etiquetado** como estimación local. Eliminar copy y highlights que **simulan** saldos (p. ej. “saldo inicial” fijo) cuando el usuario ya opera con cuenta real.
+
+#### 2) Alcance
+
+- Incluye:
+  - **Tour de economía** (`EconomyTourModal`) y textos afines: **sin** cifras de saldo hardcodeadas; mostrar saldo vivo post-`syncDpBalance` o mensaje sin número ficticio.
+  - **`ledgerAnalytics` / agregados:** corregir fallbacks numéricos (p. ej. `earnedDp`) para que no contradigan **D-04-011** (+10/+5).
+  - **Reconciliación de `disciplinePoints`:** tras `settle`, take premium (cuando BE lo persista), y en puntos de fricción; preferir `dp_balance_after` / `syncDpBalance` frente a `incrementDisciplinePoints` optimista donde el servidor ya escribe ledger.
+  - **Cierre del día (`DailyReviewPage`):** dejar de presentar **“disciplina del día”** u otras cifras heurísticas como si fueran datos de servidor **o** etiquetar explícitamente “vista previa local”; ROI/P/L del día: migrar hacia datos derivados de **`GET /bt2/picks`** (filtro fecha / día operativo) cuando el contrato lo permita, o documentar gap hasta endpoint agregado BE.
+  - **Coste premium en UI:** en flujo autenticado con vault API, usar **`unlockCostDp`** del pick; minimizar uso de constante `50` salvo fallback controlado o mock.
+  - **Glosario / tours:** revisar que cifras citadas (penalizaciones, bonos) coincidan con lo que el backend aplica en el entorno desplegado.
+  - **Opcional producto:** exponer **`GET /bt2/user/dp-ledger`** en una sección (p. ej. perfil o ajustes) para trazabilidad de movimientos DP.
+  - **Diagnóstico (`DiagnosticPage`):** el valor mostrado como **Puntos de Disciplina** no debe variar con las respuestas del cuestionario; debe ser el **saldo real** del store/API (0 para usuario nuevo sin ledger). La “consistencia del cuestionario” / integridad pueden seguir siendo vista previa conductual, **desacoplada** del saldo DP (ver auditoría §3.12, tarea **T-125**).
+- Excluye:
+  - Definición de **umbrales de rango** (Novato / Sentinel / …) en servidor — salvo nueva US-BE/settings; esta US puede limitarse a documentar umbrales como UX fija en front.
+  - Implementación del multiplicador de unidades (**US-FE-031** u otra US de sizing).
+
+#### 3) Contexto técnico
+
+- Archivos prioritarios: `EconomyTourModal.tsx`, `tours/tourScripts.ts`, `GlossaryModal.tsx`, `DailyReviewPage.tsx`, `lib/dayLedgerMetrics.ts`, `lib/ledgerAnalytics.ts`, `useUserStore.ts`, `useVaultStore.ts`, `useSessionStore.ts`, `useTradeStore.ts`, `PickCard.tsx`, `LedgerPage.tsx`, `PerformancePage.tsx`.
+- Auditoría detallada: [`./AUDITORIA_DP_Y_METRICAS_VISTAS_V2.md`](./AUDITORIA_DP_Y_METRICAS_VISTAS_V2.md).
+
+#### 4) Contrato de entrada/salida
+
+- Entrada: JWT; endpoints existentes `dp-balance`, `dp-ledger`, `picks`, `session/day`, `vault/picks`, `settle`.
+- Salida: UI sin discrepancias flagrantes entre chip DP y servidor tras flujos normales; ausencia de “1 250 DP” u otros placeholders presentados como saldo real.
+
+#### 5) Reglas de dominio
+
+- Regla 1: **Saldo DP** mostrado debe poder justificarse contra `SUM(bt2_dp_ledger)` vía `dp-balance` tras sincronización.
+- Regla 2: **+10 / +5** por liquidación son los valores canónicos (**D-04-011**); ningún fallback en agregados debe asumir otro número.
+- Regla 3: Si una métrica es **solo cliente**, la UI no debe implicar auditoría contable.
+
+#### 6) Criterios de aceptación (Given / When / Then)
+
+1. Given usuario autenticado con saldo conocido en BD, When abre el tour de economía paso 1, Then **no** ve un “saldo inicial” fijo inventado (p. ej. 1 250) que contradiga `dp-balance`.
+2. Given filas de ledger con `earned_dp` ausente en objeto local, When se calculan agregados de DP en rendimiento/libro mayor, Then no se asume un valor numérico incompatible con D-04-011.
+3. Given liquidación API exitosa, When el usuario vuelve al header del búnker, Then el chip DP coincide con la última verdad servidor (respuesta settle o sync posterior).
+4. Given `DailyReviewPage`, When el usuario lee el bloque de disciplina/ROI, Then entiende si los datos son **locales** o **servidor** (copy o diseño explícito).
+5. Given pick premium desde vault API, When se muestra coste, Then el valor coincide con `unlockCostDp` del payload salvo error documentado de red.
+
+#### 7) No funcionales
+
+- No regresión en `npm test` en `apps/web`.
+- Evitar ráfagas innecesarias de `dp-balance`; consolidar tras mutaciones.
+
+#### 8) Riesgos y mitigación
+
+- **Riesgo:** BE aún no descuenta DP al tomar pick premium. **Mitigación:** documentar en `DECISIONES.md`; FE reconcilia con `syncDpBalance` tras la acción cuando exista endpoint o tras refresh manual.
+
+#### 9) Plan de pruebas
+
+- Manual: registro → onboarding → vault → settle → chip DP; comparar con `GET /bt2/user/dp-balance` y `dp-ledger`.
+- Tests unitarios en funciones puras (`ledgerAnalytics`, métricas día) si se alteran.
+
+#### 10) Definition of Done
+
+- [x] Tareas **T-119 … T-123** y **T-125** en [`TASKS.md`](./TASKS.md) completadas.
+- [ ] **T-124** (UI `dp-ledger`) explícitamente **aplazada** a Sprint 05 — ver [`../sprint-05/PLAN.md`](../sprint-05/PLAN.md).
+- [ ] Auditoría [`AUDITORIA_DP_Y_METRICAS_VISTAS_V2.md`](./AUDITORIA_DP_Y_METRICAS_VISTAS_V2.md) actualizada en §4–5 si el alcance cambia.
 
 ---
 
@@ -691,6 +765,168 @@ Que el usuario vea siempre sus mismos 5 picks del día sin importar a qué hora 
 - [ ] T-107: `GET /bt2/vault/picks` lee de `bt2_daily_picks`, incluye `isAvailable`, `accessTier`, `externalSearchUrl`.
 - [ ] Idempotencia verificada: doble apertura de sesión no duplica picks.
 - [ ] V1 `/health` → `{"ok": true}`.
+
+---
+
+### US-BE-015 — Cambio respecto a US-BE-010 y US-BE-014: Corrección escala DP + filtro odds mínimas
+
+> **Tipo:** Cambio — altera contrato ya aceptado en US-BE-010 (settle) y US-BE-014 (snapshot).
+> **Motivo:** (1) La primera implementación de settle usó +2/+1/0. La escala canónica acordada en D-04-011 es +10/+5/0. (2) El snapshot diario no filtraba cuota mínima. V1 ya aplica el filtro ≥1.30 como regla de calidad económica.
+
+#### 1) Objetivo de negocio
+
+Alinear el código con la economía de DP acordada (D-04-011) y con el criterio de valor económico heredado de V1, para que el FE muestre cifras correctas de DP ganados y la bóveda solo muestre picks con retorno mínimo justificable.
+
+#### 2) Alcance
+
+- Incluye:
+  - `apps/api/bt2_router.py` — `POST /bt2/picks/{id}/settle`: cambiar delta DP de `+2/+1/0` a `+10/+5/0`.
+  - `apps/api/bt2_router.py` — `_generate_daily_picks_snapshot()`: añadir condición `bt2_odds_snapshot.odd_value >= 1.30` al filtro de eventos candidatos.
+  - `apps/api/bt2_router.py` — `POST /bt2/auth/register` y `_ensure_user_settings()`: cambiar el valor default de `dp_unlock_premium_threshold` de `10` a `50`.
+  - Un `UPDATE` de datos sobre registros existentes en `bt2_user_settings` (ver T-109).
+- Excluye:
+  - Cambio de lógica de outcome (cómo se determina won/lost/void) — sin tocar.
+  - Cambio de schema de respuesta — el contrato JSON no cambia, solo los valores numéricos.
+  - Creación de nueva migración Alembic — no hay cambio de schema, solo código y datos.
+
+#### 3) Reglas de dominio
+
+- Regla 1: Todo nuevo registro en `bt2_dp_ledger` con `event_type='pick_settle'` debe tener `delta_dp` en `{+10, +5, 0}`. Valores `+2` o `+1` son incorrectos.
+- Regla 2: `_generate_daily_picks_snapshot()` no puede incluir ningún evento cuya mejor odd disponible en `bt2_odds_snapshot` sea `< 1.30`. Si al filtrar quedan menos de 5 candidatos, se insertan los disponibles sin completar.
+- Regla 3: El default de `dp_unlock_premium_threshold` en cualquier fila nueva de `bt2_user_settings` es `50` (equivale al anterior `10` en la escala vieja ×5).
+
+#### 4) Contexto técnico
+
+- Archivo a modificar: `apps/api/bt2_router.py`.
+- Registros de prueba existentes en `bt2_dp_ledger` con escala vieja (+2/+1) son aceptables como deuda técnica de dev — no requieren migración (ver D-04-011 trade-off).
+- Registros existentes en `bt2_user_settings` con `dp_unlock_premium_threshold=10` deben actualizarse con `UPDATE bt2_user_settings SET dp_unlock_premium_threshold=50 WHERE dp_unlock_premium_threshold=10;`.
+
+#### 5) Criterios de aceptación
+
+1. Given `POST /bt2/picks/{id}/settle` con outcome `won`, When se ejecuta, Then `bt2_dp_ledger` registra `delta_dp=+10` — no `+2`.
+2. Given `POST /bt2/picks/{id}/settle` con outcome `lost`, When se ejecuta, Then `bt2_dp_ledger` registra `delta_dp=+5` — no `+1`.
+3. Given `POST /bt2/session/open` y hay un evento con mejor odd `1.25`, When se genera el snapshot, Then ese evento NO aparece en `bt2_daily_picks`.
+4. Given `POST /bt2/session/open` y hay un evento con mejor odd `1.30`, When se genera el snapshot, Then ese evento SÍ es candidato.
+5. Given `POST /bt2/auth/register` para un usuario nuevo, When se consulta `GET /bt2/user/settings`, Then `dpUnlockPremiumThreshold=50`.
+
+#### 6) Definition of Done
+
+- [ ] T-108: `POST /bt2/picks/{id}/settle` usa `+10/+5/0` en `bt2_dp_ledger`.
+- [ ] T-109: Default `dp_unlock_premium_threshold=50` en código y datos existentes actualizados.
+- [ ] T-110: `_generate_daily_picks_snapshot()` filtra `odd_value >= 1.30`.
+- [ ] V1 `/health` → `{"ok": true}`.
+
+> Enmienda de: US-BE-010 (settle) y US-BE-014 (snapshot). Ver también D-04-011.
+
+---
+
+### US-BE-016 — Persistencia del perfil diagnóstico conductual (Addendum Sprint 04)
+
+> **Tipo:** Addendum — gap identificado por el agente BA/PM Frontend durante ejecución de US-FE-025…029.
+> **Contexto:** El diagnóstico conductual (5 preguntas → `operatorProfile` + `systemIntegrity`) vive exclusivamente en `localStorage` del usuario. Si limpia el browser o cambia de dispositivo, pierde su perfil. El sistema no puede construir métricas longitudinales de comportamiento sin persistencia servidor.
+> **Decisión de persistencia:** Opción B — tabla `bt2_user_diagnostics` con historial de recalibraciones (vs. Opción A de columnas en `bt2_users`). Razón: el diagnóstico es susceptible de recalibración manual o automática en Sprint 06; el historial es necesario para medir deriva conductual en el tiempo.
+
+#### 1) Objetivo de negocio
+
+Que el perfil diagnóstico del usuario esté disponible cross-device tras login, y que el sistema conserve el historial de recalibraciones para análisis longitudinal futuro.
+
+#### 2) Alcance
+
+- Incluye:
+  - Nueva tabla `bt2_user_diagnostics` vía migración Alembic.
+  - `POST /bt2/user/diagnostic` — guarda o sobreescribe el perfil diagnóstico del usuario autenticado.
+  - `GET /bt2/user/diagnostic` — retorna el perfil más reciente (o 404 si nunca completó el diagnóstico).
+  - Validación de `operator_profile` contra enum cerrado y `system_integrity` en `[0.0, 1.0]`.
+- Excluye:
+  - Lógica de scoring o recalibración automática — Sprint 06.
+  - Exposición del `operatorProfile` en `GET /bt2/metrics/behavioral` — requiere US-DX previa para el alias CDM.
+  - Modificar `bt2_users` — sin columnas nuevas en esa tabla.
+
+#### 3) Schema de tabla
+
+```sql
+bt2_user_diagnostics
+  id                  serial PRIMARY KEY
+  user_id             uuid NOT NULL REFERENCES bt2_users(id) ON DELETE CASCADE
+  operator_profile    varchar(50) NOT NULL
+  system_integrity    numeric(4,3) NOT NULL   -- 0.000 a 1.000
+  answers_hash        varchar(64) NULL        -- SHA-256 de las respuestas (auditoría)
+  created_at          timestamptz NOT NULL DEFAULT now()
+```
+
+- Índice en `(user_id, created_at DESC)` para recuperar el más reciente eficientemente.
+- No hay `UNIQUE (user_id)` — se permite historial; el GET retorna el registro más reciente.
+
+#### 4) Contratos de entrada/salida
+
+**`POST /bt2/user/diagnostic`** — protegido (JWT)
+```json
+Body: {
+  "operator_profile": "DISCIPLINE_TRADER",
+  "system_integrity": 0.74,
+  "answers_hash": "abc123..."   // opcional
+}
+
+200: {
+  "operatorProfile": "DISCIPLINE_TRADER",
+  "systemIntegrity": 0.74,
+  "completedAt": "2026-04-07T15:32:00Z"
+}
+422: system_integrity fuera de [0.0, 1.0] o operator_profile no válido
+401: sin JWT
+```
+
+**`GET /bt2/user/diagnostic`** — protegido (JWT)
+```json
+200: {
+  "operatorProfile": "DISCIPLINE_TRADER",
+  "systemIntegrity": 0.74,
+  "completedAt": "2026-04-07T15:32:00Z"
+}
+404: usuario nunca completó diagnóstico
+401: sin JWT
+```
+
+#### 5) Reglas de dominio
+
+- Regla 1: `operator_profile` debe pertenecer al enum `OperatorProfileId`. Valores válidos (sincronizar con FE): `DISCIPLINE_TRADER`, `IMPULSE_REACTIVE`, `SYSTEMATIC_ANALYST`, `RISK_SEEKER`, `CONSERVATIVE_OBSERVER`. Si el FE agrega valores nuevos, crear US-DX antes de exponerlos en BE.
+- Regla 2: `system_integrity` debe estar en `[0.0, 1.0]` inclusive. Fuera de rango → 422.
+- Regla 3: El `POST` siempre inserta una fila nueva (no upsert) — el historial es intencional. El `GET` retorna `ORDER BY created_at DESC LIMIT 1`.
+- Regla 4: Solo el propio usuario puede leer/escribir su diagnóstico. JWT requerido; sin excepción.
+- Regla 5: `answers_hash` es opcional. Si no se envía, se guarda `NULL`. No validar su formato en BE.
+
+#### 6) Contexto técnico
+
+- Archivo a modificar: `apps/api/bt2_router.py`, `apps/api/bt2_models.py`, `apps/api/bt2_schemas.py`.
+- Nueva migración Alembic: `alembic revision --autogenerate -m "bt2_user_diagnostics_sprint04"`.
+- Integración FE esperada (informativa, no parte del DoD de esta US):
+  - `DiagnosticPage.tsx`: al llamar `completeDiagnostic()`, añadir `POST /bt2/user/diagnostic`.
+  - `useAppInit.ts` o equivalente: al iniciar app con usuario autenticado, llamar `GET /bt2/user/diagnostic` para hidratar el store si ya tiene perfil guardado.
+
+#### 7) Criterios de aceptación
+
+1. Given usuario autenticado sin diagnóstico previo, When `GET /bt2/user/diagnostic`, Then 404.
+2. Given usuario envía `POST` con `operator_profile` y `system_integrity` válidos, When se ejecuta, Then retorna 200 con `operatorProfile`, `systemIntegrity` y `completedAt`.
+3. Given el mismo usuario repite `POST` con un perfil distinto, When se ejecuta, Then se inserta nueva fila y `GET` retorna el perfil más reciente.
+4. Given `system_integrity: 1.5`, When `POST`, Then 422 Unprocessable Entity.
+5. Given `operator_profile: "INVENTED_VALUE"`, When `POST`, Then 422.
+6. Given request sin JWT, When `POST` o `GET`, Then 401.
+7. Given dos registros históricos en `bt2_user_diagnostics`, When `GET`, Then retorna el más reciente (mayor `created_at`).
+
+#### 8) No funcionales
+
+- Tiempo de respuesta `POST` y `GET` < 200ms en entorno local.
+- No exponer `answers_hash` en la respuesta del `GET` (es solo para auditoría interna).
+
+#### 9) Definition of Done
+
+- [ ] T-116: Migración Alembic `bt2_user_diagnostics` aplicada (`upgrade head` y `downgrade -1 && upgrade head` sin error).
+- [ ] T-117: `POST /bt2/user/diagnostic` implementado con validación de enum y rango, inserta historial.
+- [ ] T-118: `GET /bt2/user/diagnostic` retorna perfil más reciente o 404.
+- [ ] Verificado con curl: criterios 1–7 de §7.
+- [ ] V1 `/health` → `{"ok": true}`.
+
+---
 
 ---
 

@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
+import { useUserStore } from '@/store/useUserStore'
 
 export type EconomyTourModalProps = {
   open: boolean
@@ -30,53 +31,64 @@ type TourStep = {
   highlight?: { label: string; value: string }
 }
 
-const TOUR_STEPS: TourStep[] = [
-  {
-    id: 'que-son-dp',
-    title: '¿Qué son los Puntos de Disciplina?',
-    body: [
-      'Los DP son la moneda interna del búnker. Representan tu coherencia operativa, no tu capital real.',
-      'Cuantos más DP acumulas, mayor acceso tienes a las señales y mayores los reconocimientos de protocolo.',
-    ],
-    highlight: { label: 'Tu saldo inicial', value: '1 250 DP' },
-  },
-  {
-    id: 'picks-del-dia',
-    title: 'Picks del día: abiertos y premium',
-    body: [
-      'Cada día el sistema genera señales. Las lecturas abiertas son accesibles sin coste. Las premium requieren DP.',
-      'Con un bajo saldo de DP solo verás el bloque básico. Disciplina sostenida desbloquea análisis más profundos.',
-    ],
-    highlight: { label: 'Coste promedio desbloqueo', value: '100 DP / pick' },
-  },
-  {
-    id: 'ganar-gastar',
-    title: 'Cómo ganar y gastar DP',
-    body: [
-      'Ganas DP completando el protocolo: liquidar picks (+25 DP), cerrar la estación diaria (+25 DP), reconciliar el balance.',
-      'Gastas DP desbloqueando picks premium. La clave es el hábito, no el volumen.',
-    ],
-    highlight: { label: 'DP por liquidación', value: '+25 DP' },
-  },
-  {
-    id: 'dia-calendario',
-    title: 'El día operativo es el día calendario',
-    body: [
-      'Los topes de DP y el feed diario se reinician a medianoche en tu zona horaria local.',
-      'Si no cierras la estación antes de medianoche, tienes 24 h de gracia. Pasado ese tiempo se aplican consecuencias de disciplina.',
-    ],
-    highlight: { label: 'Ventana de gracia', value: '24 h' },
-  },
-]
+function buildTourSteps(dpBalance: number): TourStep[] {
+  return [
+    {
+      id: 'que-son-dp',
+      title: '¿Qué son los Puntos de Disciplina?',
+      body: [
+        'Los DP son la moneda interna del búnker. Representan tu coherencia operativa, no tu capital real.',
+        'Cuantos más DP acumulas, mayor acceso tienes a las señales y mayores los reconocimientos de protocolo.',
+      ],
+      highlight: {
+        label: 'Tu saldo actual (sincronizado)',
+        value: `${dpBalance.toLocaleString('es-CO')} DP`,
+      },
+    },
+    {
+      id: 'picks-del-dia',
+      title: 'Picks del día: estándar y premium',
+      body: [
+        'Cada día el sistema genera señales. Las lecturas estándar son accesibles sin coste. Las premium requieren DP.',
+        'Con un bajo saldo de DP solo verás el bloque básico. Disciplina sostenida desbloquea análisis más profundos.',
+      ],
+      highlight: { label: 'Coste de desbloqueo premium', value: '50 DP / pick' },
+    },
+    {
+      id: 'ganar-gastar',
+      title: 'Cómo ganar y gastar DP',
+      body: [
+        'Ganas +10 DP al liquidar con reflexión (misma recompensa de gestión si declaras ganancia, pérdida o empate/anulado; acreditado por el servidor). El onboarding abona +250 DP una sola vez.',
+        'Gastas DP desbloqueando picks premium (−50 DP). La clave es el hábito, no el volumen.',
+      ],
+      highlight: { label: 'DP por liquidación', value: '+10 DP' },
+    },
+    {
+      id: 'dia-calendario',
+      title: 'El día operativo es el día calendario',
+      body: [
+        'Los topes de DP y el feed diario se reinician a medianoche en tu zona horaria local.',
+        'Si no cierras la estación antes de medianoche, tienes 24 h de gracia. Pasado ese tiempo se aplican consecuencias de disciplina.',
+      ],
+      highlight: { label: 'Ventana de gracia', value: '24 h' },
+    },
+  ]
+}
 
 export function EconomyTourModal({ open, onComplete }: EconomyTourModalProps) {
   const [step, setStep] = useState(0)
+  const disciplinePoints = useUserStore((s) => s.disciplinePoints ?? 0)
 
   const monoStyle = useMemo<CSSProperties>(
     () => ({
       fontFamily: `'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`,
     }),
     [],
+  )
+
+  const tourSteps = useMemo(
+    () => buildTourSteps(disciplinePoints),
+    [disciplinePoints],
   )
 
   useEffect(() => {
@@ -87,8 +99,8 @@ export function EconomyTourModal({ open, onComplete }: EconomyTourModalProps) {
     if (!open) setStep(0)
   }, [open])
 
-  const current = TOUR_STEPS[step]
-  const isLast = step === TOUR_STEPS.length - 1
+  const current = tourSteps[step]
+  const isLast = step === tourSteps.length - 1
 
   const goNext = () => {
     if (isLast) {
@@ -124,7 +136,7 @@ export function EconomyTourModal({ open, onComplete }: EconomyTourModalProps) {
                 className="h-full bg-[#8B5CF6]"
                 initial={false}
                 animate={{
-                  width: `${((step + 1) / TOUR_STEPS.length) * 100}%`,
+                  width: `${((step + 1) / tourSteps.length) * 100}%`,
                 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
               />
@@ -139,7 +151,7 @@ export function EconomyTourModal({ open, onComplete }: EconomyTourModalProps) {
                   className="font-mono text-[10px] text-[#6e7d86]"
                   style={monoStyle}
                 >
-                  {step + 1} / {TOUR_STEPS.length}
+                  {step + 1} / {tourSteps.length}
                 </span>
               </div>
 

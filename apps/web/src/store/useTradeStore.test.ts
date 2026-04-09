@@ -6,7 +6,7 @@ import { useUserStore } from '@/store/useUserStore'
 import { useVaultStore } from '@/store/useVaultStore'
 
 describe('useTradeStore (US-FE-006)', () => {
-  it('liquida pick desbloqueado: ledger, bankroll, +25 DP', () => {
+  it('liquida pick desbloqueado: ledger, bankroll, +10 DP (D-05-012)', () => {
     useUserStore.setState({ disciplinePoints: 1000 })
     useBankrollStore.setState({
       confirmedBankrollCop: 100_000,
@@ -26,10 +26,10 @@ describe('useTradeStore (US-FE-006)', () => {
       decimalCuota: 1.9,
     })
 
-    expect(res).toEqual({ ok: true })
+    expect(res).toMatchObject({ ok: true, earnedDp: 10 })
     expect(useTradeStore.getState().isSettled('v2-p-001')).toBe(true)
     expect(useTradeStore.getState().ledger).toHaveLength(1)
-    expect(useUserStore.getState().disciplinePoints).toBe(dpBefore + 25)
+    expect(useUserStore.getState().disciplinePoints).toBe(dpBefore + 10)
     expect(useBankrollStore.getState().confirmedBankrollCop).toBe(
       brBefore + 2000 * (1.9 - 1),
     )
