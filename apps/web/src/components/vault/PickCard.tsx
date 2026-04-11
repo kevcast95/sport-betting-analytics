@@ -96,6 +96,10 @@ function pickDisplay(p: AnyPick) {
       dsrSource: (p.dsrSource ?? '').trim(),
       dsrConfidenceLabel: (p.dsrConfidenceLabel ?? '').trim(),
       pipelineVersion: (p.pipelineVersion ?? '').trim(),
+      dataCompletenessScore:
+        typeof p.dataCompletenessScore === 'number'
+          ? p.dataCompletenessScore
+          : null,
       modelCanonicalHint:
         [p.modelMarketCanonical, p.modelSelectionCanonical]
           .map((x) => (typeof x === 'string' ? x.trim() : ''))
@@ -125,6 +129,7 @@ function pickDisplay(p: AnyPick) {
     dsrSource: '',
     dsrConfidenceLabel: '',
     pipelineVersion: '',
+    dataCompletenessScore: null,
     modelCanonicalHint: '',
   }
 }
@@ -354,6 +359,7 @@ export function PickCard({
     ? unifiedApiModelReading({
         dsrNarrativeEs: d.dsrNarrativeEs,
         traduccionHumana: d.traduccionHumana,
+        dsrSource: d.dsrSource,
       })
     : null
   const previewText =
@@ -369,6 +375,9 @@ export function PickCard({
       ? `Confianza simbólica: ${dsrConfidenceLabelEs(d.dsrConfidenceLabel)}`
       : '',
     dsrSourceDescriptionEs(d.dsrSource),
+    d.dataCompletenessScore != null
+      ? `Completitud de datos CDM: ${d.dataCompletenessScore}/100 (no es probabilidad de acierto)`
+      : '',
     d.pipelineVersion ? `Versión pipeline: ${d.pipelineVersion}` : '',
   ]
     .filter(Boolean)
@@ -467,8 +476,12 @@ export function PickCard({
             </span>
           ) : null}
           {d.edgeBps && !premiumLockedSurface ? (
-            <span className="rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] px-2 py-1 font-mono text-xs font-bold tabular-nums text-[#26343d]">
-              +{(d.edgeBps / 100).toFixed(2)}%
+            <span
+              className="rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] px-2 py-1 font-mono text-xs font-bold tabular-nums text-[#26343d]"
+              title="Diferencial aproximado del modelo frente a la implícita del mercado en el input (referencia técnica). No implica beneficio asegurado ni objetivo de maximizar retorno (D-06-027)."
+            >
+              <span className="sr-only">Diferencial modelo vs mercado: </span>+
+              {(d.edgeBps / 100).toFixed(2)}%
             </span>
           ) : null}
           {isPickFreeAccess(d.accessTier) ? (
@@ -532,7 +545,7 @@ export function PickCard({
                 </p>
                 <p className="line-clamp-4 text-xs leading-relaxed text-[#26343d]">
                   {previewText ||
-                    'Sin criterio DSR ni extracto de lectura en este pick.'}
+                    'Sin texto publicado para la vista previa; abre la ficha o revisa origen y confianza en la línea inferior.'}
                 </p>
                 {dsrMetaLine && !premiumLockedSurface ? (
                   <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">

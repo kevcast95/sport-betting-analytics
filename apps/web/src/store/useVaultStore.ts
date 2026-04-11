@@ -18,6 +18,7 @@ import { useSessionStore } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
 import type {
   Bt2DpInsufficientPremiumDetail,
+  Bt2VaultDaySnapshotMeta,
   Bt2VaultPickOut,
   Bt2VaultPicksPageOut,
   Bt2PickRegisterBody,
@@ -83,6 +84,8 @@ export type VaultStoreState = {
     poolItemCount: number
     poolBelowTarget: boolean
   } | null
+  /** S6.1 — flags vacío operativo, degradación y conteos (US-BE-036 / T-184). */
+  vaultDaySnapshotMeta: Bt2VaultDaySnapshotMeta | null
 }
 
 export type VaultStoreActions = {
@@ -127,6 +130,7 @@ const initial: VaultStoreState = {
   sessionOpenStatus: 'idle',
   vaultSnapshotOperatingDayKey: null,
   vaultPoolMeta: null,
+  vaultDaySnapshotMeta: null,
 }
 
 export const useVaultStore = create<VaultStore>()(
@@ -202,6 +206,15 @@ export const useVaultStore = create<VaultStore>()(
             poolItemCount: data.poolItemCount ?? data.picks.length,
             poolBelowTarget: Boolean(data.poolBelowTarget),
           }
+          const dayMeta: Bt2VaultDaySnapshotMeta = {
+            dsrSignalDegraded: Boolean(data.dsrSignalDegraded),
+            limitedCoverage: Boolean(data.limitedCoverage),
+            operationalEmptyHard: Boolean(data.operationalEmptyHard),
+            vaultOperationalMessageEs: data.vaultOperationalMessageEs ?? null,
+            fallbackDisclaimerEs: data.fallbackDisclaimerEs ?? null,
+            futureEventsInWindowCount: data.futureEventsInWindowCount ?? 0,
+            fallbackEligiblePoolCount: data.fallbackEligiblePoolCount ?? 0,
+          }
           if (!data.picks.length) {
             set({
               apiPicks: [],
@@ -209,6 +222,7 @@ export const useVaultStore = create<VaultStore>()(
               picksMessage: data.message ?? 'No hay picks disponibles hoy.',
               vaultSnapshotOperatingDayKey: sessionDayKey ?? null,
               vaultPoolMeta: poolMeta,
+              vaultDaySnapshotMeta: dayMeta,
             })
           } else {
             set({
@@ -217,11 +231,17 @@ export const useVaultStore = create<VaultStore>()(
               picksMessage: data.message ?? null,
               vaultSnapshotOperatingDayKey: data.picks[0].operatingDayKey,
               vaultPoolMeta: poolMeta,
+              vaultDaySnapshotMeta: dayMeta,
             })
           }
         } catch (e) {
           console.error('[BT2] vault/picks error:', e)
-          set({ picksLoadStatus: 'error', picksMessage: null, vaultPoolMeta: null })
+          set({
+            picksLoadStatus: 'error',
+            picksMessage: null,
+            vaultPoolMeta: null,
+            vaultDaySnapshotMeta: null,
+          })
         }
         void useUserStore.getState().syncDpBalance()
       },

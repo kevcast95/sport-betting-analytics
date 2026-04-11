@@ -1958,9 +1958,9 @@ export interface operations {
     };
     api_tracking_board_daily_runs__daily_run_id__board_get: {
         parameters: {
-            query: {
-                /** @description Usuario que ve el tablero */
-                user_id: number;
+            query?: {
+                /** @description Usuario que ve el tablero; si se omite, primer usuario (user_id ASC) */
+                user_id?: number | null;
             };
             header?: {
                 "X-Local-Api-Key"?: string | null;

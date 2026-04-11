@@ -1,7 +1,7 @@
 # Handoff ejecución — Sprint 06.1
 
 > **Para:** BE, FE, DX (mismo repo).  
-> **Fuente de verdad:** [`US.md`](./US.md), [`TASKS.md`](./TASKS.md), [`DECISIONES.md`](./DECISIONES.md). Evidencia de cierre: [`EJECUCION.md`](./EJECUCION.md).
+> **Fuente de verdad:** [`US.md`](./US.md), [`TASKS.md`](./TASKS.md), [`DECISIONES.md`](./DECISIONES.md); refinement narrativo [`REFINEMENT_S6_1.md`](./REFINEMENT_S6_1.md). Evidencia de cierre: [`EJECUCION.md`](./EJECUCION.md).
 
 ## Cesiones por capa (responsable primario)
 
@@ -45,4 +45,47 @@
 
 ---
 
-*2026-04-09 — Orden BE Post-DSR → orquestación; FE bóveda vs admin; sync DoR, **EJECUCION.md**, D-06-026 §6.*
+## REFINEMENT_S6_1
+
+> **Fuente narrativa:** [`REFINEMENT_S6_1.md`](./REFINEMENT_S6_1.md). **Decisiones:** **D-06-027** … **D-06-030**. **US:** **US-BE-037–039**, **US-FE-056**. **Plan resumido:** [`PLAN.md`](./PLAN.md) § REFINEMENT_S6_1.
+
+### Cesiones (refinement)
+
+| Capa | US | Entrega principal |
+|------|-----|-------------------|
+| **BE** | **US-BE-037** | **T-189–T-190** — histórico duelo + cuotas históricas si existen; builder. |
+| **BE** | **US-BE-038** | **T-191** — prompt batch `bt2_dsr_deepseek.py` ↔ **D-06-027** / **D-06-030**. |
+| **BE** | **US-BE-039** | **T-192** — Post-DSR coherencia `selection` / `razon`. |
+| **FE** | **US-FE-056** | **T-194** — copy bóveda/admin. |
+| **Todos** | — | **T-193** — doc handoff + pytest + filas en **EJECUCION.md** § REFINEMENT_S6_1. |
+
+### Orden recomendado (dependencias)
+
+1. **T-189** → **T-190** — Sin nuevas claves hacia el LLM sin pasar por **T-171** / **T-172** (DX). Si **T-171** debe ampliarse, PR DX antes o en el mismo bundle con revisión explícita.
+2. **T-191** — Puede ir en paralelo al builder si solo cambia texto y tests; validar con PO antes de merge (**D-06-030**).
+3. **T-192** — Tras pipeline Post-DSR estable (**T-182**); no reintroducir JSON crudo.
+4. **T-194** — Después de redacción final de **T-191** (o copy provisional acordado con PO).
+5. **T-193** — Último: documentación de tablas ↔ `processed`, regresión `pytest`, completar tabla en **EJECUCION.md**.
+
+### Sincronía
+
+- **BE ↔ DX:** ampliaciones de whitelist por **T-190** coordinadas con **T-172** / bump meta si el cliente ve nuevos campos (**T-173**).
+- **PO/BA:** aprobación explícita del texto del prompt (**T-191**) y de copy FE (**T-194**).
+
+### REFINEMENT_S6_1 — Tabla fuente Postgres ↔ bloques `processed` (T-193)
+
+| Bloque `processed` | Tabla(s) / origen | Notas |
+|--------------------|-------------------|--------|
+| `odds_featured.consensus` (+ `by_bookmaker`) | `bt2_odds_snapshot` vía `aggregate_odds_for_event` | Sin cambio Sprint 06. |
+| `odds_featured.ingest_meta` | `bt2_odds_snapshot` (`MIN`/`MAX` `fetched_at`, `COUNT(DISTINCT date_trunc('minute', …))`) | **T-190:** ventana de ingesta; no es serie histórica por selección. |
+| `h2h` | `bt2_events` (`status='finished'`, `result_*` no expuestos en JSON; solo agregados duelo) | **T-189** |
+| `statistics` | `bt2_events` (forma reciente W/D/L por equipo, hasta 5 partidos) | **T-189** |
+| `team_streaks` | Derivado en memoria desde la forma | **T-189** |
+| `lineups` | `raw_sportmonks_fixtures.payload` → resumen (`lineup_rows_observed`, `teams_distinct`, …) | Si no hay fila raw o sin array `lineups`, `available` sigue false y causa en `diagnostics.fetch_errors`. |
+| `team_season_stats` | *Sin tabla agregada temporada en BT2* | `{available: false}` + `fetch_errors` documentando gap (**D-06-028** / coordinación DX). |
+
+`diagnostics.h2h_ok`, `statistics_ok`, `lineups_ok` reflejan si se pudo poblar el bloque correspondiente con datos consultables.
+
+---
+
+*2026-04-09 — Orden BE Post-DSR → orquestación; FE bóveda vs admin; sync DoR, **EJECUCION.md**, D-06-026 §6. **REFINEMENT_S6_1** añadido mismo día.*

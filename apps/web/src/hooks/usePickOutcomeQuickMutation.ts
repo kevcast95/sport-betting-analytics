@@ -27,7 +27,7 @@ export function usePickOutcomeQuickMutation(userId: number | null) {
       })
     },
     onSuccess: (_data, vars) => {
-      void qc.invalidateQueries({ queryKey: ['board', vars.dailyRunId, userId] })
+      void qc.invalidateQueries({ queryKey: ['board', vars.dailyRunId] })
       void qc.invalidateQueries({ queryKey: ['pick', vars.pickId] })
       void qc.invalidateQueries({ queryKey: ['dashboard'] })
       if (userId != null) {

@@ -7,6 +7,8 @@ import AdminDsrAccuracyPage from '@/pages/AdminDsrAccuracyPage'
 describe('AdminDsrAccuracyPage (T-166)', () => {
   let spy: ReturnType<typeof vi.spyOn>
 
+  let spyDist: ReturnType<typeof vi.spyOn>
+
   beforeEach(() => {
     spy = vi.spyOn(api, 'fetchBt2AdminDsrDay').mockResolvedValue({
       summary: {
@@ -22,13 +24,24 @@ describe('AdminDsrAccuracyPage (T-166)', () => {
       },
       auditRows: [],
     })
+    spyDist = vi
+      .spyOn(api, 'fetchBt2AdminVaultPickDistribution')
+      .mockResolvedValue({
+        operatingDayKey: '2026-04-01',
+        byDsrConfidenceLabel: [{ key: 'high', count: 1 }],
+        byDsrSource: [{ key: 'dsr_api', count: 2 }],
+        scoreBuckets: [{ scoreBucket: -1, count: 1 }],
+        totalDailyPickRows: 2,
+        summaryHumanEs: 'Distribución de prueba.',
+      })
   })
 
   afterEach(() => {
     spy.mockRestore()
+    spyDist.mockRestore()
   })
 
-  it('muestra encabezado y KPI de tasa de acierto', async () => {
+  it('muestra encabezado, KPI de liquidación y bloque de distribución', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
@@ -43,5 +56,13 @@ describe('AdminDsrAccuracyPage (T-166)', () => {
       expect(screen.getByText('50.0%')).toBeInTheDocument()
     })
     expect(screen.getByText(/Resumen de prueba para operador/i)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', {
+          name: /Distribución del snapshot de bóveda/i,
+        }),
+      ).toBeInTheDocument()
+    })
+    expect(screen.getByText(/Distribución de prueba/i)).toBeInTheDocument()
   })
 })

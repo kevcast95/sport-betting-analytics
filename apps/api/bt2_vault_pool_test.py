@@ -76,6 +76,14 @@ class TestComposePool(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertLess(len(out), VAULT_POOL_TARGET)
 
+    def test_t178_empty_premium_set_forces_standard(self) -> None:
+        tz = ZoneInfo("UTC")
+        ko = datetime(2026, 4, 7, 15, 0, tzinfo=timezone.utc)
+        rows = [(1, ko, 0.1), (2, ko + timedelta(hours=1), 0.1)]
+        out = compose_vault_daily_picks(rows, tz, premium_eligible_event_ids=set())
+        for _eid, tier, _b in out:
+            self.assertEqual(tier, "standard")
+
 
 class TestStrictKickoff(unittest.TestCase):
     def test_after_kickoff_not_available(self) -> None:

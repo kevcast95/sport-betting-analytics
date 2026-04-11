@@ -72,6 +72,8 @@ type AnyPick = {
   dsrNarrativeEs?: string
   dsrSource?: string
   dsrConfidenceLabel?: string
+  /** S6.1 — solo mostrar si existe en snapshot API. */
+  dataCompletenessScore?: number | null
   pipelineVersion?: string
   modelMarketCanonical?: string
   modelSelectionCanonical?: string
@@ -400,6 +402,7 @@ export default function SettlementPage() {
     return unifiedApiModelReading({
       dsrNarrativeEs: (displayPick.dsrNarrativeEs ?? '').trim(),
       traduccionHumana: displayPick.traduccionHumana ?? null,
+      dsrSource: displayPick.dsrSource,
     })
   }, [apiPickMatch, displayPick])
 
@@ -410,6 +413,9 @@ export default function SettlementPage() {
         ? `Confianza simbólica: ${dsrConfidenceLabelEs(displayPick.dsrConfidenceLabel)}`
         : '',
       dsrSourceDescriptionEs(displayPick.dsrSource ?? ''),
+      typeof displayPick.dataCompletenessScore === 'number'
+        ? `Completitud de datos CDM: ${displayPick.dataCompletenessScore}/100 (no es probabilidad de acierto)`
+        : '',
       displayPick.pipelineVersion
         ? `Versión pipeline: ${displayPick.pipelineVersion}`
         : '',
@@ -758,12 +764,20 @@ export default function SettlementPage() {
                 </p>
               ) : null}
               <p>
-                La sugerencia actúa como{' '}
                 <span className="font-semibold text-[#26343d]">
-                  neutralizador de varianza
-                </span>
-                : no se persigue solo el acierto puntual, sino la adherencia al
-                protocolo de tamaño y registro.
+                  Sobre el protocolo (no es el análisis del partido):
+                </span>{' '}
+                aquí se prioriza{' '}
+                <span className="font-semibold text-[#26343d]">
+                  cuánto arriesgas
+                </span>{' '}
+                en cada señal y{' '}
+                <span className="font-semibold text-[#26343d]">
+                  registrarla bien
+                </span>{' '}
+                en el libro mayor. Eso ayuda a que una sola jugada no defina toda la
+                sesión; el párrafo de arriba es la lectura del modelo para este
+                evento, con sus límites.
               </p>
             </div>
           </div>
@@ -1065,7 +1079,7 @@ export default function SettlementPage() {
                 rows={5}
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
-                placeholder="Describe tu reacción a la varianza… ¿mantuviste el plan?"
+                placeholder="¿Cómo viviste el resultado frente al plan de tamaño y registro?"
                 className="min-h-[120px] w-full rounded-xl border-0 bg-[#ddeaf3] p-4 text-sm text-[#26343d] placeholder:text-[#52616a]/40 focus:ring-1 focus:ring-[#6d3bd7]"
               />
               <p className="mt-2 text-[10px] italic text-[#52616a]">

@@ -6,13 +6,19 @@ import io
 import json
 import unittest
 import urllib.error
+from datetime import datetime, timezone
+
+from pydantic import ValidationError
 
 from apps.api.bt2_dsr_contract import (
     PIPELINE_VERSION_DEFAULT,
     assert_no_forbidden_ds_keys,
+    validate_ds_input_item_dict,
 )
 from apps.api import bt2_dsr_deepseek as dsr_deepseek
-from apps.api.bt2_dsr_deepseek import DsrBatchCandidate, deepseek_suggest_batch
+from apps.api.bt2_dsr_deepseek import deepseek_suggest_batch
+from apps.api.bt2_dsr_ds_input_builder import build_ds_input_item
+from apps.api.bt2_dsr_odds_aggregation import aggregate_odds_for_event
 from apps.api.bt2_dsr_suggest import (
     PIPELINE_VERSION_DEEPSEEK,
     suggest_for_snapshot_row,
@@ -28,6 +34,67 @@ class TestDsrAntiLeak(unittest.TestCase):
 
     def test_allows_safe_odds(self) -> None:
         assert_no_forbidden_ds_keys({"event_id": 1, "odds": {"home": 2.1}})
+
+    def test_ds_input_rejects_extra_root_key(self) -> None:
+        ko = datetime.now(tz=timezone.utc)
+        agg = aggregate_odds_for_event(
+            [
+                ("b", "1x2", "1", 2.1, ko),
+                ("b", "1x2", "X", 3.2, ko),
+                ("b", "1x2", "2", 3.5, ko),
+            ]
+        )
+        item = build_ds_input_item(
+            event_id=1,
+            selection_tier="A",
+            kickoff_utc=ko,
+            event_status="scheduled",
+            league_name="L",
+            country=None,
+            league_tier="S",
+            home_team="H",
+            away_team="A",
+            agg=agg,
+        )
+        item["extra_forbidden"] = 1
+        with self.assertRaises(ValidationError):
+            validate_ds_input_item_dict(item)
+
+    def test_ds_input_accepts_s6_1r1_context_blocks(self) -> None:
+        ko = datetime.now(tz=timezone.utc)
+        agg = aggregate_odds_for_event(
+            [
+                ("b", "1x2", "1", 2.1, ko),
+                ("b", "1x2", "X", 3.2, ko),
+                ("b", "1x2", "2", 3.5, ko),
+            ]
+        )
+        item = build_ds_input_item(
+            event_id=1,
+            selection_tier="A",
+            kickoff_utc=ko,
+            event_status="scheduled",
+            league_name="L",
+            country=None,
+            league_tier="S",
+            home_team="H",
+            away_team="A",
+            agg=agg,
+        )
+        item["processed"]["h2h"] = {
+            "available": True,
+            "meetings_in_sample": 2,
+            "current_home_wins": 1,
+            "draws": 0,
+            "current_away_wins": 1,
+        }
+        item["processed"]["odds_featured"]["ingest_meta"] = {
+            "first_fetched_at_iso": "2026-04-08T10:00:00Z",
+            "last_fetched_at_iso": "2026-04-09T08:00:00Z",
+            "distinct_fetch_batches": 3,
+        }
+        item["diagnostics"]["h2h_ok"] = True
+        validate_ds_input_item_dict(item)
 
 
 class TestCanonical(unittest.TestCase):
@@ -71,6 +138,50 @@ class TestDsrStub(unittest.TestCase):
 class TestDsrDeepseekBatchMock(unittest.TestCase):
     def tearDown(self) -> None:
         dsr_deepseek._http_post = None
+
+    def _two_ds_input_items(self) -> list[dict]:
+        ko = datetime.now(tz=timezone.utc)
+        agg10 = aggregate_odds_for_event(
+            [
+                ("b", "1x2", "1", 2.1, ko),
+                ("b", "1x2", "X", 3.2, ko),
+                ("b", "1x2", "2", 3.5, ko),
+            ]
+        )
+        i10 = build_ds_input_item(
+            event_id=10,
+            selection_tier="A",
+            kickoff_utc=ko,
+            event_status="scheduled",
+            league_name="L1",
+            country=None,
+            league_tier="S",
+            home_team="H1",
+            away_team="A1",
+            agg=agg10,
+        )
+        agg20 = aggregate_odds_for_event(
+            [
+                ("b", "1x2", "1", 2.0, ko),
+                ("b", "1x2", "X", 3.0, ko),
+                ("b", "1x2", "2", 3.0, ko),
+                ("b", "total goals 2.5", "over 2.5", 1.85, ko),
+                ("b", "total goals 2.5", "under 2.5", 1.95, ko),
+            ]
+        )
+        i20 = build_ds_input_item(
+            event_id=20,
+            selection_tier="A",
+            kickoff_utc=ko,
+            event_status="scheduled",
+            league_name="L2",
+            country=None,
+            league_tier="A",
+            home_team="H2",
+            away_team="A2",
+            agg=agg20,
+        )
+        return [i10, i20]
 
     def _picks_by_event_body(self, rows: list[dict]) -> bytes:
         content = json.dumps({"picks_by_event": rows}, ensure_ascii=False)
@@ -119,12 +230,8 @@ class TestDsrDeepseekBatchMock(unittest.TestCase):
             )
 
         dsr_deepseek._http_post = _post
-        cands = [
-            DsrBatchCandidate(10, "L1", "H1", "A1", 2.1, 3.2, 3.5, None, None),
-            DsrBatchCandidate(20, "L2", "H2", "A2", 2.0, 3.0, 3.0, 1.85, 1.95),
-        ]
         out = deepseek_suggest_batch(
-            cands,
+            self._two_ds_input_items(),
             operating_day_key="2026-04-08",
             api_key="k",
             base_url="https://api.deepseek.com",
@@ -154,11 +261,28 @@ class TestDsrDeepseekBatchMock(unittest.TestCase):
             )
 
         dsr_deepseek._http_post = _post
-        cands = [
-            DsrBatchCandidate(1, "L", "H", "A", 2.0, 3.0, 3.0, None, None),
-        ]
+        ko = datetime.now(tz=timezone.utc)
+        agg = aggregate_odds_for_event(
+            [
+                ("b", "1x2", "1", 2.0, ko),
+                ("b", "1x2", "X", 3.0, ko),
+                ("b", "1x2", "2", 3.0, ko),
+            ]
+        )
+        one = build_ds_input_item(
+            event_id=1,
+            selection_tier="A",
+            kickoff_utc=ko,
+            event_status="scheduled",
+            league_name="L",
+            country=None,
+            league_tier="B",
+            home_team="H",
+            away_team="A",
+            agg=agg,
+        )
         out = deepseek_suggest_batch(
-            cands,
+            [one],
             operating_day_key="2026-04-08",
             api_key="k",
             base_url="https://api.deepseek.com",

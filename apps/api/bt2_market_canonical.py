@@ -11,6 +11,12 @@ from typing import Literal, Optional, Tuple
 MarketCanonical = Literal[
     "FT_1X2",
     "OU_GOALS_2_5",
+    "OU_GOALS_1_5",
+    "OU_GOALS_3_5",
+    "BTTS",
+    "DOUBLE_CHANCE_1X",
+    "DOUBLE_CHANCE_X2",
+    "DOUBLE_CHANCE_12",
     "UNKNOWN",
 ]
 
@@ -22,6 +28,12 @@ MODEL_PREDICTION_NA: str = "n_a"
 _MARKET_LABEL_ES: dict[str, str] = {
     "FT_1X2": "Resultado final (1X2)",
     "OU_GOALS_2_5": "Más / menos goles 2.5",
+    "OU_GOALS_1_5": "Más / menos goles 1.5",
+    "OU_GOALS_3_5": "Más / menos goles 3.5",
+    "BTTS": "Ambos marcan",
+    "DOUBLE_CHANCE_1X": "Doble oportunidad 1X",
+    "DOUBLE_CHANCE_X2": "Doble oportunidad X2",
+    "DOUBLE_CHANCE_12": "Doble oportunidad 12",
     "UNKNOWN": "Mercado",
 }
 
@@ -44,12 +56,62 @@ def normalized_pick_to_canonical(
     s = norm_selection.strip()
     sl = s.lower()
 
-    if any(k in mu for k in ("TOTAL", "GOALS", "OVER", "UNDER")):
+    if "BTTS" in mu or "BTTS" in sl or "AMBOS" in mu:
+        if sl in ("yes", "sí", "si"):
+            return ("BTTS", "yes")
+        if sl == "no":
+            return ("BTTS", "no")
+        return ("BTTS", "unknown_side")
+
+    if "DOUBLE" in mu or "DOBLE" in mu:
+        if "1X" in mu or "1/X" in mu or "1 OR X" in mu:
+            return ("DOUBLE_CHANCE_1X", "yes")
+        if "X2" in mu or "X/2" in mu:
+            return ("DOUBLE_CHANCE_X2", "yes")
+        if "12" in mu or "1/2" in mu:
+            return ("DOUBLE_CHANCE_12", "yes")
+        return ("UNKNOWN", "unknown_side")
+
+    if any(k in mu for k in ("TOTAL", "GOALS", "OVER", "UNDER", "O/U")):
+        if "1.5" in mu or "1,5" in mu:
+            if "over" in sl:
+                return ("OU_GOALS_1_5", "over_1_5")
+            if "under" in sl:
+                return ("OU_GOALS_1_5", "under_1_5")
+        if "3.5" in mu or "3,5" in mu:
+            if "over" in sl:
+                return ("OU_GOALS_3_5", "over_3_5")
+            if "under" in sl:
+                return ("OU_GOALS_3_5", "under_3_5")
         if "over" in sl:
             return ("OU_GOALS_2_5", "over_2_5")
         if "under" in sl:
             return ("OU_GOALS_2_5", "under_2_5")
         return ("OU_GOALS_2_5", "unknown_side")
+
+    # Códigos canónicos directos (salida modelo alineada a builder)
+    if mu.startswith("FT_1X2"):
+        if sl in ("home", "1"):
+            return ("FT_1X2", "home")
+        if sl in ("draw", "x"):
+            return ("FT_1X2", "draw")
+        if sl in ("away", "2"):
+            return ("FT_1X2", "away")
+    if mu.startswith("OU_GOALS_2_5"):
+        if "over" in sl:
+            return ("OU_GOALS_2_5", "over_2_5")
+        if "under" in sl:
+            return ("OU_GOALS_2_5", "under_2_5")
+    if mu.startswith("OU_GOALS_1_5"):
+        if "over" in sl:
+            return ("OU_GOALS_1_5", "over_1_5")
+        if "under" in sl:
+            return ("OU_GOALS_1_5", "under_1_5")
+    if mu.startswith("OU_GOALS_3_5"):
+        if "over" in sl:
+            return ("OU_GOALS_3_5", "over_3_5")
+        if "under" in sl:
+            return ("OU_GOALS_3_5", "under_3_5")
 
     # 1X2
     if s in ("1", "Home", "home"):
@@ -77,6 +139,21 @@ def canonical_to_settle_strings(
             return ("TOTAL GOALS", "OVER 2.5")
         if selection_canonical == "under_2_5":
             return ("TOTAL GOALS", "UNDER 2.5")
+    if market_canonical == "OU_GOALS_1_5":
+        if selection_canonical == "over_1_5":
+            return ("TOTAL GOALS", "OVER 1.5")
+        if selection_canonical == "under_1_5":
+            return ("TOTAL GOALS", "UNDER 1.5")
+    if market_canonical == "OU_GOALS_3_5":
+        if selection_canonical == "over_3_5":
+            return ("TOTAL GOALS", "OVER 3.5")
+        if selection_canonical == "under_3_5":
+            return ("TOTAL GOALS", "UNDER 3.5")
+    if market_canonical == "BTTS":
+        if selection_canonical == "yes":
+            return ("BTTS", "YES")
+        if selection_canonical == "no":
+            return ("BTTS", "NO")
     return ("UNKNOWN", "")
 
 

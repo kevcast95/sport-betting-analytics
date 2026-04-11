@@ -187,7 +187,7 @@ export default function BunkerLayout() {
   const pageSubtitle = isSettings
     ? 'Preferencias del entorno V2. El capital de trabajo se define en el protocolo de gestión de capital.'
     : location.pathname.startsWith('/v2/vault')
-      ? 'Oportunidades con valor esperado positivo (modelo canónico CDM); desbloqueo con DP.'
+      ? 'Lectura DSR fundamentada en datos del lote operativo; sin promesa de maximizar retorno. Premium con DP.'
       : location.pathname.startsWith('/v2/settlement')
         ? 'Auditoría de resultado y reflexión obligatoria antes de archivar en ledger.'
         : location.pathname.startsWith('/v2/daily-review')

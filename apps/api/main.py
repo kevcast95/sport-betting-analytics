@@ -1150,9 +1150,23 @@ def api_pipeline_replay(body: PipelineReplayRequest, conn: DbConn) -> PipelineRe
 def api_tracking_board(
     daily_run_id: int,
     conn: DbConn,
-    user_id: int = Query(..., description="Usuario que ve el tablero"),
+    user_id: Optional[int] = Query(
+        None,
+        description=(
+            "Usuario que ve el tablero. Si se omite, se usa el primer usuario (ORDER BY user_id ASC) "
+            "para poder listar picks sin selector en UI."
+        ),
+    ),
 ) -> TrackingBoardOut:
-    if get_user_by_id(conn, user_id) is None:
+    if user_id is None:
+        rows_u = list_users(conn)
+        if not rows_u:
+            raise HTTPException(
+                status_code=404,
+                detail="no users in database; POST /users/bootstrap or POST /users",
+            )
+        user_id = int(rows_u[0]["user_id"])
+    elif get_user_by_id(conn, user_id) is None:
         raise HTTPException(status_code=404, detail="user not found")
     run = conn.execute(
         """

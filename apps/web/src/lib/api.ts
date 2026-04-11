@@ -1,5 +1,6 @@
 import type {
   Bt2AdminDsrDayOut,
+  Bt2AdminVaultPickDistributionOut,
   Bt2DpInsufficientPremiumDetail,
   Bt2PickOut,
   Bt2PickRegisterBody,
@@ -324,6 +325,26 @@ export async function fetchBt2AdminDsrDay(
   const qs = new URLSearchParams({ operatingDayKey })
   return fetchJson<Bt2AdminDsrDayOut>(
     `/bt2/admin/analytics/dsr-day?${qs.toString()}`,
+    { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
+/**
+ * GET /bt2/admin/analytics/vault-pick-distribution (US-BE-035 / T-183).
+ * Agregados por etiqueta de confianza, fuente y buckets de score CDM — distintos semánticamente.
+ */
+export async function fetchBt2AdminVaultPickDistribution(
+  operatingDayKey: string,
+): Promise<Bt2AdminVaultPickDistributionOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams({ operatingDayKey })
+  return fetchJson<Bt2AdminVaultPickDistributionOut>(
+    `/bt2/admin/analytics/vault-pick-distribution?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
   )
 }

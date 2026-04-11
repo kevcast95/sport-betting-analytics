@@ -70,11 +70,15 @@ def _tier_for_slot_index(slot_in_band: int) -> Literal["standard", "premium"]:
 def compose_vault_daily_picks(
     rows: List[Tuple[int, Optional[datetime], float]],
     user_tz: ZoneInfo,
+    premium_eligible_event_ids: Optional[set[int]] = None,
 ) -> List[Tuple[int, Literal["standard", "premium"], VaultTimeBand]]:
     """
     rows: lista (event_id, kickoff_utc, house_margin) ya ordenada por calidad
           (tier liga + house_margin como en SQL).
     Devuelve hasta VAULT_POOL_HARD_CAP filas (event_id, access_tier, time_band).
+
+    T-178: si `premium_eligible_event_ids` no es None, solo esos event_id pueden
+    recibir tier premium; el resto fuerza standard aunque el slot sea premium.
     """
     # bucket por franja preservando orden de calidad global
     buckets: dict[VaultTimeBand, List[int]] = {b: [] for b in _BAND_ORDER}
@@ -91,6 +95,12 @@ def compose_vault_daily_picks(
     chosen: List[Tuple[int, Literal["standard", "premium"], VaultTimeBand]] = []
     chosen_ids: set[int] = set()
 
+    def _effective_tier(eid: int, slot: int) -> Literal["standard", "premium"]:
+        t = _tier_for_slot_index(slot)
+        if premium_eligible_event_ids is not None and eid not in premium_eligible_event_ids:
+            return "standard"
+        return t
+
     def append_from_band(band: VaultTimeBand) -> None:
         nonlocal chosen
         slot = 0
@@ -101,7 +111,7 @@ def compose_vault_daily_picks(
                 break
             if eid in chosen_ids:
                 continue
-            tier = _tier_for_slot_index(slot)
+            tier = _effective_tier(eid, slot)
             chosen.append((eid, tier, band))
             chosen_ids.add(eid)
             slot += 1
@@ -128,9 +138,8 @@ def compose_vault_daily_picks(
         if eid in chosen_ids:
             continue
         band = band_by_eid.get(eid, "overnight")
-        tier: Literal["standard", "premium"] = (
-            "standard" if (fill_idx % 5) < _STD_SLOTS else "premium"
-        )
+        slot = fill_idx % 5
+        tier: Literal["standard", "premium"] = _effective_tier(eid, slot)
         fill_idx += 1
         chosen.append((eid, tier, band))
         chosen_ids.add(eid)
@@ -142,7 +151,8 @@ def compose_vault_daily_picks(
         if eid in chosen_ids:
             continue
         band = band_by_eid.get(eid, "overnight")
-        tier = "standard" if (fill_idx % 5) < _STD_SLOTS else "premium"
+        slot = fill_idx % 5
+        tier = _effective_tier(eid, slot)
         fill_idx += 1
         chosen.append((eid, tier, band))
         chosen_ids.add(eid)

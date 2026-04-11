@@ -16,6 +16,7 @@ import { usePickOutcomeQuickMutation } from '@/hooks/usePickOutcomeQuickMutation
 import { usePickOutcomeAutoQuickMutation } from '@/hooks/usePickOutcomeAutoQuickMutation'
 import { useBankrollCOP } from '@/hooks/useBankrollCOP'
 import { useTrackingUser } from '@/hooks/useTrackingUser'
+import { useUsersQuery } from '@/hooks/useUsersQuery'
 import { useListPageSize } from '@/hooks/useListPageSize'
 import { selectionShortLabel } from '@/lib/marketCopy'
 import { confidenceTierFromLabel } from '@/lib/stakeSuggestion'
@@ -89,7 +90,11 @@ export default function RunPicksPage() {
   const runId = Number(dailyRunId)
   const invalid = Number.isNaN(runId)
   const { userId } = useTrackingUser()
-  const { bankrollCOP } = useBankrollCOP(userId)
+  const usersQ = useUsersQuery()
+  /** Mismo criterio que el board sin `user_id`: primer usuario (sidebar o lista). */
+  const effectiveUserId =
+    userId ?? usersQ.data?.[0]?.user_id ?? null
+  const { bankrollCOP } = useBankrollCOP(effectiveUserId)
   const qc = useQueryClient()
   const [pickQuery, setPickQuery] = useState('')
   /** '' = todas; valor exacto del modelo; '__sin__' = sin campo confianza */
@@ -102,8 +107,8 @@ export default function RunPicksPage() {
   const [validateFlash, setValidateFlash] = useState<string | null>(null)
   const { pageSize: pickPageSize, setPageSize: setPickPageSize } =
     useListPageSize()
-  const quickOutcomeM = usePickOutcomeQuickMutation(userId)
-  const quickAutoOutcomeM = usePickOutcomeAutoQuickMutation(userId)
+  const quickOutcomeM = usePickOutcomeQuickMutation(effectiveUserId)
+  const quickAutoOutcomeM = usePickOutcomeAutoQuickMutation(effectiveUserId)
   const [showCombosSection, setShowCombosSection] = useState(
     loadShowCombosPreference,
   )
@@ -126,17 +131,20 @@ export default function RunPicksPage() {
   const { isRunSportVisible } = useUiSportsVisibility()
 
   const boardQ = useQuery({
-    queryKey: ['board', runId, userId],
-    enabled: !invalid && userId != null,
+    queryKey: ['board', runId, userId ?? 'default'],
+    enabled: !invalid,
     queryFn: () =>
       fetchJson<TrackingBoardOut>(
-        `/daily-runs/${runId}/board?user_id=${userId}`,
+        userId != null
+          ? `/daily-runs/${runId}/board?user_id=${userId}`
+          : `/daily-runs/${runId}/board`,
       ),
   })
 
   const saveComboM = useMutation({
     mutationFn: async (payload: ComboSavePayload) => {
-      if (userId == null) throw new Error('user')
+      const uid = effectiveUserId
+      if (uid == null) throw new Error('user')
       const body: Record<string, unknown> = { taken: payload.taken }
       if (payload.stake_amount !== undefined)
         body.stake_amount = payload.stake_amount
@@ -149,7 +157,7 @@ export default function RunPicksPage() {
         body.user_outcome = payload.userOutcome
       }
       return fetchJson(
-        `/users/${userId}/suggested-combos/${payload.comboId}/taken`,
+        `/users/${uid}/suggested-combos/${payload.comboId}/taken`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -158,7 +166,7 @@ export default function RunPicksPage() {
       )
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['board', runId, userId] })
+      void qc.invalidateQueries({ queryKey: ['board', runId] })
       void qc.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
@@ -169,7 +177,7 @@ export default function RunPicksPage() {
         method: 'POST',
       }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['board', runId, userId] })
+      void qc.invalidateQueries({ queryKey: ['board', runId] })
     },
   })
 
@@ -180,7 +188,7 @@ export default function RunPicksPage() {
         { method: 'POST' },
       ),
     onSuccess: (data) => {
-      void qc.invalidateQueries({ queryKey: ['board', runId, userId] })
+      void qc.invalidateQueries({ queryKey: ['board', runId] })
       void qc.invalidateQueries({ queryKey: ['dashboard'] })
       void qc.invalidateQueries({ queryKey: ['pick'] })
       void qc.invalidateQueries({ queryKey: ['picks'] })
@@ -368,7 +376,7 @@ export default function RunPicksPage() {
         <h2 className="font-serif text-xl font-normal tracking-tight text-violet-950">
           Picks del run
         </h2>
-        {userId != null && board && boardListStats ? (
+        {board && boardListStats ? (
           <>
             <p className="mt-1 text-xs text-app-muted">
               <span className="font-mono tabular-nums text-app-fg">{boardListStats.total}</span> en tablero
@@ -430,23 +438,17 @@ export default function RunPicksPage() {
         ) : null}
       </div>
 
-      {userId == null && (
-        <p className="mb-4 text-sm text-app-muted">
-          Elige o crea un usuario en el menú lateral (arriba).
-        </p>
-      )}
-
-      {userId != null && boardQ.isError && (
+      {boardQ.isError && (
         <p className="text-sm text-app-danger">
           {(boardQ.error as Error).message}
         </p>
       )}
 
-      {userId != null && boardQ.isLoading && (
+      {boardQ.isLoading && (
         <p className="text-sm text-app-muted">Cargando tablero…</p>
       )}
 
-      {userId != null && board && (
+      {board && (
         <>
           <details className="mb-4 rounded-xl border border-violet-200/50 bg-violet-50/25 shadow-sm">
             <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-xs font-medium text-violet-950 [list-style:none] [&::-webkit-details-marker]:hidden">
@@ -629,7 +631,7 @@ export default function RunPicksPage() {
                   userTaken={p.user_taken}
                   ordinal={pickPageSafe * pickPageSize + i + 1}
                   onQuickOutcome={
-                    userId != null
+                    effectiveUserId != null
                       ? (o) =>
                           quickOutcomeM.mutate({
                             pickId: p.pick_id,
@@ -644,7 +646,7 @@ export default function RunPicksPage() {
                     quickOutcomeM.variables?.pickId === p.pick_id
                   }
                   onQuickAutoOutcome={
-                    userId != null
+                    effectiveUserId != null
                       ? () =>
                           quickAutoOutcomeM.mutate({
                             pickId: p.pick_id,
@@ -828,7 +830,9 @@ export default function RunPicksPage() {
                             key={`${c.suggested_combo_id}-${c.user_stake_amount ?? ''}`}
                             combo={c}
                             bankrollCOP={bankrollCOP}
-                            disabled={saveComboM.isPending}
+                            disabled={
+                              saveComboM.isPending || effectiveUserId == null
+                            }
                             onSave={(payload) => saveComboM.mutate(payload)}
                           />
                       </div>

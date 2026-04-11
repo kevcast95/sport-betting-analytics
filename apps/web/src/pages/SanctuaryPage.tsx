@@ -336,8 +336,9 @@ export default function SanctuaryPage() {
           Próximo paso
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-[#52616a]">
-          Revisa oportunidades con valor esperado positivo en la bóveda. Cada
-          desbloqueo consume DP de tu saldo de disciplina.
+          Revisa las señales del día en la bóveda: el protocolo prioriza lectura
+          apoyada en datos e histórico del input, no “más dinero por cuota” como regla
+          suelta (D-06-027). Cada desbloqueo premium consume DP de tu saldo de disciplina.
         </p>
         <NavLink
           to="/v2/vault"

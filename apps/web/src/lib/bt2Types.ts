@@ -58,6 +58,11 @@ export interface Bt2VaultPickOut {
   marketCanonicalLabelEs?: string
   modelMarketCanonical?: string
   modelSelectionCanonical?: string
+  /**
+   * S6.1 — heurística servidor 0–100 de completitud de mercados en CDM.
+   * Mostrar en UI solo si viene definido; no es probabilidad de acierto (D-06-024 / US-DX-003).
+   */
+  dataCompletenessScore?: number | null
 }
 
 /** POST /bt2/vault/premium-unlock (US-BE-029). */
@@ -71,6 +76,19 @@ export interface Bt2VaultPremiumUnlockOut {
   dpBalanceAfter: number
 }
 
+/** Meta del día en GET /bt2/vault/picks — US-BE-036 / T-179–T-180 (lineage a nivel página + vacío operativo). */
+export interface Bt2VaultDaySnapshotMeta {
+  dsrSignalDegraded: boolean
+  limitedCoverage: boolean
+  operationalEmptyHard: boolean
+  /** Causa operativa cuando no hay picks o vacío duro; priorizar en copy sobre `message` genérico. */
+  vaultOperationalMessageEs: string | null
+  /** Disclaimer si hay picks por fallback (D-06-025 §4). */
+  fallbackDisclaimerEs: string | null
+  futureEventsInWindowCount: number
+  fallbackEligiblePoolCount: number
+}
+
 export interface Bt2VaultPicksPageOut {
   picks: Bt2VaultPickOut[]
   generatedAtUtc: string
@@ -80,6 +98,14 @@ export interface Bt2VaultPicksPageOut {
   poolHardCap: number
   poolItemCount: number
   poolBelowTarget: boolean
+  /** US-BE-036 / T-179 — fallback SQL por ausencia de señal DSR válida. */
+  dsrSignalDegraded?: boolean
+  limitedCoverage?: boolean
+  operationalEmptyHard?: boolean
+  vaultOperationalMessageEs?: string | null
+  fallbackDisclaimerEs?: string | null
+  futureEventsInWindowCount?: number
+  fallbackEligiblePoolCount?: number
 }
 
 // ─── Picks (bt2_picks) ────────────────────────────────────────────────────────
@@ -218,6 +244,26 @@ export interface Bt2AdminDsrAuditRowOut {
 export interface Bt2AdminDsrDayOut {
   summary: Bt2AdminDsrDaySummaryOut
   auditRows: Bt2AdminDsrAuditRowOut[]
+}
+
+/** GET /bt2/admin/analytics/vault-pick-distribution — US-BE-035 / T-183 */
+export interface Bt2AdminCountRowOut {
+  key: string
+  count: number
+}
+
+export interface Bt2AdminScoreBucketOut {
+  scoreBucket: number
+  count: number
+}
+
+export interface Bt2AdminVaultPickDistributionOut {
+  operatingDayKey: string
+  byDsrConfidenceLabel: Bt2AdminCountRowOut[]
+  byDsrSource: Bt2AdminCountRowOut[]
+  scoreBuckets: Bt2AdminScoreBucketOut[]
+  totalDailyPickRows: number
+  summaryHumanEs: string
 }
 
 // ─── US-DX-001 — Razones canónicas bt2_dp_ledger.reason (Sprint 05) ─────────

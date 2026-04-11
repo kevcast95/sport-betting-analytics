@@ -34,19 +34,27 @@ import { useTradeStore } from '@/store/useTradeStore'
 const VAULT_TOUR = getTourScript('vault')!
 
 function VaultEmptyState({
-  message,
+  headline,
+  detail,
+  technicalHint,
   onRefresh,
 }: {
-  message: string | null
+  headline: string
+  detail: string
+  /** Línea opcional con conteos operativos (sin mezclar con el mensaje principal). */
+  technicalHint?: string | null
   /** Tras cerrar sesión / ingesta CDM, forzar otro `session/open` + GET vault. */
   onRefresh?: () => void
 }) {
   return (
     <div className="col-span-full flex flex-col items-center justify-center rounded-xl border border-[#a4b4be]/20 bg-[#f6fafe] py-16 text-center">
-      <p className="mb-2 text-lg font-bold text-[#26343d]">Sin señales disponibles</p>
-      <p className="max-w-sm text-sm text-[#52616a]">
-        {message ?? 'El sistema actualiza la cartelera cada mañana. Vuelve pronto.'}
-      </p>
+      <p className="mb-2 text-lg font-bold text-[#26343d]">{headline}</p>
+      <p className="max-w-sm text-sm text-[#52616a]">{detail}</p>
+      {technicalHint ? (
+        <p className="mt-3 max-w-md font-mono text-[10px] leading-relaxed text-[#6e7d86]">
+          {technicalHint}
+        </p>
+      ) : null}
       {onRefresh ? (
         <button
           type="button"
@@ -111,6 +119,7 @@ export default function VaultPage() {
   const tryUnlockPick = useVaultStore((s) => s.tryUnlockPick)
   const hydrateLedgerFromApi = useTradeStore((s) => s.hydrateLedgerFromApi)
   const vaultPoolMeta = useVaultStore((s) => s.vaultPoolMeta)
+  const vaultDaySnapshotMeta = useVaultStore((s) => s.vaultDaySnapshotMeta)
 
   const [vaultToast, setVaultToast] = useState<string | null>(null)
   const [bandTab, setBandTab] = useState<VaultBandTab>('mix')
@@ -210,6 +219,32 @@ export default function VaultPage() {
     () => sortVaultPicksForDisplay(apiPicks, bandTab, userTimeZone),
     [apiPicks, bandTab, userTimeZone],
   )
+
+  const emptyVaultCopy = useMemo(() => {
+    const m = vaultDaySnapshotMeta
+    const serverMsg = picksMessage
+    const countsHint = m
+      ? `Pool elegible (fallback): ${m.fallbackEligiblePoolCount} filas · eventos futuros en ventana: ${m.futureEventsInWindowCount}`
+      : null
+    if (m?.operationalEmptyHard) {
+      return {
+        headline: 'Sin cartelera elegible (vacío operativo)',
+        detail:
+          m.vaultOperationalMessageEs?.trim() ||
+          serverMsg ||
+          'No hay eventos o cuotas utilizables en el universo del día; no se publicó señal de respaldo. Revisa ingesta CDM u operación.',
+        technicalHint: countsHint,
+      }
+    }
+    return {
+      headline: 'Sin señales publicadas hoy',
+      detail:
+        m?.vaultOperationalMessageEs?.trim() ||
+        serverMsg ||
+        'El sistema actualiza la cartelera en el ciclo operativo. Si hay datos pero el razonador no aportó salida, el servidor puede dejar la bóveda vacía según reglas.',
+      technicalHint: countsHint,
+    }
+  }, [picksMessage, vaultDaySnapshotMeta])
 
   const takeBlockedByQuota = useCallback(
     (pick: Bt2VaultPickOut, taken: boolean) => {
@@ -336,24 +371,46 @@ export default function VaultPage() {
       ) : null}
       <BunkerViewHeader
         title="La Bóveda"
-        subtitle="Oportunidades con valor esperado positivo (modelo canónico CDM); desbloqueo premium con DP y registro aparte."
+        subtitle="Señales del día con criterio DSR: lectura prioritaria apoyada en datos e histórico del input y coherencia cuota–narrativa — no maximizar ganancia como eje único (D-06-027). Estándar sin DP; premium con desbloqueo en DP y registro aparte."
         onHelpClick={handleForceShowTour}
         rightActions={
-          picksLoadStatus === 'loaded' ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                {apiPicks.length} señales
-              </p>
-              <span className="rounded-full bg-[#d1fae5] px-2.5 py-0.5 text-[10px] font-bold text-[#065f46]">
-                {standardCount} estándar
-              </span>
-              <span className="rounded-full bg-[#e9ddff] px-2.5 py-0.5 text-[10px] font-bold text-[#6d3bd7]">
-                {premiumCount} premium
-              </span>
-            </div>
-          ) : null
+          <div className="flex flex-wrap items-center gap-2">
+            {picksLoadStatus !== 'loading' ? (
+              <button
+                type="button"
+                onClick={() => void loadApiPicks()}
+                className="rounded-lg border border-[#a4b4be]/35 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#52616a] transition-colors hover:border-[#8B5CF6]/40 hover:text-[#6d3bd7]"
+                title="Vuelve a pedir GET /bt2/vault/picks (útil tras regenerar snapshot en servidor)"
+              >
+                Sincronizar
+              </button>
+            ) : null}
+            {picksLoadStatus === 'loaded' ? (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
+                  {apiPicks.length} señales
+                </p>
+                <span className="rounded-full bg-[#d1fae5] px-2.5 py-0.5 text-[10px] font-bold text-[#065f46]">
+                  {standardCount} estándar
+                </span>
+                <span className="rounded-full bg-[#e9ddff] px-2.5 py-0.5 text-[10px] font-bold text-[#6d3bd7]">
+                  {premiumCount} premium
+                </span>
+              </>
+            ) : null}
+          </div>
         }
       />
+
+      {picksLoadStatus === 'loaded' && apiPicks.length > 0 && picksMessage ? (
+        <div
+          role="status"
+          className="rounded-xl border border-[#b45309]/25 bg-[#fffbeb] px-4 py-3 text-sm text-[#78350f]"
+        >
+          <p className="font-semibold text-[#92400e]">Aviso del snapshot</p>
+          <p className="mt-1 leading-relaxed">{picksMessage}</p>
+        </div>
+      ) : null}
 
       {picksLoadStatus === 'loaded' && apiPicks.length > 0 ? (
         <div className="space-y-4 rounded-xl border border-[#a4b4be]/20 bg-white/70 p-4 shadow-sm">
@@ -397,6 +454,12 @@ export default function VaultPage() {
                 : null}
             </p>
           ) : null}
+          {vaultDaySnapshotMeta?.limitedCoverage ? (
+            <p className="text-[10px] leading-snug text-[#92400e]">
+              Cobertura baja en la ventana del día (&lt; 5 eventos futuros): el criterio puede
+              depender de pocos partidos; no implica fallo de ingesta por sí sola (D-06-026 §4).
+            </p>
+          ) : null}
           {bandTab !== 'mix' && displayedPicks.length === 0 ? (
             <p className="text-sm text-[#52616a]" role="status">
               No hay señales en esta franja. Prueba «Mezcla» o otra franja; los
@@ -413,7 +476,9 @@ export default function VaultPage() {
           <VaultErrorState onRetry={() => void loadApiPicks()} />
         ) : (picksLoadStatus === 'empty' || (picksLoadStatus === 'loaded' && apiPicks.length === 0)) ? (
           <VaultEmptyState
-            message={picksMessage}
+            headline={emptyVaultCopy.headline}
+            detail={emptyVaultCopy.detail}
+            technicalHint={emptyVaultCopy.technicalHint}
             onRefresh={() => void loadApiPicks()}
           />
         ) : (

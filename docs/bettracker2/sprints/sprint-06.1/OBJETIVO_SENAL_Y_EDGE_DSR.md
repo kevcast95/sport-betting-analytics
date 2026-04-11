@@ -3,7 +3,8 @@
 > **Origen:** resumen para alinear PO/BA/BE con el alcance S6.1.  
 > **Ejecución prevista:** **Sprint 06.1** — ver [`PLAN.md`](./PLAN.md).  
 > **Trazabilidad S6:** **D-06-020** en [`../sprint-06/DECISIONES.md`](../sprint-06/DECISIONES.md).  
-> **Recalibración:** **D-06-021** … **D-06-026** en [`DECISIONES.md`](./DECISIONES.md) (incl. **D-06-023:** definición completa en **US.md** / **TASKS.md** antes de ejecutar; **D-06-026:** criterios operativos de pool, post-DSR, KPI v0 y vacío duro).
+> **Recalibración:** **D-06-021** … **D-06-026** en [`DECISIONES.md`](./DECISIONES.md) (incl. **D-06-023:** definición completa en **US.md** / **TASKS.md** antes de ejecutar; **D-06-026:** criterios operativos de pool, post-DSR, KPI v0 y vacío duro).  
+> **Refinement posterior:** [`REFINEMENT_S6_1.md`](./REFINEMENT_S6_1.md) + **D-06-027** … **D-06-030** (criterio de mercado DSR, enriquecimiento `ds_input` desde Postgres, coherencia salida, alineación prompt).
 
 ---
 

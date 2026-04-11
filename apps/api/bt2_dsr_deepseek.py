@@ -15,7 +15,11 @@ from dataclasses import dataclass
 from typing import Any, Callable, Optional
 from urllib.parse import urljoin
 
-from apps.api.bt2_dsr_contract import assert_no_forbidden_ds_keys
+from apps.api.bt2_dsr_contract import (
+    PIPELINE_VERSION_DEFAULT,
+    assert_no_forbidden_ds_keys,
+    validate_ds_batch_envelope,
+)
 from apps.api.bt2_market_canonical import normalized_pick_to_canonical
 
 logger = logging.getLogger(__name__)
@@ -99,33 +103,26 @@ class DsrBatchCandidate:
 
 _SYSTEM_BATCH = (
     "Eres analista de apuestas deportivas (fútbol, solo pre-partido). "
-    "Recibes un lote con varios eventos (ds_input): cuotas y nombres públicos; no conoces resultados. "
-    "Compará candidatos entre sí para priorizar valor relativo cuando tenga sentido. "
+    "Recibes un lote con varios eventos (`ds_input`): forma whitelist con "
+    "`processed.odds_featured` (consensus y, si viene, `ingest_meta` de frescura de cuotas), "
+    "bloques opcionales `h2h`, `statistics` (forma reciente codificada), `team_streaks`, `lineups` "
+    "cuando `available: true`, y `event_context`. No conoces resultados del partido objetivo. "
+    "Entre mercados presentes en `consensus`, elegí el que tenga **mejor soporte en los datos "
+    "del propio lote** (histórico/forma/rachas/alineaciones resumidas y coherencia con las cuotas "
+    "mostradas). **No** uses como regla principal “buscar la cuota más alta” ni maximizar payout; "
+    "la lectura debe poder defenderse con lo enviado. **No inventes** estadísticas ni histórico: "
+    "solo usa lo explícito en cada ítem. "
     "Respondé SOLO con JSON válido (sin markdown) según el esquema que pide el usuario."
 )
-
-
-def _build_ds_input_item(c: DsrBatchCandidate) -> dict[str, Any]:
-    return {
-        "event_id": c.event_id,
-        "tournament": c.tournament,
-        "home_team": c.home_team,
-        "away_team": c.away_team,
-        "odds": {
-            "home": c.odds_home,
-            "draw": c.odds_draw,
-            "away": c.odds_away,
-            "over25": c.odds_over25,
-            "under25": c.odds_under25,
-        },
-    }
 
 
 def _user_prompt_batch(*, operating_day_key: str, batch: dict[str, Any]) -> str:
     return (
         f"Día operativo (referencia): {operating_day_key}.\n"
-        "Tarea: con el lote `batch` (campo ds_input), elegí una lectura por evento "
-        "(comparación cruzada entre eventos del mismo lote, como pipeline v1).\n\n"
+        "Tarea: con el lote `batch` (campo `ds_input`), una lectura por evento; compará eventos "
+        "del mismo lote como en pipeline v1. Fundamentá la elección de mercado y lado usando "
+        "**solo** `consensus` y los bloques `processed.*` con `available: true` de ese evento; "
+        "si un bloque no está disponible, no lo cites como si existiera.\n\n"
         "Reglas de salida:\n"
         "- Devolvé SOLO un objeto JSON con esta forma:\n"
         "{\n"
@@ -149,8 +146,10 @@ def _user_prompt_batch(*, operating_day_key: str, batch: dict[str, Any]) -> str:
         "- Debe haber exactamente un elemento en picks_by_event por cada evento de ds_input "
         "(mismo event_id).\n"
         "- Máximo 2 picks por evento; si no hay valor, picks=[] y motivo_sin_pick obligatorio.\n"
-        "- Para 1X2 usá selection exactamente '1','X','2'.\n"
-        "- No inventes cuotas: usá las del ds_input del evento.\n\n"
+        "- `market`: texto o código canónico (FT_1X2, OU_GOALS_2_5, BTTS, DOUBLE_CHANCE_1X, …).\n"
+        "- `selection`: para FT_1X2 usá home|draw|away (o 1|X|2); O/U over_2_5|under_2_5; BTTS yes|no; "
+        "doble oportunidad yes.\n"
+        "- No inventes cuotas: el campo `odds` debe coincidir con consensus del evento.\n\n"
         "Datos del lote (JSON):\n"
         f"{json.dumps(batch, ensure_ascii=False)}\n"
     )
@@ -159,14 +158,14 @@ def _user_prompt_batch(*, operating_day_key: str, batch: dict[str, Any]) -> str:
 def _parse_picks_by_event(
     parsed: dict[str, Any],
     expected_ids: list[int],
-) -> dict[int, Optional[tuple[str, str, str, str]]]:
+) -> dict[int, Optional[tuple[str, str, str, str, Optional[float]]]]:
     """
-    Por event_id: (narrative_es, confidence_label, market_canonical, selection_canonical) o None.
+    Por event_id: (narrative_es, confidence_label, market_canonical, selection_canonical, model_odds) o None.
     None = degradar ese evento a rules_fallback.
     """
     raw = parsed.get("picks_by_event")
     if not isinstance(raw, list):
-        return {eid: None for eid in expected_ids}
+        return {eid: None for eid in expected_ids}  # type: ignore[return-value]
 
     by_eid: dict[int, dict[str, Any]] = {}
     for row in raw:
@@ -178,7 +177,7 @@ def _parse_picks_by_event(
             continue
         by_eid[eid] = row
 
-    out: dict[int, Optional[tuple[str, str, str, str]]] = {}
+    out: dict[int, Optional[tuple[str, str, str, str, Optional[float]]]] = {}
     for eid in expected_ids:
         row = by_eid.get(eid)
         if not row:
@@ -191,7 +190,7 @@ def _parse_picks_by_event(
             continue
         if len(picks) == 0:
             narr = motivo or "Sin pick explícito para este evento."
-            out[eid] = (narr[:4000], "low", "UNKNOWN", "unknown_side")
+            out[eid] = (narr[:4000], "low", "UNKNOWN", "unknown_side", None)
             continue
         pick = picks[0]
         if not isinstance(pick, dict):
@@ -203,12 +202,18 @@ def _parse_picks_by_event(
         razon = str(pick.get("razon") or "").strip()
         conf = _confianza_to_label(str(pick.get("confianza") or ""))
         narr = razon or motivo or "Señal modelo."
-        out[eid] = (narr[:4000], conf, mmc, msc)
+        mod_o: Optional[float] = None
+        try:
+            if pick.get("odds") is not None:
+                mod_o = float(pick.get("odds"))
+        except (TypeError, ValueError):
+            mod_o = None
+        out[eid] = (narr[:4000], conf, mmc, msc, mod_o)
     return out
 
 
 def deepseek_suggest_batch(
-    candidates: list[DsrBatchCandidate],
+    ds_input_items: list[dict[str, Any]],
     *,
     operating_day_key: str,
     api_key: str,
@@ -216,24 +221,26 @@ def deepseek_suggest_batch(
     model: str,
     timeout_sec: int,
     max_retries: int,
-) -> dict[int, Optional[tuple[str, str, str, str]]]:
+) -> dict[int, Optional[tuple[str, str, str, str, Optional[float]]]]:
     """
-    Una llamada HTTP para todo el lote. Retorna mapa event_id → tupla BT2 o None (degradar a reglas).
-    Si falla el lote entero, todas las claves esperadas van a None.
+    Una llamada HTTP para todo el lote. `ds_input_items` ya validados (whitelist T-171).
+    Retorna mapa event_id → tupla (incl. odds declaradas modelo) o None (degradar a reglas).
     """
-    if not candidates:
+    if not ds_input_items:
         return {}
 
-    expected_ids = [c.event_id for c in candidates]
-    ds_items = [_build_ds_input_item(c) for c in candidates]
-    batch_obj = {
-        "daily_run_id": "bt2_snapshot_batch",
-        "ds_input": ds_items,
+    expected_ids = [int(x["event_id"]) for x in ds_input_items]
+    batch_obj: dict[str, Any] = {
+        "operating_day_key": operating_day_key,
+        "pipeline_version": PIPELINE_VERSION_DEFAULT,
+        "sport": "football",
+        "ds_input": ds_input_items,
     }
+    validate_ds_batch_envelope(batch_obj)
     assert_no_forbidden_ds_keys(batch_obj)
 
     user_prompt = _user_prompt_batch(operating_day_key=operating_day_key, batch=batch_obj)
-    max_tokens = min(8000, 900 + 220 * len(candidates))
+    max_tokens = min(8000, 900 + 220 * len(ds_input_items))
 
     url = urljoin(base_url.rstrip("/") + "/", "chat/completions")
     body = {
@@ -266,7 +273,7 @@ def deepseek_suggest_batch(
                 last_err = "parse_json"
                 logger.warning(
                     "bt2_dsr_batch_bad_json batch_size=%s attempt=%s",
-                    len(candidates),
+                    len(ds_input_items),
                     attempt,
                 )
                 continue
@@ -276,7 +283,7 @@ def deepseek_suggest_batch(
             logger.warning(
                 "bt2_dsr_batch_http code=%s batch_size=%s attempt=%s",
                 getattr(e, "code", "?"),
-                len(candidates),
+                len(ds_input_items),
                 attempt,
             )
             if e.code and int(e.code) < 500:
@@ -286,13 +293,13 @@ def deepseek_suggest_batch(
             logger.warning(
                 "bt2_dsr_batch_error err=%s batch_size=%s attempt=%s",
                 last_err,
-                len(candidates),
+                len(ds_input_items),
                 attempt,
             )
 
     logger.warning(
         "bt2_dsr_batch_degraded batch_size=%s last_err=%s",
-        len(candidates),
+        len(ds_input_items),
         last_err or "unknown",
     )
     return {eid: None for eid in expected_ids}

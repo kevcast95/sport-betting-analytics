@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import List, Literal, Optional, Tuple, cast
 
@@ -30,15 +31,22 @@ from apps.api.bt2_dx_constants import (
     REASON_SESSION_CLOSE_DISCIPLINE,
     SESSION_CLOSE_DISCIPLINE_REWARD_DP,
 )
-from apps.api.bt2_dsr_contract import (
-    PIPELINE_VERSION_DEFAULT,
-    assert_no_forbidden_ds_keys,
-    hash_dsr_input_payload,
-)
-from apps.api.bt2_dsr_deepseek import DsrBatchCandidate, deepseek_suggest_batch
+from apps.api.bt2_dsr_contract import PIPELINE_VERSION_DEFAULT
+from apps.api.bt2_dsr_deepseek import deepseek_suggest_batch
+from apps.api.bt2_dsr_ds_input_builder import build_ds_input_item_from_db
+from apps.api.bt2_dsr_odds_aggregation import data_completeness_score
+from apps.api.bt2_dsr_postprocess import hash_for_ds_input_item, postprocess_dsr_pick
 from apps.api.bt2_dsr_suggest import (
     PIPELINE_VERSION_DEEPSEEK,
+    consensus_to_legacy_odds,
     suggest_for_snapshot_row,
+    suggest_sql_stat_fallback_from_consensus,
+)
+from apps.api.bt2_value_pool import (
+    build_value_pool_for_snapshot,
+    count_future_events_window,
+    parse_priority_league_ids,
+    premium_eligible_ids_from_pool,
 )
 from apps.api.bt2_market_canonical import (
     evaluate_model_vs_result,
@@ -46,9 +54,13 @@ from apps.api.bt2_market_canonical import (
     normalized_pick_to_canonical,
 )
 from apps.api.bt2_schemas import (
+    Bt2AdminCountRowOut,
     Bt2AdminDsrDayOut,
     Bt2AdminDsrAuditRowOut,
     Bt2AdminDsrDaySummaryOut,
+    Bt2AdminScoreBucketOut,
+    Bt2AdminVaultPickDistributionOut,
+    Bt2AdminVaultRegenerateSnapshotOut,
     Bt2BehavioralMetricsOut,
     Bt2MetaOut,
     Bt2SessionDayOut,
@@ -71,6 +83,15 @@ from apps.api.deps import Bt2UserId
 
 router = APIRouter(prefix="/bt2", tags=["bt2"])
 logger = logging.getLogger("bt2_router")
+
+_VAULT_HARD_EMPTY_MESSAGE_ES = (
+    "No hay eventos elegibles hoy según los umbrales del protocolo (mercados completos en CDM y cuota mínima). "
+    "Si acabas de abrir la estación, revisa más tarde o la ingesta de datos."
+)
+_VAULT_FALLBACK_DISCLAIMER_ES = (
+    "No hubo suficiente valor para el criterio del modelo estadístico; se muestran opciones reales del CDM "
+    "con criterio alternativo. La selección puede estar sesgada por los datos limitados del día."
+)
 
 # Bono único al completar onboarding fase A (ledger como fuente de verdad; US-FE-011).
 ONBOARDING_PHASE_A_DP_GRANT = 250
@@ -653,6 +674,7 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
                 dp.dsr_source,
                 dp.model_market_canonical,
                 dp.model_selection_canonical,
+                dp.data_completeness_score,
                 e.id            AS event_id,
                 e.status        AS event_status,
                 e.kickoff_utc,
@@ -703,17 +725,49 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
             (user_id,),
         )
         legacy_open_event_ids = {int(r["event_id"]) for r in cur.fetchall()}
+        cur.execute(
+            """
+            SELECT dsr_signal_degraded, limited_coverage, operational_empty_hard,
+                   vault_empty_message_es, fallback_disclaimer_es,
+                   future_events_in_window_count, fallback_eligible_pool_count
+            FROM bt2_vault_day_metadata
+            WHERE user_id = %s::uuid AND operating_day_key = %s
+            """,
+            (user_id, odk),
+        )
+        meta_row = cur.fetchone()
     finally:
         cur.close()
         conn.close()
 
+    vm = meta_row or {}
+    vm_degraded = bool(vm.get("dsr_signal_degraded"))
+    vm_limited = bool(vm.get("limited_coverage"))
+    vm_hard = bool(vm.get("operational_empty_hard"))
+    vm_empty_msg = vm.get("vault_empty_message_es")
+    vm_disc = vm.get("fallback_disclaimer_es")
+    vm_fec = int(vm.get("future_events_in_window_count") or 0)
+    vm_pool = int(vm.get("fallback_eligible_pool_count") or 0)
+
     if not rows:
+        empty_msg = (
+            "No hay ítems en la bóveda para hoy. Si aún no abriste la estación, hacelo para generar el snapshot."
+        )
+        if vm_hard:
+            empty_msg = str(vm_empty_msg or _VAULT_HARD_EMPTY_MESSAGE_ES)
         return Bt2VaultPicksPageOut(
             picks=[],
             generated_at_utc=now,
-            message="No hay eventos disponibles para hoy. El sistema actualiza la cartelera cada mañana.",
+            message=empty_msg,
             pool_item_count=0,
             pool_below_target=True,
+            dsr_signal_degraded=vm_degraded,
+            limited_coverage=vm_limited,
+            operational_empty_hard=vm_hard,
+            vault_operational_message_es=str(vm_empty_msg) if vm_empty_msg else None,
+            fallback_disclaimer_es=str(vm_disc) if vm_disc else None,
+            future_events_in_window_count=vm_fec,
+            fallback_eligible_pool_count=vm_pool,
         )
 
     picks: list[Bt2VaultPickOut] = []
@@ -812,15 +866,31 @@ def bt2_vault_picks(user_id: Bt2UserId) -> Bt2VaultPicksPageOut:
                 market_canonical_label_es=mcl_es,
                 model_market_canonical=mmc,
                 model_selection_canonical=msc,
+                data_completeness_score=(
+                    int(row["data_completeness_score"])
+                    if row.get("data_completeness_score") is not None
+                    else None
+                ),
             )
         )
 
     n = len(picks)
+    page_msg: Optional[str] = None
+    if vm_disc:
+        page_msg = str(vm_disc)
     return Bt2VaultPicksPageOut(
         picks=picks,
         generated_at_utc=now,
+        message=page_msg,
         pool_item_count=n,
         pool_below_target=n < VAULT_POOL_TARGET,
+        dsr_signal_degraded=vm_degraded,
+        limited_coverage=vm_limited,
+        operational_empty_hard=vm_hard,
+        vault_operational_message_es=str(vm_empty_msg) if vm_empty_msg else None,
+        fallback_disclaimer_es=str(vm_disc) if vm_disc else None,
+        future_events_in_window_count=vm_fec,
+        fallback_eligible_pool_count=vm_pool,
     )
 
 
@@ -960,6 +1030,26 @@ def bt2_user_profile(user_id: Bt2UserId) -> ProfileOut:
 
 
 # ── Helpers dominio conductual ────────────────────────────────────────────────
+
+
+def _normalize_bt2_user_uuid_param(raw: str) -> str:
+    """
+    Acepta UUID puro o el sufijo erróneo `_BT2` que a veces se copia desde la UI.
+    """
+    s = (raw or "").strip()
+    if len(s) >= 5 and s.lower().endswith("_bt2"):
+        s = s[:-4]
+    try:
+        return str(uuid.UUID(s))
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "userId debe ser un UUID válido de bt2_users (36 caracteres con guiones), "
+                "p. ej. b42d899a-8ec0-40ec-a9b9-674a5fe8f2d1. No añadas sufijos como _BT2."
+            ),
+        )
+
 
 def _user_timezone(user_id: str) -> str:
     conn = _db_conn()
@@ -1882,9 +1972,54 @@ def _fetch_event_context_for_dsr(cur, event_id: int) -> Optional[tuple]:
     return row
 
 
+def _upsert_vault_day_metadata(
+    cur,
+    user_id: str,
+    odk: str,
+    *,
+    dsr_signal_degraded: bool,
+    limited_coverage: bool,
+    operational_empty_hard: bool,
+    vault_empty_message_es: Optional[str],
+    fallback_disclaimer_es: Optional[str],
+    future_events_in_window_count: int,
+    fallback_eligible_pool_count: int,
+) -> None:
+    cur.execute(
+        """
+        INSERT INTO bt2_vault_day_metadata (
+            user_id, operating_day_key, dsr_signal_degraded, limited_coverage,
+            operational_empty_hard, vault_empty_message_es, fallback_disclaimer_es,
+            future_events_in_window_count, fallback_eligible_pool_count
+        )
+        VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (user_id, operating_day_key) DO UPDATE SET
+            dsr_signal_degraded = EXCLUDED.dsr_signal_degraded,
+            limited_coverage = EXCLUDED.limited_coverage,
+            operational_empty_hard = EXCLUDED.operational_empty_hard,
+            vault_empty_message_es = EXCLUDED.vault_empty_message_es,
+            fallback_disclaimer_es = EXCLUDED.fallback_disclaimer_es,
+            future_events_in_window_count = EXCLUDED.future_events_in_window_count,
+            fallback_eligible_pool_count = EXCLUDED.fallback_eligible_pool_count
+        """,
+        (
+            user_id,
+            odk,
+            dsr_signal_degraded,
+            limited_coverage,
+            operational_empty_hard,
+            vault_empty_message_es,
+            fallback_disclaimer_es,
+            future_events_in_window_count,
+            fallback_eligible_pool_count,
+        ),
+    )
+
+
 def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) -> int:
     """
-    US-BE-030 / D-05.2-002: pool diario ~15 candidatos (tope 20), franjas por TZ usuario.
+    US-BE-030 + S6.1: pool valor (T-177), builder ds_input (T-174/175), Post-DSR (T-181/182),
+    orquestación DSR → fallback SQL (D-06-022) y vacío duro (D-06-026 §6).
     Idempotente: si ya existe snapshot para (user_id, odk), no hace nada.
     """
     cur.execute(
@@ -1905,102 +2040,61 @@ def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) ->
     day_start_utc = datetime.combine(local_today, datetime.min.time(), tzinfo=tz).astimezone(timezone.utc)
     day_end_utc = day_start_utc + timedelta(hours=24)
 
-    cur.execute(
-        """
-        SELECT
-            e.id AS event_id,
-            e.kickoff_utc,
-            COALESCE((
-                SELECT MIN(1.0 / NULLIF(o.odds, 0))
-                FROM bt2_odds_snapshot o
-                WHERE o.event_id = e.id
-                  AND lower(o.market) IN ('1x2','match winner','full time result','fulltime result')
-                  AND (o.selection IN ('1','Home') OR lower(o.selection) LIKE '%%home%%')
-            ), 999) AS house_margin
-        FROM bt2_events e
-        JOIN bt2_leagues l ON l.id = e.league_id
-        WHERE
-            e.kickoff_utc >= %s
-            AND e.kickoff_utc < %s
-            AND e.status = 'scheduled'
-            AND l.is_active = true
-            AND EXISTS (
-                SELECT 1 FROM bt2_odds_snapshot o2
-                WHERE o2.event_id = e.id
-                  AND o2.odds >= 1.30
-            )
-        ORDER BY
-            CASE l.tier WHEN 'S' THEN 1 WHEN 'A' THEN 2 WHEN 'B' THEN 3 ELSE 4 END ASC,
-            house_margin ASC
-        LIMIT 80
-        """,
-        (day_start_utc, day_end_utc),
-    )
+    league_filter = parse_priority_league_ids(bt2_settings.bt2_priority_league_ids)
+    future_ec = count_future_events_window(cur, day_start_utc, day_end_utc)
+    limited_cov = future_ec < 5
 
-    rows = cur.fetchall()
-    if not rows:
+    pool, _pre_n = build_value_pool_for_snapshot(
+        cur, day_start_utc, day_end_utc, league_filter=league_filter
+    )
+    fallback_pool_count = len(pool)
+
+    if not pool:
+        _upsert_vault_day_metadata(
+            cur,
+            user_id,
+            odk,
+            dsr_signal_degraded=False,
+            limited_coverage=limited_cov,
+            operational_empty_hard=True,
+            vault_empty_message_es=_VAULT_HARD_EMPTY_MESSAGE_ES,
+            fallback_disclaimer_es=None,
+            future_events_in_window_count=future_ec,
+            fallback_eligible_pool_count=0,
+        )
         return 0
 
-    composed = compose_vault_daily_picks(
-        [(int(r[0]), r[1], float(r[2])) for r in rows],
-        tz,
-    )
+    prem_ok = premium_eligible_ids_from_pool(pool)
+    rows_for_compose = [(eid, ko, hm) for eid, ko, hm, _agg, _lt in pool]
+    composed = compose_vault_daily_picks(rows_for_compose, tz, prem_ok)
 
-    def _dsr_hash(
-        eid: int,
-        oh: Optional[float],
-        od: Optional[float],
-        oa: Optional[float],
-        ov: Optional[float],
-        un: Optional[float],
-    ) -> str:
-        payload = {
-            "event_id": eid,
-            "odds": {
-                "home": oh,
-                "draw": od,
-                "away": oa,
-                "over25": ov,
-                "under25": un,
-            },
-        }
-        assert_no_forbidden_ds_keys(payload)
-        return hash_dsr_input_payload(payload)
-
-    plan: list[
-        tuple[int, str, Any, Optional[tuple]]
-    ] = []
+    plan: list[tuple[int, str, Any, dict, Any]] = []
     for event_id, access_tier, band in composed:
-        ctx = _fetch_event_context_for_dsr(cur, event_id)
-        plan.append((event_id, access_tier, band, ctx))
+        built = build_ds_input_item_from_db(cur, event_id, selection_tier="A")
+        if not built:
+            continue
+        item, agg = built
+        plan.append((event_id, access_tier, band, item, agg))
 
-    ds_by_eid: dict[int, tuple[str, str, str, str]] = {}
+    ds_resolved: dict[int, tuple[str, str, str, str, str, str, str]] = {}
     prov = (bt2_settings.bt2_dsr_provider or "rules").strip().lower()
     dkey = (bt2_settings.deepseek_api_key or "").strip()
-    if prov == "deepseek" and dkey:
+    dsr_api_enabled = bool(bt2_settings.bt2_dsr_enabled)
+    global_sql_fallback = False
+    dsr_any_success = False
+
+    if not dsr_api_enabled and prov == "deepseek" and dkey and plan:
+        logger.info(
+            "bt2_dsr_skipped BT2_DSR_ENABLED=false — snapshot usa sql_stat_fallback (sin llamada API)"
+        )
+        global_sql_fallback = True
+    elif prov == "deepseek" and dkey and plan and dsr_api_enabled:
         batch_size = max(1, int(bt2_settings.bt2_dsr_batch_size))
-        eligible = [(eid, at, b, ctx) for eid, at, b, ctx in plan if ctx]
-        for i in range(0, len(eligible), batch_size):
-            chunk = eligible[i : i + batch_size]
-            cands: list[DsrBatchCandidate] = []
-            for eid, _at, _b, ctx in chunk:
-                assert ctx is not None
-                home, away, league, oh, od, oa, ov, un = ctx
-                cands.append(
-                    DsrBatchCandidate(
-                        event_id=eid,
-                        tournament=league or "Liga",
-                        home_team=home or "Local",
-                        away_team=away or "Visitante",
-                        odds_home=float(oh) if oh is not None else None,
-                        odds_draw=float(od) if od is not None else None,
-                        odds_away=float(oa) if oa is not None else None,
-                        odds_over25=float(ov) if ov is not None else None,
-                        odds_under25=float(un) if un is not None else None,
-                    )
-                )
+        for i in range(0, len(plan), batch_size):
+            chunk = plan[i : i + batch_size]
+            items = [p[3] for p in chunk]
             part = deepseek_suggest_batch(
-                cands,
+                items,
                 operating_day_key=odk,
                 api_key=dkey,
                 base_url=bt2_settings.bt2_dsr_deepseek_base_url,
@@ -2008,59 +2102,95 @@ def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) ->
                 timeout_sec=int(bt2_settings.bt2_dsr_timeout_sec),
                 max_retries=int(bt2_settings.bt2_dsr_max_retries),
             )
-            for eid, _at, _b, _ctx in chunk:
-                tup = part.get(eid)
-                if tup is not None:
-                    ds_by_eid[eid] = tup
+            for event_id, _at, _b, item, _agg in chunk:
+                raw = part.get(event_id)
+                if raw is None:
+                    continue
+                narr, conf, mmc, msc, mod_o = raw
+                consensus = item["processed"]["odds_featured"]["consensus"]
+                m_cov = item["diagnostics"]["market_coverage"]
+                ctx = item["event_context"]
+                ppc = postprocess_dsr_pick(
+                    narrative_es=narr,
+                    confidence_label=conf,
+                    market_canonical=mmc,
+                    selection_canonical=msc,
+                    model_declared_odds=mod_o,
+                    consensus=consensus,
+                    market_coverage=m_cov,
+                    event_id=event_id,
+                    home_team=str(ctx.get("home_team") or ""),
+                    away_team=str(ctx.get("away_team") or ""),
+                )
+                if ppc:
+                    n2, c2, m2, s2 = ppc
+                    h2 = hash_for_ds_input_item(item)
+                    ds_resolved[event_id] = (
+                        n2,
+                        c2,
+                        m2,
+                        s2,
+                        PIPELINE_VERSION_DEEPSEEK,
+                        "dsr_api",
+                        h2,
+                    )
+                    dsr_any_success = True
+        if not dsr_any_success:
+            global_sql_fallback = True
     elif prov == "deepseek" and not dkey:
-        logging.getLogger(__name__).warning(
-            "bt2_dsr_missing_api_key provider=deepseek (lotes no invocados)"
+        logger.warning("bt2_dsr_missing_api_key provider=deepseek (lotes no invocados)")
+        global_sql_fallback = bool(plan)
+
+    disclaimer = _VAULT_FALLBACK_DISCLAIMER_ES if global_sql_fallback else None
+    degraded = bool(global_sql_fallback)
+
+    home_away_league: dict[int, tuple[str, str, str]] = {}
+    for event_id, _at, _b, item, _agg in plan:
+        ctx = item["event_context"]
+        home_away_league[event_id] = (
+            str(ctx.get("home_team") or "Local"),
+            str(ctx.get("away_team") or "Visitante"),
+            str(ctx.get("league_name") or "Liga"),
         )
 
     inserted = 0
-    for event_id, access_tier, _band, ctx in plan:
-        if ctx:
-            home, away, league, oh, od, oa, ov, un = ctx
-            oh_f = float(oh) if oh is not None else None
-            od_f = float(od) if od is not None else None
-            oa_f = float(oa) if oa is not None else None
-            ov_f = float(ov) if ov is not None else None
-            un_f = float(un) if un is not None else None
-            batch_hit = ds_by_eid.get(event_id)
-            if batch_hit is not None:
-                narr, conf, mmc, msc = batch_hit
-                pver = PIPELINE_VERSION_DEEPSEEK
-                dsrc = "dsr_api"
-                dhash = _dsr_hash(event_id, oh_f, od_f, oa_f, ov_f, un_f)
-            else:
-                narr, conf, mmc, msc, pver, dsrc, dhash = suggest_for_snapshot_row(
-                    event_id,
-                    oh_f,
-                    od_f,
-                    oa_f,
-                    ov_f,
-                    un_f,
-                    home or "Local",
-                    away or "Visitante",
-                    league or "Liga",
-                )
+    for event_id, access_tier, _band, item, agg in plan:
+        home, away, league = home_away_league[event_id]
+        score_v = int(data_completeness_score(agg))
+        if global_sql_fallback:
+            narr, conf, mmc, msc, pver, dsrc, dhash = suggest_sql_stat_fallback_from_consensus(
+                event_id,
+                agg.consensus,
+                agg.market_coverage,
+                home,
+                away,
+                league,
+            )
+        elif event_id in ds_resolved:
+            narr, conf, mmc, msc, pver, dsrc, dhash = ds_resolved[event_id]
         else:
-            narr = "Evento sin contexto CDM para DSR."
-            conf = "low"
-            mmc = "UNKNOWN"
-            msc = "unknown_side"
-            pver = PIPELINE_VERSION_DEFAULT
-            dsrc = "rules_fallback"
-            dhash = None
+            oh, od, oa, ov, un = consensus_to_legacy_odds(agg.consensus)
+            narr, conf, mmc, msc, pver, dsrc, dhash = suggest_for_snapshot_row(
+                event_id,
+                oh,
+                od,
+                oa,
+                ov,
+                un,
+                home,
+                away,
+                league,
+            )
 
         cur.execute(
             """
             INSERT INTO bt2_daily_picks (
                 user_id, event_id, operating_day_key, access_tier,
                 pipeline_version, dsr_input_hash, dsr_narrative_es, dsr_confidence_label,
-                model_market_canonical, model_selection_canonical, dsr_source
+                model_market_canonical, model_selection_canonical, dsr_source,
+                data_completeness_score
             )
-            VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (user_id, event_id, operating_day_key) DO NOTHING
             """,
             (
@@ -2075,11 +2205,24 @@ def _generate_daily_picks_snapshot(cur, user_id: str, odk: str, tz_name: str) ->
                 mmc,
                 msc,
                 dsrc,
+                score_v,
             ),
         )
         if cur.rowcount:
             inserted += 1
 
+    _upsert_vault_day_metadata(
+        cur,
+        user_id,
+        odk,
+        dsr_signal_degraded=degraded,
+        limited_coverage=limited_cov,
+        operational_empty_hard=False,
+        vault_empty_message_es=None,
+        fallback_disclaimer_es=disclaimer,
+        future_events_in_window_count=future_ec,
+        fallback_eligible_pool_count=fallback_pool_count,
+    )
     return inserted
 
 
@@ -2649,4 +2792,177 @@ def bt2_admin_analytics_dsr_day(
             summary_human_es=summary_human,
         ),
         audit_rows=rows_out,
+    )
+
+
+@router.get(
+    "/admin/analytics/vault-pick-distribution",
+    response_model=Bt2AdminVaultPickDistributionOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_vault_pick_distribution(
+    operating_day_key: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKey",
+        description="YYYY-MM-DD día operativo.",
+    ),
+) -> Bt2AdminVaultPickDistributionOut:
+    """
+    US-BE-035 / T-183 — conteos por `dsr_confidence_label`, `dsr_source` y buckets de `data_completeness_score`.
+    Header: **X-BT2-Admin-Key** = `BT2_ADMIN_API_KEY`.
+    """
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        cur.execute(
+            """
+            SELECT COALESCE(NULLIF(TRIM(dsr_confidence_label), ''), '(sin etiqueta)') AS k,
+                   COUNT(*)::int AS c
+            FROM bt2_daily_picks
+            WHERE operating_day_key = %s
+            GROUP BY 1
+            ORDER BY c DESC
+            """,
+            (operating_day_key,),
+        )
+        by_conf = [
+            Bt2AdminCountRowOut(key=str(r["k"]), count=int(r["c"])) for r in cur.fetchall()
+        ]
+        cur.execute(
+            """
+            SELECT dsr_source AS k, COUNT(*)::int AS c
+            FROM bt2_daily_picks
+            WHERE operating_day_key = %s
+            GROUP BY dsr_source
+            ORDER BY c DESC
+            """,
+            (operating_day_key,),
+        )
+        by_src = [
+            Bt2AdminCountRowOut(key=str(r["k"]), count=int(r["c"])) for r in cur.fetchall()
+        ]
+        cur.execute(
+            """
+            SELECT COALESCE(data_completeness_score, -1) AS b, COUNT(*)::int AS c
+            FROM bt2_daily_picks
+            WHERE operating_day_key = %s
+            GROUP BY 1
+            ORDER BY b ASC
+            """,
+            (operating_day_key,),
+        )
+        score_b = [
+            Bt2AdminScoreBucketOut(score_bucket=int(r["b"]), count=int(r["c"]))
+            for r in cur.fetchall()
+        ]
+        cur.execute(
+            "SELECT COUNT(*)::int AS n FROM bt2_daily_picks WHERE operating_day_key = %s",
+            (operating_day_key,),
+        )
+        total = int(cur.fetchone()["n"] or 0)
+    finally:
+        cur.close()
+        conn.close()
+
+    summary = (
+        f"Día {operating_day_key}: {total} filas en bt2_daily_picks. "
+        f"Desglose por etiqueta de confianza y fuente listo para leyenda admin (no mezclar con % acierto)."
+    )
+    return Bt2AdminVaultPickDistributionOut(
+        operating_day_key=operating_day_key,
+        by_dsr_confidence_label=by_conf,
+        by_dsr_source=by_src,
+        score_buckets=score_b,
+        total_daily_pick_rows=total,
+        summary_human_es=summary,
+    )
+
+
+@router.post(
+    "/admin/vault/regenerate-daily-snapshot",
+    response_model=Bt2AdminVaultRegenerateSnapshotOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_regenerate_daily_snapshot(
+    user_id: str = Query(
+        ...,
+        min_length=32,
+        max_length=48,
+        alias="userId",
+        description="UUID del usuario BT2 (mismo que en JWT / bt2_users.id). Opcional: se ignora sufijo _BT2 si se copia por error.",
+    ),
+    operating_day_key: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKey",
+        description="YYYY-MM-DD del día operativo cuyo snapshot se borra y regenera.",
+    ),
+) -> Bt2AdminVaultRegenerateSnapshotOut:
+    """
+    Desarrollo / operación: el snapshot es **idempotente** (`session/open` no regenera si ya hay filas).
+    Este endpoint borra `bt2_daily_picks` + metadata de bóveda para ese usuario y día, y vuelve a ejecutar
+    el mismo pipeline que `session/open` (pool, DSR, Post-DSR, fallback).
+
+    Header: **X-BT2-Admin-Key** = `BT2_ADMIN_API_KEY`.
+    """
+    try:
+        date.fromisoformat(operating_day_key)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="operatingDayKey debe ser YYYY-MM-DD válido")
+
+    uid = _normalize_bt2_user_uuid_param(user_id)
+    tz_name = _user_timezone(uid)
+    conn = _db_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """DELETE FROM bt2_daily_picks
+               WHERE user_id = %s::uuid AND operating_day_key = %s""",
+            (uid, operating_day_key),
+        )
+        cur.execute(
+            """DELETE FROM bt2_vault_day_metadata
+               WHERE user_id = %s::uuid AND operating_day_key = %s""",
+            (uid, operating_day_key),
+        )
+        inserted = _generate_daily_picks_snapshot(cur, uid, operating_day_key, tz_name)
+        cur.execute(
+            """SELECT COUNT(*)::int FROM bt2_daily_picks
+               WHERE user_id = %s::uuid AND operating_day_key = %s""",
+            (uid, operating_day_key),
+        )
+        total_after = int(cur.fetchone()[0] or 0)
+        conn.commit()
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
+
+    msg = (
+        f"Snapshot regenerado para {operating_day_key}: {inserted} filas insertadas en esta corrida; "
+        f"{total_after} filas totales en bóveda para ese día."
+    )
+    if total_after == 0:
+        msg += (
+            " Si es 0, el pool valor no encontró eventos elegibles (CDM vacío, umbrales 1.30, "
+            "o `BT2_PRIORITY_LEAGUE_IDS` demasiado restrictivo)."
+        )
+    return Bt2AdminVaultRegenerateSnapshotOut(
+        user_id=uid,
+        operating_day_key=operating_day_key,
+        picks_inserted_this_run=inserted,
+        picks_total_after=total_after,
+        message_es=msg,
     )
