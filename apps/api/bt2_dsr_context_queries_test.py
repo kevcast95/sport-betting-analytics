@@ -38,6 +38,24 @@ class TestLineupsExtract(unittest.TestCase):
         self.assertTrue(lu.get("available"))
         self.assertEqual(lu.get("teams_distinct"), 2)
 
+    def test_starting_xi_per_side(self) -> None:
+        lu = extract_lineups_summary_from_raw_payload(
+            {
+                "participants": [
+                    {"id": 10, "meta": {"location": "home"}},
+                    {"id": 20, "meta": {"location": "away"}},
+                ],
+                "lineups": [
+                    {"team_id": 10, "type_id": 11},
+                    {"team_id": 10, "type_id": 11},
+                    {"team_id": 20, "type_id": 11},
+                ],
+            }
+        )
+        assert lu is not None
+        self.assertEqual(lu.get("starting_xi_rows_home"), 2)
+        self.assertEqual(lu.get("starting_xi_rows_away"), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

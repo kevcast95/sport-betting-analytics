@@ -49,6 +49,8 @@ export interface Bt2VaultPickOut {
   premiumUnlocked: boolean
   /** US-BE-030: franja horaria local del kickoff (TZ usuario). */
   timeBand: Bt2VaultTimeBand
+  /** Orden en snapshot del día (1 = cabeza tras compose/regenerar). */
+  slateRank?: number
   /** Sprint 06 — DSR / pipeline (US-BE-025, US-DX-002). */
   pipelineVersion?: string
   dsrNarrativeEs?: string
@@ -93,10 +95,16 @@ export interface Bt2VaultPicksPageOut {
   picks: Bt2VaultPickOut[]
   generatedAtUtc: string
   message?: string
-  /** Objetivo de ítems en pool (típ. 15) — US-BE-030. */
+  /** Slate objetivo por día (D-06-032: 5). */
   poolTargetCount: number
   poolHardCap: number
+  /** Candidatos valor máx. antes del slate (D-06-032: 20). */
+  valuePoolUniverseMax?: number
   poolItemCount: number
+  /** Filas en bt2_daily_picks (hasta 20); cartelera visible = primeros 5. */
+  vaultUniversePersistedCount?: number
+  /** Ciclo 0–3 al componer/regenerar (prioridad de franja). */
+  slateBandCycle?: number
   poolBelowTarget: boolean
   /** US-BE-036 / T-179 — fallback SQL por ausencia de señal DSR válida. */
   dsrSignalDegraded?: boolean
@@ -211,6 +219,7 @@ export interface Bt2OnboardingPhaseACompleteOut {
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
+/** `GET /bt2/meta` — hito actual: `bt2-dx-001-s6.2r2` (vault 20/5/5 + franjas D-06-032). */
 export interface Bt2MetaOut {
   contractVersion?: string
   settlementVerificationMode: 'trust' | 'verified'
@@ -264,6 +273,15 @@ export interface Bt2AdminVaultPickDistributionOut {
   scoreBuckets: Bt2AdminScoreBucketOut[]
   totalDailyPickRows: number
   summaryHumanEs: string
+}
+
+/** POST /bt2/admin/vault/regenerate-daily-snapshot — US-BE-047 / T-215 (operación). */
+export interface Bt2AdminVaultRegenerateSnapshotOut {
+  userId: string
+  operatingDayKey: string
+  picksInsertedThisRun: number
+  picksTotalAfter: number
+  messageEs: string
 }
 
 // ─── US-DX-001 — Razones canónicas bt2_dp_ledger.reason (Sprint 05) ─────────

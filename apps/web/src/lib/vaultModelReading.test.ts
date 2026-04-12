@@ -29,7 +29,7 @@ describe('vaultModelReading', () => {
       dsrSource: 'dsr_api',
     })
     expect(u.body).toBe('Narrativa DSR breve.')
-    expect(u.title).toContain('razonador')
+    expect(u.title).toContain('Vektor')
   })
 
   it('unifiedApiModelReading: DSR API + sin narrativa + placeholder CDM → sin mezclar con ingesta', () => {
@@ -38,8 +38,8 @@ describe('vaultModelReading', () => {
       traduccionHumana: 'Señal basada en reglas CDM — sin narrativa DSR extendida para este ítem.',
       dsrSource: 'dsr_api',
     })
-    expect(u.title).toContain('Sin narrativa DSR')
-    expect(u.body).toMatch(/fallo de ingesta/)
+    expect(u.title).toContain('Vektor')
+    expect(u.body).toMatch(/fallo operativo/)
   })
 
   it('unifiedApiModelReading: reglas/fallback + placeholder → copy alternativo', () => {
@@ -49,7 +49,7 @@ describe('vaultModelReading', () => {
       dsrSource: 'rules_fallback',
     })
     expect(u.body).toBe(RULES_FALLBACK_MODEL_COPY_ES)
-    expect(u.title).toContain('alternativa')
+    expect(u.title).toContain('Vektor')
   })
 
   it('unifiedApiModelReading: sin dsr_api + lectura CDM útil', () => {
@@ -59,7 +59,7 @@ describe('vaultModelReading', () => {
       dsrSource: 'rules_fallback',
     })
     expect(u.body).toBe('Contenido analítico real.')
-    expect(u.title).toContain('CDM')
+    expect(u.title).toContain('Vektor')
   })
 
   it('unifiedApiModelReading: origen vacío no implica razonador en vivo', () => {
@@ -68,7 +68,7 @@ describe('vaultModelReading', () => {
       traduccionHumana: '',
       dsrSource: '',
     })
-    expect(u.title).toContain('alternativa')
+    expect(u.title).toContain('Vektor')
     expect(u.body).toBe(RULES_FALLBACK_MODEL_COPY_ES)
   })
 })

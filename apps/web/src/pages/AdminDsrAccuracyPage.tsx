@@ -10,7 +10,7 @@ import type {
 } from '@/lib/bt2Types'
 import {
   dsrConfidenceLabelEs,
-  dsrSourceDescriptionEs,
+  dsrSourceDescriptionAdminEs,
   modelPredictionResultEs,
   pickStatusLabelEs,
 } from '@/lib/bt2ProtocolLabels'
@@ -386,7 +386,7 @@ export default function AdminDsrAccuracyPage() {
                           <span className="tabular-nums font-semibold">{row.count}</span>
                         </div>
                         <p className="mt-1 text-[10px] text-[#6e7d86]">
-                          {dsrSourceDescriptionEs(row.key)}
+                          {dsrSourceDescriptionAdminEs(row.key)}
                         </p>
                       </li>
                     ))

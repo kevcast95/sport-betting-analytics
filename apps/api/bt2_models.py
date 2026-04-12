@@ -380,10 +380,14 @@ class Bt2DailyPick(Base):
     model_selection_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
     dsr_source: Mapped[str] = mapped_column(String(24), nullable=False)
     data_completeness_score: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True)
+    slate_rank: Mapped[int] = mapped_column(
+        SmallInteger, server_default="1", nullable=False
+    )
 
     __table_args__ = (
         UniqueConstraint("user_id", "event_id", "operating_day_key", name="uq_daily_picks_user_event_day"),
         Index("ix_daily_picks_user_day", "user_id", "operating_day_key"),
+        Index("ix_daily_picks_user_day_slate_rank", "user_id", "operating_day_key", "slate_rank"),
     )
 
 
@@ -404,6 +408,9 @@ class Bt2VaultDayMetadata(Base):
     fallback_disclaimer_es: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     future_events_in_window_count: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
     fallback_eligible_pool_count: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    slate_band_cycle: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

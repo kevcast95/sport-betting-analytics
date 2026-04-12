@@ -362,6 +362,19 @@ export default function BunkerLayout() {
           Precisión DSR
         </NavLink>
         <NavLink
+          to="/v2/admin/cdm-audit"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Auditoría CDM
+        </NavLink>
+        <NavLink
           to="/v2/profile"
           className={({ isActive }) =>
             [
@@ -450,6 +463,15 @@ export default function BunkerLayout() {
                 <Bt2ShieldCheckIcon className="h-5 w-5" />
               </span>
               Precisión DSR
+            </NavLink>
+            <NavLink
+              to="/v2/admin/cdm-audit"
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2ShieldCheckIcon className="h-5 w-5" />
+              </span>
+              Auditoría CDM
             </NavLink>
             <NavLink
               to="/v2/profile"

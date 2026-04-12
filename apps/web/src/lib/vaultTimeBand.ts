@@ -1,6 +1,6 @@
 /**
- * Sprint 05.2 / D-05.2-002 — franjas locales (misma semántica que `bt2_vault_pool.py`).
- * Mañana [08:00,12:00), Tarde [12:00,18:00), Noche [18:00,23:00), overnight resto.
+ * D-06-032 / US-BE-044 — misma semántica que `apps/api/bt2_vault_pool.py`.
+ * Mañana [06:00,12:00), Tarde [12:00,18:00), Noche [18:00,24:00), overnight [00:00,06:00).
  */
 import type { Bt2VaultPickOut, Bt2VaultTimeBand } from '@/lib/bt2Types'
 
@@ -29,13 +29,13 @@ export const VAULT_BAND_TABS: VaultBandTab[] = [
 ]
 
 export function timeBandFromLocalMinutes(minutesSinceMidnight: number): Bt2VaultTimeBand {
-  if (8 * 60 <= minutesSinceMidnight && minutesSinceMidnight < 12 * 60) {
+  if (6 * 60 <= minutesSinceMidnight && minutesSinceMidnight < 12 * 60) {
     return 'morning'
   }
   if (12 * 60 <= minutesSinceMidnight && minutesSinceMidnight < 18 * 60) {
     return 'afternoon'
   }
-  if (18 * 60 <= minutesSinceMidnight && minutesSinceMidnight < 23 * 60) {
+  if (18 * 60 <= minutesSinceMidnight && minutesSinceMidnight < 24 * 60) {
     return 'evening'
   }
   return 'overnight'
@@ -153,6 +153,74 @@ export function filterVaultPicksByTab(
   )
 }
 
+/** Alineado a `bt2_vault_pool.VAULT_VALUE_POOL_UNIVERSE_MAX`. */
+export const VAULT_LOCAL_UNIVERSE_MAX = 20
+
+const VAULT_LOCAL_MAX_PER_BAND = 5
+
+function rotatedBandOrderForCycle(cycleOffset: number): Bt2VaultTimeBand[] {
+  const bo = [...VAULT_TIME_BAND_ORDER]
+  const k = ((cycleOffset % bo.length) + bo.length) % bo.length
+  return [...bo.slice(k), ...bo.slice(0, k)]
+}
+
+/**
+ * Reordena el pool ya cargado (misma semántica de barrido por franja que `compose_vault_daily_picks`
+ * en servidor, sin tiers sintéticos: solo orden de los mismos objetos pick).
+ */
+export function reorderVaultPicksForBandCycle(
+  picks: Bt2VaultPickOut[],
+  timeZone: string,
+  bandCycleOffset: number,
+): Bt2VaultPickOut[] {
+  if (picks.length === 0) return []
+  const sorted = [...picks].sort((a, b) => {
+    const ra = a.slateRank ?? 9999
+    const rb = b.slateRank ?? 9999
+    if (ra !== rb) return ra - rb
+    return a.id.localeCompare(b.id)
+  })
+
+  const buckets: Record<Bt2VaultTimeBand, Bt2VaultPickOut[]> = {
+    morning: [],
+    afternoon: [],
+    evening: [],
+    overnight: [],
+  }
+  const seenInBuckets = new Set<number>()
+  for (const p of sorted) {
+    if (seenInBuckets.has(p.eventId)) continue
+    seenInBuckets.add(p.eventId)
+    const band = effectiveVaultTimeBand(p, timeZone)
+    buckets[band].push(p)
+  }
+
+  const chosen: Bt2VaultPickOut[] = []
+  const chosenIds = new Set<number>()
+  const bandOrder = rotatedBandOrderForCycle(bandCycleOffset)
+
+  for (const band of bandOrder) {
+    let slot = 0
+    for (const p of buckets[band]) {
+      if (chosen.length >= VAULT_LOCAL_UNIVERSE_MAX) return chosen
+      if (slot >= VAULT_LOCAL_MAX_PER_BAND) break
+      if (chosenIds.has(p.eventId)) continue
+      chosen.push(p)
+      chosenIds.add(p.eventId)
+      slot += 1
+    }
+  }
+
+  for (const p of sorted) {
+    if (chosen.length >= VAULT_LOCAL_UNIVERSE_MAX) break
+    if (chosenIds.has(p.eventId)) continue
+    chosen.push(p)
+    chosenIds.add(p.eventId)
+  }
+
+  return chosen
+}
+
 export function sortVaultPicksForDisplay(
   picks: Bt2VaultPickOut[],
   tab: VaultBandTab,
@@ -169,4 +237,59 @@ export function sortVaultPicksForDisplay(
   return [...filtered].sort(
     (a, b) => (Date.parse(a.kickoffUtc) || 0) - (Date.parse(b.kickoffUtc) || 0),
   )
+}
+
+/**
+ * Elige hasta `visibleCap` picks para la grilla: primero la franja local actual, luego el resto
+ * en el orden de `sortVaultPicksForDisplay` (mezcla).
+ */
+export function selectVisibleVaultPicks(
+  picks: Bt2VaultPickOut[],
+  tab: VaultBandTab,
+  timeZone: string,
+  visibleCap: number,
+  nowMs: number = Date.now(),
+): Bt2VaultPickOut[] {
+  const cap = Math.max(0, Math.floor(visibleCap))
+  if (cap === 0 || picks.length === 0) return []
+  const curBand = getCurrentVaultTimeBand(timeZone, nowMs)
+  const sorted = sortVaultPicksForDisplay(picks, tab, timeZone, nowMs)
+  const inBand = sorted.filter((p) => effectiveVaultTimeBand(p, timeZone) === curBand)
+  const rest = sorted.filter((p) => effectiveVaultTimeBand(p, timeZone) !== curBand)
+  const out: Bt2VaultPickOut[] = []
+  const seen = new Set<string>()
+  for (const p of [...inBand, ...rest]) {
+    if (out.length >= cap) break
+    if (seen.has(p.id)) continue
+    seen.add(p.id)
+    out.push(p)
+  }
+  return out
+}
+
+/**
+ * Como `selectVisibleVaultPicks` pero **respeta el orden** de `orderedPicks` (p. ej. tras
+ * `reorderVaultPicksForBandCycle`): primero los de la franja local actual, luego el resto
+ * en ese mismo orden — sin volver a mezclar con `mixSortCompare`.
+ */
+export function selectVisibleFromOrderedPool(
+  orderedPicks: Bt2VaultPickOut[],
+  timeZone: string,
+  visibleCap: number,
+  nowMs: number = Date.now(),
+): Bt2VaultPickOut[] {
+  const cap = Math.max(0, Math.floor(visibleCap))
+  if (cap === 0 || orderedPicks.length === 0) return []
+  const curBand = getCurrentVaultTimeBand(timeZone, nowMs)
+  const inBand = orderedPicks.filter((p) => effectiveVaultTimeBand(p, timeZone) === curBand)
+  const rest = orderedPicks.filter((p) => effectiveVaultTimeBand(p, timeZone) !== curBand)
+  const out: Bt2VaultPickOut[] = []
+  const seen = new Set<string>()
+  for (const p of [...inBand, ...rest]) {
+    if (out.length >= cap) break
+    if (seen.has(p.id)) continue
+    seen.add(p.id)
+    out.push(p)
+  }
+  return out
 }

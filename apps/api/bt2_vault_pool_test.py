@@ -7,8 +7,8 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from apps.api.bt2_vault_pool import (
-    VAULT_POOL_HARD_CAP,
     VAULT_POOL_TARGET,
+    VAULT_VALUE_POOL_UNIVERSE_MAX,
     compose_vault_daily_picks,
     is_event_available_for_pick_strict,
     kickoff_utc_to_time_band,
@@ -44,10 +44,18 @@ class TestTimeBandBoundaries(unittest.TestCase):
         )
         self.assertEqual(
             time_band_from_local_time(datetime(2026, 4, 7, 23, 0).time()),
-            "overnight",
+            "evening",
+        )
+        self.assertEqual(
+            time_band_from_local_time(datetime(2026, 4, 7, 23, 59).time()),
+            "evening",
         )
         self.assertEqual(
             time_band_from_local_time(datetime(2026, 4, 7, 7, 59).time()),
+            "morning",
+        )
+        self.assertEqual(
+            time_band_from_local_time(datetime(2026, 4, 7, 5, 59).time()),
             "overnight",
         )
 
@@ -61,12 +69,12 @@ class TestKickoffToBand(unittest.TestCase):
 
 
 class TestComposePool(unittest.TestCase):
-    def test_caps_at_hard_cap_with_synthetic_rows(self) -> None:
+    def test_caps_at_universe_max_with_synthetic_rows(self) -> None:
         tz = ZoneInfo("America/Bogota")
         base = datetime(2026, 4, 7, 14, 0, tzinfo=timezone.utc)
         rows = [(i, base + timedelta(hours=(i % 6)), float(i)) for i in range(1, 40)]
         out = compose_vault_daily_picks(rows, tz)
-        self.assertLessEqual(len(out), VAULT_POOL_HARD_CAP)
+        self.assertLessEqual(len(out), VAULT_VALUE_POOL_UNIVERSE_MAX)
         self.assertGreater(len(out), 0)
 
     def test_below_target_when_few_events(self) -> None:

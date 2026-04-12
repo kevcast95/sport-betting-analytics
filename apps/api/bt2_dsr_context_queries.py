@@ -214,10 +214,34 @@ def fetch_odds_ingest_meta(cur, event_id: int) -> Optional[dict[str, Any]]:
     }
 
 
+def _sm_home_away_team_ids(payload: dict[str, Any]) -> tuple[Optional[int], Optional[int]]:
+    participants = payload.get("participants") or []
+    home_id = away_id = None
+    if not isinstance(participants, list):
+        return home_id, away_id
+    for p in participants:
+        if not isinstance(p, dict):
+            continue
+        loc = (p.get("meta") or {}).get("location", "")
+        pid = p.get("id")
+        if pid is None:
+            continue
+        try:
+            tid = int(pid)
+        except (TypeError, ValueError):
+            continue
+        if loc == "home":
+            home_id = tid
+        elif loc == "away":
+            away_id = tid
+    return home_id, away_id
+
+
 def extract_lineups_summary_from_raw_payload(payload: Any) -> Optional[dict[str, Any]]:
     """
     Lectura defensiva de payload SportMonks en raw_sportmonks_fixtures.
     Solo agregados; sin nombres de jugador en fase 1 (reduce tokens y PII).
+    Cuenta filas `type_id` 11 (once inicial típico SM) por bando cuando hay participants.
     """
     if not isinstance(payload, dict):
         return None
@@ -226,6 +250,8 @@ def extract_lineups_summary_from_raw_payload(payload: Any) -> Optional[dict[str,
         return None
     n = min(len(lu), 200)
     team_counts: dict[str, int] = {}
+    xi_home = xi_away = 0
+    home_id, away_id = _sm_home_away_team_ids(payload)
     for row in lu[:200]:
         if not isinstance(row, dict):
             continue
@@ -234,11 +260,26 @@ def extract_lineups_summary_from_raw_payload(payload: Any) -> Optional[dict[str,
             continue
         key = str(int(tid)) if isinstance(tid, (int, float)) else str(tid)
         team_counts[key] = team_counts.get(key, 0) + 1
-    if not team_counts:
-        return {"available": True, "lineup_rows_observed": n, "teams_distinct": 0}
-    return {
+        if row.get("type_id") == 11:
+            try:
+                tnum = int(tid) if isinstance(tid, (int, float)) else int(key)
+            except (TypeError, ValueError):
+                continue
+            if home_id is not None and tnum == home_id:
+                xi_home += 1
+            elif away_id is not None and tnum == away_id:
+                xi_away += 1
+    base: dict[str, Any] = {
         "available": True,
         "lineup_rows_observed": n,
         "teams_distinct": len(team_counts),
-        "max_rows_per_team_side": max(team_counts.values()),
     }
+    if team_counts:
+        base["max_rows_per_team_side"] = max(team_counts.values())
+    if xi_home:
+        base["starting_xi_rows_home"] = xi_home
+    if xi_away:
+        base["starting_xi_rows_away"] = xi_away
+    if not team_counts and not xi_home and not xi_away:
+        base["teams_distinct"] = 0
+    return base

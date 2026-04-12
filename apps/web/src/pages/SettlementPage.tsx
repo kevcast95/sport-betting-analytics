@@ -12,11 +12,11 @@ import {
   IconWallet,
 } from '@/components/bt2StitchIcons'
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
+import { VektorShortDisclaimer } from '@/components/vault/VektorShortDisclaimer'
 import { vaultMockPicks } from '@/data/vaultMockPicks'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
 import {
-  dsrConfidenceLabelEs,
-  dsrSourceDescriptionEs,
+  vektorModelConfidenceLineEs,
   modelPredictionResultEs,
 } from '@/lib/bt2ProtocolLabels'
 import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
@@ -408,20 +408,7 @@ export default function SettlementPage() {
 
   const settlementDsrMetaLine = useMemo(() => {
     if (!apiPickMatch || !displayPick) return ''
-    return [
-      displayPick.dsrConfidenceLabel
-        ? `Confianza simbólica: ${dsrConfidenceLabelEs(displayPick.dsrConfidenceLabel)}`
-        : '',
-      dsrSourceDescriptionEs(displayPick.dsrSource ?? ''),
-      typeof displayPick.dataCompletenessScore === 'number'
-        ? `Completitud de datos CDM: ${displayPick.dataCompletenessScore}/100 (no es probabilidad de acierto)`
-        : '',
-      displayPick.pipelineVersion
-        ? `Versión pipeline: ${displayPick.pipelineVersion}`
-        : '',
-    ]
-      .filter(Boolean)
-      .join(' · ')
+    return vektorModelConfidenceLineEs(displayPick.dsrConfidenceLabel)
   }, [apiPickMatch, displayPick])
 
   // T-057: cuota capturada en casa
@@ -650,7 +637,7 @@ export default function SettlementPage() {
         title={displayPick.eventLabel}
         subtitle={`La Bóveda · ${
           isReviewPhase ? 'Revisión de señal' : 'Terminal de liquidación'
-        } · Auditoría ID #${displayPick.id.toUpperCase()}`}
+        }`}
         onHelpClick={() => {
           resetTour('settlement')
           setTourOpen(true)
@@ -665,7 +652,24 @@ export default function SettlementPage() {
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#52616a]">
                   Especificación del activo
                 </p>
-                {/* US-FE-024: label explícito «Mercado» + tipo + selección */}
+                {displayPick.titulo ? (
+                  <>
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#52616a]">
+                      Competición
+                    </p>
+                    <p className="mb-4 text-sm font-semibold text-[#26343d]">
+                      {displayPick.titulo}
+                    </p>
+                  </>
+                ) : null}
+                {eventStartLabel ? (
+                  <p className="mb-4 font-mono text-xs text-[#52616a]">
+                    Inicio del evento (tu zona):{' '}
+                    <span className="font-semibold text-[#26343d]">
+                      {eventStartLabel}
+                    </span>
+                  </p>
+                ) : null}
                 <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#52616a]">
                   Mercado
                 </p>
@@ -686,19 +690,6 @@ export default function SettlementPage() {
                     <span className="font-mono text-[#26343d]">
                       {modelVsPickLabel}
                     </span>
-                  </p>
-                ) : null}
-                {/* DSR + CDM: un solo bloque en la tarjeta inferior (evitar duplicar con “Lectura del modelo”). */}
-                {/* Tesis/narrativa del modelo como subtítulo */}
-                <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                  Sugerencia del modelo
-                </p>
-                <h2 className="mt-1 text-lg font-bold tracking-tight text-[#26343d]">
-                  {displayPick.titulo}
-                </h2>
-                {eventStartLabel ? (
-                  <p className="mt-2 font-mono text-xs text-[#52616a]">
-                    Inicio del evento (tu zona): {eventStartLabel}
                   </p>
                 ) : null}
               </div>
@@ -747,7 +738,7 @@ export default function SettlementPage() {
               <h3 className="text-lg font-bold tracking-tight text-[#26343d]">
                 {settlementApiUnified
                   ? settlementApiUnified.title
-                  : 'Lectura del modelo'}
+                  : 'Vektor — por qué'}
               </h3>
             </div>
             <div className="space-y-4 text-sm leading-relaxed text-[#52616a]">
@@ -776,10 +767,14 @@ export default function SettlementPage() {
                   registrarla bien
                 </span>{' '}
                 en el libro mayor. Eso ayuda a que una sola jugada no defina toda la
-                sesión; el párrafo de arriba es la lectura del modelo para este
-                evento, con sus límites.
+                sesión; el párrafo de arriba es Vektor para este evento, con sus
+                límites.
               </p>
             </div>
+          </div>
+
+          <div className="rounded-xl border border-[#a4b4be]/20 bg-white/90 px-5 py-4">
+            <VektorShortDisclaimer />
           </div>
         </div>
 

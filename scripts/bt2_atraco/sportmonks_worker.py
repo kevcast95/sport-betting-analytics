@@ -5,10 +5,9 @@ Ejecutar vía run_atraco.py, no directamente.
 """
 
 import asyncio
-import json
 import logging
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 from typing import List, Optional
 
@@ -19,10 +18,13 @@ _repo_root = str(Path(__file__).resolve().parents[2])
 if _repo_root not in sys.path:
     sys.path.insert(0, _repo_root)
 
+from apps.api.bt2_raw_sportmonks_store import UPSERT_RAW_FIXTURE_SQL, raw_fixture_upsert_params
+from apps.api.bt2_sportmonks_includes import BT2_SM_FIXTURE_INCLUDES
+
 logger = logging.getLogger("sm_worker")
 
 SM_BASE_URL = "https://api.sportmonks.com/v3"
-SM_INCLUDES = "participants;odds;statistics;events;league;scores"
+SM_INCLUDES = BT2_SM_FIXTURE_INCLUDES
 RATE_LIMIT_PAUSE_S = 3600
 RETRY_BACKOFF = [2, 4, 8]
 
@@ -109,64 +111,20 @@ async def fetch_fixtures_for_date(
     return all_fixtures
 
 
-def _extract_teams(participants) -> tuple:
-    """Extrae home_team y away_team de la lista de participantes."""
-    home_team = away_team = None
-    if not isinstance(participants, list):
-        return home_team, away_team
-    for p in participants:
-        location = (p.get("meta") or {}).get("location", "")
-        name = p.get("name", "")
-        if location == "home":
-            home_team = name
-        elif location == "away":
-            away_team = name
-    return home_team, away_team
-
-
 async def store_fixtures(fixtures: List[dict], db_session) -> int:
-    """Inserta fixtures en raw_sportmonks_fixtures con ON CONFLICT DO NOTHING."""
+    """UPSERT en raw_sportmonks_fixtures (payload y metadatos frescos — T-198 / D-06-037)."""
     if not fixtures:
         return 0
 
     from sqlalchemy import text
 
     stored = 0
+    stmt = text(UPSERT_RAW_FIXTURE_SQL)
     for fx in fixtures:
-        fixture_id = fx.get("id")
-        if not fixture_id:
+        params = raw_fixture_upsert_params(fx)
+        if params is None:
             continue
-
-        fixture_date = None
-        starting_at = fx.get("starting_at") or fx.get("starting_at_timestamp")
-        if starting_at and isinstance(starting_at, str):
-            try:
-                fixture_date = datetime.fromisoformat(
-                    starting_at.replace("Z", "+00:00")
-                ).date()
-            except ValueError:
-                pass
-
-        league_id = fx.get("league_id")
-        home_team, away_team = _extract_teams(fx.get("participants", []))
-
-        stmt = text("""
-            INSERT INTO raw_sportmonks_fixtures
-                (fixture_id, fixture_date, league_id, home_team, away_team, payload)
-            VALUES
-                (:fixture_id, :fixture_date, :league_id,
-                 :home_team, :away_team, CAST(:payload AS jsonb))
-            ON CONFLICT (fixture_id) DO NOTHING
-        """)
-
-        result = await db_session.execute(stmt, {
-            "fixture_id": fixture_id,
-            "fixture_date": fixture_date,
-            "league_id": league_id,
-            "home_team": home_team,
-            "away_team": away_team,
-            "payload": json.dumps(fx, ensure_ascii=False),
-        })
+        result = await db_session.execute(stmt, params)
         stored += result.rowcount
 
     await db_session.commit()

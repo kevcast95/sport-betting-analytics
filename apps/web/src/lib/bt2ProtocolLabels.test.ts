@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   dsrConfidenceLabelEs,
-  dsrSourceDescriptionEs,
+  dsrSourceDescriptionAdminEs,
   modelPredictionResultEs,
   pickStatusLabelEs,
+  vektorModelConfidenceLineEs,
 } from '@/lib/bt2ProtocolLabels'
 
 describe('bt2ProtocolLabels', () => {
@@ -12,9 +13,14 @@ describe('bt2ProtocolLabels', () => {
     expect(dsrConfidenceLabelEs('medium')).toBe('Media')
   })
 
-  it('dsrSourceDescriptionEs', () => {
-    expect(dsrSourceDescriptionEs('rules_fallback')).toContain('reglas')
-    expect(dsrSourceDescriptionEs('dsr_api')).toContain('razonador')
+  it('dsrSourceDescriptionAdminEs', () => {
+    expect(dsrSourceDescriptionAdminEs('rules_fallback')).toContain('reglas')
+    expect(dsrSourceDescriptionAdminEs('dsr_api')).toContain('razonador')
+  })
+
+  it('vektorModelConfidenceLineEs', () => {
+    expect(vektorModelConfidenceLineEs('high')).toBe('Confianza del modelo: Alta')
+    expect(vektorModelConfidenceLineEs('')).toBe('')
   })
 
   it('modelPredictionResultEs', () => {

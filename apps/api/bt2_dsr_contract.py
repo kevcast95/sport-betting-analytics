@@ -14,7 +14,9 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 PIPELINE_VERSION_DEFAULT: str = "s6-rules-v0"
-CONTRACT_VERSION_S6_1: str = "bt2-dx-001-s6.1r1"
+# Versión pública API (`GET /bt2/meta`) y hito DX S6.2 cubo A + diagnostics ampliados.
+CONTRACT_VERSION_PUBLIC: str = "bt2-dx-001-s6.2r2"
+CONTRACT_VERSION_S6_1: str = "bt2-dx-001-s6.1r1"  # histórico / comparativas
 
 # Claves prohibidas en objetos anidados (substring case-insensitive)
 _FORBIDDEN_SUBSTRINGS = (
@@ -148,6 +150,9 @@ class DsDiagnosticsF1(BaseModel):
     h2h_ok: bool
     statistics_ok: bool
     fetch_errors: list[str]
+    # T-203 / D-06-038 — gap explícito cuando no hay fila raw (ingesta/429/worker).
+    raw_fixture_missing: bool = False
+    team_season_stats_reason: Optional[str] = None
 
 
 class DsInputItem(BaseModel):

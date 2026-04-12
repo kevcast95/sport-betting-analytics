@@ -1,11 +1,13 @@
 import type {
   Bt2AdminDsrDayOut,
   Bt2AdminVaultPickDistributionOut,
+  Bt2AdminVaultRegenerateSnapshotOut,
   Bt2DpInsufficientPremiumDetail,
   Bt2PickOut,
   Bt2PickRegisterBody,
   Bt2VaultPremiumUnlockBody,
   Bt2VaultPremiumUnlockOut,
+  Bt2VaultPicksPageOut,
 } from '@/lib/bt2Types'
 
 // ─── JWT helpers ─────────────────────────────────────────────────────────────
@@ -109,6 +111,11 @@ export async function bt2FetchJson<T>(
     }
     throw err
   }
+}
+
+/** POST /bt2/vault/regenerate-slate — mismo cuerpo que GET /bt2/vault/picks (sin segundo request). */
+export async function bt2PostVaultRegenerateSlate(): Promise<Bt2VaultPicksPageOut> {
+  return bt2FetchJson<Bt2VaultPicksPageOut>('/bt2/vault/regenerate-slate', { method: 'POST' })
 }
 
 // ─── Sprint 05 — POST /bt2/picks (402 detail estructurado, D-05-005) ───────────
@@ -346,5 +353,32 @@ export async function fetchBt2AdminVaultPickDistribution(
   return fetchJson<Bt2AdminVaultPickDistributionOut>(
     `/bt2/admin/analytics/vault-pick-distribution?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
+/**
+ * POST /bt2/admin/vault/regenerate-daily-snapshot — borra y regenera snapshot bóveda (usuario + día).
+ * Header `X-BT2-Admin-Key` = `BT2_ADMIN_API_KEY`. No usa JWT de usuario.
+ */
+export async function postBt2AdminVaultRegenerateSnapshot(
+  userId: string,
+  operatingDayKey: string,
+): Promise<Bt2AdminVaultRegenerateSnapshotOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams({
+    userId: userId.trim(),
+    operatingDayKey: operatingDayKey.trim(),
+  })
+  return fetchJson<Bt2AdminVaultRegenerateSnapshotOut>(
+    `/bt2/admin/vault/regenerate-daily-snapshot?${qs.toString()}`,
+    {
+      method: 'POST',
+      headers: { 'X-BT2-Admin-Key': key },
+    },
   )
 }

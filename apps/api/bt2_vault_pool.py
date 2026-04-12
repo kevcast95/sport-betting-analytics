@@ -1,11 +1,16 @@
 """
-US-BE-030 / D-05.2-002 — pool diario vault (~15 candidatos) y franjas locales.
+US-BE-030 / D-05.2-002 + **US-BE-044 / D-06-032 (S6.2)** — slate y franjas.
 
-Franjas (hora local del usuario, kickoff del evento):
-  mañana   [08:00, 12:00)
-  tarde    [12:00, 18:00)
-  noche    [18:00, 23:00)
-  overnight — resto (23:00–08:00; gap explícito en D-05.2-002 §2).
+Franjas (hora local del usuario, kickoff del evento) — **D-06-032**:
+  mañana    [06:00, 12:00)
+  tarde     [12:00, 18:00)
+  noche     [18:00, 24:00)  (hasta 23:59)
+  madrugada [00:00, 06:00) — overnight; fuera del flujo normal de promoción (orden al final).
+
+Universo hacia el cómputo del día: hasta **20** candidatos valor (router recorta antes de compose).
+Se persisten hasta **20** filas en `bt2_daily_picks` (orden franjas + calidad; luego el router puede
+reordenar `slate_rank` para mezclar **familias de mercado** en la cartelera visible); el GET vault
+devuelve solo las **5** primeras (`slate_rank` 1–5) como cartelera visible (**D-06-032**).
 """
 
 from __future__ import annotations
@@ -16,8 +21,11 @@ from zoneinfo import ZoneInfo
 
 VaultTimeBand = Literal["morning", "afternoon", "evening", "overnight"]
 
-VAULT_POOL_TARGET: int = 15
-VAULT_POOL_HARD_CAP: int = 20
+# Candidatos SM/CDM considerados antes de `compose_vault_daily_picks` (recorte en router).
+VAULT_VALUE_POOL_UNIVERSE_MAX: int = 20
+# Cartelera visible (respuesta GET /vault/picks y cupo toma 3+2).
+VAULT_POOL_TARGET: int = 5
+VAULT_POOL_HARD_CAP: int = 5
 _MAX_PER_BAND: int = 5
 _STD_SLOTS: int = 3
 _PREM_SLOTS: int = 2
@@ -36,14 +44,14 @@ def _minutes_since_midnight(t: time) -> int:
 
 def time_band_from_local_time(t: time) -> VaultTimeBand:
     """
-    Semántica D-05.2-002 §1: 12:00 entra en tarde; 18:00 en noche.
+    D-06-032: 06–12 mañana, 12–18 tarde, 18–24 noche, 00–06 madrugada (overnight).
     """
     m = _minutes_since_midnight(t)
-    if 8 * 60 <= m < 12 * 60:
+    if 6 * 60 <= m < 12 * 60:
         return "morning"
     if 12 * 60 <= m < 18 * 60:
         return "afternoon"
-    if 18 * 60 <= m < 23 * 60:
+    if 18 * 60 <= m < 24 * 60:
         return "evening"
     return "overnight"
 
@@ -67,19 +75,34 @@ def _tier_for_slot_index(slot_in_band: int) -> Literal["standard", "premium"]:
     return "premium"
 
 
+def rotated_band_order(cycle_offset: int) -> Tuple[VaultTimeBand, ...]:
+    """Rota el orden de barrido de franjas (0 = mañana primero, como D-06-032 base)."""
+    bo = list(_BAND_ORDER)
+    n = len(bo)
+    k = cycle_offset % n
+    return tuple(bo[k:] + bo[:k])
+
+
 def compose_vault_daily_picks(
     rows: List[Tuple[int, Optional[datetime], float]],
     user_tz: ZoneInfo,
     premium_eligible_event_ids: Optional[set[int]] = None,
+    *,
+    band_cycle_offset: int = 0,
 ) -> List[Tuple[int, Literal["standard", "premium"], VaultTimeBand]]:
     """
     rows: lista (event_id, kickoff_utc, house_margin) ya ordenada por calidad
           (tier liga + house_margin como en SQL).
-    Devuelve hasta VAULT_POOL_HARD_CAP filas (event_id, access_tier, time_band).
+    Devuelve hasta VAULT_VALUE_POOL_UNIVERSE_MAX filas (event_id, access_tier, time_band)
+    para persistir en DB; las primeras VAULT_POOL_HARD_CAP son la cartelera visible.
 
     T-178: si `premium_eligible_event_ids` no es None, solo esos event_id pueden
     recibir tier premium; el resto fuerza standard aunque el slot sea premium.
+
+    `band_cycle_offset`: al regenerar slate, rota qué franja se prioriza primero
+    (mismo universo ≤20; distinto orden 1..20 y distintos 5 visibles).
     """
+    band_order = rotated_band_order(band_cycle_offset)
     # bucket por franja preservando orden de calidad global
     buckets: dict[VaultTimeBand, List[int]] = {b: [] for b in _BAND_ORDER}
     kick_by_eid: dict[int, Optional[datetime]] = {}
@@ -105,7 +128,7 @@ def compose_vault_daily_picks(
         nonlocal chosen
         slot = 0
         for eid in buckets[band]:
-            if len(chosen) >= VAULT_POOL_HARD_CAP:
+            if len(chosen) >= VAULT_VALUE_POOL_UNIVERSE_MAX:
                 return
             if slot >= _MAX_PER_BAND:
                 break
@@ -116,10 +139,10 @@ def compose_vault_daily_picks(
             chosen_ids.add(eid)
             slot += 1
 
-    for band in _BAND_ORDER:
+    for band in band_order:
         append_from_band(band)
 
-    # Rellenar hacia target 15 desde orden global (D-05.2-002 §6)
+    # Rellenar hacia VAULT_POOL_TARGET desde orden global si la primera pasada no alcanzó
     def global_order_ids() -> List[int]:
         out: List[int] = []
         seen: set[int] = set()
@@ -131,28 +154,13 @@ def compose_vault_daily_picks(
 
     fill_idx = 0
     for eid in global_order_ids():
-        if len(chosen) >= VAULT_POOL_TARGET:
-            break
-        if len(chosen) >= VAULT_POOL_HARD_CAP:
+        if len(chosen) >= VAULT_VALUE_POOL_UNIVERSE_MAX:
             break
         if eid in chosen_ids:
             continue
         band = band_by_eid.get(eid, "overnight")
         slot = fill_idx % 5
         tier: Literal["standard", "premium"] = _effective_tier(eid, slot)
-        fill_idx += 1
-        chosen.append((eid, tier, band))
-        chosen_ids.add(eid)
-
-    # Opcional: hasta tope duro 20 si hay stock
-    for eid in global_order_ids():
-        if len(chosen) >= VAULT_POOL_HARD_CAP:
-            break
-        if eid in chosen_ids:
-            continue
-        band = band_by_eid.get(eid, "overnight")
-        slot = fill_idx % 5
-        tier = _effective_tier(eid, slot)
         fill_idx += 1
         chosen.append((eid, tier, band))
         chosen_ids.add(eid)

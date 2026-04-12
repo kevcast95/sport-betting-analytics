@@ -15,6 +15,10 @@ from apps.api.bt2_dsr_context_queries import (
     streaks_from_form,
 )
 from apps.api.bt2_dsr_contract import validate_ds_input_item_dict
+from apps.api.bt2_dsr_sm_statistics import (
+    merge_sm_statistics_into_processed_statistics,
+    sm_fixture_statistics_block,
+)
 from apps.api.bt2_dsr_odds_aggregation import AggregatedOdds, aggregate_odds_for_event
 
 SelectionTier = Literal["A", "B"]
@@ -91,6 +95,8 @@ def build_ds_input_item(
             "h2h_ok": False,
             "statistics_ok": False,
             "fetch_errors": [],
+            "raw_fixture_missing": False,
+            "team_season_stats_reason": None,
         },
     }
     if country is not None:
@@ -177,7 +183,9 @@ def apply_postgres_context_to_ds_item(
 
     item["processed"]["team_season_stats"] = {"available": False}
     fe.append("team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap")
+    diag["team_season_stats_reason"] = "no_bt2_team_season_aggregate_table"
 
+    sm_payload: Optional[dict] = None
     if sportmonks_fixture_id is not None:
         cur.execute(
             "SELECT payload FROM raw_sportmonks_fixtures WHERE fixture_id = %s LIMIT 1",
@@ -185,18 +193,43 @@ def apply_postgres_context_to_ds_item(
         )
         raw_row = cur.fetchone()
         if raw_row and raw_row[0] is not None:
-            lu = extract_lineups_summary_from_raw_payload(raw_row[0])
-            if lu:
-                item["processed"]["lineups"] = lu
-                diag["lineups_ok"] = True
+            sm_payload = raw_row[0] if isinstance(raw_row[0], dict) else None
+            if sm_payload is None:
+                fe.append("lineups:raw_payload_not_object")
+                diag["raw_fixture_missing"] = True
             else:
-                fe.append(
-                    "lineups:gap_no_v1_lineup_summary_in_raw_payload_see_AUDITORIA_RAW_SPORTMONKS_2026-04-09_sec4"
-                )
+                lu = extract_lineups_summary_from_raw_payload(sm_payload)
+                if lu:
+                    item["processed"]["lineups"] = lu
+                    diag["lineups_ok"] = True
+                else:
+                    fe.append(
+                        "lineups:no_lineups_array_or_empty_in_raw_payload"
+                    )
+
+                sm_stats = sm_fixture_statistics_block(sm_payload)
+                if sm_stats:
+                    st = item["processed"]["statistics"]
+                    if not st.get("available"):
+                        st = {"available": True}
+                        item["processed"]["statistics"] = st
+                    merge_sm_statistics_into_processed_statistics(st, sm_stats)
         else:
+            diag["raw_fixture_missing"] = True
             fe.append("lineups:no_raw_sportmonks_row")
     else:
+        diag["raw_fixture_missing"] = True
         fe.append("lineups:no_sportmonks_fixture_id")
+
+    st_final = item["processed"]["statistics"]
+    sm_sub = st_final.get("from_sm_fixture") if isinstance(st_final, dict) else None
+    has_sm_metrics = bool(
+        isinstance(sm_sub, dict) and any(k != "available" for k in sm_sub)
+    )
+    diag["statistics_ok"] = bool(
+        (isinstance(st_final, dict) and (st_final.get("home_form_last5") or st_final.get("away_form_last5")))
+        or has_sm_metrics
+    )
 
     diag["fetch_errors"] = fe
     validate_ds_input_item_dict(item)

@@ -25,6 +25,8 @@ class BT2Settings(BaseSettings):
     bt2_dsr_batch_size: int = 15
     # T-177 — opcional: restringe pool a `bt2_leagues.id` listados (coma-separados).
     bt2_priority_league_ids: str = ""
+    # Solo desarrollo: habilita POST /bt2/dev/reset-operating-day-for-tests (JWT del usuario).
+    bt2_dev_operating_day_reset: bool = False
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

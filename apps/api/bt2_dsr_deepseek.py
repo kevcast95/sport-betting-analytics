@@ -110,7 +110,9 @@ _SYSTEM_BATCH = (
     "Entre mercados presentes en `consensus`, elegí el que tenga **mejor soporte en los datos "
     "del propio lote** (histórico/forma/rachas/alineaciones resumidas y coherencia con las cuotas "
     "mostradas). **No** uses como regla principal “buscar la cuota más alta” ni maximizar payout; "
-    "la lectura debe poder defenderse con lo enviado. **No inventes** estadísticas ni histórico: "
+    "la lectura debe poder defenderse con lo enviado. Si varios mercados tienen soporte similar "
+    "en los datos de ese evento, **no** elijas siempre 1X2 por costumbre: considerá O/U goles, BTTS "
+    "o doble oportunidad cuando el input los respalde. **No inventes** estadísticas ni histórico: "
     "solo usa lo explícito en cada ítem. "
     "Respondé SOLO con JSON válido (sin markdown) según el esquema que pide el usuario."
 )
@@ -132,8 +134,8 @@ def _user_prompt_batch(*, operating_day_key: str, batch: dict[str, Any]) -> str:
         '      "motivo_sin_pick": "<string en español; vacío si hay picks>",\n'
         '      "picks": [\n'
         "        {\n"
-        '          "market": "1X2"|"Over/Under 2.5",\n'
-        '          "selection": "1"|"X"|"2"|"Over 2.5"|"Under 2.5",\n'
+        '          "market": "OU_GOALS_2_5"|"BTTS"|"FT_1X2",\n'
+        '          "selection": "over_2_5"|"yes"|"home",\n'
         '          "odds": <number>,\n'
         '          "edge_pct": <number>,\n'
         '          "confianza": "Baja"|"Media"|"Media-Alta"|"Alta",\n'

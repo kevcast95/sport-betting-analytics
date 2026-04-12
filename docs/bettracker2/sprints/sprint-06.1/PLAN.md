@@ -31,6 +31,7 @@ Checklist operativa: sección **«Apto 100% para ejecución»** en [`TASKS.md`](
 | [`HANDOFF_EJECUCION_S6_1.md`](./HANDOFF_EJECUCION_S6_1.md) | Orden de implementación, cesiones por capa, sincronía PO/BE/FE |
 | [`EJECUCION.md`](./EJECUCION.md) | Evidencia escenarios **US-BE-036** y notas de cierre (rellenar durante el sprint) |
 | [`../sprint-06.2/PLAN.md`](../sprint-06.2/PLAN.md) | **Sprint 06.2** — incremento BT2 > v1 y realineación de US (post cierre 06.1) |
+| [`../sprint-06.2/FUENTE_VERDAD_CONSOLIDADO_S6_1_Y_PLAN_S6_2.md`](../sprint-06.2/FUENTE_VERDAD_CONSOLIDADO_S6_1_Y_PLAN_S6_2.md) | **Consolidado único:** decisiones, pipeline, ingesta, UI Vektor, US conceptuales, plan S6.2, pendientes explícitos |
 
 ## Archivos del sprint
 

@@ -14,7 +14,8 @@ import {
 import { useLocation } from 'react-router-dom'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { PickCard } from '@/components/vault/PickCard'
-import { VaultBandSwitcher } from '@/components/vault/VaultBandSwitcher'
+import { VaultDevTools } from '@/components/vault/VaultDevTools'
+import { VektorShortDisclaimer } from '@/components/vault/VektorShortDisclaimer'
 import { ViewTourModal } from '@/components/tours/ViewTourModal'
 import { getTourScript } from '@/components/tours/tourScripts'
 import { useTourStore } from '@/store/useTourStore'
@@ -27,8 +28,10 @@ import {
   VAULT_DAILY_CAP_PREMIUM,
   VAULT_DAILY_CAP_STANDARD,
 } from '@/lib/vaultQuota'
-import type { VaultBandTab } from '@/lib/vaultTimeBand'
-import { sortVaultPicksForDisplay } from '@/lib/vaultTimeBand'
+import {
+  reorderVaultPicksForBandCycle,
+  selectVisibleFromOrderedPool,
+} from '@/lib/vaultTimeBand'
 import { useTradeStore } from '@/store/useTradeStore'
 
 const VAULT_TOUR = getTourScript('vault')!
@@ -59,9 +62,9 @@ function VaultEmptyState({
         <button
           type="button"
           onClick={onRefresh}
-          className="mt-6 rounded-lg border border-[#a4b4be]/40 bg-white px-5 py-2 text-sm font-semibold text-[#26343d] transition hover:bg-[#eef4fa]"
+          className="mt-6 rounded-lg border border-[#26343d]/25 bg-[#26343d] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#1c2730]"
         >
-          Volver a cargar
+          Obtener cartelera
         </button>
       ) : null}
     </div>
@@ -110,6 +113,7 @@ export default function VaultPage() {
   const takenApiPicks = useVaultStore((s) => s.takenApiPicks)
   const unlockedPickIds = useVaultStore((s) => s.unlockedPickIds)
   const loadApiPicks = useVaultStore((s) => s.loadApiPicks)
+  const regenerateVaultSlate = useVaultStore((s) => s.regenerateVaultSlate)
   const invalidateVaultIfOperatingDayMismatch = useVaultStore(
     (s) => s.invalidateVaultIfOperatingDayMismatch,
   )
@@ -120,9 +124,9 @@ export default function VaultPage() {
   const hydrateLedgerFromApi = useTradeStore((s) => s.hydrateLedgerFromApi)
   const vaultPoolMeta = useVaultStore((s) => s.vaultPoolMeta)
   const vaultDaySnapshotMeta = useVaultStore((s) => s.vaultDaySnapshotMeta)
+  const vaultLocalSlateCycle = useVaultStore((s) => s.vaultLocalSlateCycle)
 
   const [vaultToast, setVaultToast] = useState<string | null>(null)
-  const [bandTab, setBandTab] = useState<VaultBandTab>('mix')
 
   const userTimeZone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Bogota',
@@ -200,24 +204,34 @@ export default function VaultPage() {
   )
   void isMockPickUnlocked // evitar lint unused
 
-  // Conteo por tier
+  const visibleHardCap = vaultPoolMeta?.poolHardCap ?? 5
+
+  /** Orden según ciclo local (regenerar); sin esto la grilla ignora el barajado. */
+  const orderedPoolPicks = useMemo(
+    () => reorderVaultPicksForBandCycle(apiPicks, userTimeZone, vaultLocalSlateCycle),
+    [apiPicks, userTimeZone, vaultLocalSlateCycle],
+  )
+
+  /** Respeta el orden de `orderedPoolPicks` (no remix con mixSortCompare). */
+  const displayedPicks = useMemo(
+    () =>
+      selectVisibleFromOrderedPool(orderedPoolPicks, userTimeZone, visibleHardCap),
+    [orderedPoolPicks, userTimeZone, visibleHardCap],
+  )
+
+  // Conteo por tier (solo cartelera visible)
   const standardCount = useMemo(
-    () => apiPicks.filter((p) => p.accessTier === 'standard').length,
-    [apiPicks],
+    () => displayedPicks.filter((p) => p.accessTier === 'standard').length,
+    [displayedPicks],
   )
   const premiumCount = useMemo(
-    () => apiPicks.filter((p) => p.accessTier === 'premium').length,
-    [apiPicks],
+    () => displayedPicks.filter((p) => p.accessTier === 'premium').length,
+    [displayedPicks],
   )
 
   const quota = useMemo(
     () => computeVaultQuota(takenApiPicks, operatingDayKey, apiPicks),
     [takenApiPicks, operatingDayKey, apiPicks],
-  )
-
-  const displayedPicks = useMemo(
-    () => sortVaultPicksForDisplay(apiPicks, bandTab, userTimeZone),
-    [apiPicks, bandTab, userTimeZone],
   )
 
   const emptyVaultCopy = useMemo(() => {
@@ -375,20 +389,10 @@ export default function VaultPage() {
         onHelpClick={handleForceShowTour}
         rightActions={
           <div className="flex flex-wrap items-center gap-2">
-            {picksLoadStatus !== 'loading' ? (
-              <button
-                type="button"
-                onClick={() => void loadApiPicks()}
-                className="rounded-lg border border-[#a4b4be]/35 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#52616a] transition-colors hover:border-[#8B5CF6]/40 hover:text-[#6d3bd7]"
-                title="Vuelve a pedir GET /bt2/vault/picks (útil tras regenerar snapshot en servidor)"
-              >
-                Sincronizar
-              </button>
-            ) : null}
             {picksLoadStatus === 'loaded' ? (
               <>
                 <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                  {apiPicks.length} señales
+                  {displayedPicks.length}/{visibleHardCap} visibles · {apiPicks.length} en pool
                 </p>
                 <span className="rounded-full bg-[#d1fae5] px-2.5 py-0.5 text-[10px] font-bold text-[#065f46]">
                   {standardCount} estándar
@@ -402,6 +406,16 @@ export default function VaultPage() {
         }
       />
 
+      <div className="rounded-xl border border-[#a4b4be]/20 bg-white/80 px-4 py-3">
+        <VektorShortDisclaimer />
+      </div>
+
+      {import.meta.env.DEV ? (
+        <div className="rounded-xl border border-amber-300/40 px-1 py-1">
+          <VaultDevTools />
+        </div>
+      ) : null}
+
       {picksLoadStatus === 'loaded' && apiPicks.length > 0 && picksMessage ? (
         <div
           role="status"
@@ -414,10 +428,37 @@ export default function VaultPage() {
 
       {picksLoadStatus === 'loaded' && apiPicks.length > 0 ? (
         <div className="space-y-4 rounded-xl border border-[#a4b4be]/20 bg-white/70 p-4 shadow-sm">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <VaultBandSwitcher value={bandTab} onChange={setBandTab} />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+            <div className="flex min-w-0 flex-col gap-2">
+              <button
+                type="button"
+                disabled={picksLoadStatus === 'loading' || apiPicks.length === 0}
+                onClick={() => {
+                  const r = regenerateVaultSlate()
+                  if (!r.ok) {
+                    showVaultToast(r.message.slice(0, 220))
+                    return
+                  }
+                  showVaultToast(
+                    `Ciclo ${r.cycle}/4 · ${r.poolSize} picks en pool · orden de cartelera actualizado.`,
+                  )
+                }}
+                className="w-full max-w-xs rounded-lg border border-[#26343d]/20 bg-[#26343d] px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-[#1c2730] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                title="Rota el ciclo de franjas sobre el pool ya cargado (sin llamar al servidor)."
+              >
+                Regenerar cartelera
+              </button>
+              <p className="text-[10px] leading-snug text-[#6e7d86]">
+                <span className="font-semibold text-[#26343d]">
+                  Total en pool (API):{' '}
+                  <span className="font-mono tabular-nums">{apiPicks.length}</span>
+                </span>
+                . Llega al abrir la estación; «Regenerar» rota ciclo 0–3 y reordena sin red (hasta{' '}
+                <span className="font-mono">{visibleHardCap}</span> visibles, franja local primero).
+              </p>
+            </div>
             <div
-              className="font-mono text-[11px] leading-relaxed text-[#52616a]"
+              className="min-w-0 font-mono text-[11px] leading-relaxed text-[#52616a]"
               role="status"
             >
               <span className="font-sans font-semibold text-[#26343d]">
@@ -441,14 +482,18 @@ export default function VaultPage() {
           </div>
           {vaultPoolMeta ? (
             <p className="text-[10px] leading-snug text-[#6e7d86]">
-              Pool del día:{' '}
-              <span className="font-mono tabular-nums">
-                {vaultPoolMeta.poolItemCount}
-              </span>{' '}
-              candidatos (objetivo{' '}
-              <span className="font-mono">{vaultPoolMeta.poolTargetCount}</span>, tope{' '}
-              <span className="font-mono">{vaultPoolMeta.poolHardCap}</span>
-              ).
+              Pool en cliente:{' '}
+              <span className="font-mono tabular-nums">{vaultPoolMeta.poolItemCount}</span> ítems
+              (tope valor ≤{' '}
+              {vaultPoolMeta.valuePoolUniverseMax != null ? (
+                <span className="font-mono">{vaultPoolMeta.valuePoolUniverseMax}</span>
+              ) : (
+                '20'
+              )}
+              ). Grilla: hasta{' '}
+              <span className="font-mono">{vaultPoolMeta.poolHardCap}</span> visibles · ciclo
+              local{' '}
+              <span className="font-mono">{vaultLocalSlateCycle}</span>/4.
               {vaultPoolMeta.poolBelowTarget
                 ? ' Por debajo del objetivo: el CDM aportó menos eventos válidos.'
                 : null}
@@ -458,12 +503,6 @@ export default function VaultPage() {
             <p className="text-[10px] leading-snug text-[#92400e]">
               Cobertura baja en la ventana del día (&lt; 5 eventos futuros): el criterio puede
               depender de pocos partidos; no implica fallo de ingesta por sí sola (D-06-026 §4).
-            </p>
-          ) : null}
-          {bandTab !== 'mix' && displayedPicks.length === 0 ? (
-            <p className="text-sm text-[#52616a]" role="status">
-              No hay señales en esta franja. Prueba «Mezcla» o otra franja; los
-              partidos en madrugada (23:00–08:00) solo aparecen en mezcla.
             </p>
           ) : null}
         </div>

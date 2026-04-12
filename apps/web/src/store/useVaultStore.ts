@@ -1,6 +1,6 @@
 /**
  * US-FE-025 (Sprint 04): Bóveda desde API real.
- * - apiPicks: picks del día desde GET /bt2/vault/picks.
+ * - apiPicks: pool completo del día (hasta 20) tras session/open + GET /bt2/vault/picks.
  * - takenApiPicks: registro local de picks tomados (POST /bt2/picks).
  * - El tier "standard" equivale a "open" (libre sin DP).
  * - El tier "premium" requiere saldo DP ≥ unlockCostDp.
@@ -81,11 +81,20 @@ export type VaultStoreState = {
   vaultPoolMeta: {
     poolTargetCount: number
     poolHardCap: number
+    /** D-06-032 — candidatos valor máx. antes del slate (típ. 20). */
+    valuePoolUniverseMax?: number
     poolItemCount: number
+    vaultUniversePersistedCount?: number
+    slateBandCycle?: number
     poolBelowTarget: boolean
   } | null
   /** S6.1 — flags vacío operativo, degradación y conteos (US-BE-036 / T-184). */
   vaultDaySnapshotMeta: Bt2VaultDaySnapshotMeta | null
+  /**
+   * Ciclo 0–3 para barajar el orden del pool **solo en cliente** (sin POST al servidor).
+   * Se reinicia desde `slateBandCycle` del API al cargar picks.
+   */
+  vaultLocalSlateCycle: number
 }
 
 export type VaultStoreActions = {
@@ -98,6 +107,10 @@ export type VaultStoreActions = {
    * y luego carga picks del día (GET /bt2/vault/picks).
    */
   loadApiPicks: () => Promise<void>
+  /** Baraja el orden del pool en memoria (ciclo franja); no llama al API. */
+  regenerateVaultSlate: () =>
+    | { ok: true; cycle: number; poolSize: number }
+    | { ok: false; message: string }
   /**
    * US-FE-025: "tomar" un pick de la API.
    * Para tier standard: registra el pick en bt2_picks (sin coste DP).
@@ -131,11 +144,59 @@ const initial: VaultStoreState = {
   vaultSnapshotOperatingDayKey: null,
   vaultPoolMeta: null,
   vaultDaySnapshotMeta: null,
+  vaultLocalSlateCycle: 0,
 }
 
 export const useVaultStore = create<VaultStore>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      const applyVaultPicksPageData = (data: Bt2VaultPicksPageOut) => {
+        const sessionDayKey = useSessionStore.getState().operatingDayKey
+        const snapshotPicks = data.picks
+        const poolMeta = {
+          poolTargetCount: data.poolTargetCount ?? 5,
+          poolHardCap: Math.max(1, data.poolHardCap ?? 5),
+          valuePoolUniverseMax: data.valuePoolUniverseMax ?? 20,
+          poolItemCount: snapshotPicks.length,
+          vaultUniversePersistedCount:
+            data.vaultUniversePersistedCount ?? snapshotPicks.length,
+          slateBandCycle: data.slateBandCycle ?? 0,
+          poolBelowTarget: Boolean(data.poolBelowTarget),
+        }
+        const dayMeta: Bt2VaultDaySnapshotMeta = {
+          dsrSignalDegraded: Boolean(data.dsrSignalDegraded),
+          limitedCoverage: Boolean(data.limitedCoverage),
+          operationalEmptyHard: Boolean(data.operationalEmptyHard),
+          vaultOperationalMessageEs: data.vaultOperationalMessageEs ?? null,
+          fallbackDisclaimerEs: data.fallbackDisclaimerEs ?? null,
+          futureEventsInWindowCount: data.futureEventsInWindowCount ?? 0,
+          fallbackEligiblePoolCount: data.fallbackEligiblePoolCount ?? 0,
+        }
+        const cycle = data.slateBandCycle ?? 0
+        if (!snapshotPicks.length) {
+          set({
+            apiPicks: [],
+            picksLoadStatus: 'empty',
+            picksMessage: data.message ?? 'No hay picks disponibles hoy.',
+            vaultSnapshotOperatingDayKey: sessionDayKey ?? null,
+            vaultPoolMeta: poolMeta,
+            vaultDaySnapshotMeta: dayMeta,
+            vaultLocalSlateCycle: cycle,
+          })
+        } else {
+          set({
+            apiPicks: snapshotPicks,
+            picksLoadStatus: 'loaded',
+            picksMessage: data.message ?? null,
+            vaultSnapshotOperatingDayKey: snapshotPicks[0].operatingDayKey,
+            vaultPoolMeta: poolMeta,
+            vaultDaySnapshotMeta: dayMeta,
+            vaultLocalSlateCycle: cycle,
+          })
+        }
+      }
+
+      return {
       ...initial,
 
       // ── Sprint 01 compat ──────────────────────────────────────────────────
@@ -196,44 +257,10 @@ export const useVaultStore = create<VaultStore>()(
             set({ sessionOpenStatus: 'error' })
           }
         }
-        // 2. Cargar picks
+        // 2. Cargar picks (servidor devuelve hasta 20; la UI recorta a poolHardCap).
         try {
           const data = await bt2FetchJson<Bt2VaultPicksPageOut>('/bt2/vault/picks')
-          const sessionDayKey = useSessionStore.getState().operatingDayKey
-          const poolMeta = {
-            poolTargetCount: data.poolTargetCount ?? 15,
-            poolHardCap: data.poolHardCap ?? 20,
-            poolItemCount: data.poolItemCount ?? data.picks.length,
-            poolBelowTarget: Boolean(data.poolBelowTarget),
-          }
-          const dayMeta: Bt2VaultDaySnapshotMeta = {
-            dsrSignalDegraded: Boolean(data.dsrSignalDegraded),
-            limitedCoverage: Boolean(data.limitedCoverage),
-            operationalEmptyHard: Boolean(data.operationalEmptyHard),
-            vaultOperationalMessageEs: data.vaultOperationalMessageEs ?? null,
-            fallbackDisclaimerEs: data.fallbackDisclaimerEs ?? null,
-            futureEventsInWindowCount: data.futureEventsInWindowCount ?? 0,
-            fallbackEligiblePoolCount: data.fallbackEligiblePoolCount ?? 0,
-          }
-          if (!data.picks.length) {
-            set({
-              apiPicks: [],
-              picksLoadStatus: 'empty',
-              picksMessage: data.message ?? 'No hay picks disponibles hoy.',
-              vaultSnapshotOperatingDayKey: sessionDayKey ?? null,
-              vaultPoolMeta: poolMeta,
-              vaultDaySnapshotMeta: dayMeta,
-            })
-          } else {
-            set({
-              apiPicks: data.picks,
-              picksLoadStatus: 'loaded',
-              picksMessage: data.message ?? null,
-              vaultSnapshotOperatingDayKey: data.picks[0].operatingDayKey,
-              vaultPoolMeta: poolMeta,
-              vaultDaySnapshotMeta: dayMeta,
-            })
-          }
+          applyVaultPicksPageData(data)
         } catch (e) {
           console.error('[BT2] vault/picks error:', e)
           set({
@@ -244,6 +271,33 @@ export const useVaultStore = create<VaultStore>()(
           })
         }
         void useUserStore.getState().syncDpBalance()
+      },
+
+      regenerateVaultSlate: () => {
+        const { apiPicks, vaultPoolMeta } = get()
+        if (!apiPicks.length) {
+          return {
+            ok: false as const,
+            message: 'No hay pool cargado. Abre la estación y espera la carga de la bóveda.',
+          }
+        }
+        const nextCycle = (get().vaultLocalSlateCycle + 1) % 4
+        const poolSize = apiPicks.length
+        set({
+          vaultLocalSlateCycle: nextCycle,
+          vaultPoolMeta: vaultPoolMeta
+            ? { ...vaultPoolMeta, slateBandCycle: nextCycle }
+            : {
+                poolTargetCount: 5,
+                poolHardCap: 5,
+                valuePoolUniverseMax: 20,
+                poolItemCount: poolSize,
+                vaultUniversePersistedCount: poolSize,
+                slateBandCycle: nextCycle,
+                poolBelowTarget: poolSize < 5,
+              },
+        })
+        return { ok: true as const, cycle: nextCycle, poolSize }
       },
 
       takeApiPick: async (vaultPick) => {
@@ -433,10 +487,21 @@ export const useVaultStore = create<VaultStore>()(
       },
 
       reset: () => set(initial),
-    }),
+    }
+    },
     {
-      name: 'bt2_v2_vault',
+      /**
+       * Clave nueva (2026-04): el blob anterior persistía `apiPicks` + `picksLoadStatus`.
+       * Eso dejaba 20 filas “pegadas” para siempre: con `loaded` la bóveda no volvía a
+       * llamar GET /bt2/vault/picks aunque el servidor ya devolviera 5 (reiniciar API no limpia el navegador).
+       */
+      name: 'bt2_v2_vault_v2',
       storage: createJSONStorage(() => createBt2EncryptedLocalStorage()),
+      /** Solo estado local; el listado del día siempre viene del servidor al montar (idle → fetch). */
+      partialize: (s) => ({
+        unlockedPickIds: s.unlockedPickIds,
+        takenApiPicks: s.takenApiPicks,
+      }),
     },
   ),
 )

@@ -42,35 +42,35 @@ export function unifiedApiModelReading(d: {
 
   if (dsrApi) {
     if (dsr) {
-      return { title: 'Criterio del razonador (DSR)', body: dsr }
+      return { title: 'Vektor — por qué', body: dsr }
     }
     if (trRaw && !trPlaceholder) {
       return {
-        title: 'Contexto desde datos CDM',
+        title: 'Vektor — contexto',
         body: trRaw,
       }
     }
     return {
-      title: 'Sin narrativa DSR en este ítem',
+      title: 'Vektor — por qué',
       body:
-        'El razonador no devolvió texto para este evento. La etiqueta de confianza (si aparece) es simbólica: no indica por sí sola un fallo de ingesta operativa ni la probabilidad de acierto.',
+        'No hay texto Vektor publicado para este ítem. Si aparece una línea de confianza, describe la postura del modelo respecto al insumo del día; no indica por sí sola un fallo operativo ni la probabilidad de acierto.',
     }
   }
 
   if (dsr) {
     return {
-      title: 'Texto complementario (no es salida en vivo del razonador)',
+      title: 'Vektor — contexto',
       body: dsr,
     }
   }
   if (trRaw && !trPlaceholder) {
     return {
-      title: 'Lectura a partir de datos CDM',
+      title: 'Vektor — contexto',
       body: trRaw,
     }
   }
   return {
-    title: 'Selección alternativa al razonador estadístico',
+    title: 'Vektor — por qué',
     body: RULES_FALLBACK_MODEL_COPY_ES,
   }
 }

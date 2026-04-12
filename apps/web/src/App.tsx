@@ -25,6 +25,7 @@ import DiagnosticPage from '@/pages/DiagnosticPage'
 import DailyReviewPage from '@/pages/DailyReviewPage'
 import LedgerPage from '@/pages/LedgerPage'
 import PerformancePage from '@/pages/PerformancePage'
+import AdminCdmAuditPage from '@/pages/AdminCdmAuditPage'
 import AdminDsrAccuracyPage from '@/pages/AdminDsrAccuracyPage'
 import ProfilePage from '@/pages/ProfilePage'
 import SettlementPage from '@/pages/SettlementPage'
@@ -293,6 +294,10 @@ function AppLayout() {
                     <Route
                       path="admin/dsr-accuracy"
                       element={<AdminDsrAccuracyPage />}
+                    />
+                    <Route
+                      path="admin/cdm-audit"
+                      element={<AdminCdmAuditPage />}
                     />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="dashboard" element={<V2DashboardPage />} />

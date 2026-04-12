@@ -68,6 +68,12 @@ const GLOSSARY: GlossaryEntry[] = [
     tag: 'Módulo',
   },
   {
+    term: 'Vektor',
+    definition:
+      'Vektor es el nombre del bloque que explica por qué el protocolo sugiere una lectura concreta en la Bóveda. Resume la interpretación sobre el insumo del día (datos y cuotas disponibles para ese partido). La línea de confianza describe la postura del modelo respecto a ese insumo, no garantiza un resultado deportivo ni juzga la calidad de la ingesta. No constituye asesoría financiera ni promesa de ganancia.',
+    tag: 'Módulo',
+  },
+  {
     term: 'Terminal de Liquidación',
     definition:
       'Vista donde registras el resultado de un pick: declaras Ganancia, Pérdida o Empate/Anulado, añades tu cuota real y escribes una reflexión post-partido. Al confirmar, se actualizan tu bankroll y tus DP.',

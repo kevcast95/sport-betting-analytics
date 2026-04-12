@@ -9,7 +9,12 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from apps.api.bt2_vault_pool import VAULT_POOL_HARD_CAP, VAULT_POOL_TARGET
+from apps.api.bt2_dsr_contract import CONTRACT_VERSION_PUBLIC
+from apps.api.bt2_vault_pool import (
+    VAULT_POOL_HARD_CAP,
+    VAULT_POOL_TARGET,
+    VAULT_VALUE_POOL_UNIVERSE_MAX,
+)
 
 VaultTimeBandLiteral = Literal["morning", "afternoon", "evening", "overnight"]
 
@@ -18,10 +23,11 @@ class Bt2MetaOut(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     contract_version: str = Field(
-        default="bt2-dx-001-s6.1r1",
+        default=CONTRACT_VERSION_PUBLIC,
         serialization_alias="contractVersion",
         description=(
-            "S6.1 + refinement: ds_input contexto Postgres, ingest_meta cuotas, coherencia razon (D-06-027–030)."
+            "S6.2: cubo A SM (includes/UPSERT raw), diagnostics raw_fixture_missing; "
+            "S6.1 refinement ds_input / ingest_meta (D-06-027–030)."
         ),
     )
     settlement_verification_mode: Literal["trust", "verified"] = Field(
@@ -98,8 +104,8 @@ class Bt2VaultPickOut(BaseModel):
         ...,
         serialization_alias="timeBand",
         description=(
-            "Franja local del kickoff (TZ usuario). Bordes D-05.2-002: mañana [08:00,12:00), "
-            "tarde [12:00,18:00), noche [18:00,23:00), overnight resto (23:00–08:00)."
+            "Franja local del kickoff (TZ usuario). D-06-032: mañana [06:00,12:00), tarde [12:00,18:00), "
+            "noche [18:00,24:00), overnight [00:00,06:00)."
         ),
     )
     pipeline_version: str = Field(
@@ -152,6 +158,13 @@ class Bt2VaultPickOut(BaseModel):
         le=100,
         description="Heurística servidor 0–100 de completitud de mercados en CDM (no es probabilidad de acierto).",
     )
+    slate_rank: Optional[int] = Field(
+        None,
+        serialization_alias="slateRank",
+        ge=1,
+        le=100,
+        description="Orden en el snapshot del día (1 = cabeza de cartelera tras compose/regenerar).",
+    )
 
 
 class VaultPremiumUnlockIn(BaseModel):
@@ -186,17 +199,32 @@ class Bt2VaultPicksPageOut(BaseModel):
     pool_target_count: int = Field(
         VAULT_POOL_TARGET,
         serialization_alias="poolTargetCount",
-        description="Objetivo de negocio de ítems en pool (D-05.2-002 §6).",
+        description="Slate objetivo por usuario/día (D-06-032: 5 ítems visibles/persistidos).",
     )
     pool_hard_cap: int = Field(
         VAULT_POOL_HARD_CAP,
         serialization_alias="poolHardCap",
-        description="Tope duro de ítems en una respuesta vault.",
+        description="Tope de ítems visibles en UI (D-06-032: 5); `picks` puede traer hasta valuePoolUniverseMax.",
+    )
+    value_pool_universe_max: int = Field(
+        VAULT_VALUE_POOL_UNIVERSE_MAX,
+        serialization_alias="valuePoolUniverseMax",
+        description="Máx. candidatos valor considerados antes de componer el slate (D-06-032: 20).",
     )
     pool_item_count: int = Field(
         ...,
         serialization_alias="poolItemCount",
-        description="Cantidad de ítems devueltos en `picks` para este día operativo.",
+        description="Cantidad de ítems en `picks` (típ. hasta 20 persistidos); la UI recorta a poolHardCap.",
+    )
+    vault_universe_persisted_count: int = Field(
+        0,
+        serialization_alias="vaultUniversePersistedCount",
+        description="Igual que poolItemCount (compat); filas del snapshot del día en servidor.",
+    )
+    slate_band_cycle: int = Field(
+        0,
+        serialization_alias="slateBandCycle",
+        description="Ciclo 0–3 de prioridad de franja al componer/regenerar (D-06-032).",
     )
     pool_below_target: bool = Field(
         ...,
@@ -236,7 +264,7 @@ class Bt2VaultPicksPageOut(BaseModel):
     fallback_eligible_pool_count: int = Field(
         0,
         serialization_alias="fallbackEligiblePoolCount",
-        description="Filas elegibles en pool SQL tras filtros T-177 al generar snapshot.",
+        description="Filas elegibles en pool SQL tras filtros T-177 al generar snapshot (≤ valuePoolUniverseMax al componer).",
     )
 
 
