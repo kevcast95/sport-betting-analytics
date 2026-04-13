@@ -1,0 +1,22 @@
+{
+  "id": 19000001,
+  "league_id": 8,
+  "starting_at": "2026-04-12T15:00:00.000000Z",
+  "state_id": 1,
+  "participants": [
+    {
+      "id": 85,
+      "name": "Home FC",
+      "meta": { "location": "home", "winner": null, "position": 11 }
+    },
+    {
+      "id": 92,
+      "name": "Away FC",
+      "meta": { "location": "away", "winner": null, "position": 12 }
+    }
+  ],
+  "lineups": [],
+  "statistics": [],
+  "odds": [],
+  "_comment": "Ejemplo redactado: partido programado — lineups/statistics vacíos hasta proximidad del evento."
+}

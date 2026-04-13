@@ -74,9 +74,8 @@ def suggest_from_candidate_row(
         conf = _CONFIDENCE_MEDIUM if edge > 0.05 else _CONFIDENCE_LOW
         label_es = {"home": "local", "draw": "empate", "away": "visitante"}[side]
         narrative = (
-            f"Señal por reglas CDM (S6): en {tournament}, {home_team} vs {away_team}, "
-            f"el desbalance de cuotas 1X2 favorece el {label_es} "
-            f"(pipeline {PIPELINE_VERSION_DEFAULT})."
+            f"En {tournament}, {home_team} frente a {away_team}, el equilibrio del 1X2 en "
+            f"las cuotas del mercado inclina la lectura hacia el {label_es}."
         )
         return (
             narrative,
@@ -97,8 +96,8 @@ def suggest_from_candidate_row(
         best = max(ou, key=lambda x: x[1])
         conf = _CONFIDENCE_LOW
         narrative = (
-            f"Señal por reglas CDM (S6): en {tournament}, {home_team} vs {away_team}, "
-            f"se destaca el mercado de goles 2.5 ({best[0].replace('_', ' ')})."
+            f"En {tournament}, {home_team} frente a {away_team}, las cuotas del mercado "
+            f"destacan el tercio de goles 2.5 ({best[0].replace('_', ' ')})."
         )
         return (
             narrative,
@@ -111,7 +110,8 @@ def suggest_from_candidate_row(
         )
 
     narrative = (
-        f"Sin cuotas suficientes para ranking DSR automático — {home_team} vs {away_team} ({tournament})."
+        f"No hay cuotas suficientes en el mercado mostrado para comparar con claridad "
+        f"a {home_team} y {away_team} ({tournament})."
     )
     return (
         narrative,
@@ -120,6 +120,87 @@ def suggest_from_candidate_row(
         "unknown_side",
         PIPELINE_VERSION_DEFAULT,
         "rules_fallback",
+        h,
+    )
+
+
+def consensus_to_legacy_odds(
+    consensus: dict[str, dict[str, float]],
+) -> tuple[
+    Optional[float],
+    Optional[float],
+    Optional[float],
+    Optional[float],
+    Optional[float],
+]:
+    """Extrae 1X2 + O/U 2.5 desde consensus para `suggest_from_candidate_row`."""
+    x = consensus.get("FT_1X2") or {}
+    ou = consensus.get("OU_GOALS_2_5") or {}
+    return (
+        x.get("home"),
+        x.get("draw"),
+        x.get("away"),
+        ou.get("over_2_5"),
+        ou.get("under_2_5"),
+    )
+
+
+def suggest_sql_stat_fallback_from_consensus(
+    event_id: int,
+    consensus: dict[str, dict[str, float]],
+    market_coverage: dict[str, bool],
+    home_team: str,
+    away_team: str,
+    tournament: str,
+) -> Tuple[str, str, str, str, str, str, str]:
+    """
+    D-06-022 — fallback cuando DSR no entrega señal: mayor probabilidad implícita (cuota más baja)
+    entre outcomes de mercados completos en el input.
+    """
+    best_mc: Optional[str] = None
+    best_sc: Optional[str] = None
+    best_odds = 9999.0
+    for mc, ok in market_coverage.items():
+        if not ok:
+            continue
+        sub = consensus.get(mc) or {}
+        for sc, od in sub.items():
+            try:
+                f = float(od)
+            except (TypeError, ValueError):
+                continue
+            if f >= 1.30 and f < best_odds:
+                best_odds = f
+                best_mc, best_sc = mc, sc
+    if best_mc is None or best_sc is None:
+        return suggest_from_candidate_row(
+            event_id,
+            None,
+            None,
+            None,
+            None,
+            None,
+            home_team,
+            away_team,
+            tournament,
+        )
+    payload: dict[str, Any] = {
+        "event_id": event_id,
+        "fallback_pick": {"mc": best_mc, "sc": best_sc, "odds": best_odds},
+    }
+    assert_no_forbidden_ds_keys(payload)
+    h = hash_dsr_input_payload(payload)
+    narrative = (
+        f"Sin señal suficiente del modelo estadístico para este partido; se muestra una opción real "
+        f"del CDM ({best_mc}) por criterio de mayor probabilidad implícita — {home_team} vs {away_team}."
+    )
+    return (
+        narrative,
+        _CONFIDENCE_MEDIUM,
+        best_mc,
+        best_sc,
+        PIPELINE_VERSION_DEFAULT,
+        "sql_stat_fallback",
         h,
     )
 

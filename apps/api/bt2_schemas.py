@@ -9,7 +9,12 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from apps.api.bt2_vault_pool import VAULT_POOL_HARD_CAP, VAULT_POOL_TARGET
+from apps.api.bt2_dsr_contract import CONTRACT_VERSION_PUBLIC
+from apps.api.bt2_vault_pool import (
+    VAULT_POOL_HARD_CAP,
+    VAULT_POOL_TARGET,
+    VAULT_VALUE_POOL_UNIVERSE_MAX,
+)
 
 VaultTimeBandLiteral = Literal["morning", "afternoon", "evening", "overnight"]
 
@@ -18,10 +23,11 @@ class Bt2MetaOut(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     contract_version: str = Field(
-        default="bt2-dx-001-s6.0",
+        default=CONTRACT_VERSION_PUBLIC,
         serialization_alias="contractVersion",
         description=(
-            "s6.0 = Sprint 06: DSR stub en snapshot, mercados canónicos, analytics admin, fetch job."
+            "S6.2: cubo A SM (includes/UPSERT raw), diagnostics raw_fixture_missing; "
+            "S6.1 refinement ds_input / ingest_meta (D-06-027–030)."
         ),
     )
     settlement_verification_mode: Literal["trust", "verified"] = Field(
@@ -98,8 +104,8 @@ class Bt2VaultPickOut(BaseModel):
         ...,
         serialization_alias="timeBand",
         description=(
-            "Franja local del kickoff (TZ usuario). Bordes D-05.2-002: mañana [08:00,12:00), "
-            "tarde [12:00,18:00), noche [18:00,23:00), overnight resto (23:00–08:00)."
+            "Franja local del kickoff (TZ usuario). D-06-032: mañana [06:00,12:00), tarde [12:00,18:00), "
+            "noche [18:00,24:00), overnight [00:00,06:00)."
         ),
     )
     pipeline_version: str = Field(
@@ -145,6 +151,20 @@ class Bt2VaultPickOut(BaseModel):
         serialization_alias="modelSelectionCanonical",
         description="Selección sugerida por el modelo (canónico).",
     )
+    data_completeness_score: Optional[int] = Field(
+        None,
+        serialization_alias="dataCompletenessScore",
+        ge=0,
+        le=100,
+        description="Heurística servidor 0–100 de completitud de mercados en CDM (no es probabilidad de acierto).",
+    )
+    slate_rank: Optional[int] = Field(
+        None,
+        serialization_alias="slateRank",
+        ge=1,
+        le=100,
+        description="Orden en el snapshot del día (1 = cabeza de cartelera tras compose/regenerar).",
+    )
 
 
 class VaultPremiumUnlockIn(BaseModel):
@@ -179,23 +199,137 @@ class Bt2VaultPicksPageOut(BaseModel):
     pool_target_count: int = Field(
         VAULT_POOL_TARGET,
         serialization_alias="poolTargetCount",
-        description="Objetivo de negocio de ítems en pool (D-05.2-002 §6).",
+        description="Slate objetivo por usuario/día (D-06-032: 5 ítems visibles/persistidos).",
     )
     pool_hard_cap: int = Field(
         VAULT_POOL_HARD_CAP,
         serialization_alias="poolHardCap",
-        description="Tope duro de ítems en una respuesta vault.",
+        description="Tope de ítems visibles en UI (D-06-032: 5); `picks` puede traer hasta valuePoolUniverseMax.",
+    )
+    value_pool_universe_max: int = Field(
+        VAULT_VALUE_POOL_UNIVERSE_MAX,
+        serialization_alias="valuePoolUniverseMax",
+        description="Máx. candidatos valor considerados antes de componer el slate (D-06-032: 20).",
     )
     pool_item_count: int = Field(
         ...,
         serialization_alias="poolItemCount",
-        description="Cantidad de ítems devueltos en `picks` para este día operativo.",
+        description="Cantidad de ítems en `picks` (típ. hasta 20 persistidos); la UI recorta a poolHardCap.",
+    )
+    vault_universe_persisted_count: int = Field(
+        0,
+        serialization_alias="vaultUniversePersistedCount",
+        description="Igual que poolItemCount (compat); filas del snapshot del día en servidor.",
+    )
+    slate_band_cycle: int = Field(
+        0,
+        serialization_alias="slateBandCycle",
+        description="Ciclo 0–3 de prioridad de franja al componer/regenerar (D-06-032).",
     )
     pool_below_target: bool = Field(
         ...,
         serialization_alias="poolBelowTarget",
         description="True si hay menos ítems que `poolTargetCount` (falta de stock CDM u otra causa).",
     )
+    dsr_signal_degraded: bool = Field(
+        False,
+        serialization_alias="dsrSignalDegraded",
+        description="True si la bóveda incluye fallback SQL por ausencia de señal DSR válida (D-06-024).",
+    )
+    limited_coverage: bool = Field(
+        False,
+        serialization_alias="limitedCoverage",
+        description="Heurística 'pocos eventos' (menos de 5 futuros en ventana día, D-06-026 §4); no bloquea fallback.",
+    )
+    operational_empty_hard: bool = Field(
+        False,
+        serialization_alias="operationalEmptyHard",
+        description="Vacío duro: 0 filas elegibles en pool fallback (D-06-026 §6).",
+    )
+    vault_operational_message_es: Optional[str] = Field(
+        None,
+        serialization_alias="vaultOperationalMessageEs",
+        description="Mensaje cuando no hay picks por causa operativa (p. ej. sin CDM elegible).",
+    )
+    fallback_disclaimer_es: Optional[str] = Field(
+        None,
+        serialization_alias="fallbackDisclaimerEs",
+        description="Disclaimer cuando hay picks por fallback estadístico / datos limitados (D-06-025 §4).",
+    )
+    future_events_in_window_count: int = Field(
+        0,
+        serialization_alias="futureEventsInWindowCount",
+        description="Conteo de eventos futuros en ventana día operativo (ligas activas).",
+    )
+    fallback_eligible_pool_count: int = Field(
+        0,
+        serialization_alias="fallbackEligiblePoolCount",
+        description="Filas elegibles en pool SQL tras filtros T-177 al generar snapshot (≤ valuePoolUniverseMax al componer).",
+    )
+
+
+class Bt2AdminCountRowOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    key: str = Field(..., serialization_alias="key")
+    count: int = Field(..., serialization_alias="count")
+
+
+class Bt2AdminScoreBucketOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    score_bucket: int = Field(
+        ...,
+        serialization_alias="scoreBucket",
+        description="Valor de data_completeness_score o -1 si era NULL.",
+    )
+    count: int = Field(..., serialization_alias="count")
+
+
+class Bt2AdminVaultPickDistributionOut(BaseModel):
+    """US-BE-035 / T-183 — agregados por día operativo (MVP medición v0)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(..., serialization_alias="operatingDayKey")
+    by_dsr_confidence_label: List[Bt2AdminCountRowOut] = Field(
+        default_factory=list,
+        serialization_alias="byDsrConfidenceLabel",
+    )
+    by_dsr_source: List[Bt2AdminCountRowOut] = Field(
+        default_factory=list,
+        serialization_alias="byDsrSource",
+    )
+    score_buckets: List[Bt2AdminScoreBucketOut] = Field(
+        default_factory=list,
+        serialization_alias="scoreBuckets",
+    )
+    total_daily_pick_rows: int = Field(
+        0,
+        serialization_alias="totalDailyPickRows",
+        description="Total filas bt2_daily_picks del día (todas las sesiones usuario).",
+    )
+    summary_human_es: str = Field("", serialization_alias="summaryHumanEs")
+
+
+class Bt2AdminVaultRegenerateSnapshotOut(BaseModel):
+    """Respuesta tras borrar y volver a ejecutar el pipeline de snapshot bóveda."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    user_id: str = Field(..., serialization_alias="userId")
+    operating_day_key: str = Field(..., serialization_alias="operatingDayKey")
+    picks_inserted_this_run: int = Field(
+        ...,
+        serialization_alias="picksInsertedThisRun",
+        description="Filas insertadas en esta corrida (puede ser 0 si pool vacío).",
+    )
+    picks_total_after: int = Field(
+        ...,
+        serialization_alias="picksTotalAfter",
+        description="Total filas bt2_daily_picks para (user, día) tras regenerar.",
+    )
+    message_es: str = Field("", serialization_alias="messageEs")
 
 
 class Bt2AdminDsrDaySummaryOut(BaseModel):
@@ -256,6 +390,54 @@ class Bt2AdminDsrDayOut(BaseModel):
         default_factory=list,
         serialization_alias="auditRows",
     )
+
+
+class Bt2AdminDsrRangeTotalsOut(BaseModel):
+    """Agregado global sobre el rango [from, to] (misma semántica que dsr-day por fila)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    day_count: int = Field(..., serialization_alias="dayCount")
+    days_with_settled_model: int = Field(
+        ...,
+        serialization_alias="daysWithSettledModel",
+        description="Días con al menos un pick liquidado y model_prediction_result no null.",
+    )
+    sum_distinct_events_daily: int = Field(
+        ...,
+        serialization_alias="sumDistinctEventsDaily",
+        description="Suma de eventos distintos por día (no deduplica eventos entre días).",
+    )
+    picks_settled_with_model: int = Field(
+        ...,
+        serialization_alias="picksSettledWithModel",
+    )
+    model_hits: int = Field(..., serialization_alias="modelHits")
+    model_misses: int = Field(..., serialization_alias="modelMisses")
+    model_voids: int = Field(..., serialization_alias="modelVoids")
+    model_na: int = Field(..., serialization_alias="modelNa")
+    hit_rate_pct: Optional[float] = Field(
+        None,
+        serialization_alias="hitRatePct",
+        description="Suma hits / (suma hits + suma misses) × 100.",
+    )
+    summary_human_es: str = Field("", serialization_alias="summaryHumanEs")
+
+
+class Bt2AdminDsrRangeOut(BaseModel):
+    """Serie diaria + totales; útil para auditoría histórica en admin (D-06-004)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    from_operating_day_key: str = Field(
+        ..., serialization_alias="fromOperatingDayKey"
+    )
+    to_operating_day_key: str = Field(..., serialization_alias="toOperatingDayKey")
+    days: List[Bt2AdminDsrDaySummaryOut] = Field(
+        default_factory=list,
+        description="Una fila por día calendario en el rango (inclusive), orden ascendente.",
+    )
+    totals: Bt2AdminDsrRangeTotalsOut
 
 
 OPERATOR_PROFILE_VALUES = {

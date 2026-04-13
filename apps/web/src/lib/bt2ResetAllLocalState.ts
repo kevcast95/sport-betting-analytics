@@ -10,7 +10,8 @@ export const BT2_PERSIST_STORAGE_KEYS = [
   'bt2_v2_user_state',
   'bt2_v2_trades',
   'bt2_v2_session',
-  'bt2_v2_vault',
+  'bt2_v2_vault', // legado (persistía apiPicks; puede quedar basura)
+  'bt2_v2_vault_v2',
   'bt2_v2_bankroll',
 ] as const
 

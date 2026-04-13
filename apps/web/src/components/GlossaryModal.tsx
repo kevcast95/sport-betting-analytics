@@ -39,7 +39,7 @@ const GLOSSARY: GlossaryEntry[] = [
   {
     term: 'Cuota decimal sugerida',
     definition:
-      'Precio que el modelo CDM considera justo para la selección. Sirve de referencia para evaluar si tu casa ofrece valor. La diferencia entre esta cuota y la de tu casa define el estado de alineación (Alineada / Cercana / Desviada).',
+      'Referencia del protocolo para la selección (consenso / CDM). Úsala para comparar con la cuota que tomaste en tu casa; la diferencia define alineación (Alineada / Cercana / Desviada). No sustituye una promesa de beneficio (D-06-027).',
     tag: 'Mercado',
   },
   {
@@ -52,19 +52,25 @@ const GLOSSARY: GlossaryEntry[] = [
     term: 'Valor esperado positivo',
     abbr: '+EV',
     definition:
-      'Un pick tiene +EV cuando la probabilidad real del resultado es mayor que la implícita en la cuota. CDM solo selecciona picks con +EV según su modelo.',
+      'En jerga clásica, +EV describe cuando una probabilidad subjetiva supera la implícita en la cuota. En BT2 el criterio de señal privilegia lectura apoyada en datos e histórico del input y coherencia cuota–narrativa, no maximizar el pago como regla suelta (D-06-027).',
     tag: 'Mercado',
   },
   {
     term: 'Edge',
     definition:
-      'Ventaja del modelo sobre el mercado, expresada en puntos básicos (bps). Un edge de 150 bps = 1.5 % de ventaja. No garantiza ganancia en cada apuesta, pero es rentable en volumen.',
+      'Métrica técnica (p. ej. bps) que resume diferencial frente a la implícita del mercado en el input. Es orientativa, no garantía de ganancia ni mandato de “más edge = mejor” frente a la premisa de acierto fundamentado en datos (D-06-027).',
     tag: 'Mercado',
   },
   {
     term: 'La Bóveda',
     definition:
       'Feed diario de picks generados por el modelo CDM. Contiene picks estándar (acceso libre) y premium (requieren DP). Solo muestra picks del día operativo activo.',
+    tag: 'Módulo',
+  },
+  {
+    term: 'Vektor',
+    definition:
+      'Bloque que explica en lenguaje claro por qué el modelo sugiere esa lectura (equivalente al campo razon de la salida estructurada). La etiqueta de confianza no garantiza resultado deportivo. No es asesoría financiera ni promesa de ganancia.',
     tag: 'Módulo',
   },
   {
@@ -106,7 +112,7 @@ const GLOSSARY: GlossaryEntry[] = [
   {
     term: 'CDM',
     definition:
-      'Canonical Decision Model: el motor analítico del sistema que evalúa mercados, detecta valor esperado positivo y genera las señales diarias de la Bóveda.',
+      'Canonical Decision Model: capa analítica que, con datos certificados (CDM / input del día), alimenta el criterio DSR hacia la Bóveda. La intención de producto prioriza lectura coherente con histórico y parámetros enviados al modelo, no perseguir el mayor retorno esperado como único eje (D-06-027).',
     tag: 'Sistema',
   },
 ]

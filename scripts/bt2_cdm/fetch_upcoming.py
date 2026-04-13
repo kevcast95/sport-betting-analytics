@@ -3,7 +3,7 @@ fetch_upcoming.py — Sprint 04 US-BE-013
 
 Ingesta diaria de fixtures futuros desde Sportmonks.
 Lee bt2_leagues (is_active=true), llama a la API por liga y hace upsert
-directo en bt2_events + bt2_odds_snapshot (NO toca raw_sportmonks_fixtures).
+en bt2_events + bt2_odds_snapshot + **raw_sportmonks_fixtures** (UPSERT, D-06-037 / T-198).
 
 Uso:
     python scripts/bt2_cdm/fetch_upcoming.py
@@ -35,6 +35,8 @@ import psycopg2
 import psycopg2.extras
 
 # Reutilizamos parsers y upserts del normalizador
+from apps.api.bt2_raw_sportmonks_store import upsert_raw_sportmonks_fixture_psycopg2
+from apps.api.bt2_sportmonks_includes import BT2_SM_FIXTURE_INCLUDES
 from scripts.bt2_cdm.normalize_fixtures import (
     _extract_odds,
     _parse_kickoff,
@@ -52,7 +54,7 @@ logging.basicConfig(
 logger = logging.getLogger("fetch_upcoming")
 
 SM_BASE_URL = "https://api.sportmonks.com/v3"
-SM_INCLUDES = "participants;odds;scores;league"
+SM_INCLUDES = BT2_SM_FIXTURE_INCLUDES
 RATE_LIMIT_WAIT_S = 60
 RECON_DIR = Path(_repo_root) / "docs" / "bettracker2" / "recon_results"
 
@@ -245,6 +247,7 @@ def process_league_fixtures(
                     fetched_at = datetime.now(tz=timezone.utc)
                     odds_n = insert_odds_bulk(cur, event_id, odds_entries, fetched_at)
                     odds_total += odds_n
+                upsert_raw_sportmonks_fixture_psycopg2(cur, fx)
             else:
                 event_id = fixture_id  # dummy para dry-run
 

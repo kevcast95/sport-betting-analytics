@@ -1,9 +1,12 @@
 # Sprint 06.1 — US
 
-> **Estado:** listo para kickoff tras marcar el **DoR** (sección **Apto 100% para ejecución**) en [`TASKS.md`](./TASKS.md); reglas operativas **D-06-024** … **D-06-026** (KPI “% acierto” >70% = dirección PO; medición formal con settlement → US posterior).  
+> **Cierre 06.1 (2026-04-10):** sprint cerrado a nivel plan ([`PLAN.md`](./PLAN.md)). Las **US** de esta carpeta son la **foto** del alcance 06.1; el **recuadre** frente al incremento “BT2 > v1” (bóveda 20/5, snapshot global, ingesta SM) se hará en **[`../sprint-06.2/PLAN.md`](../sprint-06.2/PLAN.md)** con nuevas o enmendadas US cuando corresponda.
+
+> **Estado (histórico):** listo para kickoff tras marcar el **DoR** (sección **Apto 100% para ejecución**) en [`TASKS.md`](./TASKS.md); reglas operativas **D-06-024** … **D-06-026** (KPI “% acierto” >70% = dirección PO; medición formal con settlement → US posterior).  
+> **Refinement PO (post-feedback):** [`REFINEMENT_S6_1.md`](./REFINEMENT_S6_1.md) → **DECISIONES** **D-06-027** … **D-06-030**; US **US-BE-037** … **US-BE-039**, **US-FE-056**; tareas **T-189** … **T-194** (sección homónima en cada archivo).  
 > **Contrato de formato:** [`../../01_CONTRATO_US.md`](../../01_CONTRATO_US.md).  
-> **Decisiones:** [`DECISIONES.md`](./DECISIONES.md) **D-06-021** … **D-06-026**.  
-> **Tareas:** [`TASKS.md`](./TASKS.md) **T-171+**.  
+> **Decisiones:** [`DECISIONES.md`](./DECISIONES.md) **D-06-021** … **D-06-030**.  
+> **Tareas:** [`TASKS.md`](./TASKS.md) **T-171–T-187** (núcleo) y **T-189–T-194** (refinement).  
 > **Handoff ejecución:** [`HANDOFF_EJECUCION_S6_1.md`](./HANDOFF_EJECUCION_S6_1.md).
 
 ### Convención con desarrollo (**D-06-023**)
@@ -244,4 +247,121 @@ El usuario **no confunde** “confianza simbólica del modelo” con “calidad 
 
 ---
 
-*Última actualización: 2026-04-09 — Alineación US-BE-033/034/035/036 a **D-06-024** … **D-06-026** (auditoría BA).*
+## REFINEMENT_S6_1
+
+> **Fuente de verdad narrativa:** [`REFINEMENT_S6_1.md`](./REFINEMENT_S6_1.md). **Decisiones:** **D-06-027** … **D-06-030**. Estas US **refinan** madres ya definidas (**US-BE-032**, **US-BE-034**, núcleo DSR); no sustituyen **D-06-024** / **D-06-025** en pool y premium.
+
+### US-BE-037 — (Refinement) Builder `ds_input`: histórico del duelo y cuotas históricas desde Postgres
+
+#### 1) Objetivo de negocio
+
+Que cada ítem de `ds_input` enviado al batch DSR **aproveche** datos persistidos en BT2: enfrentamientos, forma, estadísticas agregadas, alineaciones (o equivalentes CDM), y **cuotas históricas** u otras series **si** existen en schema/jobs, de modo que el insumo sea **estrictamente más rico que v1 en lo consultable** (**REFINEMENT_S6_1** §5–§6, **D-06-028**).
+
+#### 2) Alcance
+
+- Incluye: ampliar `bt2_dsr_ds_input_builder.py` (y consultas asociadas); inventario de tablas/fuentes; poblar `processed.*` con `available: true` y payload real cuando haya filas; `diagnostics` honestos cuando no haya datos.
+- Excluye: inventar datos fuera de Postgres/CDM; claves no whitelisteadas (**US-DX-003** / **D-06-002**).
+
+#### 3) Contexto técnico actual
+
+- `apps/api/bt2_dsr_ds_input_builder.py`, `bt2_router._generate_daily_picks_snapshot`, modelos `bt2_*`, jobs CDM según existan.
+
+#### 5) Reglas de dominio
+
+- **D-06-028:** no placeholders “por defecto” si la DB tiene datos consultables para ese contexto.
+- Cualquier campo nuevo hacia el LLM → **T-171** / **T-172** / **T-173** si afecta contrato cliente o anti-fuga.
+
+#### 6) Criterios de aceptación
+
+1. Given evento con datos históricos disponibles en Postgres para los equipos, When se arma `ds_input`, Then los bloques acordados en whitelist reflejan **contenido** (no solo `available: false` genérico).
+2. Given evento sin histórico persistido, When se arma `ds_input`, Then `diagnostics` indican ausencia real (no silencio).
+
+#### 10) Definition of Done
+
+- [ ] **T-189–T-190** cerradas; documentación en handoff de qué tabla alimenta cada bloque.
+- [ ] Sin violar **D-06-002**; revisión cruzada con **US-DX-003** si el JSON crece.
+
+**Madre:** **US-BE-032** — **T-174–T-176**.
+
+---
+
+### US-BE-038 — (Refinement) Instrucciones batch DeepSeek alineadas a D-06-027
+
+#### 1) Objetivo de negocio
+
+Que el texto de sistema (y usuario) del batch DSR instruya al modelo según **D-06-027** (**REFINEMENT_S6_1** §2), eliminando ambigüedad con “valor” en sentido de edge puro (**REFINEMENT_S6_1** §6.3).
+
+#### 2) Alcance
+
+- Incluye: `apps/api/bt2_dsr_deepseek.py` (`_SYSTEM_BATCH`, prompts usuario batch); tests de regresión mínimos sobre strings o comportamiento parseado.
+- Excluye: cambiar proveedor SM; redefinir formato JSON de salida salvo coordinación con **US-BE-034**.
+
+#### 5) Reglas de dominio
+
+- **D-06-030** + **D-06-027**; coherente con **D-06-028** (no pedir al modelo datos no presentes en `ds_input`).
+
+#### 6) Criterios de aceptación
+
+1. Given batch de prueba, When se inspecciona el prompt, Then no contradice **D-06-027** (redacción aprobada PO/BA).
+2. Given fixtures existentes de parse, When corren tests, Then siguen verdes o actualizados acorde al cambio.
+
+#### 10) Definition of Done
+
+- [ ] **T-191** cerrada; aprobación explícita de copy prompt en comentario de PR o nota en **EJECUCION.md**.
+
+**Madre:** núcleo DSR batch (sin US numérica previa dedicada; trazabilidad **US-BE-032** / **US-BE-036** según toque el diff).
+
+---
+
+### US-BE-039 — (Refinement) Post-DSR: incoherencia `selection` vs `razon`
+
+#### 1) Objetivo de negocio
+
+Reducir picks publicados donde el razonamiento **contradice** la selección canónica (**REFINEMENT_S6_1** §3, **D-06-029**).
+
+#### 2) Alcance
+
+- Incluye: reglas en `postprocess_dsr_pick` (o módulo dedicado); detección heurística (keywords, mercado, outcome) según diseño **T-192**; telemetría/log de omisiones.
+- Excluye: segundo LLM para reescribir `razon`; sustituto automático de mercado (**D-06-026** §2).
+
+#### 5) Reglas de dominio
+
+- **D-06-029**; si mercado inválido respecto al input, siguen reglas ya definidas en **D-06-024** / **D-06-026**.
+
+#### 6) Criterios de aceptación
+
+1. Given salida modelo con contradicción material detectada por reglas, When Post-DSR, Then **no** se persiste pick DSR para ese evento (fase acordada en **T-192**).
+2. Given salida coherente, When Post-DSR, Then no regresión respecto a casos **T-181** existentes.
+
+#### 10) Definition of Done
+
+- [ ] **T-192** cerrada; casos documentados en **EJECUCION.md** § REFINEMENT_S6_1.
+
+**Madre:** **US-BE-034** — **T-181–T-182**.
+
+---
+
+### US-FE-056 — (Refinement) Copy bóveda/admin: alineación semántica con D-06-027
+
+#### 1) Objetivo de negocio
+
+Evitar que textos en **PickCard** / admin sugieran “buscar edge máximo” o mezclen semánticas si **D-06-027** cambia el mensaje de producto (**REFINEMENT_S6_1** §2).
+
+#### 2) Alcance
+
+- Incluye: revisión de strings en `PickCard`, `vaultModelReading`, leyendas admin relacionadas con DSR (solo donde contradigan **D-06-027**).
+- Excluye: rediseño visual; cambios que no deriven del refinement.
+
+#### 6) Criterios de aceptación
+
+1. Given copy actualizado según PO, When usuario lee bóveda, Then no se contradice la premisa **D-06-027** en tooltips o subtítulos expuestos.
+
+#### 10) Definition of Done
+
+- [ ] **T-194** cerrada; **npm test** + **npm run build**.
+
+**Madre:** **US-FE-055**.
+
+---
+
+*Última actualización: 2026-04-09 — **REFINEMENT_S6_1:** US-BE-037–039, US-FE-056; D-06-027–030.*

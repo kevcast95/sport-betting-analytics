@@ -169,4 +169,62 @@ Ver **D-06-025** § “Qué es post-DSR”. **Lo que se persiste en BT2 no es el
 
 ---
 
-*Entradas: **D-06-021**, **D-06-022**, **D-06-023**, **D-06-024**, **D-06-025**, **D-06-026** (2026-04-08 / 2026-04-09).*
+## REFINEMENT_S6_1 — Decisiones posteriores a [`REFINEMENT_S6_1.md`](./REFINEMENT_S6_1.md) (PO/BA, 2026-04-09)
+
+> **Fuente narrativa:** [`REFINEMENT_S6_1.md`](./REFINEMENT_S6_1.md) (§1–§7). Esta sección **fija** decisiones ejecutables; **no** sustituye **D-06-021** … **D-06-026** salvo donde se indica **matiz** explícito.
+
+### D-06-027 — Criterio de elección de mercado DSR: lectura apoyada en datos e histórico (no “payout primero”)
+
+**Contexto:** El prompt actual del batch (`bt2_dsr_deepseek.py`) habla de **“mejor relación valor/datos”**, interpretable como **edge / valor esperado**. El PO fijó en **REFINEMENT_S6_1** §2 que, entre mercados disponibles en el input, la lectura debe privilegiar **mayor soporte en estadística histórica y parámetros presentes en `ds_input`**, con **coherencia entre cuota e narrativa**, sin usar “más dinero posible” como regla suelta.
+
+**Decisión:**
+
+1. La **intención de producto** del núcleo DSR se alinea a **REFINEMENT_S6_1** §2 (incl. ejemplo favorito con bajas en lineups).
+2. **Matiz sobre D-06-025 §3:** donde se dice “mayor valor relativo (contexto estadístico + cuota)”, **“valor relativo”** se entiende como **lectura de acierto fundamentada en el lote enviado**, no como mandato de perseguir cuotas altas sin anclaje en datos del input.
+3. **Pool y elegibilidad** siguen gobernados por **D-06-024** / **D-06-025** / **D-06-026**; esta decisión **no** relaja cuota mínima ni reglas premium/standard.
+
+**Trazabilidad:** **US-BE-038**, **T-191**; revisión conjunta con **US-BE-033** si el copy de reglas internas o filtros mencionan “valor” en sentido ambiguo.
+
+---
+
+### D-06-028 — `ds_input` desde Postgres: consultar histórico del duelo (y cuotas históricas si existen)
+
+**Contexto:** Hoy el builder puede dejar `lineups`, `h2h`, `statistics`, `team_streaks`, `team_season_stats` como **placeholders** aunque la API/CDM y Postgres permitan enriquecer (**REFINEMENT_S6_1** §5–§6).
+
+**Decisión:**
+
+1. **Diseño e implementación** del builder (**refinement** de **US-BE-032**) deben **consultar** la base por datos **históricos relevantes** al enfrentamiento (equipos, H2H, forma, estadísticas agregadas, alineaciones o equivalentes **según existan** en schema, jobs o tablas derivadas).
+2. Si existen **cuotas históricas** u otras series persistidas aplicables al contexto del evento, deben **incorporarse** al contrato **solo** vía whitelist **US-DX-003** / **T-171** y validador **T-172** (anti-fuga **D-06-002**).
+3. **No** es aceptable dejar `available: false` por defecto en bloques decisorios cuando **ya haya filas consultables** en Postgres para ese evento/equipos; la ausencia debe reflejarse en **`diagnostics`** con causa real (ingesta vacía, TTL, etc.).
+
+**Trazabilidad:** **US-BE-037**, **T-189–T-190**; **US-DX-003** si nuevos caminos en JSON hacia el LLM.
+
+---
+
+### D-06-029 — Coherencia obligatoria `selection` vs `razon` en salida DSR (Post-DSR)
+
+**Contexto:** Salida del LLM puede declarar una selección y un razonamiento **contradictorios**; eso destruye confianza de usuario (**REFINEMENT_S6_1** §3).
+
+**Decisión:**
+
+1. **Post-DSR** (**refinement** de **US-BE-034**) debe incluir reglas o heurísticas que detecten **incoherencia material** entre mercado/selección canónica y el texto de `razon`.
+2. **Fase refinement:** ante incoherencia detectada → **omitir** pick DSR para ese evento (alineado a filosofía **D-06-026** §2: no sustituto automático de mercado) **salvo** que una **nueva** entrada en **DECISIONES** autorice otro tratamiento (p. ej. solo degradar etiqueta).
+3. **Reescritura** de `razon` por el servidor para “arreglar” la contradicción **no** es alcance por defecto; si se propone, va como decisión explícita nueva.
+
+**Trazabilidad:** **US-BE-039**, **T-192**.
+
+---
+
+### D-06-030 — Prompt batch DeepSeek alineado a D-06-027
+
+**Contexto:** El system prompt actual no refleja literalmente la premisa de **D-06-027**.
+
+**Decisión:** Actualizar `_SYSTEM_BATCH` (y, si aplica, user prompt batch) en `apps/api/bt2_dsr_deepseek.py` para que las instrucciones sean **consistentes con D-06-027**, sin contradicción con **D-06-028** (el modelo no puede “inventar” histórico no enviado).
+
+**Criterio de aceptación:** texto aprobado por PO/BA + tests mínimos de regresión (**T-191**).
+
+**Trazabilidad:** **US-BE-038**, **T-191**.
+
+---
+
+*Entradas: **D-06-021** … **D-06-026** (2026-04-08 / 2026-04-09); **REFINEMENT_S6_1:** **D-06-027** … **D-06-030** (2026-04-09).*

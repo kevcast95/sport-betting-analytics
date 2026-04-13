@@ -60,9 +60,9 @@ const TOUR_VAULT: TourScript = {
   steps: [
     {
       id: 'vault-overview',
-      title: 'Picks con valor esperado positivo',
+      title: 'Señales del día (DSR y datos CDM)',
       body: [
-        'La Bóveda muestra las señales del día generadas por el modelo canónico CDM. Cada pick tiene una clase de mercado y una traducción humana.',
+        'La Bóveda muestra las señales del día: el criterio privilegia lecturas con soporte en estadística e histórico presentes en el input, y coherencia entre cuota y narrativa — no buscar el mayor pago posible como regla única.',
         'Solo los picks del día actual aparecen en el feed activo; los del día anterior quedan bloqueados.',
       ],
     },

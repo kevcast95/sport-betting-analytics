@@ -110,11 +110,13 @@ export default function PickDetailPage() {
   const p = q.data
 
   const boardQ = useQuery({
-    queryKey: ['board', p?.daily_run_id, userId],
-    enabled: !!p && userId != null,
+    queryKey: ['board', p?.daily_run_id, userId ?? 'default'],
+    enabled: !!p,
     queryFn: () =>
       fetchJson<TrackingBoardOut>(
-        `/daily-runs/${p!.daily_run_id}/board?user_id=${userId}`,
+        userId != null
+          ? `/daily-runs/${p!.daily_run_id}/board?user_id=${userId}`
+          : `/daily-runs/${p!.daily_run_id}/board`,
       ),
   })
 
@@ -146,7 +148,7 @@ export default function PickDetailPage() {
     },
     onSuccess: () => {
       if (p) {
-        void qc.invalidateQueries({ queryKey: ['board', p.daily_run_id, userId] })
+        void qc.invalidateQueries({ queryKey: ['board', p.daily_run_id] })
       }
       void qc.invalidateQueries({ queryKey: ['pick', id] })
       void qc.invalidateQueries({ queryKey: ['dashboard'] })

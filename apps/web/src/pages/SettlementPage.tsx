@@ -12,15 +12,15 @@ import {
   IconWallet,
 } from '@/components/bt2StitchIcons'
 import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
+import { VektorShortDisclaimer } from '@/components/vault/VektorShortDisclaimer'
 import { vaultMockPicks } from '@/data/vaultMockPicks'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
 import {
-  dsrConfidenceLabelEs,
-  dsrSourceDescriptionEs,
+  vektorModelConfidenceLineEs,
   modelPredictionResultEs,
 } from '@/lib/bt2ProtocolLabels'
 import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
-import { unifiedApiModelReading } from '@/lib/vaultModelReading'
+import { MODEL_WHY_TITLE_ES, modelWhyReading } from '@/lib/vaultModelReading'
 import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
 import {
   computeSettlementPnlCop,
@@ -72,6 +72,8 @@ type AnyPick = {
   dsrNarrativeEs?: string
   dsrSource?: string
   dsrConfidenceLabel?: string
+  /** S6.1 — solo mostrar si existe en snapshot API. */
+  dataCompletenessScore?: number | null
   pipelineVersion?: string
   modelMarketCanonical?: string
   modelSelectionCanonical?: string
@@ -395,27 +397,18 @@ export default function SettlementPage() {
       ? modelPredictionResultEs(ledgerRowForPick.modelPredictionResult)
       : null
 
-  const settlementApiUnified = useMemo(() => {
+  const settlementModelWhy = useMemo(() => {
     if (!apiPickMatch || !displayPick) return null
-    return unifiedApiModelReading({
+    return modelWhyReading({
       dsrNarrativeEs: (displayPick.dsrNarrativeEs ?? '').trim(),
       traduccionHumana: displayPick.traduccionHumana ?? null,
+      dsrSource: displayPick.dsrSource,
     })
   }, [apiPickMatch, displayPick])
 
   const settlementDsrMetaLine = useMemo(() => {
     if (!apiPickMatch || !displayPick) return ''
-    return [
-      displayPick.dsrConfidenceLabel
-        ? `Confianza simbólica: ${dsrConfidenceLabelEs(displayPick.dsrConfidenceLabel)}`
-        : '',
-      dsrSourceDescriptionEs(displayPick.dsrSource ?? ''),
-      displayPick.pipelineVersion
-        ? `Versión pipeline: ${displayPick.pipelineVersion}`
-        : '',
-    ]
-      .filter(Boolean)
-      .join(' · ')
+    return vektorModelConfidenceLineEs(displayPick.dsrConfidenceLabel)
   }, [apiPickMatch, displayPick])
 
   // T-057: cuota capturada en casa
@@ -524,6 +517,11 @@ export default function SettlementPage() {
           )
         } else if (res.reason === 'pick_unavailable') {
           setReviewTakeError('Este pick no está disponible para registro.')
+        } else if (res.reason === 'insufficient_bankroll') {
+          setReviewTakeError(
+            res.apiMessage ??
+              'Bankroll insuficiente para el stake de esta señal.',
+          )
         } else if (res.reason === 'already_unlocked') {
           navigate(`/v2/settlement/${pickId}`, { replace: true })
         } else {
@@ -644,7 +642,7 @@ export default function SettlementPage() {
         title={displayPick.eventLabel}
         subtitle={`La Bóveda · ${
           isReviewPhase ? 'Revisión de señal' : 'Terminal de liquidación'
-        } · Auditoría ID #${displayPick.id.toUpperCase()}`}
+        }`}
         onHelpClick={() => {
           resetTour('settlement')
           setTourOpen(true)
@@ -659,7 +657,24 @@ export default function SettlementPage() {
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#52616a]">
                   Especificación del activo
                 </p>
-                {/* US-FE-024: label explícito «Mercado» + tipo + selección */}
+                {displayPick.titulo ? (
+                  <>
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#52616a]">
+                      Competición
+                    </p>
+                    <p className="mb-4 text-sm font-semibold text-[#26343d]">
+                      {displayPick.titulo}
+                    </p>
+                  </>
+                ) : null}
+                {eventStartLabel ? (
+                  <p className="mb-4 font-mono text-xs text-[#52616a]">
+                    Inicio del evento (tu zona):{' '}
+                    <span className="font-semibold text-[#26343d]">
+                      {eventStartLabel}
+                    </span>
+                  </p>
+                ) : null}
                 <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#52616a]">
                   Mercado
                 </p>
@@ -680,19 +695,6 @@ export default function SettlementPage() {
                     <span className="font-mono text-[#26343d]">
                       {modelVsPickLabel}
                     </span>
-                  </p>
-                ) : null}
-                {/* DSR + CDM: un solo bloque en la tarjeta inferior (evitar duplicar con “Lectura del modelo”). */}
-                {/* Tesis/narrativa del modelo como subtítulo */}
-                <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                  Sugerencia del modelo
-                </p>
-                <h2 className="mt-1 text-lg font-bold tracking-tight text-[#26343d]">
-                  {displayPick.titulo}
-                </h2>
-                {eventStartLabel ? (
-                  <p className="mt-2 font-mono text-xs text-[#52616a]">
-                    Inicio del evento (tu zona): {eventStartLabel}
                   </p>
                 ) : null}
               </div>
@@ -734,38 +736,40 @@ export default function SettlementPage() {
             </div>
           </div>
 
-          {/* US-FE-022 / T-165: una sola voz CDM+DSR (misma regla que PickCard). */}
-          <div className="rounded-xl bg-[#eef4fa] p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <IconPsychology className="shrink-0 text-[#6d3bd7]" />
-              <h3 className="text-lg font-bold tracking-tight text-[#26343d]">
-                {settlementApiUnified
-                  ? settlementApiUnified.title
-                  : 'Lectura del modelo'}
-              </h3>
-            </div>
-            <div className="space-y-4 text-sm leading-relaxed text-[#52616a]">
-              <p className="text-[#26343d]">
-                {settlementApiUnified
-                  ? settlementApiUnified.body
-                  : displayPick.traduccionHumana?.trim()
-                    ? displayPick.traduccionHumana
-                    : 'Sin lectura del modelo en archivo local. Consulta el libro mayor para el detalle registrado al liquidar.'}
-              </p>
-              {settlementDsrMetaLine ? (
-                <p className="font-mono text-xs leading-snug text-[#6e7d86]">
-                  {settlementDsrMetaLine}
+          {/* Misma regla que v1 / PickCard: un solo párrafo “por qué” (`razon`). */}
+          <div className="space-y-4 rounded-xl bg-[#eef4fa] p-8">
+            {settlementModelWhy ? (
+              <div className="rounded-xl border border-[#6d3bd7]/20 bg-white/90 p-6 shadow-sm">
+                <div className="mb-3 flex items-center gap-3">
+                  <IconPsychology className="shrink-0 text-[#6d3bd7]" />
+                  <h3 className="text-lg font-bold tracking-tight text-[#26343d]">
+                    {settlementModelWhy.title}
+                  </h3>
+                </div>
+                <p className="text-sm leading-relaxed text-[#26343d]">
+                  {settlementModelWhy.body}
                 </p>
-              ) : null}
-              <p>
-                La sugerencia actúa como{' '}
-                <span className="font-semibold text-[#26343d]">
-                  neutralizador de varianza
-                </span>
-                : no se persigue solo el acierto puntual, sino la adherencia al
-                protocolo de tamaño y registro.
+              </div>
+            ) : null}
+            {!apiPickMatch && displayPick.traduccionHumana?.trim() ? (
+              <div className="rounded-xl border border-[#a4b4be]/25 bg-white/80 p-6">
+                <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-[#52616a]">
+                  {MODEL_WHY_TITLE_ES}
+                </h3>
+                <p className="text-sm leading-relaxed text-[#26343d]">
+                  {displayPick.traduccionHumana}
+                </p>
+              </div>
+            ) : null}
+            {settlementDsrMetaLine ? (
+              <p className="px-1 font-mono text-xs leading-snug text-[#6e7d86]">
+                {settlementDsrMetaLine}
               </p>
-            </div>
+            ) : null}
+          </div>
+
+          <div className="rounded-xl border border-[#a4b4be]/20 bg-white/90 px-5 py-4">
+            <VektorShortDisclaimer />
           </div>
         </div>
 
@@ -1065,7 +1069,7 @@ export default function SettlementPage() {
                 rows={5}
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
-                placeholder="Describe tu reacción a la varianza… ¿mantuviste el plan?"
+                placeholder="¿Cómo viviste el resultado frente al plan de tamaño y registro?"
                 className="min-h-[120px] w-full rounded-xl border-0 bg-[#ddeaf3] p-4 text-sm text-[#26343d] placeholder:text-[#52616a]/40 focus:ring-1 focus:ring-[#6d3bd7]"
               />
               <p className="mt-2 text-[10px] italic text-[#52616a]">

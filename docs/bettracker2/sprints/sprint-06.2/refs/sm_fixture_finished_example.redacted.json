@@ -1,0 +1,29 @@
+{
+  "id": 19000002,
+  "league_id": 8,
+  "starting_at": "2026-04-10T17:00:00.000000Z",
+  "state_id": 5,
+  "participants": [
+    {
+      "id": 201,
+      "name": "Alpha United",
+      "meta": { "location": "home", "winner": true, "position": 11 }
+    },
+    {
+      "id": 202,
+      "name": "Beta City",
+      "meta": { "location": "away", "winner": false, "position": 12 }
+    }
+  ],
+  "lineups": [
+    { "team_id": 201, "type_id": 11, "player_id": 1001 },
+    { "team_id": 201, "type_id": 11, "player_id": 1002 },
+    { "team_id": 202, "type_id": 11, "player_id": 2001 }
+  ],
+  "statistics": [
+    { "type_id": 34, "location": "home", "data": { "value": 7 } },
+    { "type_id": 34, "location": "away", "data": { "value": 4 } }
+  ],
+  "odds": [],
+  "_comment": "Ejemplo redactado: terminado — ilustra type_id 11 (once) y 34 (corners) para el mapper; no incluir en ds_input claves prohibidas (D-06-002)."
+}

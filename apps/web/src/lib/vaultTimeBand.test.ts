@@ -4,6 +4,9 @@ import {
   filterVaultPicksByTab,
   getCurrentVaultTimeBand,
   mixSortCompare,
+  reorderVaultPicksForBandCycle,
+  selectVisibleFromOrderedPool,
+  selectVisibleVaultPicks,
   sortVaultPicksForDisplay,
   timeBandFromLocalMinutes,
 } from '@/lib/vaultTimeBand'
@@ -12,10 +15,12 @@ function pick(
   id: string,
   band: Bt2VaultPickOut['timeBand'],
   kickoffIso: string,
+  slateRank?: number,
+  eventNum?: number,
 ): Bt2VaultPickOut {
   return {
     id,
-    eventId: 1,
+    eventId: eventNum ?? 1,
     marketClass: 'h2h',
     marketLabelEs: 'H2H',
     eventLabel: id,
@@ -34,19 +39,19 @@ function pick(
     externalSearchUrl: '',
     premiumUnlocked: false,
     timeBand: band,
+    ...(slateRank != null ? { slateRank } : {}),
   }
 }
 
 describe('vaultTimeBand', () => {
-  it('timeBandFromLocalMinutes — bordes D-05.2-002', () => {
-    expect(timeBandFromLocalMinutes(8 * 60)).toBe('morning')
+  it('timeBandFromLocalMinutes — bordes D-06-032', () => {
+    expect(timeBandFromLocalMinutes(6 * 60)).toBe('morning')
     expect(timeBandFromLocalMinutes(11 * 60 + 59)).toBe('morning')
     expect(timeBandFromLocalMinutes(12 * 60)).toBe('afternoon')
     expect(timeBandFromLocalMinutes(17 * 60 + 59)).toBe('afternoon')
     expect(timeBandFromLocalMinutes(18 * 60)).toBe('evening')
-    expect(timeBandFromLocalMinutes(22 * 60 + 59)).toBe('evening')
-    expect(timeBandFromLocalMinutes(23 * 60)).toBe('overnight')
-    expect(timeBandFromLocalMinutes(7 * 60 + 59)).toBe('overnight')
+    expect(timeBandFromLocalMinutes(23 * 60 + 59)).toBe('evening')
+    expect(timeBandFromLocalMinutes(5 * 60 + 59)).toBe('overnight')
   })
 
   it('filterVaultPicksByTab — overnight solo en mezcla', () => {
@@ -102,5 +107,57 @@ describe('vaultTimeBand', () => {
   it('getCurrentVaultTimeBand — TZ válida', () => {
     const b = getCurrentVaultTimeBand('UTC', Date.parse('2026-04-07T10:30:00.000Z'))
     expect(['morning', 'afternoon', 'evening', 'overnight']).toContain(b)
+  })
+
+  it('reorderVaultPicksForBandCycle — ciclo 0 vs 1 cambia el frente del orden', () => {
+    const a = pick('a', 'morning', '2026-04-07T13:00:00.000Z', 1, 101)
+    const b = pick('b', 'afternoon', '2026-04-07T18:00:00.000Z', 2, 102)
+    const c = pick('c', 'evening', '2026-04-07T23:00:00.000Z', 3, 103)
+    const tz = 'UTC'
+    const o0 = reorderVaultPicksForBandCycle([a, b, c], tz, 0)
+    const o1 = reorderVaultPicksForBandCycle([a, b, c], tz, 1)
+    expect(o0[0]?.id).toBe('a')
+    expect(o1[0]?.id).toBe('b')
+  })
+
+  it('selectVisibleFromOrderedPool — conserva orden del pool ya barajado', () => {
+    const ms = Date.parse('2026-04-07T15:00:00.000Z')
+    const ordered = [
+      pick('second', 'afternoon', '2026-04-07T18:00:00.000Z', 1, 201),
+      pick('first', 'morning', '2026-04-07T13:00:00.000Z', 2, 202),
+    ]
+    const out = selectVisibleFromOrderedPool(ordered, 'America/Bogota', 2, ms)
+    expect(out.map((p) => p.id)).toEqual(['first', 'second'])
+  })
+
+  it('selectVisibleFromOrderedPool — slateCycleOffset rota la ventana cuando hay más picks que cap', () => {
+    const ms = Date.parse('2026-04-07T15:00:00.000Z')
+    const tz = 'America/Bogota'
+    const ordered = Array.from({ length: 12 }, (_, i) =>
+      pick(`p${i}`, 'morning', '2026-04-07T13:00:00.000Z', i + 1, 300 + i),
+    )
+    const cap = 5
+    const v0 = selectVisibleFromOrderedPool(ordered, tz, cap, ms, 0)
+    const v1 = selectVisibleFromOrderedPool(ordered, tz, cap, ms, 1)
+    expect(v0).toHaveLength(5)
+    expect(v1).toHaveLength(5)
+    expect(v0[0]?.id).toBe('p0')
+    expect(v1[0]?.id).toBe('p5')
+    const ids0 = new Set(v0.map((p) => p.id))
+    expect(v1.some((p) => ids0.has(p.id))).toBe(false)
+  })
+
+  it('selectVisibleVaultPicks — prioriza franja local actual y respeta cap', () => {
+    const picks = [
+      pick('eve', 'evening', '2026-04-07T23:00:00.000Z'),
+      pick('morn', 'morning', '2026-04-07T13:00:00.000Z'),
+      pick('aft', 'afternoon', '2026-04-07T18:00:00.000Z'),
+    ]
+    const ms = Date.parse('2026-04-07T15:00:00.000Z')
+    const one = selectVisibleVaultPicks(picks, 'mix', 'America/Bogota', 1, ms)
+    expect(one).toHaveLength(1)
+    expect(one[0]?.id).toBe('morn')
+    const two = selectVisibleVaultPicks(picks, 'mix', 'America/Bogota', 2, ms)
+    expect(two.map((p) => p.id)).toEqual(['morn', 'aft'])
   })
 })

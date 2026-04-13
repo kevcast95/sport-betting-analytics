@@ -1,13 +1,13 @@
 # BT2 — Whitelist `ds_input` fase 1 (paridad v1 / CDM)
 
-> **Sprint:** 06.1 · **US:** US-DX-003 · **Decisiones:** D-06-021, D-06-002 (anti-fuga), **D-06-024**, **D-06-025** (pool valor, premium, fallback transparente).  
+> **Sprint:** 06.1 + **06.2 (T-195 / US-DX-004)** · **US:** US-DX-003, US-DX-004 · **Decisiones:** D-06-021, D-06-002 (anti-fuga), **D-06-024**, **D-06-025**, **D-06-037** (includes/UPSERT raw), **D-06-038** (team_season_stats).  
 > **Referencia v1:** [`DSR_V1_FLUJO.md`](../DSR_V1_FLUJO.md) §4.  
-> **Estado:** contrato de **entrada** hacia el lote DeepSeek; T-172 endurece validación Pydantic + `assert_no_forbidden_ds_keys` según esta lista.
+> **Estado:** contrato de **entrada** hacia el lote DeepSeek; T-172 endurece validación Pydantic + `assert_no_forbidden_ds_keys` según esta lista. Tras **T-196**, `GET /bt2/meta.contractVersion` refleja hito **`bt2-dx-001-s6.2`** (cubo A + diagnostics ampliados).
 
 ## 1. Alcance fase 1
 
 - **Solo fútbol** (`sport = "football"`).
-- **Solo datos construibles desde Postgres CDM** existente: `bt2_events`, `bt2_leagues`, `bt2_teams`, `bt2_odds_snapshot`. No hay lineups, H2H ni estadísticas de partido en tablas BT2 hoy: esos bloques van **presentes pero vacíos o marcados como no disponibles** en `processed` + `diagnostics`.
+- **Datos construibles desde Postgres CDM:** `bt2_events`, `bt2_leagues`, `bt2_teams`, `bt2_odds_snapshot`, y (para alineaciones + subconjunto de `statistics[]` SM) `raw_sportmonks_fixtures.payload` cuando exista fila para el `sportmonks_fixture_id` del evento. **S6.2 (D-06-037):** el job CDM `fetch_upcoming` también hace **UPSERT** de esa tabla con los mismos `include` que el worker Atraco. **Refinement S6.1 (D-06-028):** H2H, forma y rachas se derivan de `bt2_events` terminados; `team_season_stats` sigue sin tabla agregada dedicada en BT2 (**D-06-038**).
 - **Identificador de evento en el lote:** `event_id` = **`bt2_events.id`** (entero interno BT2). No usar `sportmonks_fixture_id` en el JSON del modelo salvo campo opcional de trazabilidad interna fuera de `ds_input` si un job lo necesita (no forma parte de la whitelist pública del ítem).
 - **Objetivo:** misma **forma lógica** que v1 §4 (`selection_tier`, `schedule_display`, `event_context`, `processed`, `diagnostics`) para que prompts y post-proceso puedan evolucionar como en v1 sin otro dialecto intermedio.
 - **Mercados:** el modelo elige el mercado con **mejor relación valor/datos** entre los **presentes en snapshot** para ese evento (**D-06-025**). No hay par 1X2+O/U 2.5 obligatorio en producto; BE amplía ingestión y `MarketCanonical` según API.
@@ -70,11 +70,11 @@ Solo subcampos **whitelisteados**:
 | Campo | Obl. | Contenido |
 |--------|------|-----------|
 | `odds_featured` | Sí | Objeto descrito en §3.4.1. Construido **solo** desde `bt2_odds_snapshot` agregado por mercado/selección/libro. |
-| `lineups` | Sí | Fase 1: `{}` o `{ "available": false }` — mismo criterio en todos los eventos del lote. |
-| `h2h` | Sí | Fase 1: `{}` o `{ "available": false }`. |
-| `statistics` | Sí | Fase 1: `{}` o `{ "available": false }`. |
-| `team_streaks` | Sí | Fase 1: `{}` o `{ "available": false }`. |
-| `team_season_stats` | Sí | Fase 1: `{}` o `{ "available": false }`. |
+| `lineups` | Sí | `{}`, `{ "available": false }`, o `{ "available": true, … }` con agregados seguros desde `payload.lineups` (p. ej. `lineup_rows_observed`, `teams_distinct`, `max_rows_per_team_side`, opcional `starting_xi_rows_home` / `starting_xi_rows_away` desde filas `type_id` 11); prohibido nombres de jugador en fase 1; prohibido filtrar marcadores (§6). |
+| `h2h` | Sí | Vacío / no disponible, o `{ "available": true, … }` con agregados de duelo desde `bt2_events` terminados (sin claves prohibidas). |
+| `statistics` | Sí | Forma reciente (W/D/L) desde `bt2_events` **y/o** subconjunto **allowlist** de métricas del fixture en `raw_sportmonks_fixtures.payload.statistics[]` (p. ej. corners vía `type_id` 34), anidadas bajo **`from_sm_fixture`** cuando existan. Prohibido mezclar claves prohibidas §6. |
+| `team_streaks` | Sí | Rachas derivadas en servidor a partir de la forma. |
+| `team_season_stats` | Sí | Sin tabla agregada BT2 hoy: `{ "available": false }` + **`diagnostics.team_season_stats_reason`** (código estable) y/o entrada en `fetch_errors`. |
 | `odds_all` | No | Omitir en fase 1 o `{}` si el builder unifica; si se omite del whitelist estricto, T-172 no lo espera. **Recomendación:** omitir hasta fase 2. |
 
 #### 3.4.1 Forma de `odds_featured`
@@ -91,6 +91,8 @@ Objeto con dos vistas complementarias (paridad con “odds estructurados” v1, 
 
 2. **`by_bookmaker`** (opcional): lista de filas `{ "bookmaker", "market_canonical", "selection_canonical", "decimal", "fetched_at" }`. El recorte por evento es **técnico** (tokens/latencia), no regla PO fija — documentar default en runbook BE.
 
+3. **`ingest_meta`** (opcional, **T-190 / refinement**): objeto con `first_fetched_at_iso`, `last_fetched_at_iso`, `distinct_fetch_batches` (ventana de observación en `bt2_odds_snapshot`). **No** sustituye una serie histórica de cuotas por selección: persistir timelines por mercado requeriría diseño nuevo (tabla o job) + ampliación **US-DX-003** y validador **T-172**.
+
 **Reglas si falta dato:**
 
 - Un mercado no aparece en `consensus` si falta alguna pierna requerida para ese mercado.
@@ -102,10 +104,12 @@ Objeto con dos vistas complementarias (paridad con “odds estructurados” v1, 
 |--------|------|------|--------|
 | `market_coverage` | Sí | `object` | Mapa `market_canonical` → `bool`: `true` si ese mercado está **completo** en snapshot (todas las selecciones requeridas). Sustituye el modelo rígido `odds_1x2_ok` / `odds_ou25_ok` únicamente. |
 | `markets_available` | No | `string[]` | Lista de códigos presentes (aunque incompletos), útil para prompts. |
-| `lineups_ok` | Sí | `bool` | Fase 1: siempre `false`. |
-| `h2h_ok` | Sí | `bool` | Fase 1: siempre `false`. |
-| `statistics_ok` | Sí | `bool` | Fase 1: siempre `false`. |
+| `lineups_ok` | Sí | `bool` | `true` si hubo resumen de alineaciones desde raw SportMonks; si no, `false`. |
+| `h2h_ok` | Sí | `bool` | `true` si hay agregados H2H consultables en Postgres. |
+| `statistics_ok` | Sí | `bool` | `true` si hay forma reciente (W/D/L) para al menos un equipo **o** métricas SM allowlist bajo `processed.statistics.from_sm_fixture`. |
 | `fetch_errors` | Sí | `string[]` | Lista humana corta de fallos de ensamblado; puede ser `[]`. |
+| `raw_fixture_missing` | Sí | `bool` | `true` si no hay fila usable en `raw_sportmonks_fixtures` para el `sportmonks_fixture_id` (ingesta ausente, 429, gap operativo). |
+| `team_season_stats_reason` | No | `string` \| omitido | Código estable cuando `team_season_stats.available` es `false` (p. ej. falta tabla agregada). |
 
 ## 4. Mapeo mercados CDM → canónico (builder)
 

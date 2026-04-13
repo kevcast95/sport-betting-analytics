@@ -14,7 +14,8 @@ import {
 import { useLocation } from 'react-router-dom'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { PickCard } from '@/components/vault/PickCard'
-import { VaultBandSwitcher } from '@/components/vault/VaultBandSwitcher'
+import { VaultDevTools } from '@/components/vault/VaultDevTools'
+import { VektorShortDisclaimer } from '@/components/vault/VektorShortDisclaimer'
 import { ViewTourModal } from '@/components/tours/ViewTourModal'
 import { getTourScript } from '@/components/tours/tourScripts'
 import { useTourStore } from '@/store/useTourStore'
@@ -27,33 +28,43 @@ import {
   VAULT_DAILY_CAP_PREMIUM,
   VAULT_DAILY_CAP_STANDARD,
 } from '@/lib/vaultQuota'
-import type { VaultBandTab } from '@/lib/vaultTimeBand'
-import { sortVaultPicksForDisplay } from '@/lib/vaultTimeBand'
+import {
+  reorderVaultPicksForBandCycle,
+  selectVisibleFromOrderedPool,
+} from '@/lib/vaultTimeBand'
 import { useTradeStore } from '@/store/useTradeStore'
 
 const VAULT_TOUR = getTourScript('vault')!
 
 function VaultEmptyState({
-  message,
+  headline,
+  detail,
+  technicalHint,
   onRefresh,
 }: {
-  message: string | null
+  headline: string
+  detail: string
+  /** Línea opcional con conteos operativos (sin mezclar con el mensaje principal). */
+  technicalHint?: string | null
   /** Tras cerrar sesión / ingesta CDM, forzar otro `session/open` + GET vault. */
   onRefresh?: () => void
 }) {
   return (
     <div className="col-span-full flex flex-col items-center justify-center rounded-xl border border-[#a4b4be]/20 bg-[#f6fafe] py-16 text-center">
-      <p className="mb-2 text-lg font-bold text-[#26343d]">Sin señales disponibles</p>
-      <p className="max-w-sm text-sm text-[#52616a]">
-        {message ?? 'El sistema actualiza la cartelera cada mañana. Vuelve pronto.'}
-      </p>
+      <p className="mb-2 text-lg font-bold text-[#26343d]">{headline}</p>
+      <p className="max-w-sm text-sm text-[#52616a]">{detail}</p>
+      {technicalHint ? (
+        <p className="mt-3 max-w-md font-mono text-[10px] leading-relaxed text-[#6e7d86]">
+          {technicalHint}
+        </p>
+      ) : null}
       {onRefresh ? (
         <button
           type="button"
           onClick={onRefresh}
-          className="mt-6 rounded-lg border border-[#a4b4be]/40 bg-white px-5 py-2 text-sm font-semibold text-[#26343d] transition hover:bg-[#eef4fa]"
+          className="mt-6 rounded-lg border border-[#26343d]/25 bg-[#26343d] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#1c2730]"
         >
-          Volver a cargar
+          Obtener cartelera
         </button>
       ) : null}
     </div>
@@ -102,6 +113,7 @@ export default function VaultPage() {
   const takenApiPicks = useVaultStore((s) => s.takenApiPicks)
   const unlockedPickIds = useVaultStore((s) => s.unlockedPickIds)
   const loadApiPicks = useVaultStore((s) => s.loadApiPicks)
+  const regenerateVaultSlate = useVaultStore((s) => s.regenerateVaultSlate)
   const invalidateVaultIfOperatingDayMismatch = useVaultStore(
     (s) => s.invalidateVaultIfOperatingDayMismatch,
   )
@@ -111,9 +123,10 @@ export default function VaultPage() {
   const tryUnlockPick = useVaultStore((s) => s.tryUnlockPick)
   const hydrateLedgerFromApi = useTradeStore((s) => s.hydrateLedgerFromApi)
   const vaultPoolMeta = useVaultStore((s) => s.vaultPoolMeta)
+  const vaultDaySnapshotMeta = useVaultStore((s) => s.vaultDaySnapshotMeta)
+  const vaultLocalSlateCycle = useVaultStore((s) => s.vaultLocalSlateCycle)
 
   const [vaultToast, setVaultToast] = useState<string | null>(null)
-  const [bandTab, setBandTab] = useState<VaultBandTab>('mix')
 
   const userTimeZone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Bogota',
@@ -191,14 +204,35 @@ export default function VaultPage() {
   )
   void isMockPickUnlocked // evitar lint unused
 
-  // Conteo por tier
+  const visibleHardCap = vaultPoolMeta?.poolHardCap ?? 5
+
+  /** Orden según ciclo local (regenerar); sin esto la grilla ignora el barajado. */
+  const orderedPoolPicks = useMemo(
+    () => reorderVaultPicksForBandCycle(apiPicks, userTimeZone, vaultLocalSlateCycle),
+    [apiPicks, userTimeZone, vaultLocalSlateCycle],
+  )
+
+  /** Ventana de 5 sobre el pool ordenado; `vaultLocalSlateCycle` rota el inicio (circular). */
+  const displayedPicks = useMemo(
+    () =>
+      selectVisibleFromOrderedPool(
+        orderedPoolPicks,
+        userTimeZone,
+        visibleHardCap,
+        undefined,
+        vaultLocalSlateCycle,
+      ),
+    [orderedPoolPicks, userTimeZone, visibleHardCap, vaultLocalSlateCycle],
+  )
+
+  // Conteo por tier (solo cartelera visible)
   const standardCount = useMemo(
-    () => apiPicks.filter((p) => p.accessTier === 'standard').length,
-    [apiPicks],
+    () => displayedPicks.filter((p) => p.accessTier === 'standard').length,
+    [displayedPicks],
   )
   const premiumCount = useMemo(
-    () => apiPicks.filter((p) => p.accessTier === 'premium').length,
-    [apiPicks],
+    () => displayedPicks.filter((p) => p.accessTier === 'premium').length,
+    [displayedPicks],
   )
 
   const quota = useMemo(
@@ -206,10 +240,31 @@ export default function VaultPage() {
     [takenApiPicks, operatingDayKey, apiPicks],
   )
 
-  const displayedPicks = useMemo(
-    () => sortVaultPicksForDisplay(apiPicks, bandTab, userTimeZone),
-    [apiPicks, bandTab, userTimeZone],
-  )
+  const emptyVaultCopy = useMemo(() => {
+    const m = vaultDaySnapshotMeta
+    const serverMsg = picksMessage
+    const countsHint = m
+      ? `Pool elegible (fallback): ${m.fallbackEligiblePoolCount} filas · eventos futuros en ventana: ${m.futureEventsInWindowCount}`
+      : null
+    if (m?.operationalEmptyHard) {
+      return {
+        headline: 'Sin cartelera elegible (vacío operativo)',
+        detail:
+          m.vaultOperationalMessageEs?.trim() ||
+          serverMsg ||
+          'No hay eventos o cuotas utilizables en el universo del día; no se publicó señal de respaldo. Revisa ingesta CDM u operación.',
+        technicalHint: countsHint,
+      }
+    }
+    return {
+      headline: 'Sin señales publicadas hoy',
+      detail:
+        m?.vaultOperationalMessageEs?.trim() ||
+        serverMsg ||
+        'El sistema actualiza la cartelera en el ciclo operativo. Si hay datos pero el razonador no aportó salida, el servidor puede dejar la bóveda vacía según reglas.',
+      technicalHint: countsHint,
+    }
+  }, [picksMessage, vaultDaySnapshotMeta])
 
   const takeBlockedByQuota = useCallback(
     (pick: Bt2VaultPickOut, taken: boolean) => {
@@ -313,6 +368,13 @@ export default function VaultPage() {
           )
           return
         }
+        if (res.reason === 'insufficient_bankroll') {
+          showVaultToast(
+            res.apiMessage ??
+              'Bankroll insuficiente para el stake de esta señal.',
+          )
+          return
+        }
         showVaultToast(
           res.apiMessage ??
             'No se pudo registrar la señal. Reintenta o revisa tu conexión.',
@@ -336,31 +398,81 @@ export default function VaultPage() {
       ) : null}
       <BunkerViewHeader
         title="La Bóveda"
-        subtitle="Oportunidades con valor esperado positivo (modelo canónico CDM); desbloqueo premium con DP y registro aparte."
+        subtitle="Señales del día con criterio DSR: lectura prioritaria apoyada en datos e histórico del input y coherencia cuota–narrativa — no maximizar ganancia como eje único (D-06-027). Estándar sin DP; premium con desbloqueo en DP y registro aparte."
         onHelpClick={handleForceShowTour}
         rightActions={
-          picksLoadStatus === 'loaded' ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                {apiPicks.length} señales
-              </p>
-              <span className="rounded-full bg-[#d1fae5] px-2.5 py-0.5 text-[10px] font-bold text-[#065f46]">
-                {standardCount} estándar
-              </span>
-              <span className="rounded-full bg-[#e9ddff] px-2.5 py-0.5 text-[10px] font-bold text-[#6d3bd7]">
-                {premiumCount} premium
-              </span>
-            </div>
-          ) : null
+          <div className="flex flex-wrap items-center gap-2">
+            {picksLoadStatus === 'loaded' ? (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
+                  {displayedPicks.length}/{visibleHardCap} visibles · {apiPicks.length} en pool
+                </p>
+                <span className="rounded-full bg-[#d1fae5] px-2.5 py-0.5 text-[10px] font-bold text-[#065f46]">
+                  {standardCount} estándar
+                </span>
+                <span className="rounded-full bg-[#e9ddff] px-2.5 py-0.5 text-[10px] font-bold text-[#6d3bd7]">
+                  {premiumCount} premium
+                </span>
+              </>
+            ) : null}
+          </div>
         }
       />
 
+      <div className="rounded-xl border border-[#a4b4be]/20 bg-white/80 px-4 py-3">
+        <VektorShortDisclaimer />
+      </div>
+
+      {import.meta.env.DEV ? (
+        <div className="rounded-xl border border-amber-300/40 px-1 py-1">
+          <VaultDevTools />
+        </div>
+      ) : null}
+
+      {picksLoadStatus === 'loaded' && apiPicks.length > 0 && picksMessage ? (
+        <div
+          role="status"
+          className="rounded-xl border border-[#b45309]/25 bg-[#fffbeb] px-4 py-3 text-sm text-[#78350f]"
+        >
+          <p className="font-semibold text-[#92400e]">Aviso del snapshot</p>
+          <p className="mt-1 leading-relaxed">{picksMessage}</p>
+        </div>
+      ) : null}
+
       {picksLoadStatus === 'loaded' && apiPicks.length > 0 ? (
         <div className="space-y-4 rounded-xl border border-[#a4b4be]/20 bg-white/70 p-4 shadow-sm">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <VaultBandSwitcher value={bandTab} onChange={setBandTab} />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+            <div className="flex min-w-0 flex-col gap-2">
+              <button
+                type="button"
+                disabled={picksLoadStatus === 'loading' || apiPicks.length === 0}
+                onClick={() => {
+                  const r = regenerateVaultSlate()
+                  if (!r.ok) {
+                    showVaultToast(r.message.slice(0, 220))
+                    return
+                  }
+                  showVaultToast(
+                    `Ciclo ${r.cycle}/4 · ${r.poolSize} picks en pool · orden de cartelera actualizado (solo cliente, sin otro request).`,
+                  )
+                }}
+                className="w-full max-w-xs rounded-lg border border-[#26343d]/20 bg-[#26343d] px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-[#1c2730] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                title="Rota el ciclo de franjas horarias sobre el pool ya traído en el GET (hasta 20); no vuelve a llamar al servidor."
+              >
+                Regenerar cartelera
+              </button>
+              <p className="text-[10px] leading-snug text-[#6e7d86]">
+                <span className="font-semibold text-[#26343d]">
+                  Total en pool (API):{' '}
+                  <span className="font-mono tabular-nums">{apiPicks.length}</span>
+                </span>
+                . Un solo GET al abrir la estación trae el pool del día; «Regenerar» solo baraja
+                el orden visible (ciclo 0–3 y franja local), hasta{' '}
+                <span className="font-mono">{visibleHardCap}</span> tarjetas.
+              </p>
+            </div>
             <div
-              className="font-mono text-[11px] leading-relaxed text-[#52616a]"
+              className="min-w-0 font-mono text-[11px] leading-relaxed text-[#52616a]"
               role="status"
             >
               <span className="font-sans font-semibold text-[#26343d]">
@@ -384,23 +496,27 @@ export default function VaultPage() {
           </div>
           {vaultPoolMeta ? (
             <p className="text-[10px] leading-snug text-[#6e7d86]">
-              Pool del día:{' '}
-              <span className="font-mono tabular-nums">
-                {vaultPoolMeta.poolItemCount}
-              </span>{' '}
-              candidatos (objetivo{' '}
-              <span className="font-mono">{vaultPoolMeta.poolTargetCount}</span>, tope{' '}
-              <span className="font-mono">{vaultPoolMeta.poolHardCap}</span>
-              ).
+              Pool en cliente:{' '}
+              <span className="font-mono tabular-nums">{vaultPoolMeta.poolItemCount}</span> ítems
+              (tope valor ≤{' '}
+              {vaultPoolMeta.valuePoolUniverseMax != null ? (
+                <span className="font-mono">{vaultPoolMeta.valuePoolUniverseMax}</span>
+              ) : (
+                '20'
+              )}
+              ). Grilla: hasta{' '}
+              <span className="font-mono">{vaultPoolMeta.poolHardCap}</span> visibles · ciclo
+              local{' '}
+              <span className="font-mono">{vaultLocalSlateCycle}</span>/4.
               {vaultPoolMeta.poolBelowTarget
                 ? ' Por debajo del objetivo: el CDM aportó menos eventos válidos.'
                 : null}
             </p>
           ) : null}
-          {bandTab !== 'mix' && displayedPicks.length === 0 ? (
-            <p className="text-sm text-[#52616a]" role="status">
-              No hay señales en esta franja. Prueba «Mezcla» o otra franja; los
-              partidos en madrugada (23:00–08:00) solo aparecen en mezcla.
+          {vaultDaySnapshotMeta?.limitedCoverage ? (
+            <p className="text-[10px] leading-snug text-[#92400e]">
+              Cobertura baja en la ventana del día (&lt; 5 eventos futuros): el criterio puede
+              depender de pocos partidos; no implica fallo de ingesta por sí sola (D-06-026 §4).
             </p>
           ) : null}
         </div>
@@ -413,7 +529,9 @@ export default function VaultPage() {
           <VaultErrorState onRetry={() => void loadApiPicks()} />
         ) : (picksLoadStatus === 'empty' || (picksLoadStatus === 'loaded' && apiPicks.length === 0)) ? (
           <VaultEmptyState
-            message={picksMessage}
+            headline={emptyVaultCopy.headline}
+            detail={emptyVaultCopy.detail}
+            technicalHint={emptyVaultCopy.technicalHint}
             onRefresh={() => void loadApiPicks()}
           />
         ) : (

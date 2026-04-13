@@ -6,6 +6,7 @@ import {
 } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
 import { graceExpiresIso } from '@/lib/operatingDay'
+import type { Bt2TakenPickRecord } from '@/lib/bt2Types'
 
 beforeEach(() => {
   useSessionStore.getState().reset()
@@ -52,16 +53,34 @@ describe('useSessionStore (US-FE-012): día operativo y gracia', () => {
     expect(useSessionStore.getState().operatingDayKey).toBe('2026-04-05')
   })
 
-  it('detecta cambio de día y registra pendiente STATION_UNCLOSED', () => {
-    // Primer día
+  it('detecta cambio de día y registra pendiente STATION_UNCLOSED solo si hubo picks API', () => {
     useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
-    // Avanzar al día siguiente SIN cerrar la estación
-    useSessionStore.getState().checkDayBoundary('2026-04-06T08:00:00.000Z', false)
+    const dk = useSessionStore.getState().operatingDayKey!
+    const samplePick: Bt2TakenPickRecord = {
+      vaultPickId: 'dp-1',
+      bt2PickId: 1,
+      eventId: 1,
+      market: '1X2',
+      selection: '1',
+      oddsAccepted: 2,
+      stakeUnits: 1,
+      openedAt: `${dk}T15:00:00.000Z`,
+      eventLabel: 'A vs B',
+      operatingDayKey: dk,
+    }
+    useSessionStore.getState().checkDayBoundary('2026-04-06T08:00:00.000Z', false, [samplePick])
 
     const state = useSessionStore.getState()
     expect(state.operatingDayKey).toBe('2026-04-06')
     expect(state.previousDayPendingItems).toContain('STATION_UNCLOSED')
     expect(state.graceActiveUntilIso).not.toBeNull()
+  })
+
+  it('sin picks tomados, cambio de día no marca STATION_UNCLOSED', () => {
+    useSessionStore.getState().checkDayBoundary('2026-04-05T10:00:00.000Z', false)
+    useSessionStore.getState().checkDayBoundary('2026-04-06T08:00:00.000Z', false, [])
+
+    expect(useSessionStore.getState().previousDayPendingItems).not.toContain('STATION_UNCLOSED')
   })
 
   it('detecta UNSETTLED_PICK cuando hay picks sin liquidar al cambiar de día', () => {
@@ -88,8 +107,21 @@ describe('useSessionStore (US-FE-012): día operativo y gracia', () => {
     const graceEnd5 = new Date(graceExpiresIso(dayKey5)).getTime()
     const afterGrace = new Date(graceEnd5 + 12 * 60 * 60 * 1000).toISOString()
 
+    const dk5 = useSessionStore.getState().operatingDayKey!
+    const pickDay5: Bt2TakenPickRecord = {
+      vaultPickId: 'dp-1',
+      bt2PickId: 1,
+      eventId: 1,
+      market: '1X2',
+      selection: '1',
+      oddsAccepted: 2,
+      stakeUnits: 1,
+      openedAt: `${dk5}T12:00:00.000Z`,
+      eventLabel: 'A vs B',
+      operatingDayKey: dk5,
+    }
     // checkDayBoundary detectará: cambio de día 5→(día7) + gracia expirada → penalización
-    useSessionStore.getState().checkDayBoundary(afterGrace, false)
+    useSessionStore.getState().checkDayBoundary(afterGrace, false, [pickDay5])
 
     const state = useSessionStore.getState()
     expect(state.penaltiesApplied.length).toBeGreaterThan(0)

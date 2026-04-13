@@ -13,7 +13,7 @@ Quién los marca (puede ser la misma persona si cumple varios roles):
 |---|-----------------|----------------------|
 | [ ] | **D-06-021** … **D-06-026** leídas; **D-06-026** §6 (0 filas en pool fallback → vacío duro, sin fallback estadístico) **reflejado en el diseño** que implementará **T-179–T-180**. | **BE** (orquestación **T-179–T-180**); **PO/BA** firman lectura en kickoff si el proceso del equipo lo exige. |
 | [ ] | **US.md**, este **TASKS** y **HANDOFF** coherentes con **D-06-024** / **D-06-026** (sin dos verdades). | **PO/BA** o **TL** (auditoría rápida de docs). |
-| [ ] | **T-171** lista (whitelist) — ver checkbox **T-171** más abajo; **T-188** fuera de alcance hasta **decisión explícita de PO**. | **DX** (cierre **T-171**) + **PO** si redefine alcance. |
+| [ ] | **T-171** lista (whitelist) — ver checkbox **T-171** más abajo; **T-188** fuera de alcance hasta **decisión explícita de PO**. **Refinement:** **D-06-027** … **D-06-030** leídas si el equipo ejecuta **T-189–T-194**. | **DX** (cierre **T-171**) + **PO** si redefine alcance; **TL/BE** (refinement). |
 | [ ] | **Contrato BE → FE:** lista de campos nuevos vault/admin (vacío operativo, lineage, `limited_coverage` / degradación) **publicada en OpenAPI** (**T-173**) o en el cuerpo del PR de **T-173**; **FE** (**T-184**) confirma cobertura **antes** del merge final FE. |
 
 ## Reglas
@@ -66,6 +66,34 @@ Quién los marca (puede ser la misma persona si cumple varios roles):
 
 ---
 
+## REFINEMENT_S6_1
+
+> **Fuente narrativa:** [`REFINEMENT_S6_1.md`](./REFINEMENT_S6_1.md). **Decisiones:** **D-06-027** … **D-06-030** en [`DECISIONES.md`](./DECISIONES.md). **US:** **US-BE-037** … **US-BE-039**, **US-FE-056** en [`US.md`](./US.md).  
+> **Orden sugerido:** [`HANDOFF_EJECUCION_S6_1.md`](./HANDOFF_EJECUCION_S6_1.md) § REFINEMENT_S6_1.
+
+### Backend — US-BE-037
+
+- [ ] **T-189** (US-BE-037) — Inventario fuentes Postgres/CDM para histórico del duelo (H2H, forma, estadísticas agregadas, lineups o equivalentes); implementar consultas en el builder; poblar `processed.*` y `diagnostics` según **D-06-028** (sin placeholders si hay datos).
+- [ ] **T-190** (US-BE-037) — **Cuotas históricas / series:** si existen tablas o agregados (p. ej. evolución en `bt2_odds_snapshot` u otras), incorporar al `ds_input` **solo** si la whitelist **T-171** y validador **T-172** lo permiten; si no, documentar gap en handoff y propuesta de ampliación DX.
+
+### Backend — US-BE-038
+
+- [ ] **T-191** (US-BE-038) — Alinear `_SYSTEM_BATCH` / user prompt batch en `bt2_dsr_deepseek.py` con **D-06-027** / **D-06-030**; revisión PO/BA del texto; tests de regresión mínimos.
+
+### Backend — US-BE-039
+
+- [ ] **T-192** (US-BE-039) — Post-DSR: detector de incoherencia **selection** vs **razon** (**D-06-029**); omitir pick si aplica; logs/métricas; tests que no rompan **T-181**.
+
+### Cierre transversal refinement
+
+- [ ] **T-193** (S6.1 refinement) — Documentar en handoff/tablas qué alimenta cada bloque nuevo o ampliado; `pytest` sobre módulos BT2 tocados por **T-189–T-192**; actualizar [`EJECUCION.md`](./EJECUCION.md) § REFINEMENT_S6_1 con casos probados.
+
+### Frontend — US-FE-056
+
+- [ ] **T-194** (US-FE-056) — Revisar copy en bóveda/admin que contradiga **D-06-027**; `npm test` + `npm run build`.
+
+---
+
 ## Diferido (no cuenta para cierre S6.1)
 
 - [ ] **T-188** *(diferido S7+ / decisión PO)* — Vista admin **auditoría CDM** según [`../../notas/VISTA_AUDITORIA_EVENTOS_CDM_ADMIN.md`](../../notas/VISTA_AUDITORIA_EVENTOS_CDM_ADMIN.md).
@@ -84,6 +112,7 @@ Quién los marca (puede ser la misma persona si cumple varios roles):
 | Admin medición v0 | T-183 + T-186 (leyenda) |
 | FE semántica vault | T-184–T-185 |
 | Cierre QA | T-187 |
+| Refinement (`REFINEMENT_S6_1`) | T-189–T-194 |
 
 ---
 
@@ -94,7 +123,8 @@ Quién los marca (puede ser la misma persona si cumple varios roles):
 - [ ] **D-06-023:** al inicio del sprint la definición estaba completa; al cierre, **T-171–T-187** marcadas según alcance (**T-188** excluido hasta inclusión explícita por PO en **TASKS** / **DECISIONES**).
 - [ ] **D-06-024** y **D-06-025** reflejadas en pool, post-DSR y copy (código + tests o nota de excepción en DECISIONES).
 - [ ] **D-06-026** (incl. §6 vacío duro / 0 filas pool) reflejada en **T-179–T-180** y pruebas o `EJECUCION.md`.
+- [ ] **REFINEMENT_S6_1:** **D-06-027** … **D-06-030** reflejadas en código/prompt/copy según **T-189–T-194**; evidencia en [`EJECUCION.md`](./EJECUCION.md) § REFINEMENT_S6_1 (si el equipo adopta el refinement en este sprint).
 
 ---
 
-*Actualizado: 2026-04-09 — DoR, check cierre D-06-024…026, T-179 §6.*
+*Actualizado: 2026-04-09 — **REFINEMENT_S6_1:** T-189–T-194, check cierre D-06-027–030.*

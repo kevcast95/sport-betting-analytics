@@ -14,6 +14,8 @@ const REASON_LABEL_ES: Record<Bt2DpLedgerReason, string> = {
   onboarding_phase_a: ONBOARDING_PHASE_A_LABEL,
   penalty_station_unclosed: 'Penalización: estación sin cerrar',
   penalty_unsettled_picks: 'Penalización: picks sin liquidar (tras gracia)',
+  penalty_unsettled_not_applicable:
+    'Sin cargo: gracia vencida sin picks abiertos en esa sesión',
   parlay_activation_2l: 'Activación parlay 2 eventos (reservado)',
   parlay_activation_3l: 'Activación parlay 3 eventos (reservado)',
 }

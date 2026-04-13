@@ -8,22 +8,19 @@ import { NavLink } from 'react-router-dom'
 import type { VaultPickCdm } from '@/data/vaultMockPicks'
 import { VAULT_UNLOCK_COST_DP } from '@/data/vaultMockPicks'
 import type { Bt2VaultPickOut } from '@/lib/bt2Types'
-import {
-  dsrConfidenceLabelEs,
-  dsrSourceDescriptionEs,
-} from '@/lib/bt2ProtocolLabels'
+import { vektorModelConfidenceLineEs } from '@/lib/bt2ProtocolLabels'
 import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
 import { getMarketLabelEs } from '@/lib/marketLabels'
 import { isKickoffUtcInPast } from '@/lib/vaultKickoff'
-import { unifiedApiModelReading } from '@/lib/vaultModelReading'
+import { modelWhyReading } from '@/lib/vaultModelReading'
 import { vaultPickEventPresentation } from '@/lib/vaultPickEventUi'
 import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
 import { useTradeStore } from '@/store/useTradeStore'
 
 const KNOB = 40
 const PAD = 6
-/** D-05-009: extracto visible antes de compromiso / desbloqueo */
-const TRADUCCION_PREVIEW_CHARS = 240
+/** D-05-009 + S6.1 §5.1: preview lectura ~2 líneas (no párrafo largo en card). */
+const TRADUCCION_PREVIEW_CHARS = 132
 /** TZ por defecto hasta leer `bt2_user_settings.timezone` en app (T-139) */
 const DEFAULT_EVENT_TZ = 'America/Bogota'
 
@@ -42,6 +39,50 @@ function excerptTraduccion(text: string, max = TRADUCCION_PREVIEW_CHARS): string
   if (!t) return ''
   if (t.length <= max) return t
   return `${t.slice(0, max).trim()}…`
+}
+
+/** Un solo bloque estilo v1 (`razon`): por qué el modelo sugiere la lectura. */
+function ModelWhyBlock(props: {
+  title: string
+  body: string
+  confidenceLine: string
+  lineClampClass: string
+  reviewHref: string
+  showReviewLink?: boolean
+}) {
+  const {
+    title,
+    body,
+    confidenceLine,
+    lineClampClass,
+    reviewHref,
+    showReviewLink = true,
+  } = props
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="rounded-lg border border-[#6d3bd7]/15 bg-[#f6fafe]/90 p-3">
+        <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
+          {title}
+        </p>
+        <p className={`${lineClampClass} text-xs leading-relaxed text-[#26343d]`}>
+          {body}
+        </p>
+      </div>
+      {confidenceLine ? (
+        <p className="font-mono text-[9px] leading-snug text-[#6e7d86]">
+          {confidenceLine}
+        </p>
+      ) : null}
+      {showReviewLink ? (
+        <NavLink
+          to={reviewHref}
+          className="inline-block text-xs font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
+        >
+          Ver ficha completa
+        </NavLink>
+      ) : null}
+    </div>
+  )
 }
 
 /**
@@ -95,12 +136,6 @@ function pickDisplay(p: AnyPick) {
       dsrNarrativeEs: (p.dsrNarrativeEs ?? '').trim(),
       dsrSource: (p.dsrSource ?? '').trim(),
       dsrConfidenceLabel: (p.dsrConfidenceLabel ?? '').trim(),
-      pipelineVersion: (p.pipelineVersion ?? '').trim(),
-      modelCanonicalHint:
-        [p.modelMarketCanonical, p.modelSelectionCanonical]
-          .map((x) => (typeof x === 'string' ? x.trim() : ''))
-          .filter(Boolean)
-          .join(' · ') || '',
     }
   }
   return {
@@ -124,8 +159,6 @@ function pickDisplay(p: AnyPick) {
     dsrNarrativeEs: '',
     dsrSource: '',
     dsrConfidenceLabel: '',
-    pipelineVersion: '',
-    modelCanonicalHint: '',
   }
 }
 
@@ -350,29 +383,21 @@ export function PickCard({
   const premiumOpen = !isPremium || premiumUnlocked
   const showPreviewOnly = !pickTaken && !premiumOpen
   const premiumLockedSurface = isPremium && showPreviewOnly
-  const unifiedApiBody = isApi
-    ? unifiedApiModelReading({
-        dsrNarrativeEs: d.dsrNarrativeEs,
-        traduccionHumana: d.traduccionHumana,
-      })
-    : null
-  const previewText =
-    unifiedApiBody != null
-      ? excerptTraduccion(unifiedApiBody.body)
-      : d.traduccionHumana
-        ? excerptTraduccion(d.traduccionHumana)
-        : ''
   const hideDsrBecausePremiumLocked =
     isPremium && !pickTaken && !premiumUnlocked
-  const dsrMetaLine = [
-    d.dsrConfidenceLabel
-      ? `Confianza simbólica: ${dsrConfidenceLabelEs(d.dsrConfidenceLabel)}`
-      : '',
-    dsrSourceDescriptionEs(d.dsrSource),
-    d.pipelineVersion ? `Versión pipeline: ${d.pipelineVersion}` : '',
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  const modelWhy = isApi
+    ? modelWhyReading({
+        dsrNarrativeEs: d.dsrNarrativeEs,
+        traduccionHumana: d.traduccionHumana,
+        dsrSource: d.dsrSource,
+      })
+    : null
+  const showApiModelWhy = isApi && !hideDsrBecausePremiumLocked && modelWhy != null
+  const previewBody =
+    isApi && modelWhy ? modelWhy.body : (d.traduccionHumana?.trim() ?? '')
+  const previewText = excerptTraduccion(previewBody)
+  const previewLabel = 'Vista previa · Vektor'
+  const vektorConfidenceLine = vektorModelConfidenceLineEs(d.dsrConfidenceLabel)
 
   const takeBlockedVisual = kickoffPast
   const takeBlockedTitle =
@@ -392,99 +417,145 @@ export function PickCard({
 
   return (
     <article
-      title={takeBlockedVisual ? takeBlockedTitle : undefined}
       className={`relative flex min-h-[220px] flex-col rounded-xl border border-[#a4b4be]/30 bg-white/85 p-5 shadow-sm ${articleClass}`}
       data-pick-id={d.id}
     >
-      <header className="mb-3 flex items-start justify-between gap-2">
-        <div className="min-w-0">
+      {takeBlockedVisual ? <span className="sr-only">{takeBlockedTitle}</span> : null}
+
+      {/* S6.1 §5.1: 1. Partido → 2. Competición → 3. Fecha/hora local */}
+      <div className="mb-3 min-w-0">
+        <h2 className="text-base font-bold leading-snug tracking-tight text-[#26343d]">
+          {d.eventLabel}
+        </h2>
+        {d.titulo ? (
+          <p className="mt-1 text-[12px] leading-snug text-[#52616a]">{d.titulo}</p>
+        ) : null}
+        {!premiumLockedSurface ? (
+          <p className="mt-1 font-mono text-[10px] text-[#6e7d86]">
+            Inicio (tu zona):{' '}
+            <span className="text-[#26343d]">{eventStartLabel ?? '—'}</span>
+          </p>
+        ) : null}
+      </div>
+
+      {/* Mercado + lectura (antes de cuota; premium bloqueado omite por D-05.1-005) */}
+      {!premiumLockedSurface ? (
+        <div className="mb-3 space-y-1">
           <p
-            className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#8B5CF6]"
+            className="text-[11px] font-semibold uppercase tracking-wide text-[#52616a]"
             title={d.marketRaw}
           >
             {d.marketLabel}
           </p>
           {d.selectionSummaryEs ? (
-            <p className="mt-0.5 text-xs font-semibold text-[#26343d]">
+            <p className="text-sm font-semibold leading-snug text-[#26343d]">
               {d.selectionSummaryEs}
             </p>
           ) : null}
-          {d.modelCanonicalHint && !premiumLockedSurface ? (
-            <p
-              className="mt-0.5 font-mono text-[9px] leading-snug text-[#6e7d86]"
-              title="Sugerencia DSR (mercado y selección canónicos)"
-            >
-              Modelo (canónico): {d.modelCanonicalHint}
-            </p>
-          ) : null}
-          <h2 className="mt-1 text-base font-bold leading-snug tracking-tight text-[#26343d]">
-            {d.eventLabel}
-          </h2>
-          {!premiumLockedSurface ? (
-            <p className="mt-0.5 text-[11px] leading-snug text-[#52616a]">
-              {d.titulo}
-            </p>
-          ) : null}
-          <p className="mt-1 font-mono text-[10px] text-[#6e7d86]">
-            Inicio (tu zona):{' '}
-            <span className="text-[#26343d]">{eventStartLabel ?? '—'}</span>
+        </div>
+      ) : null}
+
+      {/* Cuota en bloque propio (§5: siempre visible, no relegada a acciones) */}
+      {!pickTaken && !premiumLockedSurface ? (
+        <div className="mb-3 rounded-lg border border-[#a4b4be]/25 bg-[#f6fafe]/90 px-3 py-2.5">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
+            Cuota sugerida
+          </p>
+          <p className="font-mono text-lg font-bold tabular-nums text-[#26343d]">
+            {d.suggestedDecimalOdds.toFixed(2)}
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1">
-          {isSettled ? (
-            <span className="rounded-full bg-[#e5e7eb] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#374151]">
-              Liquidado
-            </span>
-          ) : null}
-          {pickTaken && !isSettled ? (
-            <span className="rounded-full bg-[#dbeafe] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#1d4ed8]">
-              En juego
-            </span>
-          ) : null}
-          {isPremium && premiumUnlocked && !pickTaken && !isSettled ? (
-            <span className="rounded-full bg-[#ede9fe] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#6d28d9]">
-              Premium abierto
-            </span>
-          ) : null}
-          {takeBlockedVisual ? (
-            <span
-              className="max-w-[9rem] rounded-full bg-[#fef3c7] px-2 py-0.5 text-center text-[8px] font-bold uppercase leading-tight tracking-wider text-[#92400e]"
-              title={takeBlockedTitle}
-            >
-              {kickoffPast ? 'Kickoff pasado' : 'Tomar no disponible'}
-            </span>
-          ) : null}
-          {unavailable && isApi && !takeBlockedVisual ? (
-            <span
-              className="max-w-[9rem] rounded-full bg-[#fee2e2] px-2 py-0.5 text-center text-[8px] font-bold uppercase leading-tight tracking-wider text-[#9b1c1c]"
-              title={
-                kickoffUnavailableCopy
-                  ? 'Kickoff del evento ya pasó (servidor).'
-                  : 'Evento no disponible para registro.'
-              }
-            >
-              {kickoffUnavailableCopy ? 'Kickoff pasado' : 'No disponible'}
-            </span>
-          ) : null}
-          {d.edgeBps && !premiumLockedSurface ? (
-            <span className="rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] px-2 py-1 font-mono text-xs font-bold tabular-nums text-[#26343d]">
-              +{(d.edgeBps / 100).toFixed(2)}%
-            </span>
-          ) : null}
-          {isPickFreeAccess(d.accessTier) ? (
-            <span className="rounded-full bg-[#d1fae5] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#065f46]">
-              Estándar
-            </span>
-          ) : (
-            <span className="rounded-full bg-[#e9ddff] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#6d3bd7]">
-              Premium
-            </span>
-          )}
-          {eventUi.statusLabel ? (
-            <span className={eventUi.badgeClass}>{eventUi.statusLabel}</span>
-          ) : null}
+      ) : null}
+
+      {/* Chips en fila (§5); también con pick tomado (Liquidado / En juego) */}
+      <div
+        className="mb-3 flex flex-wrap items-center gap-1.5"
+        role="list"
+        aria-label="Estado del pick"
+      >
+        {isPickFreeAccess(d.accessTier) ? (
+          <span
+            role="listitem"
+            className="rounded-full bg-[#d1fae5] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#065f46]"
+          >
+            Estándar
+          </span>
+        ) : (
+          <span
+            role="listitem"
+            className="rounded-full bg-[#e9ddff] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#6d3bd7]"
+          >
+            Premium
+          </span>
+        )}
+        {eventUi.statusLabel ? (
+          <span role="listitem" className={eventUi.badgeClass}>
+            {eventUi.statusLabel}
+          </span>
+        ) : null}
+        {isSettled ? (
+          <span
+            role="listitem"
+            className="rounded-full bg-[#e5e7eb] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#374151]"
+          >
+            Liquidado
+          </span>
+        ) : null}
+        {pickTaken && !isSettled ? (
+          <span
+            role="listitem"
+            className="rounded-full bg-[#dbeafe] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#1d4ed8]"
+          >
+            En juego
+          </span>
+        ) : null}
+        {isPremium && premiumUnlocked && !pickTaken && !isSettled ? (
+          <span
+            role="listitem"
+            className="rounded-full bg-[#ede9fe] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#6d28d9]"
+          >
+            Premium abierto
+          </span>
+        ) : null}
+        {!pickTaken && takeBlockedVisual ? (
+          <span
+            role="listitem"
+            className="max-w-[10rem] rounded-full bg-[#fef3c7] px-2 py-0.5 text-center text-[8px] font-bold uppercase leading-tight tracking-wider text-[#92400e]"
+          >
+            {kickoffPast ? 'Partido empezado' : 'Tomar no disponible'}
+          </span>
+        ) : null}
+        {!pickTaken && unavailable && isApi && !takeBlockedVisual ? (
+          <span
+            role="listitem"
+            className="max-w-[10rem] rounded-full bg-[#fef3c7] px-2 py-0.5 text-center text-[8px] font-bold uppercase leading-tight tracking-wider text-[#92400e]"
+            title={
+              kickoffUnavailableCopy
+                ? 'Kickoff del evento ya pasó (servidor).'
+                : 'Evento no disponible para registro.'
+            }
+          >
+            {kickoffUnavailableCopy ? 'Kickoff pasado' : 'No disponible'}
+          </span>
+        ) : null}
+      </div>
+
+      {/* Búsqueda externa del partido: siempre visible (API) para contrastar previa/resultado */}
+      {isApi && d.externalSearchUrl ? (
+        <div className="mb-3 rounded-lg border border-[#a4b4be]/20 bg-[#eef4fa]/70 px-3 py-2">
+          <a
+            href={d.externalSearchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
+          >
+            Buscar partido en Google ↗
+          </a>
+          <p className="mt-0.5 text-[9px] leading-snug text-[#6e7d86]">
+            Referencia externa para confirmar horario, alineaciones o resultado.
+          </p>
         </div>
-      </header>
+      ) : null}
 
       {!pickTaken ? (
         <>
@@ -518,7 +589,7 @@ export function PickCard({
             ) : (
               <div className="relative mt-auto min-h-[88px] flex-1 overflow-hidden rounded-lg border border-[#26343d]/10 bg-[#f6fafe]/80 p-3">
                 <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
-                  Vista previa · modelo
+                  {previewLabel}
                 </p>
                 <p className="mb-2 font-mono text-[10px] text-[#52616a]">
                   Inicio: <span className="font-semibold text-[#26343d]">{eventStartLabel ?? '—'}</span>
@@ -530,13 +601,13 @@ export function PickCard({
                     </>
                   ) : null}
                 </p>
-                <p className="line-clamp-4 text-xs leading-relaxed text-[#26343d]">
+                <p className="line-clamp-2 text-xs leading-relaxed text-[#26343d]">
                   {previewText ||
-                    'Sin criterio DSR ni extracto de lectura en este pick.'}
+                    'Sin texto en vista previa; abrí la ficha para leer por qué sugiere el modelo esta señal.'}
                 </p>
-                {dsrMetaLine && !premiumLockedSurface ? (
+                {vektorConfidenceLine && !premiumLockedSurface ? (
                   <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
-                    {dsrMetaLine}
+                    {vektorConfidenceLine}
                   </p>
                 ) : null}
               </div>
@@ -548,24 +619,19 @@ export function PickCard({
               transition={{ duration: 0.3, ease: 'easeOut' }}
               className="mt-auto flex flex-1 flex-col gap-2"
             >
-              {isApi && !hideDsrBecausePremiumLocked && unifiedApiBody ? (
-                <div className="rounded-lg border border-[#6d3bd7]/15 bg-[#f6fafe]/90 p-3">
-                  <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
-                    {unifiedApiBody.title}
-                  </p>
-                  <p className="line-clamp-6 text-xs leading-relaxed text-[#26343d]">
-                    {unifiedApiBody.body}
-                  </p>
-                  {dsrMetaLine ? (
-                    <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
-                      {dsrMetaLine}
-                    </p>
-                  ) : null}
-                </div>
+              {showApiModelWhy && modelWhy ? (
+                <ModelWhyBlock
+                  title={modelWhy.title}
+                  body={modelWhy.body}
+                  confidenceLine={vektorConfidenceLine}
+                  lineClampClass="line-clamp-6"
+                  reviewHref={`/v2/settlement/${d.id}?phase=review`}
+                  showReviewLink={false}
+                />
               ) : !isApi && d.traduccionHumana ? (
                 <div className="rounded-lg border border-[#26343d]/10 bg-[#f6fafe]/80 p-3">
                   <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
-                    Lectura del modelo
+                    Por qué lo sugiere el modelo
                   </p>
                   <p className="line-clamp-6 text-xs leading-relaxed text-[#26343d]">
                     {d.traduccionHumana}
@@ -575,15 +641,6 @@ export function PickCard({
             </motion.div>
           )}
 
-          {!pickTaken && (unavailable || kickoffPast) ? (
-            <p className="mt-3 text-center text-xs font-semibold text-[#9b1c1c]">
-              {kickoffPast
-                ? 'El partido ya inició según el horario del evento; no puedes registrar ni desbloquear esta señal.'
-                : kickoffUnavailableCopy
-                  ? 'El partido ya inició; no es posible registrar el pick (protocolo).'
-                  : 'Este evento no está disponible para registro en el protocolo.'}
-            </p>
-          ) : null}
           {takeBlockedByDailyQuota && !pickTaken ? (
             <p className="mt-2 text-center text-[11px] font-medium text-[#92400e]">
               {isPickFreeAccess(d.accessTier)
@@ -661,43 +718,6 @@ export function PickCard({
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="mt-2 flex flex-1 flex-col gap-3"
         >
-          {isApi && !hideDsrBecausePremiumLocked && unifiedApiBody ? (
-            <div className="rounded-lg border border-[#6d3bd7]/15 bg-[#f6fafe]/90 p-3">
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#6e7d86]">
-                {unifiedApiBody.title}
-              </p>
-              <p className="line-clamp-5 text-sm leading-relaxed text-[#26343d]">
-                {unifiedApiBody.body}
-              </p>
-              {dsrMetaLine ? (
-                <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
-                  {dsrMetaLine}
-                </p>
-              ) : null}
-              <NavLink
-                to={`/v2/settlement/${d.id}?phase=review`}
-                className="mt-2 inline-block text-xs font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
-              >
-                Ver ficha completa
-              </NavLink>
-            </div>
-          ) : !isApi && d.traduccionHumana ? (
-            <div>
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#6e7d86]">
-                Lectura del modelo
-              </p>
-              <p className="line-clamp-5 text-sm leading-relaxed text-[#26343d]">
-                {d.traduccionHumana}
-              </p>
-              <NavLink
-                to={`/v2/settlement/${d.id}?phase=review`}
-                className="mt-2 inline-block text-xs font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
-              >
-                Ver ficha completa
-              </NavLink>
-            </div>
-          ) : null}
-
           <div className="flex items-center gap-4 rounded-lg border border-[#a4b4be]/20 bg-[#f6fafe] px-3 py-2">
             <div>
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
@@ -717,17 +737,38 @@ export function PickCard({
                   className="h-10 w-full text-[#059669]"
                 />
               </div>
-            ) : d.externalSearchUrl ? (
-              <a
-                href={d.externalSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 rounded-lg border border-[#a4b4be]/20 bg-[#eef4fa] p-2 text-center text-[10px] font-semibold text-[#6d3bd7] hover:bg-[#e9ddff]/30"
-              >
-                Ver resultado ↗
-              </a>
             ) : null}
           </div>
+
+          {showApiModelWhy && modelWhy ? (
+            <ModelWhyBlock
+              title={modelWhy.title}
+              body={modelWhy.body}
+              confidenceLine={vektorConfidenceLine}
+              lineClampClass="line-clamp-5"
+              reviewHref={`/v2/settlement/${d.id}?phase=review`}
+            />
+          ) : !isApi && d.traduccionHumana ? (
+            <div>
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#6e7d86]">
+                Por qué lo sugiere el modelo
+              </p>
+              <p className="line-clamp-5 text-sm leading-relaxed text-[#26343d]">
+                {d.traduccionHumana}
+              </p>
+              {vektorConfidenceLine ? (
+                <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
+                  {vektorConfidenceLine}
+                </p>
+              ) : null}
+              <NavLink
+                to={`/v2/settlement/${d.id}?phase=review`}
+                className="mt-2 inline-block text-xs font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
+              >
+                Ver ficha completa
+              </NavLink>
+            </div>
+          ) : null}
 
           {isSettled ? (
             <div className="space-y-2">

@@ -1,6 +1,6 @@
 /**
  * US-FE-025 (Sprint 04): Bóveda desde API real.
- * - apiPicks: picks del día desde GET /bt2/vault/picks.
+ * - apiPicks: pool completo del día (hasta 20) tras session/open + GET /bt2/vault/picks.
  * - takenApiPicks: registro local de picks tomados (POST /bt2/picks).
  * - El tier "standard" equivale a "open" (libre sin DP).
  * - El tier "premium" requiere saldo DP ≥ unlockCostDp.
@@ -18,12 +18,16 @@ import { useSessionStore } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
 import type {
   Bt2DpInsufficientPremiumDetail,
+  Bt2VaultDaySnapshotMeta,
   Bt2VaultPickOut,
   Bt2VaultPicksPageOut,
   Bt2PickRegisterBody,
   Bt2TakenPickRecord,
 } from '@/lib/bt2Types'
-import { BT2_ERR_PICK_EVENT_KICKOFF_ELAPSED } from '@/lib/bt2VaultConstants'
+import {
+  BT2_ERR_INSUFFICIENT_BANKROLL_STAKE,
+  BT2_ERR_PICK_EVENT_KICKOFF_ELAPSED,
+} from '@/lib/bt2VaultConstants'
 import { isKickoffUtcInPast } from '@/lib/vaultKickoff'
 import { computeVaultQuota } from '@/lib/vaultQuota'
 import { computeUnitValue } from '@/lib/treasuryMath'
@@ -49,6 +53,7 @@ export type VaultUnlockResult =
         | 'kickoff_elapsed'
         | 'quota_standard_exhausted'
         | 'quota_premium_exhausted'
+        | 'insufficient_bankroll'
       /** D-05-005 — solo si reason === insufficient_dp_premium (402) */
       premiumDetail?: Bt2DpInsufficientPremiumDetail
       /** Mensaje servidor (422 kickoff, etc.) */
@@ -80,9 +85,20 @@ export type VaultStoreState = {
   vaultPoolMeta: {
     poolTargetCount: number
     poolHardCap: number
+    /** D-06-032 — candidatos valor máx. antes del slate (típ. 20). */
+    valuePoolUniverseMax?: number
     poolItemCount: number
+    vaultUniversePersistedCount?: number
+    slateBandCycle?: number
     poolBelowTarget: boolean
   } | null
+  /** S6.1 — flags vacío operativo, degradación y conteos (US-BE-036 / T-184). */
+  vaultDaySnapshotMeta: Bt2VaultDaySnapshotMeta | null
+  /**
+   * Ciclo 0–3 para priorizar franja horaria al **barajar en cliente** el pool ya cargado (GET único).
+   * Se inicializa con `slateBandCycle` del API en `loadApiPicks`; «Regenerar cartelera» solo rota (+1 mod 4).
+   */
+  vaultLocalSlateCycle: number
 }
 
 export type VaultStoreActions = {
@@ -95,6 +111,12 @@ export type VaultStoreActions = {
    * y luego carga picks del día (GET /bt2/vault/picks).
    */
   loadApiPicks: () => Promise<void>
+  /**
+   * Baraja el orden visible: rota ciclo 0–3 **solo en memoria** (sin segundo request; el pool viene del GET).
+   */
+  regenerateVaultSlate: () =>
+    | { ok: true; cycle: number; poolSize: number }
+    | { ok: false; message: string }
   /**
    * US-FE-025: "tomar" un pick de la API.
    * Para tier standard: registra el pick en bt2_picks (sin coste DP).
@@ -127,11 +149,60 @@ const initial: VaultStoreState = {
   sessionOpenStatus: 'idle',
   vaultSnapshotOperatingDayKey: null,
   vaultPoolMeta: null,
+  vaultDaySnapshotMeta: null,
+  vaultLocalSlateCycle: 0,
 }
 
 export const useVaultStore = create<VaultStore>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      const applyVaultPicksPageData = (data: Bt2VaultPicksPageOut) => {
+        const sessionDayKey = useSessionStore.getState().operatingDayKey
+        const snapshotPicks = data.picks
+        const poolMeta = {
+          poolTargetCount: data.poolTargetCount ?? 5,
+          poolHardCap: Math.max(1, data.poolHardCap ?? 5),
+          valuePoolUniverseMax: data.valuePoolUniverseMax ?? 20,
+          poolItemCount: snapshotPicks.length,
+          vaultUniversePersistedCount:
+            data.vaultUniversePersistedCount ?? snapshotPicks.length,
+          slateBandCycle: data.slateBandCycle ?? 0,
+          poolBelowTarget: Boolean(data.poolBelowTarget),
+        }
+        const dayMeta: Bt2VaultDaySnapshotMeta = {
+          dsrSignalDegraded: Boolean(data.dsrSignalDegraded),
+          limitedCoverage: Boolean(data.limitedCoverage),
+          operationalEmptyHard: Boolean(data.operationalEmptyHard),
+          vaultOperationalMessageEs: data.vaultOperationalMessageEs ?? null,
+          fallbackDisclaimerEs: data.fallbackDisclaimerEs ?? null,
+          futureEventsInWindowCount: data.futureEventsInWindowCount ?? 0,
+          fallbackEligiblePoolCount: data.fallbackEligiblePoolCount ?? 0,
+        }
+        const cycle = data.slateBandCycle ?? 0
+        if (!snapshotPicks.length) {
+          set({
+            apiPicks: [],
+            picksLoadStatus: 'empty',
+            picksMessage: data.message ?? 'No hay picks disponibles hoy.',
+            vaultSnapshotOperatingDayKey: sessionDayKey ?? null,
+            vaultPoolMeta: poolMeta,
+            vaultDaySnapshotMeta: dayMeta,
+            vaultLocalSlateCycle: cycle,
+          })
+        } else {
+          set({
+            apiPicks: snapshotPicks,
+            picksLoadStatus: 'loaded',
+            picksMessage: data.message ?? null,
+            vaultSnapshotOperatingDayKey: snapshotPicks[0].operatingDayKey,
+            vaultPoolMeta: poolMeta,
+            vaultDaySnapshotMeta: dayMeta,
+            vaultLocalSlateCycle: cycle,
+          })
+        }
+      }
+
+      return {
       ...initial,
 
       // ── Sprint 01 compat ──────────────────────────────────────────────────
@@ -192,38 +263,48 @@ export const useVaultStore = create<VaultStore>()(
             set({ sessionOpenStatus: 'error' })
           }
         }
-        // 2. Cargar picks
+        // 2. Cargar picks (servidor devuelve hasta 20; la UI recorta a poolHardCap).
         try {
           const data = await bt2FetchJson<Bt2VaultPicksPageOut>('/bt2/vault/picks')
-          const sessionDayKey = useSessionStore.getState().operatingDayKey
-          const poolMeta = {
-            poolTargetCount: data.poolTargetCount ?? 15,
-            poolHardCap: data.poolHardCap ?? 20,
-            poolItemCount: data.poolItemCount ?? data.picks.length,
-            poolBelowTarget: Boolean(data.poolBelowTarget),
-          }
-          if (!data.picks.length) {
-            set({
-              apiPicks: [],
-              picksLoadStatus: 'empty',
-              picksMessage: data.message ?? 'No hay picks disponibles hoy.',
-              vaultSnapshotOperatingDayKey: sessionDayKey ?? null,
-              vaultPoolMeta: poolMeta,
-            })
-          } else {
-            set({
-              apiPicks: data.picks,
-              picksLoadStatus: 'loaded',
-              picksMessage: data.message ?? null,
-              vaultSnapshotOperatingDayKey: data.picks[0].operatingDayKey,
-              vaultPoolMeta: poolMeta,
-            })
-          }
+          applyVaultPicksPageData(data)
         } catch (e) {
           console.error('[BT2] vault/picks error:', e)
-          set({ picksLoadStatus: 'error', picksMessage: null, vaultPoolMeta: null })
+          set({
+            picksLoadStatus: 'error',
+            picksMessage: null,
+            vaultPoolMeta: null,
+            vaultDaySnapshotMeta: null,
+          })
         }
         void useUserStore.getState().syncDpBalance()
+      },
+
+      regenerateVaultSlate: () => {
+        const { apiPicks, vaultPoolMeta } = get()
+        if (!apiPicks.length) {
+          return {
+            ok: false as const,
+            message:
+              'No hay pool cargado. Abre la estación y espera el GET de la bóveda (un solo request con hasta 20 picks).',
+          }
+        }
+        const nextCycle = (get().vaultLocalSlateCycle + 1) % 4
+        const poolSize = apiPicks.length
+        set({
+          vaultLocalSlateCycle: nextCycle,
+          vaultPoolMeta: vaultPoolMeta
+            ? { ...vaultPoolMeta, slateBandCycle: nextCycle }
+            : {
+                poolTargetCount: 5,
+                poolHardCap: 5,
+                valuePoolUniverseMax: 20,
+                poolItemCount: poolSize,
+                vaultUniversePersistedCount: poolSize,
+                slateBandCycle: nextCycle,
+                poolBelowTarget: poolSize < 5,
+              },
+        })
+        return { ok: true as const, cycle: nextCycle, poolSize }
       },
 
       takeApiPick: async (vaultPick) => {
@@ -291,6 +372,17 @@ export const useVaultStore = create<VaultStore>()(
 
         const post = await bt2PostPickRegister(body)
         if (!post.ok) {
+          if (
+            post.status === 422 &&
+            post.errorCode === BT2_ERR_INSUFFICIENT_BANKROLL_STAKE
+          ) {
+            void useBankrollStore.getState().syncFromApi()
+            return {
+              ok: false,
+              reason: 'insufficient_bankroll',
+              apiMessage: post.message,
+            }
+          }
           if (post.status === 402 && post.premiumInsufficient) {
             console.warn(
               `[BT2] Desbloqueo premium rechazado (402): ${post.premiumInsufficient.message}`,
@@ -319,6 +411,16 @@ export const useVaultStore = create<VaultStore>()(
         const res = post.data
         // Sprint 05 (US-BE-017): el −50 DP va en bt2_dp_ledger en el mismo POST; no ajustar local.
         void useUserStore.getState().syncDpBalance()
+        if (
+          res.bankrollAfterUnits != null &&
+          Number.isFinite(res.bankrollAfterUnits)
+        ) {
+          useBankrollStore
+            .getState()
+            .reconcileToExchangeBalance(res.bankrollAfterUnits)
+        } else {
+          void useBankrollStore.getState().syncFromApi()
+        }
 
         const record: Bt2TakenPickRecord = {
           vaultPickId: vaultPick.id,
@@ -413,10 +515,21 @@ export const useVaultStore = create<VaultStore>()(
       },
 
       reset: () => set(initial),
-    }),
+    }
+    },
     {
-      name: 'bt2_v2_vault',
+      /**
+       * Clave nueva (2026-04): el blob anterior persistía `apiPicks` + `picksLoadStatus`.
+       * Eso dejaba 20 filas “pegadas” para siempre: con `loaded` la bóveda no volvía a
+       * llamar GET /bt2/vault/picks aunque el servidor ya devolviera 5 (reiniciar API no limpia el navegador).
+       */
+      name: 'bt2_v2_vault_v2',
       storage: createJSONStorage(() => createBt2EncryptedLocalStorage()),
+      /** Solo estado local; el listado del día siempre viene del servidor al montar (idle → fetch). */
+      partialize: (s) => ({
+        unlockedPickIds: s.unlockedPickIds,
+        takenApiPicks: s.takenApiPicks,
+      }),
     },
   ),
 )

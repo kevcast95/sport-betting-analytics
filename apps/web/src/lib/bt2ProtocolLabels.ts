@@ -8,7 +8,16 @@ export function dsrConfidenceLabelEs(label: string): string {
   return label.trim() || '—'
 }
 
-export function dsrSourceDescriptionEs(source: string): string {
+/** §1.11 — línea única de confianza en Bóveda / settlement (sin “simbólica”). */
+export function vektorModelConfidenceLineEs(
+  label: string | null | undefined,
+): string {
+  if (label == null || !String(label).trim()) return ''
+  return `Confianza del modelo: ${dsrConfidenceLabelEs(String(label))}`
+}
+
+/** Tablas y analytics admin — puede citar API / reglas con precisión técnica. */
+export function dsrSourceDescriptionAdminEs(source: string): string {
   const s = source.trim().toLowerCase()
   if (s === 'rules_fallback') {
     return 'Origen: reglas del protocolo (sin razonador en vivo).'

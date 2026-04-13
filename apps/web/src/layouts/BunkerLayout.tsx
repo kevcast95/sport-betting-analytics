@@ -68,6 +68,7 @@ export default function BunkerLayout() {
   const completeEconomyTour = useUserStore((s) => s.completeEconomyTour)
   const confirmedBankrollCop = useBankrollStore((s) => s.confirmedBankrollCop)
   const checkDayBoundary = useSessionStore((s) => s.checkDayBoundary)
+  const takenApiPicks = useVaultStore((s) => s.takenApiPicks)
 
   const [dpPulseKey, setDpPulseKey] = useState(0)
   const [dpSyncing, setDpSyncing] = useState(false)
@@ -87,12 +88,12 @@ export default function BunkerLayout() {
       const hasUnsettledPicks = unlockedPickIds.some(
         (id) => !settledPickIds.includes(id),
       )
-      checkDayBoundary(new Date().toISOString(), hasUnsettledPicks)
+      checkDayBoundary(new Date().toISOString(), hasUnsettledPicks, takenApiPicks)
     }
     runCheck()
     const timer = window.setInterval(runCheck, 60_000)
     return () => window.clearInterval(timer)
-  }, [checkDayBoundary])
+  }, [checkDayBoundary, takenApiPicks])
 
   useEffect(() => {
     if (confirmedBankrollCop === 0) {
@@ -187,7 +188,7 @@ export default function BunkerLayout() {
   const pageSubtitle = isSettings
     ? 'Preferencias del entorno V2. El capital de trabajo se define en el protocolo de gestión de capital.'
     : location.pathname.startsWith('/v2/vault')
-      ? 'Oportunidades con valor esperado positivo (modelo canónico CDM); desbloqueo con DP.'
+      ? 'Lectura DSR fundamentada en datos del lote operativo; sin promesa de maximizar retorno. Premium con DP.'
       : location.pathname.startsWith('/v2/settlement')
         ? 'Auditoría de resultado y reflexión obligatoria antes de archivar en ledger.'
         : location.pathname.startsWith('/v2/daily-review')
@@ -362,6 +363,19 @@ export default function BunkerLayout() {
           Precisión DSR
         </NavLink>
         <NavLink
+          to="/v2/admin/cdm-audit"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Auditoría CDM
+        </NavLink>
+        <NavLink
           to="/v2/profile"
           className={({ isActive }) =>
             [
@@ -450,6 +464,15 @@ export default function BunkerLayout() {
                 <Bt2ShieldCheckIcon className="h-5 w-5" />
               </span>
               Precisión DSR
+            </NavLink>
+            <NavLink
+              to="/v2/admin/cdm-audit"
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2ShieldCheckIcon className="h-5 w-5" />
+              </span>
+              Auditoría CDM
             </NavLink>
             <NavLink
               to="/v2/profile"

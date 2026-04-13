@@ -1047,13 +1047,16 @@
           {
             "name": "user_id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "integer",
-              "description": "Usuario que ve el tablero",
+              "anyOf": [
+                { "type": "integer" },
+                { "type": "null" }
+              ],
+              "description": "Usuario que ve el tablero; si se omite, primer usuario (user_id ASC)",
               "title": "User Id"
             },
-            "description": "Usuario que ve el tablero"
+            "description": "Usuario que ve el tablero; si se omite, primer usuario (user_id ASC)"
           },
           {
             "name": "X-Local-Api-Key",
