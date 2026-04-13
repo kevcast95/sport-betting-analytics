@@ -2,6 +2,8 @@
 
 **Estado:** definición inicial — **feedback, refinement y acotación de detalles** tras el cierre de **S6.2**.
 
+**Rama Git de trabajo:** `sprint-06.3` (creada desde el commit de cierre S6.2 en `sprint-06.1`).
+
 **Cierre del sprint anterior:** [`../sprint-06.2/CIERRE_S6_2.md`](../sprint-06.2/CIERRE_S6_2.md).
 
 ---
