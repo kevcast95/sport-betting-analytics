@@ -271,22 +271,42 @@ export function selectVisibleVaultPicks(
  * Como `selectVisibleVaultPicks` pero **respeta el orden** de `orderedPicks` (p. ej. tras
  * `reorderVaultPicksForBandCycle`): primero los de la franja local actual, luego el resto
  * en ese mismo orden — sin volver a mezclar con `mixSortCompare`.
+ *
+ * `slateCycleOffset` (0–3, alineado a «Regenerar cartelera»): desplaza una ventana circular de
+ * `visibleCap` ítems sobre esa lista priorizada. Sin esto, si hay muchos partidos en la misma
+ * franja, los visibles serían siempre los mismos 5 aunque cambie el orden global del pool.
  */
 export function selectVisibleFromOrderedPool(
   orderedPicks: Bt2VaultPickOut[],
   timeZone: string,
   visibleCap: number,
   nowMs: number = Date.now(),
+  slateCycleOffset: number = 0,
 ): Bt2VaultPickOut[] {
   const cap = Math.max(0, Math.floor(visibleCap))
   if (cap === 0 || orderedPicks.length === 0) return []
   const curBand = getCurrentVaultTimeBand(timeZone, nowMs)
   const inBand = orderedPicks.filter((p) => effectiveVaultTimeBand(p, timeZone) === curBand)
   const rest = orderedPicks.filter((p) => effectiveVaultTimeBand(p, timeZone) !== curBand)
+  const primary = [...inBand, ...rest]
+  const n = primary.length
+  if (n <= cap) {
+    const short: Bt2VaultPickOut[] = []
+    const seenShort = new Set<string>()
+    for (const p of primary) {
+      if (seenShort.has(p.id)) continue
+      seenShort.add(p.id)
+      short.push(p)
+      if (short.length >= cap) break
+    }
+    return short
+  }
+  const c = ((Math.floor(Number(slateCycleOffset)) % 4) + 4) % 4
+  const start = (c * cap) % n
   const out: Bt2VaultPickOut[] = []
   const seen = new Set<string>()
-  for (const p of [...inBand, ...rest]) {
-    if (out.length >= cap) break
+  for (let i = 0; i < n && out.length < cap; i++) {
+    const p = primary[(start + i) % n]!
     if (seen.has(p.id)) continue
     seen.add(p.id)
     out.push(p)

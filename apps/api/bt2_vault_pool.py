@@ -9,8 +9,9 @@ Franjas (hora local del usuario, kickoff del evento) — **D-06-032**:
 
 Universo hacia el cómputo del día: hasta **20** candidatos valor (router recorta antes de compose).
 Se persisten hasta **20** filas en `bt2_daily_picks` (orden franjas + calidad; luego el router puede
-reordenar `slate_rank` para mezclar **familias de mercado** en la cartelera visible); el GET vault
-devuelve solo las **5** primeras (`slate_rank` 1–5) como cartelera visible (**D-06-032**).
+reordenar `slate_rank` para mezclar **familias de mercado**). **GET /bt2/vault/picks** devuelve
+**todas** las filas persistidas (hasta 20). La **cartelera visible** (típ. 5 tarjetas) la recorta
+la **UI** con `poolHardCap` / `selectVisibleFromOrderedPool` (**D-06-032**).
 """
 
 from __future__ import annotations

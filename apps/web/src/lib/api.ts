@@ -1,5 +1,6 @@
 import type {
   Bt2AdminDsrDayOut,
+  Bt2AdminDsrRangeOut,
   Bt2AdminVaultPickDistributionOut,
   Bt2AdminVaultRegenerateSnapshotOut,
   Bt2DpInsufficientPremiumDetail,
@@ -113,7 +114,10 @@ export async function bt2FetchJson<T>(
   }
 }
 
-/** POST /bt2/vault/regenerate-slate — mismo cuerpo que GET /bt2/vault/picks (sin segundo request). */
+/**
+ * POST /bt2/vault/regenerate-slate — recomponer snapshot en servidor (ops/admin).
+ * La **Bóveda** no usa esto: un solo GET trae el pool del día y «Regenerar cartelera» solo baraja en cliente.
+ */
 export async function bt2PostVaultRegenerateSlate(): Promise<Bt2VaultPicksPageOut> {
   return bt2FetchJson<Bt2VaultPicksPageOut>('/bt2/vault/regenerate-slate', { method: 'POST' })
 }
@@ -332,6 +336,29 @@ export async function fetchBt2AdminDsrDay(
   const qs = new URLSearchParams({ operatingDayKey })
   return fetchJson<Bt2AdminDsrDayOut>(
     `/bt2/admin/analytics/dsr-day?${qs.toString()}`,
+    { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
+/**
+ * GET /bt2/admin/analytics/dsr-range — KPIs por día + totales (histórico).
+ */
+export async function fetchBt2AdminDsrRange(
+  fromOperatingDayKey: string,
+  toOperatingDayKey: string,
+): Promise<Bt2AdminDsrRangeOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams({
+    fromOperatingDayKey: fromOperatingDayKey.trim(),
+    toOperatingDayKey: toOperatingDayKey.trim(),
+  })
+  return fetchJson<Bt2AdminDsrRangeOut>(
+    `/bt2/admin/analytics/dsr-range?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
   )
 }

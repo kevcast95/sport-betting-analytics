@@ -4,7 +4,7 @@ import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
 import { useBankrollStore } from '@/store/useBankrollStore'
 import { useUserStore } from '@/store/useUserStore'
 import { bt2FetchJson } from '@/lib/api'
-import type { Bt2SessionDayOut } from '@/lib/bt2Types'
+import type { Bt2SessionDayOut, Bt2TakenPickRecord } from '@/lib/bt2Types'
 import {
   getOperatingDayKey,
   graceExpiresIso,
@@ -31,8 +31,8 @@ export type PreviousDayItem = 'UNSETTLED_PICK' | 'STATION_UNCLOSED'
  * US-FE-012 / US-FE-044: penalización conductual aplicada tras expirar la gracia.
  *
  * Tabla de consecuencias (DECISIONES.md 2026-04-04):
- * - STATION_UNCLOSED → -50 DP (pérdida del bono de cierre + penalización)
- * - UNSETTLED_PICKS  → -25 DP por día con picks sin liquidar
+ * - STATION_UNCLOSED → -50 DP solo si hubo picks tomados ese día (servidor alinea).
+ * - UNSETTLED_PICKS  → -25 DP por picks sin liquidar tras gracia.
  */
 export type PenaltyRecord = {
   appliedAt: string
@@ -61,6 +61,17 @@ function discrepancyPercent(
 ): number {
   const base = Math.max(projectedCop, 1)
   return (Math.abs(exchangeCop - projectedCop) / base) * 100
+}
+
+function hadBt2PicksOnOperatingDay(
+  picks: Bt2TakenPickRecord[],
+  dayKey: DayKey,
+): boolean {
+  return picks.some((p) => {
+    if (p.operatingDayKey && p.operatingDayKey === dayKey) return true
+    const head = (p.openedAt || '').slice(0, 10)
+    return head === dayKey
+  })
 }
 
 function computeDisciplineScore(
@@ -131,8 +142,13 @@ export type SessionStoreActions = {
    *
    * @param nowIso ISO8601 del momento actual (inyectable para tests).
    * @param hasUnsettledPicks  true si hay picks activos sin liquidar del día anterior.
+   * @param takenApiPicks  picks tomados vía API; sin picks ese día no hay pendiente STATION_UNCLOSED.
    */
-  checkDayBoundary: (nowIso: string, hasUnsettledPicks: boolean) => void
+  checkDayBoundary: (
+    nowIso: string,
+    hasUnsettledPicks: boolean,
+    takenApiPicks?: Bt2TakenPickRecord[],
+  ) => void
   /**
    * US-FE-027: hidrata el store desde GET /bt2/session/day.
    * Sincroniza operatingDayKey, graceActiveUntilIso y stationLockedForOperatingDay.
@@ -239,7 +255,7 @@ export const useSessionStore = create<SessionStore>()(
         )
         return { ok: true, summary }
       },
-      checkDayBoundary: (nowIso, hasUnsettledPicks) => {
+      checkDayBoundary: (nowIso, hasUnsettledPicks, takenApiPicks = []) => {
         const currentDayKey = getOperatingDayKey(nowIso)
         const state = get()
         const prevDayKey = state.operatingDayKey
@@ -273,7 +289,8 @@ export const useSessionStore = create<SessionStore>()(
         const wasStationClosed = !!state.lastCloseSummary &&
           state.closedForDayKey === prevDayKey
 
-        if (!wasStationClosed) {
+        const hadPicksPrevDay = hadBt2PicksOnOperatingDay(takenApiPicks, prevDayKey)
+        if (!wasStationClosed && hadPicksPrevDay) {
           pendingItems.push('STATION_UNCLOSED')
         }
         if (hasUnsettledPicks) {
@@ -358,8 +375,8 @@ function applyPenalties(
       reason: 'grace_expired_station_unclosed',
       dpPenalty: 50,
       description:
-        'Estación del día anterior sin cerrar tras la ventana de gracia (24 h). ' +
-        'Penalización: -50 DP. Completa el After-Action Review para reanudar operativa.',
+        'Estación del día anterior sin cerrar (hubo picks tomados ese día) tras la gracia. ' +
+        'El servidor solo descuenta −50 DP en esa situación. Completa el After-Action Review.',
     }
     newPenalties.push(record)
     console.warn(

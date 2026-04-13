@@ -136,7 +136,8 @@ Estos vienen de **§1.13** del consolidado; deben aparecer reflejados en US/TASK
 - [`US.md`](./US.md) — **US-DX-004**, **US-BE-040** … **US-BE-048**, **US-FE-057** … **US-FE-059** + matriz inventario → US.  
 - [`TASKS.md`](./TASKS.md) — **T-195** … **T-225** + checklist de cobertura §3.  
 - [`HANDOFF_EJECUCION_S6_2.md`](./HANDOFF_EJECUCION_S6_2.md) — orden, dependencias e instrucciones por rol.
+- [`CIERRE_S6_2.md`](./CIERRE_S6_2.md) — acta de cierre (2026-04-09), **D-06-042**; traspasos a [`../sprint-06.3/PLAN.md`](../sprint-06.3/PLAN.md).
 
 ---
 
-*Al cambiar el alcance S6.2, actualizar la **Versión** arriba y las tablas §3; si cambian reglas normativas, actualizar primero el consolidado y luego reflejar aquí.*
+*Al cambiar el alcance S6.2, actualizar la **Versión** arriba y las tablas §3; si cambian reglas normativas, actualizar primero el consolidado y luego reflejar aquí. El sprint 06.2 está **cerrado**; no reabrir alcance aquí — usar S6.3.*

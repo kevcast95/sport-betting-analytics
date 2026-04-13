@@ -15,6 +15,7 @@ from apps.api.bt2_dsr_context_queries import (
     streaks_from_form,
 )
 from apps.api.bt2_dsr_contract import validate_ds_input_item_dict
+from apps.api.bt2_dsr_ds_input_sm_fixture_blocks import merge_sm_optional_fixture_blocks
 from apps.api.bt2_dsr_sm_statistics import (
     merge_sm_statistics_into_processed_statistics,
     sm_fixture_statistics_block,
@@ -88,6 +89,13 @@ def build_ds_input_item(
             "statistics": {"available": False},
             "team_streaks": {"available": False},
             "team_season_stats": {"available": False},
+            "fixture_conditions": {"available": False},
+            "match_officials": {"available": False},
+            "squad_availability": {"available": False},
+            "tactical_shape": {"available": False},
+            "prediction_signals": {"available": False},
+            "broadcast_notes": {"available": False},
+            "fixture_advanced_sm": {"available": False},
         },
         "diagnostics": {
             "market_coverage": agg.market_coverage,
@@ -220,6 +228,9 @@ def apply_postgres_context_to_ds_item(
     else:
         diag["raw_fixture_missing"] = True
         fe.append("lineups:no_sportmonks_fixture_id")
+
+    if isinstance(sm_payload, dict):
+        merge_sm_optional_fixture_blocks(item["processed"], sm_payload)
 
     st_final = item["processed"]["statistics"]
     sm_sub = st_final.get("from_sm_fixture") if isinstance(st_final, dict) else None

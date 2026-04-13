@@ -128,8 +128,29 @@ class DsProcessedF1(BaseModel):
     statistics: dict[str, Any]
     team_streaks: dict[str, Any]
     team_season_stats: dict[str, Any]
+    # SportMonks fixture includes (opcionales; base = {available: false})
+    fixture_conditions: dict[str, Any]
+    match_officials: dict[str, Any]
+    squad_availability: dict[str, Any]
+    tactical_shape: dict[str, Any]
+    prediction_signals: dict[str, Any]
+    broadcast_notes: dict[str, Any]
+    fixture_advanced_sm: dict[str, Any]
 
-    @field_validator("lineups", "h2h", "statistics", "team_streaks", "team_season_stats")
+    @field_validator(
+        "lineups",
+        "h2h",
+        "statistics",
+        "team_streaks",
+        "team_season_stats",
+        "fixture_conditions",
+        "match_officials",
+        "squad_availability",
+        "tactical_shape",
+        "prediction_signals",
+        "broadcast_notes",
+        "fixture_advanced_sm",
+    )
     @classmethod
     def _processed_context_blocks(cls, v: dict[str, Any]) -> dict[str, Any]:
         # D-06-028: permitir {available:true,...} con claves seguras (T-172 + assert_no_forbidden_ds_keys al validar ítem).

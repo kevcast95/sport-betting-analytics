@@ -1,12 +1,18 @@
 /**
- * Unifica narrativa DSR, texto CDM y origen (`dsrSource`) en un solo bloque de UI
- * (US-FE-052 / T-165; S6.1 US-FE-055 — no mezclar razonador, reglas y placeholders).
+ * Una sola voz en bóveda/detalle, alineada a v1 (`razon` en `jobs/render_telegram_payload.py`):
+ * título Vektor + cuerpo humano, sin segunda tarjeta ni jerga CDM/DSR/protocolo.
  */
+export const MODEL_WHY_TITLE_ES = 'Vektor — por qué lo sugiere el modelo'
 
-export const RULES_FALLBACK_MODEL_COPY_ES =
-  'No hubo señal suficiente del análisis estadístico del día; esta opción se armó con reglas del protocolo sobre cuotas reales del CDM, priorizando coherencia con los datos disponibles — no maximizar ganancia por cuota alta como único eje (D-06-027). Si el día tuvo pocos eventos, el criterio puede estar sesgado por datos limitados (D-06-025).'
+/** Cuando no hay `razon`/narrativa del modelo pero sí señal por reglas sobre cuotas. */
+export const MODEL_WHY_FALLBACK_RULES_ES =
+  'Con la información disponible para este partido, la lectura se alinea con la opción que muestra mayor respaldo entre las salidas del mercado mostradas, sin tomar solo la cuota más alta como único criterio.'
 
-/** Texto servidor/CDM que no debe mostrarse como “lectura analítica”. */
+/** DSR habilitado pero sin texto publicado (ingesta o corrida). */
+export const MODEL_WHY_FALLBACK_DSR_MISSING_ES =
+  'Todavía no hay texto de lectura publicado para este partido; podés apoyarte en el mercado y la cuota indicadas mientras se actualiza la señal.'
+
+/** Texto interno/legacy que no debe mostrarse tal cual al usuario. */
 export function isGenericCdmTraduccionEs(text: string | null | undefined): boolean {
   if (!text || !text.trim()) return true
   const t = text.trim().toLowerCase()
@@ -18,59 +24,70 @@ export function isGenericCdmTraduccionEs(text: string | null | undefined): boole
   return false
 }
 
-export type UnifiedApiModelReading = { title: string; body: string }
+/**
+ * Texto persistido de corridas viejas o plantillas internas: no mostrarlo tal cual al usuario.
+ */
+export function isPipelineJargonNarrativeEs(text: string | null | undefined): boolean {
+  if (!text || !text.trim()) return false
+  const t = text.trim().toLowerCase()
+  const markers = [
+    'línea 1x2 del cdm',
+    'narrativa extendida del análisis dsr',
+    'narrativa extendida',
+    'criterios del protocolo sobre las cuotas',
+    'sin narrativa dsr extendida',
+    'señal basada en reglas cdm',
+    'pipeline s6-',
+    'ranking dsr automático',
+    'sin cuotas suficientes para ranking',
+  ]
+  return markers.some((m) => t.includes(m))
+}
 
 function isDsrApiSource(source: string): boolean {
   return source.trim().toLowerCase() === 'dsr_api'
 }
 
+export type ModelWhyReading = { title: string; body: string }
+
 /**
- * Prioridad: narrativa DSR (si origen y texto lo permiten) → CDM no placeholder → copy de reglas / vacío DSR explícito.
- * `dsrSource` gobierna si el título puede implicar “razonador en vivo” (US-FE-055).
+ * Un solo bloque para UI: prioridad narrativa DSR → texto útil del API → fallback breve sin jerga.
  */
-export function unifiedApiModelReading(d: {
-  dsrNarrativeEs: string
+export function modelWhyReading(d: {
+  dsrNarrativeEs: string | null | undefined
   traduccionHumana: string | null | undefined
-  /** p. ej. `dsr_api` | `rules_fallback` — vacío se trata como no-DSR-api para no afirmar razonador. */
+  dsrSource?: string | null
+}): ModelWhyReading {
+  const dsr = (d.dsrNarrativeEs ?? '').trim()
+  const trRaw = (d.traduccionHumana ?? '').trim()
+  const trPlaceholder = isGenericCdmTraduccionEs(trRaw)
+  const dsrApi = isDsrApiSource(d.dsrSource ?? '')
+
+  const dsrOk = Boolean(dsr) && !isPipelineJargonNarrativeEs(dsr)
+  const trOk =
+    Boolean(trRaw) && !trPlaceholder && !isPipelineJargonNarrativeEs(trRaw)
+
+  if (dsrOk) {
+    return { title: MODEL_WHY_TITLE_ES, body: dsr }
+  }
+  if (trOk) {
+    return { title: MODEL_WHY_TITLE_ES, body: trRaw }
+  }
+  if (dsrApi) {
+    return { title: MODEL_WHY_TITLE_ES, body: MODEL_WHY_FALLBACK_DSR_MISSING_ES }
+  }
+  return { title: MODEL_WHY_TITLE_ES, body: MODEL_WHY_FALLBACK_RULES_ES }
+}
+
+/** @deprecated Usar `modelWhyReading`; se mantiene para imports legacy. */
+export const RULES_FALLBACK_MODEL_COPY_ES = MODEL_WHY_FALLBACK_RULES_ES
+
+export type UnifiedApiModelReading = { title: string; body: string }
+
+export function unifiedApiModelReading(d: {
+  dsrNarrativeEs: string | null | undefined
+  traduccionHumana: string | null | undefined
   dsrSource?: string | null
 }): UnifiedApiModelReading {
-  const src = (d.dsrSource ?? '').trim()
-  const dsrApi = isDsrApiSource(src)
-  const dsr = (d.dsrNarrativeEs ?? '').trim()
-  const trRaw = d.traduccionHumana?.trim() ?? ''
-  const trPlaceholder = isGenericCdmTraduccionEs(trRaw)
-
-  if (dsrApi) {
-    if (dsr) {
-      return { title: 'Vektor — por qué', body: dsr }
-    }
-    if (trRaw && !trPlaceholder) {
-      return {
-        title: 'Vektor — contexto',
-        body: trRaw,
-      }
-    }
-    return {
-      title: 'Vektor — por qué',
-      body:
-        'No hay texto Vektor publicado para este ítem. Si aparece una línea de confianza, describe la postura del modelo respecto al insumo del día; no indica por sí sola un fallo operativo ni la probabilidad de acierto.',
-    }
-  }
-
-  if (dsr) {
-    return {
-      title: 'Vektor — contexto',
-      body: dsr,
-    }
-  }
-  if (trRaw && !trPlaceholder) {
-    return {
-      title: 'Vektor — contexto',
-      body: trRaw,
-    }
-  }
-  return {
-    title: 'Vektor — por qué',
-    body: RULES_FALLBACK_MODEL_COPY_ES,
-  }
+  return modelWhyReading(d)
 }

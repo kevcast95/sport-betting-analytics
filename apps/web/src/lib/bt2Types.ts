@@ -151,6 +151,8 @@ export interface Bt2PickOut {
   modelMarketCanonical?: string | null
   modelSelectionCanonical?: string | null
   modelPredictionResult?: string | null
+  /** POST /bt2/picks: bankroll tras descontar el stake. */
+  bankrollAfterUnits?: number | null
 }
 
 export interface Bt2PicksListOut {
@@ -255,6 +257,27 @@ export interface Bt2AdminDsrDayOut {
   auditRows: Bt2AdminDsrAuditRowOut[]
 }
 
+/** GET /bt2/admin/analytics/dsr-range — serie diaria + totales (histórico admin). */
+export interface Bt2AdminDsrRangeTotalsOut {
+  dayCount: number
+  daysWithSettledModel: number
+  sumDistinctEventsDaily: number
+  picksSettledWithModel: number
+  modelHits: number
+  modelMisses: number
+  modelVoids: number
+  modelNa: number
+  hitRatePct: number | null
+  summaryHumanEs: string
+}
+
+export interface Bt2AdminDsrRangeOut {
+  fromOperatingDayKey: string
+  toOperatingDayKey: string
+  days: Bt2AdminDsrDaySummaryOut[]
+  totals: Bt2AdminDsrRangeTotalsOut
+}
+
 /** GET /bt2/admin/analytics/vault-pick-distribution — US-BE-035 / T-183 */
 export interface Bt2AdminCountRowOut {
   key: string
@@ -294,6 +317,7 @@ export type Bt2DpLedgerReason =
   | 'onboarding_phase_a'
   | 'penalty_station_unclosed'
   | 'penalty_unsettled_picks'
+  | 'penalty_unsettled_not_applicable'
   /** Reservado Sprint 07 */
   | 'parlay_activation_2l'
   /** Reservado Sprint 07 */

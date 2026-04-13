@@ -212,11 +212,17 @@ export default function VaultPage() {
     [apiPicks, userTimeZone, vaultLocalSlateCycle],
   )
 
-  /** Respeta el orden de `orderedPoolPicks` (no remix con mixSortCompare). */
+  /** Ventana de 5 sobre el pool ordenado; `vaultLocalSlateCycle` rota el inicio (circular). */
   const displayedPicks = useMemo(
     () =>
-      selectVisibleFromOrderedPool(orderedPoolPicks, userTimeZone, visibleHardCap),
-    [orderedPoolPicks, userTimeZone, visibleHardCap],
+      selectVisibleFromOrderedPool(
+        orderedPoolPicks,
+        userTimeZone,
+        visibleHardCap,
+        undefined,
+        vaultLocalSlateCycle,
+      ),
+    [orderedPoolPicks, userTimeZone, visibleHardCap, vaultLocalSlateCycle],
   )
 
   // Conteo por tier (solo cartelera visible)
@@ -362,6 +368,13 @@ export default function VaultPage() {
           )
           return
         }
+        if (res.reason === 'insufficient_bankroll') {
+          showVaultToast(
+            res.apiMessage ??
+              'Bankroll insuficiente para el stake de esta señal.',
+          )
+          return
+        }
         showVaultToast(
           res.apiMessage ??
             'No se pudo registrar la señal. Reintenta o revisa tu conexión.',
@@ -440,11 +453,11 @@ export default function VaultPage() {
                     return
                   }
                   showVaultToast(
-                    `Ciclo ${r.cycle}/4 · ${r.poolSize} picks en pool · orden de cartelera actualizado.`,
+                    `Ciclo ${r.cycle}/4 · ${r.poolSize} picks en pool · orden de cartelera actualizado (solo cliente, sin otro request).`,
                   )
                 }}
                 className="w-full max-w-xs rounded-lg border border-[#26343d]/20 bg-[#26343d] px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-[#1c2730] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                title="Rota el ciclo de franjas sobre el pool ya cargado (sin llamar al servidor)."
+                title="Rota el ciclo de franjas horarias sobre el pool ya traído en el GET (hasta 20); no vuelve a llamar al servidor."
               >
                 Regenerar cartelera
               </button>
@@ -453,8 +466,9 @@ export default function VaultPage() {
                   Total en pool (API):{' '}
                   <span className="font-mono tabular-nums">{apiPicks.length}</span>
                 </span>
-                . Llega al abrir la estación; «Regenerar» rota ciclo 0–3 y reordena sin red (hasta{' '}
-                <span className="font-mono">{visibleHardCap}</span> visibles, franja local primero).
+                . Un solo GET al abrir la estación trae el pool del día; «Regenerar» solo baraja
+                el orden visible (ciclo 0–3 y franja local), hasta{' '}
+                <span className="font-mono">{visibleHardCap}</span> tarjetas.
               </p>
             </div>
             <div

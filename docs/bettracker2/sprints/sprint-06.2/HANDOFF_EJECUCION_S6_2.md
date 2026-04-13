@@ -3,7 +3,7 @@
 > **Para:** DX, BE (datos / core / admin), FE (bóveda / admin), PO/BA, operación.  
 > **Backlog vivo de este sprint:** **[`TASKS.md`](./TASKS.md)** en **esta carpeta** (`sprint-06.2`). **No** usar [`../sprint-06.1/TASKS.md`](../sprint-06.1/TASKS.md) como lista de trabajo: por **D-06-031** es **histórico** (solo referencia o **T-221** opcional).  
 > **Fuentes:** [`US.md`](./US.md), [`TASKS.md`](./TASKS.md), [`DECISIONES.md`](./DECISIONES.md), [`FUENTE_VERDAD_CONSOLIDADO_S6_1_Y_PLAN_S6_2.md`](./FUENTE_VERDAD_CONSOLIDADO_S6_1_Y_PLAN_S6_2.md), [`INVENTARIO_TECNICO_S6_2.md`](./INVENTARIO_TECNICO_S6_2.md).  
-> **Evidencia de cierre:** [`EJECUCION.md`](./EJECUCION.md) en esta carpeta (crear/actualizar con escenarios probados y **diferidos** explícitos).
+> **Evidencia de cierre:** [`EJECUCION.md`](./EJECUCION.md) + acta [`CIERRE_S6_2.md`](./CIERRE_S6_2.md) (**D-06-042**). Continuidad: [`../sprint-06.3/PLAN.md`](../sprint-06.3/PLAN.md).
 
 ---
 

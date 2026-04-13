@@ -12,14 +12,14 @@ import { vektorModelConfidenceLineEs } from '@/lib/bt2ProtocolLabels'
 import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
 import { getMarketLabelEs } from '@/lib/marketLabels'
 import { isKickoffUtcInPast } from '@/lib/vaultKickoff'
-import { unifiedApiModelReading } from '@/lib/vaultModelReading'
+import { modelWhyReading } from '@/lib/vaultModelReading'
 import { vaultPickEventPresentation } from '@/lib/vaultPickEventUi'
 import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
 import { useTradeStore } from '@/store/useTradeStore'
 
 const KNOB = 40
 const PAD = 6
-/** D-05-009 + S6.1 §5.1: preview Vektor ~2 líneas (no párrafo largo en card). */
+/** D-05-009 + S6.1 §5.1: preview lectura ~2 líneas (no párrafo largo en card). */
 const TRADUCCION_PREVIEW_CHARS = 132
 /** TZ por defecto hasta leer `bt2_user_settings.timezone` en app (T-139) */
 const DEFAULT_EVENT_TZ = 'America/Bogota'
@@ -39,6 +39,50 @@ function excerptTraduccion(text: string, max = TRADUCCION_PREVIEW_CHARS): string
   if (!t) return ''
   if (t.length <= max) return t
   return `${t.slice(0, max).trim()}…`
+}
+
+/** Un solo bloque estilo v1 (`razon`): por qué el modelo sugiere la lectura. */
+function ModelWhyBlock(props: {
+  title: string
+  body: string
+  confidenceLine: string
+  lineClampClass: string
+  reviewHref: string
+  showReviewLink?: boolean
+}) {
+  const {
+    title,
+    body,
+    confidenceLine,
+    lineClampClass,
+    reviewHref,
+    showReviewLink = true,
+  } = props
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="rounded-lg border border-[#6d3bd7]/15 bg-[#f6fafe]/90 p-3">
+        <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
+          {title}
+        </p>
+        <p className={`${lineClampClass} text-xs leading-relaxed text-[#26343d]`}>
+          {body}
+        </p>
+      </div>
+      {confidenceLine ? (
+        <p className="font-mono text-[9px] leading-snug text-[#6e7d86]">
+          {confidenceLine}
+        </p>
+      ) : null}
+      {showReviewLink ? (
+        <NavLink
+          to={reviewHref}
+          className="inline-block text-xs font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
+        >
+          Ver ficha completa
+        </NavLink>
+      ) : null}
+    </div>
+  )
 }
 
 /**
@@ -339,21 +383,20 @@ export function PickCard({
   const premiumOpen = !isPremium || premiumUnlocked
   const showPreviewOnly = !pickTaken && !premiumOpen
   const premiumLockedSurface = isPremium && showPreviewOnly
-  const unifiedApiBody = isApi
-    ? unifiedApiModelReading({
+  const hideDsrBecausePremiumLocked =
+    isPremium && !pickTaken && !premiumUnlocked
+  const modelWhy = isApi
+    ? modelWhyReading({
         dsrNarrativeEs: d.dsrNarrativeEs,
         traduccionHumana: d.traduccionHumana,
         dsrSource: d.dsrSource,
       })
     : null
-  const previewText =
-    unifiedApiBody != null
-      ? excerptTraduccion(unifiedApiBody.body)
-      : d.traduccionHumana
-        ? excerptTraduccion(d.traduccionHumana)
-        : ''
-  const hideDsrBecausePremiumLocked =
-    isPremium && !pickTaken && !premiumUnlocked
+  const showApiModelWhy = isApi && !hideDsrBecausePremiumLocked && modelWhy != null
+  const previewBody =
+    isApi && modelWhy ? modelWhy.body : (d.traduccionHumana?.trim() ?? '')
+  const previewText = excerptTraduccion(previewBody)
+  const previewLabel = 'Vista previa · Vektor'
   const vektorConfidenceLine = vektorModelConfidenceLineEs(d.dsrConfidenceLabel)
 
   const takeBlockedVisual = kickoffPast
@@ -497,6 +540,23 @@ export function PickCard({
         ) : null}
       </div>
 
+      {/* Búsqueda externa del partido: siempre visible (API) para contrastar previa/resultado */}
+      {isApi && d.externalSearchUrl ? (
+        <div className="mb-3 rounded-lg border border-[#a4b4be]/20 bg-[#eef4fa]/70 px-3 py-2">
+          <a
+            href={d.externalSearchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
+          >
+            Buscar partido en Google ↗
+          </a>
+          <p className="mt-0.5 text-[9px] leading-snug text-[#6e7d86]">
+            Referencia externa para confirmar horario, alineaciones o resultado.
+          </p>
+        </div>
+      ) : null}
+
       {!pickTaken ? (
         <>
           {showPreviewOnly ? (
@@ -529,7 +589,7 @@ export function PickCard({
             ) : (
               <div className="relative mt-auto min-h-[88px] flex-1 overflow-hidden rounded-lg border border-[#26343d]/10 bg-[#f6fafe]/80 p-3">
                 <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
-                  Vista previa · Vektor
+                  {previewLabel}
                 </p>
                 <p className="mb-2 font-mono text-[10px] text-[#52616a]">
                   Inicio: <span className="font-semibold text-[#26343d]">{eventStartLabel ?? '—'}</span>
@@ -543,7 +603,7 @@ export function PickCard({
                 </p>
                 <p className="line-clamp-2 text-xs leading-relaxed text-[#26343d]">
                   {previewText ||
-                    'Sin texto publicado para la vista previa; abre la ficha para leer Vektor completo.'}
+                    'Sin texto en vista previa; abrí la ficha para leer por qué sugiere el modelo esta señal.'}
                 </p>
                 {vektorConfidenceLine && !premiumLockedSurface ? (
                   <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
@@ -559,24 +619,19 @@ export function PickCard({
               transition={{ duration: 0.3, ease: 'easeOut' }}
               className="mt-auto flex flex-1 flex-col gap-2"
             >
-              {isApi && !hideDsrBecausePremiumLocked && unifiedApiBody ? (
-                <div className="rounded-lg border border-[#6d3bd7]/15 bg-[#f6fafe]/90 p-3">
-                  <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
-                    {unifiedApiBody.title}
-                  </p>
-                  <p className="line-clamp-6 text-xs leading-relaxed text-[#26343d]">
-                    {unifiedApiBody.body}
-                  </p>
-                  {vektorConfidenceLine ? (
-                    <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
-                      {vektorConfidenceLine}
-                    </p>
-                  ) : null}
-                </div>
+              {showApiModelWhy && modelWhy ? (
+                <ModelWhyBlock
+                  title={modelWhy.title}
+                  body={modelWhy.body}
+                  confidenceLine={vektorConfidenceLine}
+                  lineClampClass="line-clamp-6"
+                  reviewHref={`/v2/settlement/${d.id}?phase=review`}
+                  showReviewLink={false}
+                />
               ) : !isApi && d.traduccionHumana ? (
                 <div className="rounded-lg border border-[#26343d]/10 bg-[#f6fafe]/80 p-3">
                   <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-[#6e7d86]">
-                    Vektor — por qué
+                    Por qué lo sugiere el modelo
                   </p>
                   <p className="line-clamp-6 text-xs leading-relaxed text-[#26343d]">
                     {d.traduccionHumana}
@@ -682,42 +737,21 @@ export function PickCard({
                   className="h-10 w-full text-[#059669]"
                 />
               </div>
-            ) : d.externalSearchUrl ? (
-              <a
-                href={d.externalSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 rounded-lg border border-[#a4b4be]/20 bg-[#eef4fa] p-2 text-center text-[10px] font-semibold text-[#6d3bd7] hover:bg-[#e9ddff]/30"
-              >
-                Ver resultado ↗
-              </a>
             ) : null}
           </div>
 
-          {isApi && !hideDsrBecausePremiumLocked && unifiedApiBody ? (
-            <div className="rounded-lg border border-[#6d3bd7]/15 bg-[#f6fafe]/90 p-3">
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#6e7d86]">
-                {unifiedApiBody.title}
-              </p>
-              <p className="line-clamp-5 text-sm leading-relaxed text-[#26343d]">
-                {unifiedApiBody.body}
-              </p>
-              {vektorConfidenceLine ? (
-                <p className="mt-2 font-mono text-[9px] leading-snug text-[#6e7d86]">
-                  {vektorConfidenceLine}
-                </p>
-              ) : null}
-              <NavLink
-                to={`/v2/settlement/${d.id}?phase=review`}
-                className="mt-2 inline-block text-xs font-bold text-[#6d3bd7] underline-offset-2 hover:underline"
-              >
-                Ver ficha completa
-              </NavLink>
-            </div>
+          {showApiModelWhy && modelWhy ? (
+            <ModelWhyBlock
+              title={modelWhy.title}
+              body={modelWhy.body}
+              confidenceLine={vektorConfidenceLine}
+              lineClampClass="line-clamp-5"
+              reviewHref={`/v2/settlement/${d.id}?phase=review`}
+            />
           ) : !isApi && d.traduccionHumana ? (
             <div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#6e7d86]">
-                Vektor — por qué
+                Por qué lo sugiere el modelo
               </p>
               <p className="line-clamp-5 text-sm leading-relaxed text-[#26343d]">
                 {d.traduccionHumana}

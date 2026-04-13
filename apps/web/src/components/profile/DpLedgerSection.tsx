@@ -84,7 +84,9 @@ export function DpLedgerSection({ monoStyle }: { monoStyle: CSSProperties }) {
               </tr>
             </thead>
             <tbody>
-              {entries.map((e) => (
+              {entries
+                .filter((e) => e.reason !== 'penalty_unsettled_not_applicable')
+                .map((e) => (
                 <tr
                   key={e.id}
                   className="border-b border-[#a4b4be]/10 last:border-0"

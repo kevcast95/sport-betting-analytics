@@ -194,4 +194,18 @@
 
 ---
 
-*Creación: 2026-04-11 — S6.2 kit ejecución. Actas pendientes: **D-06-034** (opción reset FSM), **D-06-035** (fecha + responsable PO/BA). **D-06-036** cerrada con texto canónico + `GlossaryModal.tsx`. **D-06-041** disclaimer superficie → **US-FE-060**.*
+## D-06-042 — Cierre formal Sprint 06.2 y encaje Sprint 06.3 (2026-04-09)
+
+**Contexto:** Se requiere acta única de cierre sin reescribir todo el inventario S6.2.
+
+**Decisión:**
+
+1. El sprint **06.2** se declara **cerrado** con el alcance descrito en **[`CIERRE_S6_2.md`](./CIERRE_S6_2.md)** (entregas + traspasos). La evidencia técnica detallada sigue en **[`EJECUCION.md`](./EJECUCION.md)**.
+2. Los ítems listados en **CIERRE_S6_2 §3** (cubo C, FSM Regenerar completo, pool global, runbooks, regresión T-223, **redefinición admin precisión DSR vs monitoreo de modelo**, actas abiertas) pasan al **backlog de arranque** de **[`../sprint-06.3/PLAN.md`](../sprint-06.3/PLAN.md)** salvo enmienda explícita de PO.
+3. **`TASKS.md` de S6.2** puede quedar con casillas desalineadas respecto al código; la reconciliación es **opcional** y puede hacerse en S6.3 sin reabrir S6.2 (**D-06-031**).
+
+**Trazabilidad:** acta de cierre; **Sprint 06.3** plan maestro.
+
+---
+
+*Creación: 2026-04-11 — S6.2 kit ejecución. Actas pendientes: **D-06-034** (opción reset FSM), **D-06-035** (fecha + responsable PO/BA). **D-06-036** cerrada con texto canónico + `GlossaryModal.tsx`. **D-06-041** disclaimer superficie → **US-FE-060**. **D-06-042** cierre S6.2 → S6.3 (2026-04-09).*

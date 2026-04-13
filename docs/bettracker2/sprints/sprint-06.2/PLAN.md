@@ -1,6 +1,8 @@
 # Sprint 06.2 — Plan (borrador)
 
-**Estado:** definición en curso — continúa el hilo **“BT2 mejor que v1”** y alineación de US que quedó pendiente de cerrar en 06.1.
+**Estado:** **cerrado** (2026-04-09). Acta: [`CIERRE_S6_2.md`](./CIERRE_S6_2.md). Siguiente: [`../sprint-06.3/PLAN.md`](../sprint-06.3/PLAN.md).
+
+**Contexto histórico:** continúa el hilo **“BT2 mejor que v1”** y alineación de US que quedó pendiente de cerrar en 06.1.
 
 **Fuente de verdad única (reglas y definiciones):** [`FUENTE_VERDAD_CONSOLIDADO_S6_1_Y_PLAN_S6_2.md`](./FUENTE_VERDAD_CONSOLIDADO_S6_1_Y_PLAN_S6_2.md).  
 **Inventario técnico (entregables S6.2, auditoría pre-ejecución):** [`INVENTARIO_TECNICO_S6_2.md`](./INVENTARIO_TECNICO_S6_2.md).  

@@ -8,7 +8,7 @@ export function VektorShortDisclaimer({ className = '' }: { className?: string }
       role="note"
       className={`text-[11px] leading-relaxed text-[#52616a] ${className}`.trim()}
     >
-      Vektor resume la lectura del protocolo sobre los datos del día;{' '}
+      La lectura resume por qué se sugiere la señal con los datos del día;{' '}
       <strong className="font-semibold text-[#435368]">no garantiza</strong> el resultado
       del partido{' '}
       <strong className="font-semibold text-[#435368]">ni</strong> constituye asesoría

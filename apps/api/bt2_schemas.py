@@ -392,6 +392,54 @@ class Bt2AdminDsrDayOut(BaseModel):
     )
 
 
+class Bt2AdminDsrRangeTotalsOut(BaseModel):
+    """Agregado global sobre el rango [from, to] (misma semántica que dsr-day por fila)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    day_count: int = Field(..., serialization_alias="dayCount")
+    days_with_settled_model: int = Field(
+        ...,
+        serialization_alias="daysWithSettledModel",
+        description="Días con al menos un pick liquidado y model_prediction_result no null.",
+    )
+    sum_distinct_events_daily: int = Field(
+        ...,
+        serialization_alias="sumDistinctEventsDaily",
+        description="Suma de eventos distintos por día (no deduplica eventos entre días).",
+    )
+    picks_settled_with_model: int = Field(
+        ...,
+        serialization_alias="picksSettledWithModel",
+    )
+    model_hits: int = Field(..., serialization_alias="modelHits")
+    model_misses: int = Field(..., serialization_alias="modelMisses")
+    model_voids: int = Field(..., serialization_alias="modelVoids")
+    model_na: int = Field(..., serialization_alias="modelNa")
+    hit_rate_pct: Optional[float] = Field(
+        None,
+        serialization_alias="hitRatePct",
+        description="Suma hits / (suma hits + suma misses) × 100.",
+    )
+    summary_human_es: str = Field("", serialization_alias="summaryHumanEs")
+
+
+class Bt2AdminDsrRangeOut(BaseModel):
+    """Serie diaria + totales; útil para auditoría histórica en admin (D-06-004)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    from_operating_day_key: str = Field(
+        ..., serialization_alias="fromOperatingDayKey"
+    )
+    to_operating_day_key: str = Field(..., serialization_alias="toOperatingDayKey")
+    days: List[Bt2AdminDsrDaySummaryOut] = Field(
+        default_factory=list,
+        description="Una fila por día calendario en el rango (inclusive), orden ascendente.",
+    )
+    totals: Bt2AdminDsrRangeTotalsOut
+
+
 OPERATOR_PROFILE_VALUES = {
     "DISCIPLINE_TRADER",
     "IMPULSE_REACTIVE",

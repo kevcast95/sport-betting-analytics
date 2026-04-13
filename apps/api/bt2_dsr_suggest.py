@@ -74,9 +74,8 @@ def suggest_from_candidate_row(
         conf = _CONFIDENCE_MEDIUM if edge > 0.05 else _CONFIDENCE_LOW
         label_es = {"home": "local", "draw": "empate", "away": "visitante"}[side]
         narrative = (
-            f"Señal por reglas CDM (S6): en {tournament}, {home_team} vs {away_team}, "
-            f"el desbalance de cuotas 1X2 favorece el {label_es} "
-            f"(pipeline {PIPELINE_VERSION_DEFAULT})."
+            f"En {tournament}, {home_team} frente a {away_team}, el equilibrio del 1X2 en "
+            f"las cuotas del mercado inclina la lectura hacia el {label_es}."
         )
         return (
             narrative,
@@ -97,8 +96,8 @@ def suggest_from_candidate_row(
         best = max(ou, key=lambda x: x[1])
         conf = _CONFIDENCE_LOW
         narrative = (
-            f"Señal por reglas CDM (S6): en {tournament}, {home_team} vs {away_team}, "
-            f"se destaca el mercado de goles 2.5 ({best[0].replace('_', ' ')})."
+            f"En {tournament}, {home_team} frente a {away_team}, las cuotas del mercado "
+            f"destacan el tercio de goles 2.5 ({best[0].replace('_', ' ')})."
         )
         return (
             narrative,
@@ -111,7 +110,8 @@ def suggest_from_candidate_row(
         )
 
     narrative = (
-        f"Sin cuotas suficientes para ranking DSR automático — {home_team} vs {away_team} ({tournament})."
+        f"No hay cuotas suficientes en el mercado mostrado para comparar con claridad "
+        f"a {home_team} y {away_team} ({tournament})."
     )
     return (
         narrative,

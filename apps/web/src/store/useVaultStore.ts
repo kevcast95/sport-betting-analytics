@@ -24,7 +24,10 @@ import type {
   Bt2PickRegisterBody,
   Bt2TakenPickRecord,
 } from '@/lib/bt2Types'
-import { BT2_ERR_PICK_EVENT_KICKOFF_ELAPSED } from '@/lib/bt2VaultConstants'
+import {
+  BT2_ERR_INSUFFICIENT_BANKROLL_STAKE,
+  BT2_ERR_PICK_EVENT_KICKOFF_ELAPSED,
+} from '@/lib/bt2VaultConstants'
 import { isKickoffUtcInPast } from '@/lib/vaultKickoff'
 import { computeVaultQuota } from '@/lib/vaultQuota'
 import { computeUnitValue } from '@/lib/treasuryMath'
@@ -50,6 +53,7 @@ export type VaultUnlockResult =
         | 'kickoff_elapsed'
         | 'quota_standard_exhausted'
         | 'quota_premium_exhausted'
+        | 'insufficient_bankroll'
       /** D-05-005 — solo si reason === insufficient_dp_premium (402) */
       premiumDetail?: Bt2DpInsufficientPremiumDetail
       /** Mensaje servidor (422 kickoff, etc.) */
@@ -91,8 +95,8 @@ export type VaultStoreState = {
   /** S6.1 — flags vacío operativo, degradación y conteos (US-BE-036 / T-184). */
   vaultDaySnapshotMeta: Bt2VaultDaySnapshotMeta | null
   /**
-   * Ciclo 0–3 para barajar el orden del pool **solo en cliente** (sin POST al servidor).
-   * Se reinicia desde `slateBandCycle` del API al cargar picks.
+   * Ciclo 0–3 para priorizar franja horaria al **barajar en cliente** el pool ya cargado (GET único).
+   * Se inicializa con `slateBandCycle` del API en `loadApiPicks`; «Regenerar cartelera» solo rota (+1 mod 4).
    */
   vaultLocalSlateCycle: number
 }
@@ -107,7 +111,9 @@ export type VaultStoreActions = {
    * y luego carga picks del día (GET /bt2/vault/picks).
    */
   loadApiPicks: () => Promise<void>
-  /** Baraja el orden del pool en memoria (ciclo franja); no llama al API. */
+  /**
+   * Baraja el orden visible: rota ciclo 0–3 **solo en memoria** (sin segundo request; el pool viene del GET).
+   */
   regenerateVaultSlate: () =>
     | { ok: true; cycle: number; poolSize: number }
     | { ok: false; message: string }
@@ -278,7 +284,8 @@ export const useVaultStore = create<VaultStore>()(
         if (!apiPicks.length) {
           return {
             ok: false as const,
-            message: 'No hay pool cargado. Abre la estación y espera la carga de la bóveda.',
+            message:
+              'No hay pool cargado. Abre la estación y espera el GET de la bóveda (un solo request con hasta 20 picks).',
           }
         }
         const nextCycle = (get().vaultLocalSlateCycle + 1) % 4
@@ -365,6 +372,17 @@ export const useVaultStore = create<VaultStore>()(
 
         const post = await bt2PostPickRegister(body)
         if (!post.ok) {
+          if (
+            post.status === 422 &&
+            post.errorCode === BT2_ERR_INSUFFICIENT_BANKROLL_STAKE
+          ) {
+            void useBankrollStore.getState().syncFromApi()
+            return {
+              ok: false,
+              reason: 'insufficient_bankroll',
+              apiMessage: post.message,
+            }
+          }
           if (post.status === 402 && post.premiumInsufficient) {
             console.warn(
               `[BT2] Desbloqueo premium rechazado (402): ${post.premiumInsufficient.message}`,
@@ -393,6 +411,16 @@ export const useVaultStore = create<VaultStore>()(
         const res = post.data
         // Sprint 05 (US-BE-017): el −50 DP va en bt2_dp_ledger en el mismo POST; no ajustar local.
         void useUserStore.getState().syncDpBalance()
+        if (
+          res.bankrollAfterUnits != null &&
+          Number.isFinite(res.bankrollAfterUnits)
+        ) {
+          useBankrollStore
+            .getState()
+            .reconcileToExchangeBalance(res.bankrollAfterUnits)
+        } else {
+          void useBankrollStore.getState().syncFromApi()
+        }
 
         const record: Bt2TakenPickRecord = {
           vaultPickId: vaultPick.id,

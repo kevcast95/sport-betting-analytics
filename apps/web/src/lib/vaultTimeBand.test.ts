@@ -130,6 +130,23 @@ describe('vaultTimeBand', () => {
     expect(out.map((p) => p.id)).toEqual(['first', 'second'])
   })
 
+  it('selectVisibleFromOrderedPool — slateCycleOffset rota la ventana cuando hay más picks que cap', () => {
+    const ms = Date.parse('2026-04-07T15:00:00.000Z')
+    const tz = 'America/Bogota'
+    const ordered = Array.from({ length: 12 }, (_, i) =>
+      pick(`p${i}`, 'morning', '2026-04-07T13:00:00.000Z', i + 1, 300 + i),
+    )
+    const cap = 5
+    const v0 = selectVisibleFromOrderedPool(ordered, tz, cap, ms, 0)
+    const v1 = selectVisibleFromOrderedPool(ordered, tz, cap, ms, 1)
+    expect(v0).toHaveLength(5)
+    expect(v1).toHaveLength(5)
+    expect(v0[0]?.id).toBe('p0')
+    expect(v1[0]?.id).toBe('p5')
+    const ids0 = new Set(v0.map((p) => p.id))
+    expect(v1.some((p) => ids0.has(p.id))).toBe(false)
+  })
+
   it('selectVisibleVaultPicks — prioriza franja local actual y respeta cap', () => {
     const picks = [
       pick('eve', 'evening', '2026-04-07T23:00:00.000Z'),

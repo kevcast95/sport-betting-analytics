@@ -19,12 +19,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from apps.api.bt2_dx_constants import (
     BT2_ERR_DP_INSUFFICIENT_PREMIUM,
+    BT2_ERR_INSUFFICIENT_BANKROLL_STAKE,
     BT2_ERR_PICK_KICKOFF_ELAPSED,
     DP_PREMIUM_UNLOCK_COST,
     PICK_SETTLE_DP_REWARD,
     PENALTY_STATION_UNCLOSED_DP,
     PENALTY_UNSETTLED_DP,
     REASON_PENALTY_STATION_UNCLOSED,
+    REASON_PENALTY_UNSETTLED_NOT_APPLICABLE,
     REASON_PENALTY_UNSETTLED_PICKS,
     REASON_PICK_PREMIUM_UNLOCK,
     REASON_PICK_SETTLE,
@@ -58,6 +60,8 @@ from apps.api.bt2_schemas import (
     Bt2AdminDsrDayOut,
     Bt2AdminDsrAuditRowOut,
     Bt2AdminDsrDaySummaryOut,
+    Bt2AdminDsrRangeOut,
+    Bt2AdminDsrRangeTotalsOut,
     Bt2AdminScoreBucketOut,
     Bt2AdminVaultPickDistributionOut,
     Bt2AdminVaultRegenerateSnapshotOut,
@@ -72,6 +76,7 @@ from apps.api.bt2_schemas import (
     VaultPremiumUnlockIn,
     VaultPremiumUnlockOut,
 )
+from apps.api.bt2_dev_sm_refresh import refresh_raw_sportmonks_for_value_pool_today
 from apps.api.bt2_settings import bt2_settings
 from apps.api.bt2_vault_market_mix import order_indices_for_top_slate_diversity
 from apps.api.bt2_vault_pool import (
@@ -86,6 +91,11 @@ from apps.api.deps import Bt2UserId
 
 router = APIRouter(prefix="/bt2", tags=["bt2"])
 logger = logging.getLogger("bt2_router")
+
+# Penalizaciones DP: el débito no puede dejar saldo negativo (carga parcial hasta 0).
+_DP_PENALTY_REASONS = frozenset(
+    {REASON_PENALTY_STATION_UNCLOSED, REASON_PENALTY_UNSETTLED_PICKS},
+)
 
 _VAULT_HARD_EMPTY_MESSAGE_ES = (
     "No hay eventos elegibles hoy según los umbrales del protocolo (mercados completos en CDM y cuota mínima). "
@@ -866,11 +876,8 @@ def _build_bt2_vault_picks_page_out(user_id: str) -> Bt2VaultPicksPageOut:
         msc = str(msc_row or "") if msc_row is not None else ""
         mcl_es = market_canonical_label_es(mmc or None)
         dsr_narr = (row.get("dsr_narrative_es") or "").strip()
-        trad_human = (
-            dsr_narr
-            if dsr_narr
-            else "Señal basada en reglas CDM — sin narrativa DSR extendida para este ítem."
-        )
+        # Misma cadena que `dsr_narrative_es` si existe; si no, vacío (el FE usa `modelWhyReading`).
+        trad_human = dsr_narr
         pipe_v = str(row.get("pipeline_version") or PIPELINE_VERSION_DEFAULT)
         dsr_src = str(row.get("dsr_source") or "rules_fallback")
         dsr_conf = str(row.get("dsr_confidence_label") or "")
@@ -1159,11 +1166,16 @@ def _append_dp_ledger_move(
 ) -> int:
     """Inserta movimiento; balance_after_dp = suma acumulada tras este delta."""
     raw = _get_dp_ledger_sum(cur, user_id)
-    new_raw = raw + delta_dp
+    actual_delta = delta_dp
+    if delta_dp < 0 and reason in _DP_PENALTY_REASONS:
+        debt = -delta_dp
+        take = min(debt, max(0, raw))
+        actual_delta = -take
+    new_raw = raw + actual_delta
     cur.execute(
         """INSERT INTO bt2_dp_ledger (user_id, delta_dp, reason, reference_id, balance_after_dp)
            VALUES (%s::uuid, %s, %s, %s, %s)""",
-        (user_id, delta_dp, reason, reference_id, new_raw),
+        (user_id, actual_delta, reason, reference_id, new_raw),
     )
     return new_raw
 
@@ -1188,65 +1200,100 @@ def _day_bounds_utc_for_odk(odk: str, tz_name: str) -> Tuple[datetime, datetime]
     return start_utc, end_utc
 
 
-def _close_orphan_sessions_and_station_penalties(cur, user_id: str, odk: str, now: datetime) -> None:
+def _close_orphan_sessions_and_station_penalties(
+    cur, user_id: str, odk: str, now: datetime, tz_name: str
+) -> None:
     """
-    Sesiones con operating_day_key < odk aún abiertas → cierre + penalty_station_unclosed −50
-    una sola vez por sesión (idempotente por reason + reference_id). D-05-002 / US-BE-017.
+    Sesiones con operating_day_key < odk aún abiertas → cierre automático.
+
+    Penalización −50 solo si hubo al menos un pick registrado (`bt2_picks`) en ese día
+    operativo (TZ usuario). Abrir la estación sin tomar picks no genera cargo.
+    Idempotente por reason + reference_id. D-05-002 / US-BE-017 (recalibrado).
     """
     cur.execute(
-        """SELECT id FROM bt2_operating_sessions
+        """SELECT id, operating_day_key FROM bt2_operating_sessions
            WHERE user_id = %s::uuid AND status = 'open' AND operating_day_key < %s
            ORDER BY operating_day_key ASC""",
         (user_id, odk),
     )
-    for (orphan_id,) in cur.fetchall():
+    for orphan_id, orphan_odk in cur.fetchall():
         cur.execute(
             """UPDATE bt2_operating_sessions
                SET status = 'closed', station_closed_at = %s, grace_until_iso = %s
                WHERE id = %s AND user_id = %s::uuid AND status = 'open'""",
             (now, now + timedelta(hours=24), orphan_id, user_id),
         )
-        if not _ledger_move_exists(cur, user_id, REASON_PENALTY_STATION_UNCLOSED, orphan_id):
-            _append_dp_ledger_move(
-                cur, user_id, PENALTY_STATION_UNCLOSED_DP, REASON_PENALTY_STATION_UNCLOSED, orphan_id
-            )
+        if _ledger_move_exists(cur, user_id, REASON_PENALTY_STATION_UNCLOSED, orphan_id):
+            continue
+        day_start, day_end = _day_bounds_utc_for_odk(str(orphan_odk), tz_name)
+        cur.execute(
+            """SELECT 1 FROM bt2_picks
+               WHERE user_id = %s::uuid AND opened_at >= %s AND opened_at < %s
+               LIMIT 1""",
+            (user_id, day_start, day_end),
+        )
+        if not cur.fetchone():
             logger.info(
-                "penalty_station_unclosed: user=%s session_id=%s delta_dp=%s (estación día anterior sin cerrar)",
+                "penalty_station_unclosed skipped: user=%s session_id=%s odk=%s (sin picks ese día)",
                 user_id,
                 orphan_id,
-                PENALTY_STATION_UNCLOSED_DP,
+                orphan_odk,
             )
+            continue
+        bal_after = _append_dp_ledger_move(
+            cur, user_id, PENALTY_STATION_UNCLOSED_DP, REASON_PENALTY_STATION_UNCLOSED, orphan_id
+        )
+        logger.info(
+            "penalty_station_unclosed: user=%s session_id=%s (estación sin cerrar con actividad de picks) balance_after=%s",
+            user_id,
+            orphan_id,
+            bal_after,
+        )
 
 
 def _apply_grace_unsettled_penalties(cur, user_id: str, now: datetime) -> None:
     """
-    penalty_unsettled_picks −25 por sesión cerrada con gracia vencida, si había pick abierto
-    al cierre; idempotente por (reason, reference_id=session.id). US-BE-017.
+    penalty_unsettled_picks −25 si la gracia venció y había pick **abierto tomado durante
+    esa sesión** (entre station_opened_at y station_closed_at). No cuenta picks viejos
+    abiertos de otros días. Idempotente por sesión. US-BE-017 (recalibrado).
     """
     cur.execute(
-        """SELECT id, station_closed_at FROM bt2_operating_sessions
+        """SELECT id, station_opened_at, station_closed_at FROM bt2_operating_sessions
            WHERE user_id = %s::uuid AND status = 'closed' AND grace_until_iso < %s""",
         (user_id, now),
     )
-    for sess_id, station_closed_at in cur.fetchall():
+    for sess_id, opened_at, closed_at in cur.fetchall():
         if _ledger_move_exists(cur, user_id, REASON_PENALTY_UNSETTLED_PICKS, sess_id):
+            continue
+        if _ledger_move_exists(cur, user_id, REASON_PENALTY_UNSETTLED_NOT_APPLICABLE, sess_id):
+            continue
+        if closed_at is None or opened_at is None:
             continue
         cur.execute(
             """SELECT 1 FROM bt2_picks
-               WHERE user_id = %s::uuid AND status = 'open' AND opened_at <= %s
+               WHERE user_id = %s::uuid AND status = 'open'
+                 AND opened_at >= %s AND opened_at <= %s
                LIMIT 1""",
-            (user_id, station_closed_at),
+            (user_id, opened_at, closed_at),
         )
         if not cur.fetchone():
+            _append_dp_ledger_move(
+                cur, user_id, 0, REASON_PENALTY_UNSETTLED_NOT_APPLICABLE, sess_id
+            )
+            logger.info(
+                "penalty_unsettled_picks skipped: user=%s session_id=%s (sin picks abiertos en intervalo sesión)",
+                user_id,
+                sess_id,
+            )
             continue
-        _append_dp_ledger_move(
+        bal_after = _append_dp_ledger_move(
             cur, user_id, PENALTY_UNSETTLED_DP, REASON_PENALTY_UNSETTLED_PICKS, sess_id
         )
         logger.info(
-            "penalty_unsettled_picks: user=%s session_id=%s delta_dp=%s (picks abiertos tras gracia)",
+            "penalty_unsettled_picks: user=%s session_id=%s balance_after=%s",
             user_id,
             sess_id,
-            PENALTY_UNSETTLED_DP,
+            bal_after,
         )
 
 
@@ -1454,6 +1501,11 @@ class PickOut(BaseModel):
     model_prediction_result: Optional[str] = Field(
         None, serialization_alias="modelPredictionResult"
     )
+    bankroll_after_units: Optional[float] = Field(
+        None,
+        serialization_alias="bankrollAfterUnits",
+        description="Tras tomar el pick: bankroll con stake ya descontado (solo POST /bt2/picks).",
+    )
 
 
 class PicksListOut(BaseModel):
@@ -1602,6 +1654,29 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
                 )
 
         cur.execute(
+            """SELECT COALESCE(bankroll_amount, 0) FROM bt2_users WHERE id = %s::uuid FOR UPDATE""",
+            (user_id,),
+        )
+        br_bank = cur.fetchone()
+        if not br_bank:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        balance_pre = float(br_bank[0])
+        stake_amt = float(body.stake_units)
+        if balance_pre + 1e-9 < stake_amt:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": BT2_ERR_INSUFFICIENT_BANKROLL_STAKE,
+                    "message": (
+                        f"Saldo insuficiente para registrar este stake: bankroll {balance_pre:.2f}, "
+                        f"stake requerido {stake_amt:.2f}."
+                    ),
+                    "bankroll": balance_pre,
+                    "requiredStake": stake_amt,
+                },
+            )
+
+        cur.execute(
             """INSERT INTO bt2_picks
                (user_id, event_id, market, selection, odds_taken, stake_units, status,
                 market_canonical, model_market_canonical, model_selection_canonical)
@@ -1621,6 +1696,28 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
         )
         row = cur.fetchone()
         pick_id, pick_status, opened_at = row
+
+        new_bal_out = round(balance_pre - stake_amt, 2)
+        cur.execute(
+            """UPDATE bt2_users SET bankroll_amount = %s WHERE id = %s::uuid RETURNING bankroll_amount""",
+            (new_bal_out, user_id),
+        )
+        nb_row = cur.fetchone()
+        if nb_row and nb_row[0] is not None:
+            new_bal_out = float(nb_row[0])
+
+        cur.execute(
+            """INSERT INTO bt2_bankroll_snapshots
+               (user_id, snapshot_date, balance_units, event_type, reference_id)
+               VALUES (%s::uuid, %s, %s, %s, %s)""",
+            (
+                user_id,
+                now_pick.date(),
+                new_bal_out,
+                "pick_stake_committed",
+                pick_id,
+            ),
+        )
 
         if charge_premium_unlock:
             _append_dp_ledger_move(
@@ -1643,6 +1740,14 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
                 pick_id,
                 body.event_id,
             )
+
+        logger.info(
+            "pick_stake_committed: user=%s pick_id=%s stake=%s bankroll_after=%s",
+            user_id,
+            pick_id,
+            stake_amt,
+            new_bal_out,
+        )
 
         conn.commit()
 
@@ -1692,6 +1797,7 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
         model_market_canonical=snap_mm,
         model_selection_canonical=snap_ms,
         model_prediction_result=None,
+        bankroll_after_units=new_bal_out,
     )
 
 
@@ -1883,14 +1989,22 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
         odds = float(pick[4])
         stake = float(pick[5])
 
+        # Stake ya descontado al abrir el pick (POST /bt2/picks). Liquidación:
+        # - won: reintegrar stake×cuota (apuesta + beneficio).
+        # - lost: sin movimiento adicional de bankroll.
+        # - void: reembolsar stake.
+        # pnl_units en fila = resultado económico neto del pick (para historial / UI).
         if outcome == "won":
             pnl = round(stake * (odds - 1), 2)
+            bankroll_delta = round(stake * odds, 2)
             event_type = "pick_win"
         elif outcome == "lost":
             pnl = round(-stake, 2)
+            bankroll_delta = 0.0
             event_type = "pick_loss"
         else:
             pnl = 0.0
+            bankroll_delta = round(stake, 2)
             event_type = "pick_void"
 
         # US-BE-020 (D-04-011 / D-05-012): +10 DP en ledger para won, lost y void.
@@ -1912,7 +2026,7 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
             """UPDATE bt2_users SET bankroll_amount = COALESCE(bankroll_amount, 0) + %s
                WHERE id = %s::uuid
                RETURNING bankroll_amount""",
-            (pnl, user_id),
+            (bankroll_delta, user_id),
         )
         bankroll_row = cur.fetchone()
         new_bankroll = (
@@ -1998,6 +2112,16 @@ class Bt2DevResetOperatingDayOut(BaseModel):
         ...,
         serialization_alias="serverSessionClosed",
         description="True si había sesión abierta y se marcó closed.",
+    )
+    sm_fixtures_refreshed: int = Field(
+        0,
+        serialization_alias="smFixturesRefreshed",
+        description="Payloads UPSERT en raw_sportmonks_fixtures (pool valor hoy) antes del borrado snapshot.",
+    )
+    sm_refresh_log: list[str] = Field(
+        default_factory=list,
+        serialization_alias="smRefreshLog",
+        description="Notas / errores del refresco SM (acotado en servidor).",
     )
     message_es: str = Field(..., serialization_alias="messageEs")
 
@@ -2456,7 +2580,7 @@ def bt2_session_open(user_id: Bt2UserId) -> SessionOpenOut:
         if cur.fetchone():
             raise HTTPException(status_code=409, detail=f"Ya existe una sesión abierta para {odk}")
 
-        _close_orphan_sessions_and_station_penalties(cur, user_id, odk, now)
+        _close_orphan_sessions_and_station_penalties(cur, user_id, odk, now, tz_name)
         _apply_grace_unsettled_penalties(cur, user_id, now)
 
         # Una fila por (user_id, operating_day_key) — el cierre solo pone status=closed.
@@ -2610,6 +2734,7 @@ def bt2_dev_reset_operating_day_for_tests(user_id: Bt2UserId) -> Bt2DevResetOper
         raise HTTPException(status_code=404, detail="Not found")
 
     odk = _operating_day_key_for_user(user_id)
+    tz_name = _user_timezone(user_id)
     now = datetime.now(timezone.utc)
     grace = now + timedelta(hours=24)
 
@@ -2617,7 +2742,15 @@ def bt2_dev_reset_operating_day_for_tests(user_id: Bt2UserId) -> Bt2DevResetOper
     cur = conn.cursor()
     session_closed = False
     picks_deleted = 0
+    sm_ok = 0
+    sm_log: list[str] = []
     try:
+        sm_ok, sm_log = refresh_raw_sportmonks_for_value_pool_today(
+            cur,
+            tz_name=tz_name,
+            sportmonks_api_key=bt2_settings.sportmonks_api_key,
+            priority_league_ids_csv=bt2_settings.bt2_priority_league_ids,
+        )
         cur.execute(
             """DELETE FROM bt2_vault_premium_unlocks
                WHERE user_id = %s::uuid AND operating_day_key = %s""",
@@ -2651,15 +2784,18 @@ def bt2_dev_reset_operating_day_for_tests(user_id: Bt2UserId) -> Bt2DevResetOper
         conn.close()
 
     msg = (
-        f"Día {odk}: eliminadas {picks_deleted} filas de bóveda; "
+        f"Día {odk}: SM raw refrescados {sm_ok} fixture(s); "
+        f"eliminadas {picks_deleted} filas de bóveda; "
         f"servidor {'cerró sesión abierta' if session_closed else 'sin sesión abierta (OK)'}. "
-        f"Abrí la bóveda o POST session/open para regenerar snapshot (DSR según configuración)."
+        f"Abrí la bóveda o POST session/open para regenerar snapshot completo (ds_input + DSR)."
     )
     return Bt2DevResetOperatingDayOut(
         ok=True,
         operating_day_key=odk,
         daily_picks_deleted=picks_deleted,
         server_session_closed=session_closed,
+        sm_fixtures_refreshed=sm_ok,
+        sm_refresh_log=sm_log[:25],
         message_es=msg,
     )
 
@@ -3080,6 +3216,189 @@ def bt2_admin_analytics_dsr_day(
             summary_human_es=summary_human,
         ),
         audit_rows=rows_out,
+    )
+
+
+_BT2_ADMIN_DSR_RANGE_MAX_DAYS = 366
+
+
+def _bt2_admin_dsr_day_summary_from_counts(
+    operating_day_key: str,
+    n_events: int,
+    agg: dict,
+) -> Bt2AdminDsrDaySummaryOut:
+    hits = int(agg.get("hit", 0))
+    misses = int(agg.get("miss", 0))
+    voids = int(agg.get("void", 0))
+    na_c = int(agg.get("n_a", 0))
+    denom = hits + misses
+    rate = round(100.0 * hits / denom, 2) if denom else None
+    settled_model = hits + misses + voids + na_c
+    summary_human = (
+        f"Día {operating_day_key}: {n_events} eventos en bóveda. "
+        f"Liquidados con modelo: {settled_model} "
+        f"(aciertos {hits}, fallos {misses}, void {voids}, N/D {na_c})."
+    )
+    if rate is not None:
+        summary_human += f" Tasa hit/(hit+miss): {rate} %."
+    else:
+        summary_human += " Sin par hit+miss para tasa."
+    return Bt2AdminDsrDaySummaryOut(
+        operating_day_key=operating_day_key,
+        distinct_events_in_vault=n_events,
+        picks_settled_with_model=settled_model,
+        model_hits=hits,
+        model_misses=misses,
+        model_voids=voids,
+        model_na=na_c,
+        hit_rate_pct=rate,
+        summary_human_es=summary_human,
+    )
+
+
+@router.get(
+    "/admin/analytics/dsr-range",
+    response_model=Bt2AdminDsrRangeOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_analytics_dsr_range(
+    from_operating_day_key: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="fromOperatingDayKey",
+        description="Inicio inclusive YYYY-MM-DD.",
+    ),
+    to_operating_day_key: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="toOperatingDayKey",
+        description="Fin inclusive YYYY-MM-DD.",
+    ),
+) -> Bt2AdminDsrRangeOut:
+    """
+    Serie diaria de mismos KPIs que `dsr-day` + totales del rango.
+    Header: **X-BT2-Admin-Key** = `BT2_ADMIN_API_KEY`.
+    """
+    try:
+        d0 = date.fromisoformat(from_operating_day_key)
+        d1 = date.fromisoformat(to_operating_day_key)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="fromOperatingDayKey y toOperatingDayKey deben ser YYYY-MM-DD válidos.",
+        )
+    if d0 > d1:
+        raise HTTPException(
+            status_code=400,
+            detail="fromOperatingDayKey no puede ser posterior a toOperatingDayKey.",
+        )
+    span = (d1 - d0).days + 1
+    if span > _BT2_ADMIN_DSR_RANGE_MAX_DAYS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Rango máximo {_BT2_ADMIN_DSR_RANGE_MAX_DAYS} días.",
+        )
+
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        cur.execute(
+            """
+            SELECT operating_day_key AS odk, COUNT(DISTINCT event_id)::int AS n
+            FROM bt2_daily_picks
+            WHERE operating_day_key >= %s AND operating_day_key <= %s
+            GROUP BY operating_day_key
+            """,
+            (from_operating_day_key, to_operating_day_key),
+        )
+        events_by_day = {str(r["odk"]): int(r["n"]) for r in cur.fetchall()}
+
+        cur.execute(
+            """
+            SELECT dp.operating_day_key AS odk,
+                   p.model_prediction_result AS r,
+                   COUNT(*)::int AS c
+            FROM bt2_picks p
+            INNER JOIN bt2_daily_picks dp
+              ON dp.user_id = p.user_id AND dp.event_id = p.event_id
+            WHERE p.settled_at IS NOT NULL
+              AND p.model_prediction_result IS NOT NULL
+              AND dp.operating_day_key >= %s
+              AND dp.operating_day_key <= %s
+            GROUP BY dp.operating_day_key, p.model_prediction_result
+            """,
+            (from_operating_day_key, to_operating_day_key),
+        )
+        raw_rows = cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()
+
+    agg_by_day: dict[str, dict[str, int]] = {}
+    for row in raw_rows:
+        odk = str(row["odk"])
+        rkey = str(row["r"])
+        c = int(row["c"])
+        if odk not in agg_by_day:
+            agg_by_day[odk] = {}
+        agg_by_day[odk][rkey] = agg_by_day[odk].get(rkey, 0) + c
+
+    days_out: List[Bt2AdminDsrDaySummaryOut] = []
+    total_hits = total_misses = total_voids = total_na = 0
+    sum_events_daily = 0
+    days_with_settled = 0
+    d = d0
+    while d <= d1:
+        odk = d.isoformat()
+        n_ev = events_by_day.get(odk, 0)
+        agg = agg_by_day.get(odk, {})
+        summary = _bt2_admin_dsr_day_summary_from_counts(odk, n_ev, agg)
+        days_out.append(summary)
+        total_hits += summary.model_hits
+        total_misses += summary.model_misses
+        total_voids += summary.model_voids
+        total_na += summary.model_na
+        sum_events_daily += n_ev
+        if summary.picks_settled_with_model > 0:
+            days_with_settled += 1
+        d += timedelta(days=1)
+
+    settled_all = total_hits + total_misses + total_voids + total_na
+    g_denom = total_hits + total_misses
+    g_rate = round(100.0 * total_hits / g_denom, 2) if g_denom else None
+    totals_human = (
+        f"Rango {from_operating_day_key} … {to_operating_day_key} ({span} días): "
+        f"{days_with_settled} días con al menos una medición modelo. "
+        f"Picks liquidados con modelo (total filas): {settled_all}. "
+        f"Aciertos {total_hits}, fallos {total_misses}, void {total_voids}, N/D {total_na}."
+    )
+    if g_rate is not None:
+        totals_human += f" Tasa global hit/(hit+miss): {g_rate} %."
+    else:
+        totals_human += " Sin par hit+miss global."
+
+    totals = Bt2AdminDsrRangeTotalsOut(
+        day_count=span,
+        days_with_settled_model=days_with_settled,
+        sum_distinct_events_daily=sum_events_daily,
+        picks_settled_with_model=settled_all,
+        model_hits=total_hits,
+        model_misses=total_misses,
+        model_voids=total_voids,
+        model_na=total_na,
+        hit_rate_pct=g_rate,
+        summary_human_es=totals_human,
+    )
+
+    return Bt2AdminDsrRangeOut(
+        from_operating_day_key=from_operating_day_key,
+        to_operating_day_key=to_operating_day_key,
+        days=days_out,
+        totals=totals,
     )
 
 

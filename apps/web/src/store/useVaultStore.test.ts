@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import * as api from '@/lib/api'
-import { BT2_ERR_PICK_EVENT_KICKOFF_ELAPSED } from '@/lib/bt2VaultConstants'
+import {
+  BT2_ERR_INSUFFICIENT_BANKROLL_STAKE,
+  BT2_ERR_PICK_EVENT_KICKOFF_ELAPSED,
+} from '@/lib/bt2VaultConstants'
 import type { Bt2VaultPickOut } from '@/lib/bt2Types'
 import { useBankrollStore } from '@/store/useBankrollStore'
 import { useSessionStore } from '@/store/useSessionStore'
@@ -209,5 +212,153 @@ describe('useVaultStore', () => {
       reason: 'kickoff_elapsed',
       apiMessage: 'El partido ya inició',
     })
+  })
+
+  it('takeApiPick — 422 insufficient_bankroll_for_stake → insufficient_bankroll', async () => {
+    const syncSpy = vi
+      .spyOn(useBankrollStore.getState(), 'syncFromApi')
+      .mockResolvedValue(undefined)
+    vi.mocked(api.bt2PostPickRegister).mockResolvedValue({
+      ok: false,
+      status: 422,
+      bodyText: '',
+      premiumInsufficient: null,
+      message: 'Saldo insuficiente para el stake',
+      errorCode: BT2_ERR_INSUFFICIENT_BANKROLL_STAKE,
+    })
+    useVaultStore.getState().reset()
+    useSessionStore.setState({ operatingDayKey: '2026-04-07' })
+    useBankrollStore.setState({
+      confirmedBankrollCop: 1_000_000,
+      selectedStakePct: 2,
+    })
+    const p = {
+      id: 'dp-br',
+      accessTier: 'standard',
+      premiumUnlocked: false,
+      eventId: 101,
+      marketClass: 'h2h',
+      marketLabelEs: 'H2H',
+      eventLabel: 'A vs B',
+      titulo: 'T',
+      suggestedDecimalOdds: 2.0,
+      edgeBps: 0,
+      selectionSummaryEs: 'A',
+      traduccionHumana: '',
+      curvaEquidad: [],
+      operatingDayKey: '2026-04-07',
+      isAvailable: true,
+      kickoffUtc: '2099-01-01T00:00:00.000Z',
+      eventStatus: 'scheduled',
+      externalSearchUrl: '',
+      unlockCostDp: 0,
+      timeBand: 'evening',
+    } satisfies Bt2VaultPickOut
+    useVaultStore.setState({ apiPicks: [p], takenApiPicks: [] })
+    const r = await useVaultStore.getState().takeApiPick(p)
+    expect(r).toEqual({
+      ok: false,
+      reason: 'insufficient_bankroll',
+      apiMessage: 'Saldo insuficiente para el stake',
+    })
+    expect(syncSpy).toHaveBeenCalled()
+    syncSpy.mockRestore()
+  })
+
+  it('takeApiPick — OK con bankrollAfterUnits reconcilia bankroll local', async () => {
+    vi.mocked(api.bt2PostPickRegister).mockResolvedValue({
+      ok: true,
+      data: {
+        pick_id: 555,
+        status: 'open',
+        opened_at: '2026-04-07T12:00:00.000Z',
+        stake_units: 20_000,
+        odds_accepted: 2.0,
+        event_label: 'A vs B',
+        event_id: 102,
+        market: 'h2h',
+        selection: 'A',
+        settled_at: null,
+        pnl_units: null,
+        earned_dp: null,
+        bankrollAfterUnits: 980_000,
+      },
+    })
+    useVaultStore.getState().reset()
+    useSessionStore.setState({ operatingDayKey: '2026-04-07' })
+    useBankrollStore.setState({
+      confirmedBankrollCop: 1_000_000,
+      selectedStakePct: 2,
+    })
+    const p = {
+      id: 'dp-ok',
+      accessTier: 'standard',
+      premiumUnlocked: false,
+      eventId: 102,
+      marketClass: 'h2h',
+      marketLabelEs: 'H2H',
+      eventLabel: 'A vs B',
+      titulo: 'T',
+      suggestedDecimalOdds: 2.0,
+      edgeBps: 0,
+      selectionSummaryEs: 'A',
+      traduccionHumana: '',
+      curvaEquidad: [],
+      operatingDayKey: '2026-04-07',
+      isAvailable: true,
+      kickoffUtc: '2099-01-01T00:00:00.000Z',
+      eventStatus: 'scheduled',
+      externalSearchUrl: '',
+      unlockCostDp: 0,
+      timeBand: 'evening',
+    } satisfies Bt2VaultPickOut
+    useVaultStore.setState({ apiPicks: [p], takenApiPicks: [] })
+    const r = await useVaultStore.getState().takeApiPick(p)
+    expect(r).toEqual({ ok: true })
+    expect(useBankrollStore.getState().confirmedBankrollCop).toBe(980_000)
+  })
+
+  it('regenerateVaultSlate rota ciclo local sin llamar al API (baraja pool ya cargado)', () => {
+    useVaultStore.getState().reset()
+    const pick = {
+      id: 'pool-1',
+      accessTier: 'standard',
+      premiumUnlocked: true,
+      eventId: 1,
+      marketClass: 'h2h',
+      marketLabelEs: 'H2H',
+      eventLabel: 'X vs Y',
+      titulo: 'T',
+      suggestedDecimalOdds: 2.0,
+      edgeBps: 0,
+      selectionSummaryEs: '1',
+      traduccionHumana: '',
+      curvaEquidad: [],
+      operatingDayKey: '2026-04-09',
+      isAvailable: true,
+      kickoffUtc: '2099-06-01T18:00:00.000Z',
+      eventStatus: 'scheduled',
+      externalSearchUrl: '',
+      unlockCostDp: 0,
+      timeBand: 'afternoon',
+    } satisfies Bt2VaultPickOut
+    useVaultStore.setState({
+      apiPicks: [pick],
+      vaultLocalSlateCycle: 2,
+      vaultPoolMeta: {
+        poolTargetCount: 5,
+        poolHardCap: 5,
+        valuePoolUniverseMax: 20,
+        poolItemCount: 1,
+        vaultUniversePersistedCount: 1,
+        slateBandCycle: 2,
+        poolBelowTarget: false,
+      },
+      picksLoadStatus: 'loaded',
+    })
+    const r = useVaultStore.getState().regenerateVaultSlate()
+    expect(r).toEqual({ ok: true, cycle: 3, poolSize: 1 })
+    expect(useVaultStore.getState().vaultLocalSlateCycle).toBe(3)
+    expect(useVaultStore.getState().apiPicks[0]?.id).toBe('pool-1')
   })
 })

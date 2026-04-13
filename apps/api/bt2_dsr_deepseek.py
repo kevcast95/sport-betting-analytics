@@ -105,8 +105,11 @@ _SYSTEM_BATCH = (
     "Eres analista de apuestas deportivas (fútbol, solo pre-partido). "
     "Recibes un lote con varios eventos (`ds_input`): forma whitelist con "
     "`processed.odds_featured` (consensus y, si viene, `ingest_meta` de frescura de cuotas), "
-    "bloques opcionales `h2h`, `statistics` (forma reciente codificada), `team_streaks`, `lineups` "
-    "cuando `available: true`, y `event_context`. No conoces resultados del partido objetivo. "
+    "bloques opcionales `h2h`, `statistics` (forma reciente codificada), `team_streaks`, `lineups`, "
+    "y enriquecimiento SportMonks cuando venga: `fixture_conditions` (sede/clima/estado), "
+    "`match_officials` (árbitro/entrenadores), `squad_availability` (bajas), `tactical_shape`, "
+    "`prediction_signals`, `broadcast_notes`, `fixture_advanced_sm` — todos bajo `processed` "
+    "con `available: true` si hay datos, y `event_context`. No conoces resultados del partido objetivo. "
     "Entre mercados presentes en `consensus`, elegí el que tenga **mejor soporte en los datos "
     "del propio lote** (histórico/forma/rachas/alineaciones resumidas y coherencia con las cuotas "
     "mostradas). **No** uses como regla principal “buscar la cuota más alta” ni maximizar payout; "
@@ -114,6 +117,13 @@ _SYSTEM_BATCH = (
     "en los datos de ese evento, **no** elijas siempre 1X2 por costumbre: considerá O/U goles, BTTS "
     "o doble oportunidad cuando el input los respalde. **No inventes** estadísticas ni histórico: "
     "solo usa lo explícito en cada ítem. "
+    "Redactá `razon` en español claro para quien no apuesta profesionalmente: no uses códigos "
+    "de forma (W/D/L ni cadenas tipo WWLWD); en su lugar conteos explícitos (p. ej. en los últimos "
+    "5 partidos oficiales, 3 victorias, 1 empate y 1 derrota). No digas que la cuota genera u "
+    "otorga confianza; si el mercado marca favorito, formulá el mercado cotiza como favorito a …. "
+    "Mencioná el número de cuota solo cuando aporte a la tesis (p. ej. desalineación entre "
+    "favoritismo del mercado y bajas o contexto que encarecen el riesgo, o implícito que parece "
+    "desproporcionado frente a los datos enviados). "
     "Respondé SOLO con JSON válido (sin markdown) según el esquema que pide el usuario."
 )
 
@@ -139,7 +149,7 @@ def _user_prompt_batch(*, operating_day_key: str, batch: dict[str, Any]) -> str:
         '          "odds": <number>,\n'
         '          "edge_pct": <number>,\n'
         '          "confianza": "Baja"|"Media"|"Media-Alta"|"Alta",\n'
-        '          "razon": "<una frase en español>"\n'
+        '          "razon": "<1–3 oraciones en español claro; sin siglas de forma; sin decir que la cuota da confianza; ver reglas del sistema>"\n'
         "        }\n"
         "      ]\n"
         "    }\n"
@@ -151,7 +161,11 @@ def _user_prompt_batch(*, operating_day_key: str, batch: dict[str, Any]) -> str:
         "- `market`: texto o código canónico (FT_1X2, OU_GOALS_2_5, BTTS, DOUBLE_CHANCE_1X, …).\n"
         "- `selection`: para FT_1X2 usá home|draw|away (o 1|X|2); O/U over_2_5|under_2_5; BTTS yes|no; "
         "doble oportunidad yes.\n"
-        "- No inventes cuotas: el campo `odds` debe coincidir con consensus del evento.\n\n"
+        "- No inventes cuotas: el campo `odds` debe coincidir con consensus del evento.\n"
+        "- `razon`: como en salida v1 para Telegram: 1–3 frases solo sobre el partido y los datos "
+        "enviados (ej. “Las rachas recientes muestran…”), sin metadatos de pipeline ni mencionar "
+        "CDM/protocolo. Sin siglas de forma (WWLWD); sin afirmar que la cuota da confianza; "
+        "mencionar cuota solo si explica tensión con favoritismo del mercado o riesgo contextual.\n\n"
         "Datos del lote (JSON):\n"
         f"{json.dumps(batch, ensure_ascii=False)}\n"
     )

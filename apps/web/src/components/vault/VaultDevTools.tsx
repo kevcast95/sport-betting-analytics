@@ -11,6 +11,8 @@ type DevResetOut = {
   operatingDayKey?: string
   dailyPicksDeleted?: number
   serverSessionClosed?: boolean
+  smFixturesRefreshed?: number
+  smRefreshLog?: string[]
   messageEs?: string
 }
 
@@ -45,9 +47,13 @@ export function VaultDevTools() {
       invalidateVaultClientCache()
       await useSessionStore.getState().hydrateFromApi()
       await useVaultStore.getState().loadApiPicks()
+      const log =
+        out.smRefreshLog && out.smRefreshLog.length > 0
+          ? ` · SM: ${out.smRefreshLog.slice(0, 6).join(' | ')}`
+          : ''
       setLastMsg(
         out.messageEs ??
-          `Reset OK · día ${out.operatingDayKey ?? '—'} · picks borrados: ${out.dailyPicksDeleted ?? '—'}`,
+          `Reset OK · día ${out.operatingDayKey ?? '—'} · raw SM ${out.smFixturesRefreshed ?? 0} · picks borrados: ${out.dailyPicksDeleted ?? '—'}${log}`,
       )
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -103,11 +109,13 @@ export function VaultDevTools() {
         Solo desarrollo
       </p>
       <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
-        Para ver de nuevo el pipeline DSR en snapshot necesitás borrar filas de bóveda del día:
-        usá <span className="font-mono">Reset día</span> (API con{' '}
-        <span className="font-mono">BT2_DEV_OPERATING_DAY_RESET=1</span>). Cerrar sesión solo
-        evita el 409 en <span className="font-mono">session/open</span> pero{' '}
-        <strong>no</strong> regenera narrativa si el snapshot ya existía.
+        <span className="font-mono">Reset día</span> hace el flujo completo de prueba: primero
+        vuelve a pedir a SportMonks cada fixture del pool valor del día (includes actuales) y
+        hace UPSERT en <span className="font-mono">raw_sportmonks_fixtures</span>; después borra
+        snapshot de bóveda, desbloqueos y metadata, y cierra la sesión operativa. Luego esta
+        pantalla vuelve a abrir sesión y cargar picks (nuevo <span className="font-mono">ds_input</span>{' '}
+        + DSR). Requiere <span className="font-mono">BT2_DEV_OPERATING_DAY_RESET=1</span> y clave SM
+        en el API. «Solo cerrar sesión» no refresca raw ni borra snapshot.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button

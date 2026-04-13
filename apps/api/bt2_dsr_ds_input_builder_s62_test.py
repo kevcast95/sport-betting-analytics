@@ -89,6 +89,58 @@ class TestApplyPostgresRawDiagnostics(unittest.TestCase):
         self.assertEqual(fs.get("corners_count_home"), 4)
         self.assertEqual(fs.get("corners_count_away"), 5)
 
+    def test_sm_optional_blocks_when_payload_has_venue_ref_sidelined(self) -> None:
+        item = self._base_item()
+        payload = {
+            "venue": {"name": "Camp Nou", "capacity": 99354},
+            "state": {"name": "Scheduled"},
+            "referees": [
+                {
+                    "referee": {
+                        "display_name": "Test Ref",
+                        "id": 7,
+                    }
+                }
+            ],
+            "sidelined": [
+                {
+                    "team_id": 10,
+                    "type_id": 1,
+                    "player": {"display_name": "Injured Player"},
+                }
+            ],
+            "formations": [
+                {"participant_id": 10, "location": "home", "formation": "4-3-3"}
+            ],
+            "lineups": [{"team_id": 10, "type_id": 11}],
+        }
+        cur = MagicMock()
+        cur.fetchone.side_effect = [
+            (None, None, None),
+            (payload,),
+        ]
+        apply_postgres_context_to_ds_item(
+            cur,
+            item,
+            event_id=42,
+            home_team_id=None,
+            away_team_id=None,
+            sportmonks_fixture_id=1002,
+            kickoff_utc=datetime.now(tz=timezone.utc),
+        )
+        fc = item["processed"]["fixture_conditions"]
+        self.assertTrue(fc.get("available"))
+        self.assertEqual(fc.get("venue_name"), "Camp Nou")
+        mo = item["processed"]["match_officials"]
+        self.assertTrue(mo.get("available"))
+        self.assertEqual(mo["referees"][0]["name"], "Test Ref")
+        sa = item["processed"]["squad_availability"]
+        self.assertTrue(sa.get("available"))
+        self.assertEqual(sa.get("sidelined_rows"), 1)
+        ts = item["processed"]["tactical_shape"]
+        self.assertTrue(ts.get("available"))
+        self.assertEqual(ts["formations"][0]["formation"], "4-3-3")
+
 
 if __name__ == "__main__":
     unittest.main()

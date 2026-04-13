@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import {
   fetchBt2AdminDsrDay,
+  fetchBt2AdminDsrRange,
   fetchBt2AdminVaultPickDistribution,
 } from '@/lib/api'
 import type {
   Bt2AdminDsrDayOut,
+  Bt2AdminDsrRangeOut,
   Bt2AdminVaultPickDistributionOut,
 } from '@/lib/bt2Types'
 import {
@@ -17,6 +19,17 @@ import {
 
 function defaultOperatingDayKey(): string {
   const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/** Inicio del rango histórico por defecto: 29 días antes del fin (30 días inclusive). */
+function defaultRangeFromKey(toKey: string): string {
+  const [ys, ms, ds] = toKey.split('-').map(Number)
+  const d = new Date(ys, ms - 1, ds)
+  d.setDate(d.getDate() - 29)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
@@ -48,10 +61,16 @@ function formatScoreBucketLabel(bucket: number): string {
 
 export default function AdminDsrAccuracyPage() {
   const [operatingDayKey, setOperatingDayKey] = useState(defaultOperatingDayKey)
+  const [rangeToKey, setRangeToKey] = useState(defaultOperatingDayKey)
+  const [rangeFromKey, setRangeFromKey] = useState(() =>
+    defaultRangeFromKey(defaultOperatingDayKey()),
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [distError, setDistError] = useState<string | null>(null)
+  const [rangeError, setRangeError] = useState<string | null>(null)
   const [data, setData] = useState<Bt2AdminDsrDayOut | null>(null)
+  const [rangeData, setRangeData] = useState<Bt2AdminDsrRangeOut | null>(null)
   const [distData, setDistData] =
     useState<Bt2AdminVaultPickDistributionOut | null>(null)
 
@@ -59,6 +78,7 @@ export default function AdminDsrAccuracyPage() {
     setLoading(true)
     setError(null)
     setDistError(null)
+    setRangeError(null)
     try {
       const out = await fetchBt2AdminDsrDay(operatingDayKey)
       setData(out)
@@ -92,10 +112,30 @@ export default function AdminDsrAccuracyPage() {
       } else {
         setDistError(msg.length > 180 ? `${msg.slice(0, 180)}…` : msg)
       }
+    }
+    try {
+      const rng = await fetchBt2AdminDsrRange(rangeFromKey, rangeToKey)
+      setRangeData(rng)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      setRangeData(null)
+      if (msg.includes('Falta VITE_BT2_ADMIN_API_KEY')) {
+        setRangeError(
+          'Misma clave admin: revisa VITE_BT2_ADMIN_API_KEY para el histórico.',
+        )
+      } else if (msg.startsWith('503') || msg.includes('503')) {
+        setRangeError(
+          'Analytics admin no disponible: define BT2_ADMIN_API_KEY en el API.',
+        )
+      } else if (msg.startsWith('401') || msg.includes('401')) {
+        setRangeError('Clave admin rechazada (histórico).')
+      } else {
+        setRangeError(msg.length > 200 ? `${msg.slice(0, 200)}…` : msg)
+      }
     } finally {
       setLoading(false)
     }
-  }, [operatingDayKey])
+  }, [operatingDayKey, rangeFromKey, rangeToKey])
 
   useEffect(() => {
     void load()
@@ -109,23 +149,47 @@ export default function AdminDsrAccuracyPage() {
         title="Precisión del modelo (DSR)"
         subtitle="Solo uso interno · día operativo seleccionado"
         rightActions={
-          <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
-            <label className="flex flex-col gap-1 text-right">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
-                Día operativo
-              </span>
-              <input
-                type="date"
-                value={operatingDayKey}
-                onChange={(e) => setOperatingDayKey(e.target.value)}
-                className="rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-1.5 font-mono text-xs text-[#26343d]"
-              />
-            </label>
+          <div className="flex max-w-xl flex-col items-stretch gap-3 sm:max-w-none sm:items-end">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+              <label className="flex flex-col gap-1 text-right">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                  Día operativo (detalle)
+                </span>
+                <input
+                  type="date"
+                  value={operatingDayKey}
+                  onChange={(e) => setOperatingDayKey(e.target.value)}
+                  className="rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-1.5 font-mono text-xs text-[#26343d]"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-right">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                  Histórico desde
+                </span>
+                <input
+                  type="date"
+                  value={rangeFromKey}
+                  onChange={(e) => setRangeFromKey(e.target.value)}
+                  className="rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-1.5 font-mono text-xs text-[#26343d]"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-right">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                  Histórico hasta
+                </span>
+                <input
+                  type="date"
+                  value={rangeToKey}
+                  onChange={(e) => setRangeToKey(e.target.value)}
+                  className="rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-1.5 font-mono text-xs text-[#26343d]"
+                />
+              </label>
+            </div>
             <button
               type="button"
               onClick={() => void load()}
               disabled={loading}
-              className="rounded-lg border border-[#8B5CF6]/35 bg-[#e9ddff]/40 px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#6d3bd7] disabled:opacity-50"
+              className="self-end rounded-lg border border-[#8B5CF6]/35 bg-[#e9ddff]/40 px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#6d3bd7] disabled:opacity-50"
             >
               {loading ? 'Cargando…' : 'Actualizar'}
             </button>
@@ -153,6 +217,129 @@ export default function AdminDsrAccuracyPage() {
             generadas ese día; cada bloque mide algo distinto (US-BE-035 / D-06-026 §5).
           </li>
         </ul>
+      </section>
+
+      <section aria-label="Histórico por rango de días operativos" className="space-y-4">
+        <h3 className="text-sm font-semibold tracking-tight text-[#26343d]">
+          Histórico (liquidación vs modelo)
+        </h3>
+        <p className="text-xs leading-relaxed text-[#52616a]">
+          Misma semántica que el detalle del día: picks <code className="font-mono text-[11px]">bt2_picks</code>{' '}
+          liquidados unidos a <code className="font-mono text-[11px]">bt2_daily_picks</code> por día
+          operativo. La tabla lista cada día del rango; los días sin mediciones muestran 0.
+        </p>
+        {rangeError ? (
+          <div
+            className="rounded-xl border border-[#fee2e2] bg-[#fff1f2] px-4 py-3 text-sm text-[#9b1c1c]"
+            role="alert"
+          >
+            {rangeError}
+          </div>
+        ) : null}
+        {rangeData ? (
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <KpiCard
+                label="Tasa global (rango)"
+                value={
+                  rangeData.totals.hitRatePct != null
+                    ? `${rangeData.totals.hitRatePct.toFixed(1)}%`
+                    : '—'
+                }
+                hint="Hits / (hits + misses) sobre todo el rango."
+              />
+              <KpiCard
+                label="Días con ≥1 liquidado+modelo"
+                value={String(rangeData.totals.daysWithSettledModel)}
+                hint={`De ${rangeData.totals.dayCount} días calendario en el rango.`}
+              />
+              <KpiCard
+                label="Picks liquidados (con modelo)"
+                value={String(rangeData.totals.picksSettledWithModel)}
+              />
+              <KpiCard
+                label="Hits / Misses (rango)"
+                value={`${rangeData.totals.modelHits} / ${rangeData.totals.modelMisses}`}
+              />
+            </div>
+            <p className="text-xs leading-relaxed text-[#52616a]">
+              {rangeData.totals.summaryHumanEs}
+            </p>
+            <div className="overflow-hidden rounded-xl border border-[#a4b4be]/15 bg-white">
+              <div className="max-h-[22rem] overflow-y-auto overflow-x-auto">
+                <table className="w-full min-w-[640px] border-collapse text-left">
+                  <thead className="sticky top-0 z-[1] bg-[#eef4fa]">
+                    <tr>
+                      <th className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                        Día
+                      </th>
+                      <th className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                        Eventos bóveda
+                      </th>
+                      <th className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                        Liq.+modelo
+                      </th>
+                      <th className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                        Hit %
+                      </th>
+                      <th className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                        H
+                      </th>
+                      <th className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                        M
+                      </th>
+                      <th className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                        V
+                      </th>
+                      <th className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                        N/D
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#e5eff7]">
+                    {[...rangeData.days].reverse().map((row) => (
+                      <tr
+                        key={row.operatingDayKey}
+                        className={
+                          row.picksSettledWithModel === 0
+                            ? 'text-[#52616a]/70'
+                            : 'hover:bg-[#f6fafe]/80'
+                        }
+                      >
+                        <td className="px-3 py-2 font-mono text-xs text-[#26343d]">
+                          {row.operatingDayKey}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {row.distinctEventsInVault}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {row.picksSettledWithModel}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums font-semibold text-[#435368]">
+                          {row.hitRatePct != null ? `${row.hitRatePct.toFixed(1)}%` : '—'}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {row.modelHits}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {row.modelMisses}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {row.modelVoids}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {row.modelNa}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        ) : !rangeError && !loading ? (
+          <p className="text-sm text-[#52616a]">Sin datos de rango.</p>
+        ) : null}
       </section>
 
       {error ? (

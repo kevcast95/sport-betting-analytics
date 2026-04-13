@@ -1,6 +1,7 @@
 # Sprint 06.2 — EJECUCION (Backend / DX)
 
-> Registro de avance **BE** alineado al handoff §5. Última actualización: **2026-04-09**.
+> Registro de avance **BE** alineado al handoff §5. Última actualización: **2026-04-09**.  
+> **Cierre del sprint:** [`CIERRE_S6_2.md`](./CIERRE_S6_2.md) · **S6.3:** [`../sprint-06.3/PLAN.md`](../sprint-06.3/PLAN.md).
 
 ## Fase 1 — P0 cubo A + whitelist (T-195–T-204)
 
@@ -41,3 +42,5 @@
 Ver sección final del mensaje de entrega de la fase 2 en el chat / handoff: `contractVersion`, `valuePoolUniverseMax`, franjas, textos Vault, fallbacks store.
 
 **2026-04-09 — T-217–T-219, T-226, T-225 (web):** `PickCard` + `SettlementPage` alineados a §1.11 (Vektor, orden partido→cuota→Vektor→confianza); disclaimer **D-06-041 §2** (`VektorShortDisclaimer`) en `VaultPage` y settlement; glosario **D-06-036** en `GlossaryModal`; `vaultModelReading` / `bt2ProtocolLabels` (confianza sin “simbólica”, `dsrSourceDescriptionAdminEs` en admin); ruta **`/v2/admin/cdm-audit`** con regeneración vía `POST /bt2/admin/vault/regenerate-daily-snapshot` y aviso explícito hasta **T-214**. Verificación: `npm test -- --run` y `npm run build` en `apps/web` (OK). `pytest` BT2 no ejecutado en esta pasada (sin cambios en `apps/api` en el diff FE).
+
+**Índice de archivos FE/BE del mismo día (cierre):** [`CIERRE_S6_2.md`](./CIERRE_S6_2.md) sección **§6** (incluye `bt2_dsr_ds_input_sm_fixture_blocks`, `bt2_dev_sm_refresh`, admin DSR accuracy, vault store/franjas, etc.).

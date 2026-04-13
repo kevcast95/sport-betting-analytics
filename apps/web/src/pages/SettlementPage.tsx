@@ -20,7 +20,7 @@ import {
   modelPredictionResultEs,
 } from '@/lib/bt2ProtocolLabels'
 import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
-import { unifiedApiModelReading } from '@/lib/vaultModelReading'
+import { MODEL_WHY_TITLE_ES, modelWhyReading } from '@/lib/vaultModelReading'
 import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
 import {
   computeSettlementPnlCop,
@@ -397,9 +397,9 @@ export default function SettlementPage() {
       ? modelPredictionResultEs(ledgerRowForPick.modelPredictionResult)
       : null
 
-  const settlementApiUnified = useMemo(() => {
+  const settlementModelWhy = useMemo(() => {
     if (!apiPickMatch || !displayPick) return null
-    return unifiedApiModelReading({
+    return modelWhyReading({
       dsrNarrativeEs: (displayPick.dsrNarrativeEs ?? '').trim(),
       traduccionHumana: displayPick.traduccionHumana ?? null,
       dsrSource: displayPick.dsrSource,
@@ -517,6 +517,11 @@ export default function SettlementPage() {
           )
         } else if (res.reason === 'pick_unavailable') {
           setReviewTakeError('Este pick no está disponible para registro.')
+        } else if (res.reason === 'insufficient_bankroll') {
+          setReviewTakeError(
+            res.apiMessage ??
+              'Bankroll insuficiente para el stake de esta señal.',
+          )
         } else if (res.reason === 'already_unlocked') {
           navigate(`/v2/settlement/${pickId}`, { replace: true })
         } else {
@@ -731,46 +736,36 @@ export default function SettlementPage() {
             </div>
           </div>
 
-          {/* US-FE-022 / T-165: una sola voz CDM+DSR (misma regla que PickCard). */}
-          <div className="rounded-xl bg-[#eef4fa] p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <IconPsychology className="shrink-0 text-[#6d3bd7]" />
-              <h3 className="text-lg font-bold tracking-tight text-[#26343d]">
-                {settlementApiUnified
-                  ? settlementApiUnified.title
-                  : 'Vektor — por qué'}
-              </h3>
-            </div>
-            <div className="space-y-4 text-sm leading-relaxed text-[#52616a]">
-              <p className="text-[#26343d]">
-                {settlementApiUnified
-                  ? settlementApiUnified.body
-                  : displayPick.traduccionHumana?.trim()
-                    ? displayPick.traduccionHumana
-                    : 'Sin lectura del modelo en archivo local. Consulta el libro mayor para el detalle registrado al liquidar.'}
-              </p>
-              {settlementDsrMetaLine ? (
-                <p className="font-mono text-xs leading-snug text-[#6e7d86]">
-                  {settlementDsrMetaLine}
+          {/* Misma regla que v1 / PickCard: un solo párrafo “por qué” (`razon`). */}
+          <div className="space-y-4 rounded-xl bg-[#eef4fa] p-8">
+            {settlementModelWhy ? (
+              <div className="rounded-xl border border-[#6d3bd7]/20 bg-white/90 p-6 shadow-sm">
+                <div className="mb-3 flex items-center gap-3">
+                  <IconPsychology className="shrink-0 text-[#6d3bd7]" />
+                  <h3 className="text-lg font-bold tracking-tight text-[#26343d]">
+                    {settlementModelWhy.title}
+                  </h3>
+                </div>
+                <p className="text-sm leading-relaxed text-[#26343d]">
+                  {settlementModelWhy.body}
                 </p>
-              ) : null}
-              <p>
-                <span className="font-semibold text-[#26343d]">
-                  Sobre el protocolo (no es el análisis del partido):
-                </span>{' '}
-                aquí se prioriza{' '}
-                <span className="font-semibold text-[#26343d]">
-                  cuánto arriesgas
-                </span>{' '}
-                en cada señal y{' '}
-                <span className="font-semibold text-[#26343d]">
-                  registrarla bien
-                </span>{' '}
-                en el libro mayor. Eso ayuda a que una sola jugada no defina toda la
-                sesión; el párrafo de arriba es Vektor para este evento, con sus
-                límites.
+              </div>
+            ) : null}
+            {!apiPickMatch && displayPick.traduccionHumana?.trim() ? (
+              <div className="rounded-xl border border-[#a4b4be]/25 bg-white/80 p-6">
+                <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-[#52616a]">
+                  {MODEL_WHY_TITLE_ES}
+                </h3>
+                <p className="text-sm leading-relaxed text-[#26343d]">
+                  {displayPick.traduccionHumana}
+                </p>
+              </div>
+            ) : null}
+            {settlementDsrMetaLine ? (
+              <p className="px-1 font-mono text-xs leading-snug text-[#6e7d86]">
+                {settlementDsrMetaLine}
               </p>
-            </div>
+            ) : null}
           </div>
 
           <div className="rounded-xl border border-[#a4b4be]/20 bg-white/90 px-5 py-4">

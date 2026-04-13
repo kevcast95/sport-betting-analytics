@@ -1,5 +1,6 @@
 # Sprint 06.2 — TASKS
 
+> **Sprint cerrado (2026-04-09):** acta única **[`CIERRE_S6_2.md`](./CIERRE_S6_2.md)** + **D-06-042**. Trabajo nuevo: **[`../sprint-06.3/PLAN.md`](../sprint-06.3/PLAN.md)**.  
 > **Numeración:** continúa desde **T-194** (S6.1). Rango S6.2: **T-195** … **T-226**.  
 > **S6.1 histórico:** [`../sprint-06.1/TASKS.md`](../sprint-06.1/TASKS.md) — **D-06-031**.  
 > **US:** [`US.md`](./US.md). **Decisiones:** [`DECISIONES.md`](./DECISIONES.md). **Handoff:** [`HANDOFF_EJECUCION_S6_2.md`](./HANDOFF_EJECUCION_S6_2.md) — **§0** cierre (DSR integrado > v1), **§3** P0/P1/P2, **§6** diferidos.  
@@ -157,9 +158,10 @@
 
 ## Check cierre Sprint 06.2
 
-- [ ] Todas las filas del **checklist inventario** arriba tienen tareas marcadas según alcance kickoff (si algo se difiere, **DECISIONES** enmienda + tachar fila en inventario).
-- [ ] **D-06-034** acta (reset FSM) antes de merge final **US-BE-045**. **D-06-035** fecha + responsable. **D-06-036** / **D-06-041:** texto cerrado en **DECISIONES**; **US-FE-058** / **US-FE-060** verificadas en código al cierre si están en alcance.
-- [ ] **T-225** verde en rama de cierre.
+- [x] **Cierre formal** — [`CIERRE_S6_2.md`](./CIERRE_S6_2.md) + **D-06-042** (2026-04-09). Ítems no cerrados → **S6.3** según acta.
+- [ ] Todas las filas del **checklist inventario** arriba tienen tareas marcadas según alcance kickoff (si algo se difiere, **DECISIONES** enmienda + tachar fila en inventario) — *higiene opcional en S6.3*.
+- [ ] **D-06-034** acta (reset FSM) — *pendiente / S6.3 si aplica*. **D-06-035** fecha + responsable — *pendiente / S6.3*. **D-06-036** / **D-06-041:** texto cerrado en **DECISIONES**; **US-FE-058** / **US-FE-060** verificadas en código al cierre si están en alcance.
+- [x] **T-225** referenciado en entrega (ver **EJECUCION.md** / acta cierre).
 
 ---
 

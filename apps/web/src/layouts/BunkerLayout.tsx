@@ -68,6 +68,7 @@ export default function BunkerLayout() {
   const completeEconomyTour = useUserStore((s) => s.completeEconomyTour)
   const confirmedBankrollCop = useBankrollStore((s) => s.confirmedBankrollCop)
   const checkDayBoundary = useSessionStore((s) => s.checkDayBoundary)
+  const takenApiPicks = useVaultStore((s) => s.takenApiPicks)
 
   const [dpPulseKey, setDpPulseKey] = useState(0)
   const [dpSyncing, setDpSyncing] = useState(false)
@@ -87,12 +88,12 @@ export default function BunkerLayout() {
       const hasUnsettledPicks = unlockedPickIds.some(
         (id) => !settledPickIds.includes(id),
       )
-      checkDayBoundary(new Date().toISOString(), hasUnsettledPicks)
+      checkDayBoundary(new Date().toISOString(), hasUnsettledPicks, takenApiPicks)
     }
     runCheck()
     const timer = window.setInterval(runCheck, 60_000)
     return () => window.clearInterval(timer)
-  }, [checkDayBoundary])
+  }, [checkDayBoundary, takenApiPicks])
 
   useEffect(() => {
     if (confirmedBankrollCop === 0) {
