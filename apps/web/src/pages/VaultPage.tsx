@@ -445,7 +445,7 @@ export default function VaultPage() {
             <div className="flex min-w-0 flex-col gap-2">
               <button
                 type="button"
-                disabled={picksLoadStatus === 'loading' || apiPicks.length === 0}
+                disabled={apiPicks.length === 0}
                 onClick={() => {
                   const r = regenerateVaultSlate()
                   if (!r.ok) {

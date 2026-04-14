@@ -51,6 +51,7 @@ from apps.api.bt2_value_pool import (
     premium_eligible_ids_from_pool,
 )
 from apps.api.bt2_market_canonical import (
+    determine_settlement_outcome,
     evaluate_model_vs_result,
     market_canonical_label_es,
     normalized_pick_to_canonical,
@@ -62,6 +63,10 @@ from apps.api.bt2_schemas import (
     Bt2AdminDsrDaySummaryOut,
     Bt2AdminDsrRangeOut,
     Bt2AdminDsrRangeTotalsOut,
+    Bt2AdminFase1OperationalSummaryOut,
+    Bt2AdminOfficialEvaluationLoopOut,
+    Bt2AdminOfficialPrecisionBucketOut,
+    Bt2AdminPoolCoverageOut,
     Bt2AdminScoreBucketOut,
     Bt2AdminVaultPickDistributionOut,
     Bt2AdminVaultRegenerateSnapshotOut,
@@ -76,6 +81,8 @@ from apps.api.bt2_schemas import (
     VaultPremiumUnlockIn,
     VaultPremiumUnlockOut,
 )
+from apps.api.bt2_admin_fase1_summary import build_fase1_operational_summary
+from apps.api.bt2_official_evaluation_job import fetch_official_evaluation_loop_metrics
 from apps.api.bt2_dev_sm_refresh import refresh_raw_sportmonks_for_value_pool_today
 from apps.api.bt2_settings import bt2_settings
 from apps.api.bt2_vault_market_mix import order_indices_for_top_slate_diversity
@@ -1307,31 +1314,9 @@ def _determine_outcome(market: str, selection: str, result_home: int, result_awa
     Entrada típica ya normalizada vía `_normalize_market_selection_for_pick` (POST /bt2/picks): ML_SIDE,
     ML_AWAY, ML_TOTAL, textos «Más de …», «Victoria {equipo}», etc.
 
-    Sprint 06: enum único en CDM/API.
+    Sprint 06: enum único en CDM/API. Implementación compartida: `determine_settlement_outcome`.
     """
-    m = market.upper()
-    s = selection.strip()
-    total = result_home + result_away
-
-    if any(k in m for k in ("MATCH WINNER", "1X2", "WINNER")):
-        if s in ("1", "Home", "home"):
-            return "won" if result_home > result_away else "lost"
-        if s in ("X", "Draw", "draw", "Empate", "empate"):
-            return "won" if result_home == result_away else "lost"
-        if s in ("2", "Away", "away"):
-            return "won" if result_away > result_home else "lost"
-        return "void"
-
-    if any(k in m for k in ("OVER", "UNDER", "GOALS", "TOTAL")):
-        num = re.search(r"(\d+\.?\d*)", s)
-        threshold = float(num.group(1)) if num else 2.5
-        if "OVER" in s.upper():
-            return "won" if total > threshold else "lost"
-        if "UNDER" in s.upper():
-            return "won" if total < threshold else "lost"
-        return "void"
-
-    return "void"
+    return determine_settlement_outcome(market, selection, result_home, result_away)
 
 
 def _normalize_market_selection_for_pick(
@@ -3216,6 +3201,81 @@ def bt2_admin_analytics_dsr_day(
             summary_human_es=summary_human,
         ),
         audit_rows=rows_out,
+    )
+
+
+@router.get(
+    "/admin/analytics/official-evaluation-loop",
+    response_model=Bt2AdminOfficialEvaluationLoopOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_official_evaluation_loop(
+    operating_day_key: Optional[str] = Query(
+        None,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKey",
+        description="Opcional YYYY-MM-DD: acota métricas a picks de ese día operativo.",
+    ),
+) -> Bt2AdminOfficialEvaluationLoopOut:
+    """
+    T-233 / base US-BE-052 — contadores del loop de evaluación oficial (sin mezclar pendientes
+    ni no evaluables en el hit rate). Header: **X-BT2-Admin-Key**.
+    """
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        raw = fetch_official_evaluation_loop_metrics(
+            cur, operating_day_key=operating_day_key
+        )
+    finally:
+        cur.close()
+        conn.close()
+    return Bt2AdminOfficialEvaluationLoopOut(**raw)
+
+
+@router.get(
+    "/admin/analytics/fase1-operational-summary",
+    response_model=Bt2AdminFase1OperationalSummaryOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_fase1_operational_summary(
+    operating_day_key: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKey",
+        description="YYYY-MM-DD — misma ventana para pool, loop y buckets de precisión.",
+    ),
+) -> Bt2AdminFase1OperationalSummaryOut:
+    """
+    US-BE-052 / T-238–T-240 — tres bloques: cobertura pool (auditoría), loop oficial, precisión
+    por mercado y por confianza. Header: **X-BT2-Admin-Key**.
+    """
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        raw = build_fase1_operational_summary(cur, operating_day_key)
+    finally:
+        cur.close()
+        conn.close()
+    return Bt2AdminFase1OperationalSummaryOut(
+        operating_day_key=raw["operating_day_key"],
+        pool_coverage=Bt2AdminPoolCoverageOut(**raw["pool_coverage"]),
+        official_evaluation_loop=Bt2AdminOfficialEvaluationLoopOut(
+            **raw["official_evaluation_loop"]
+        ),
+        precision_by_market=[
+            Bt2AdminOfficialPrecisionBucketOut(**x) for x in raw["precision_by_market"]
+        ],
+        precision_by_confidence=[
+            Bt2AdminOfficialPrecisionBucketOut(**x) for x in raw["precision_by_confidence"]
+        ],
+        summary_human_es=raw["summary_human_es"],
     )
 
 

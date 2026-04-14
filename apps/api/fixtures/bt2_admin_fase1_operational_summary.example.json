@@ -1,0 +1,71 @@
+{
+  "operatingDayKey": "2026-04-09",
+  "poolCoverage": {
+    "candidateEventsCount": 12,
+    "eligibleEventsCount": 7,
+    "eventsWithLatestAudit": 10,
+    "poolEligibilityRatePct": 58.33,
+    "poolDiscardReasonBreakdown": {
+      "MISSING_VALID_ODDS": 2,
+      "(sin auditoría reciente)": 2,
+      "INSUFFICIENT_MARKET_FAMILIES": 1
+    }
+  },
+  "officialEvaluationLoop": {
+    "suggestedPicksCount": 20,
+    "officialEvaluationEnrolled": 18,
+    "pendingResult": 4,
+    "evaluatedHit": 6,
+    "evaluatedMiss": 5,
+    "voidCount": 1,
+    "noEvaluable": 2,
+    "hitRateOnScoredPct": 54.55,
+    "noEvaluableByReason": {
+      "OUTSIDE_SUPPORTED_MARKET_V1": 1,
+      "MISSING_TRUTH_SOURCE": 1
+    },
+    "summaryHumanEs": "Ejemplo estático T-240 — no usar como dato real.",
+    "operatingDayKeyFilter": "2026-04-09"
+  },
+  "precisionByMarket": [
+    {
+      "bucketKey": "FT_1X2",
+      "evaluatedHit": 4,
+      "evaluatedMiss": 3,
+      "pendingResult": 2,
+      "noEvaluable": 0,
+      "voidCount": 0,
+      "hitRateOnScoredPct": 57.14
+    },
+    {
+      "bucketKey": "OU_GOALS_2_5",
+      "evaluatedHit": 2,
+      "evaluatedMiss": 2,
+      "pendingResult": 1,
+      "noEvaluable": 1,
+      "voidCount": 1,
+      "hitRateOnScoredPct": 50.0
+    }
+  ],
+  "precisionByConfidence": [
+    {
+      "bucketKey": "high",
+      "evaluatedHit": 3,
+      "evaluatedMiss": 2,
+      "pendingResult": 1,
+      "noEvaluable": 0,
+      "voidCount": 0,
+      "hitRateOnScoredPct": 60.0
+    },
+    {
+      "bucketKey": "(sin etiqueta)",
+      "evaluatedHit": 1,
+      "evaluatedMiss": 1,
+      "pendingResult": 0,
+      "noEvaluable": 1,
+      "voidCount": 0,
+      "hitRateOnScoredPct": 50.0
+    }
+  ],
+  "summaryHumanEs": "Día operativo 2026-04-09: pool elegibilidad 58.33% (7/12 eventos). Loop oficial — hit rate scored 54.55% (6 hit / 5 miss). Pendientes evaluación: 4, no evaluable: 2."
+}

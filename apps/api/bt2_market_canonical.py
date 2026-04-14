@@ -6,6 +6,7 @@ No exponer datos crudos de proveedor; el FE consume estos códigos + label_es.
 
 from __future__ import annotations
 
+import re
 from typing import Literal, Optional, Tuple
 
 MarketCanonical = Literal[
@@ -155,6 +156,38 @@ def canonical_to_settle_strings(
         if selection_canonical == "no":
             return ("BTTS", "NO")
     return ("UNKNOWN", "")
+
+
+def determine_settlement_outcome(
+    market: str, selection: str, result_home: int, result_away: int
+) -> str:
+    """
+    Determina won | lost | void — misma semántica que `bt2_router._determine_outcome`
+    (US-DX-001, mercados mínimos settle).
+    """
+    m = market.upper()
+    s = selection.strip()
+    total = result_home + result_away
+
+    if any(k in m for k in ("MATCH WINNER", "1X2", "WINNER")):
+        if s in ("1", "Home", "home"):
+            return "won" if result_home > result_away else "lost"
+        if s in ("X", "Draw", "draw", "Empate", "empate"):
+            return "won" if result_home == result_away else "lost"
+        if s in ("2", "Away", "away"):
+            return "won" if result_away > result_home else "lost"
+        return "void"
+
+    if any(k in m for k in ("OVER", "UNDER", "GOALS", "TOTAL")):
+        num = re.search(r"(\d+\.?\d*)", s)
+        threshold = float(num.group(1)) if num else 2.5
+        if "OVER" in s.upper():
+            return "won" if total > threshold else "lost"
+        if "UNDER" in s.upper():
+            return "won" if total < threshold else "lost"
+        return "void"
+
+    return "void"
 
 
 def evaluate_model_vs_result(

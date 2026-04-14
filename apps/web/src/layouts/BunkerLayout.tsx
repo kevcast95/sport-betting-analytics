@@ -376,6 +376,19 @@ export default function BunkerLayout() {
           Auditoría CDM
         </NavLink>
         <NavLink
+          to="/v2/admin/fase1-operational"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Fase 1 · verdad
+        </NavLink>
+        <NavLink
           to="/v2/profile"
           className={({ isActive }) =>
             [
@@ -473,6 +486,15 @@ export default function BunkerLayout() {
                 <Bt2ShieldCheckIcon className="h-5 w-5" />
               </span>
               Auditoría CDM
+            </NavLink>
+            <NavLink
+              to="/v2/admin/fase1-operational"
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2ShieldCheckIcon className="h-5 w-5" />
+              </span>
+              Fase 1 · verdad
             </NavLink>
             <NavLink
               to="/v2/profile"

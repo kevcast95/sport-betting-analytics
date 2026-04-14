@@ -307,6 +307,49 @@ export interface Bt2AdminVaultRegenerateSnapshotOut {
   messageEs: string
 }
 
+/** GET /bt2/admin/analytics/official-evaluation-loop — US-BE-050 / T-233 */
+export interface Bt2AdminOfficialEvaluationLoopOut {
+  suggestedPicksCount: number
+  officialEvaluationEnrolled: number
+  pendingResult: number
+  evaluatedHit: number
+  evaluatedMiss: number
+  voidCount: number
+  noEvaluable: number
+  hitRateOnScoredPct: number | null
+  noEvaluableByReason: Record<string, number>
+  summaryHumanEs: string
+  operatingDayKeyFilter: string | null
+}
+
+/** GET /bt2/admin/analytics/fase1-operational-summary — US-BE-052 / T-238 */
+export interface Bt2AdminPoolCoverageOut {
+  candidateEventsCount: number
+  eligibleEventsCount: number
+  eventsWithLatestAudit: number
+  poolEligibilityRatePct: number | null
+  poolDiscardReasonBreakdown: Record<string, number>
+}
+
+export interface Bt2AdminOfficialPrecisionBucketOut {
+  bucketKey: string
+  evaluatedHit: number
+  evaluatedMiss: number
+  pendingResult: number
+  noEvaluable: number
+  voidCount: number
+  hitRateOnScoredPct: number | null
+}
+
+export interface Bt2AdminFase1OperationalSummaryOut {
+  operatingDayKey: string
+  poolCoverage: Bt2AdminPoolCoverageOut
+  officialEvaluationLoop: Bt2AdminOfficialEvaluationLoopOut
+  precisionByMarket: Bt2AdminOfficialPrecisionBucketOut[]
+  precisionByConfidence: Bt2AdminOfficialPrecisionBucketOut[]
+  summaryHumanEs: string
+}
+
 // ─── US-DX-001 — Razones canónicas bt2_dp_ledger.reason (Sprint 05) ─────────
 
 export type Bt2DpLedgerReason =

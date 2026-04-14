@@ -1,6 +1,7 @@
 import type {
   Bt2AdminDsrDayOut,
   Bt2AdminDsrRangeOut,
+  Bt2AdminFase1OperationalSummaryOut,
   Bt2AdminVaultPickDistributionOut,
   Bt2AdminVaultRegenerateSnapshotOut,
   Bt2DpInsufficientPremiumDetail,
@@ -387,6 +388,26 @@ export async function fetchBt2AdminVaultPickDistribution(
  * POST /bt2/admin/vault/regenerate-daily-snapshot — borra y regenera snapshot bóveda (usuario + día).
  * Header `X-BT2-Admin-Key` = `BT2_ADMIN_API_KEY`. No usa JWT de usuario.
  */
+/**
+ * GET /bt2/admin/analytics/fase1-operational-summary (US-BE-052 / US-FE-061).
+ * Verdad oficial CDM + elegibilidad pool + buckets mercado/confianza.
+ */
+export async function fetchBt2AdminFase1OperationalSummary(
+  operatingDayKey: string,
+): Promise<Bt2AdminFase1OperationalSummaryOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams({ operatingDayKey: operatingDayKey.trim() })
+  return fetchJson<Bt2AdminFase1OperationalSummaryOut>(
+    `/bt2/admin/analytics/fase1-operational-summary?${qs.toString()}`,
+    { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
 export async function postBt2AdminVaultRegenerateSnapshot(
   userId: string,
   operatingDayKey: string,

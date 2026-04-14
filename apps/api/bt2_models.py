@@ -5,6 +5,7 @@ import uuid as _uuid
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
     Date,
     DateTime,
     ForeignKey,
@@ -388,6 +389,70 @@ class Bt2DailyPick(Base):
         UniqueConstraint("user_id", "event_id", "operating_day_key", name="uq_daily_picks_user_event_day"),
         Index("ix_daily_picks_user_day", "user_id", "operating_day_key"),
         Index("ix_daily_picks_user_day_slate_rank", "user_id", "operating_day_key", "slate_rank"),
+    )
+
+
+class Bt2PickOfficialEvaluation(Base):
+    """US-BE-049 — evaluación oficial vs resultado CDM; unidad = pick sugerido (`bt2_daily_picks`)."""
+
+    __tablename__ = "bt2_pick_official_evaluation"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    daily_pick_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_daily_picks.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_events.id"), nullable=False
+    )
+    market_canonical: Mapped[str] = mapped_column(String(64), nullable=False)
+    selection_canonical: Mapped[str] = mapped_column(String(64), nullable=False)
+    dsr_confidence_label: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    suggested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    evaluated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    evaluation_status: Mapped[str] = mapped_column(
+        String(32), nullable=False, server_default="pending_result"
+    )
+    truth_source: Mapped[Optional[str]] = mapped_column(String(80), nullable=True)
+    truth_payload_ref: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)
+    no_evaluable_reason: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "evaluation_status IN ("
+            "'pending_result','evaluated_hit','evaluated_miss','void','no_evaluable'"
+            ")",
+            name="ck_bt2_pick_official_evaluation_status_v1",
+        ),
+        Index("ix_bt2_pick_official_eval_status", "evaluation_status"),
+        Index("ix_bt2_pick_official_eval_event", "event_id"),
+    )
+
+
+class Bt2PoolEligibilityAudit(Base):
+    """T-236 — auditoría append-only de elegibilidad v1 del pool (Fase 0 §6)."""
+
+    __tablename__ = "bt2_pool_eligibility_audit"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_events.id", ondelete="CASCADE"), nullable=False
+    )
+    evaluated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    eligibility_rule_version: Mapped[str] = mapped_column(String(40), nullable=False)
+    is_eligible: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    primary_discard_reason: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    detail_json: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)
+
+    __table_args__ = (
+        Index("ix_bt2_pool_elig_audit_event_eval", "event_id", "evaluated_at"),
     )
 
 
