@@ -18,7 +18,11 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from apps.api.bt2_raw_sportmonks_store import upsert_raw_sportmonks_fixture_psycopg2
-from apps.api.bt2_sportmonks_includes import BT2_SM_FIXTURE_INCLUDES
+from apps.api.bt2_sportmonks_include_resolve import bt2_sm_next_include_on_forbidden
+from apps.api.bt2_sportmonks_includes import (
+    BT2_SM_FIXTURE_INCLUDES,
+    BT2_SM_FIXTURE_INCLUDES_CORE,
+)
 from apps.api.bt2_value_pool import build_value_pool_for_snapshot, parse_priority_league_ids
 from apps.api.bt2_vault_pool import VAULT_VALUE_POOL_UNIVERSE_MAX
 
@@ -43,30 +47,62 @@ def _user_day_window_utc(tz_name: str) -> tuple[datetime, datetime]:
 
 
 def _fetch_sm_fixture_dict(fixture_id: int, api_key: str) -> dict[str, Any] | None:
-    qs = urlencode({"api_token": api_key, "include": BT2_SM_FIXTURE_INCLUDES})
-    url = f"{SM_FIXTURE_URL}/{int(fixture_id)}?{qs}"
-    req = Request(url, headers={"Accept": "application/json"}, method="GET")
-    data: dict[str, Any] | None = None
-    for attempt in range(2):
-        try:
-            with urlopen(req, timeout=60) as resp:
-                raw = resp.read().decode("utf-8")
-                data = json.loads(raw)
-            break
-        except HTTPError as e:
-            if e.code == 429 and attempt == 0:
-                time.sleep(2.0)
-                continue
-            logger.warning("[dev-sm-refresh] fixture %s HTTP %s", fixture_id, e.code)
+    core = BT2_SM_FIXTURE_INCLUDES_CORE
+    effective_include = BT2_SM_FIXTURE_INCLUDES
+
+    for _ in range(50):
+        qs = urlencode({"api_token": api_key, "include": effective_include})
+        url = f"{SM_FIXTURE_URL}/{int(fixture_id)}?{qs}"
+        req = Request(url, headers={"Accept": "application/json"}, method="GET")
+        parsed: dict[str, Any] | None = None
+        for attempt in range(2):
+            try:
+                with urlopen(req, timeout=60) as resp:
+                    raw = resp.read().decode("utf-8")
+                    parsed = json.loads(raw)
+                break
+            except HTTPError as e:
+                if e.code == 429 and attempt == 0:
+                    time.sleep(2.0)
+                    continue
+                if e.code == 403:
+                    try:
+                        err_raw = e.read().decode("utf-8", errors="replace")
+                    except Exception:
+                        err_raw = ""
+                    try:
+                        body: Any = (
+                            json.loads(err_raw) if err_raw.strip().startswith("{") else err_raw
+                        )
+                    except json.JSONDecodeError:
+                        body = err_raw
+                    nxt = bt2_sm_next_include_on_forbidden(
+                        effective_include, core=core, response_body=body
+                    )
+                    if nxt is not None:
+                        logger.warning(
+                            "[dev-sm-refresh] fixture %s SM 403 — degradando includes",
+                            fixture_id,
+                        )
+                        effective_include = nxt
+                        break
+                    logger.warning(
+                        "[dev-sm-refresh] fixture %s HTTP 403 (sin más degradación)",
+                        fixture_id,
+                    )
+                    return None
+                logger.warning("[dev-sm-refresh] fixture %s HTTP %s", fixture_id, e.code)
+                return None
+            except (URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
+                logger.warning("[dev-sm-refresh] fixture %s error: %s", fixture_id, e)
+                return None
+
+        if parsed is not None:
+            d = parsed.get("data")
+            if isinstance(d, dict):
+                return d
             return None
-        except (URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
-            logger.warning("[dev-sm-refresh] fixture %s error: %s", fixture_id, e)
-            return None
-    if not data:
-        return None
-    d = data.get("data")
-    if isinstance(d, dict):
-        return d
+
     return None
 
 

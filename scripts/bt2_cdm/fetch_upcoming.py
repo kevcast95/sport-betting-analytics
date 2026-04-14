@@ -36,7 +36,11 @@ import psycopg2.extras
 
 # Reutilizamos parsers y upserts del normalizador
 from apps.api.bt2_raw_sportmonks_store import upsert_raw_sportmonks_fixture_psycopg2
-from apps.api.bt2_sportmonks_includes import BT2_SM_FIXTURE_INCLUDES
+from apps.api.bt2_sportmonks_include_resolve import bt2_sm_next_include_on_forbidden
+from apps.api.bt2_sportmonks_includes import (
+    BT2_SM_FIXTURE_INCLUDES,
+    BT2_SM_FIXTURE_INCLUDES_CORE,
+)
 from scripts.bt2_cdm.normalize_fixtures import (
     _extract_odds,
     _parse_kickoff,
@@ -54,8 +58,8 @@ logging.basicConfig(
 logger = logging.getLogger("fetch_upcoming")
 
 SM_BASE_URL = "https://api.sportmonks.com/v3"
-SM_INCLUDES = BT2_SM_FIXTURE_INCLUDES
 RATE_LIMIT_WAIT_S = 60
+SM_INCLUDE_DEGRADE_MAX = 48
 RECON_DIR = Path(_repo_root) / "docs" / "bettracker2" / "recon_results"
 
 
@@ -102,11 +106,14 @@ def _fetch_all_upcoming_fixtures(
     all_fixtures: list[dict] = []
     n_requests = 0
     page = 1
+    effective_include = BT2_SM_FIXTURE_INCLUDES
+    core = BT2_SM_FIXTURE_INCLUDES_CORE
+    sm_degrade_steps = 0
 
     while True:
         params = {
             "api_token": api_key,
-            "include": SM_INCLUDES,
+            "include": effective_include,
             "page": page,
         }
 
@@ -130,8 +137,31 @@ def _fetch_all_upcoming_fixtures(
 
             break  # salir del loop de reintentos 429
 
-        if r is None or r.status_code != 200:
-            logger.error("[FU] HTTP %d página %d", r.status_code if r else 0, page)
+        if r is None:
+            logger.error("[FU] Sin respuesta página %d", page)
+            break
+
+        if r.status_code == 403:
+            sm_degrade_steps += 1
+            if sm_degrade_steps > SM_INCLUDE_DEGRADE_MAX:
+                logger.error("[FU] Demasiados 403 ajustando includes — abortando página %d", page)
+                break
+            try:
+                body: dict | str = r.json()
+            except Exception:
+                body = r.text
+            nxt = bt2_sm_next_include_on_forbidden(
+                effective_include, core=core, response_body=body
+            )
+            if nxt is not None:
+                logger.warning(
+                    "[FU] SM 403 — includes opcionales no permitidos; reintentando con subset"
+                )
+                effective_include = nxt
+                continue
+
+        if r.status_code != 200:
+            logger.error("[FU] HTTP %d página %d", r.status_code, page)
             break
 
         data = r.json()

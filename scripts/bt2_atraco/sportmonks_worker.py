@@ -19,49 +19,18 @@ if _repo_root not in sys.path:
     sys.path.insert(0, _repo_root)
 
 from apps.api.bt2_raw_sportmonks_store import UPSERT_RAW_FIXTURE_SQL, raw_fixture_upsert_params
-from apps.api.bt2_sportmonks_includes import BT2_SM_FIXTURE_INCLUDES
+from apps.api.bt2_sportmonks_include_resolve import bt2_sm_next_include_on_forbidden
+from apps.api.bt2_sportmonks_includes import (
+    BT2_SM_FIXTURE_INCLUDES,
+    BT2_SM_FIXTURE_INCLUDES_CORE,
+)
 
 logger = logging.getLogger("sm_worker")
 
 SM_BASE_URL = "https://api.sportmonks.com/v3"
-SM_INCLUDES = BT2_SM_FIXTURE_INCLUDES
 RATE_LIMIT_PAUSE_S = 3600
 RETRY_BACKOFF = [2, 4, 8]
-
-
-async def _get_with_retry(
-    client: httpx.AsyncClient,
-    url: str,
-    params: dict,
-) -> Optional[dict]:
-    """GET con manejo de 429 y reintentos 5xx. Retorna None si falla tras 3 intentos."""
-    for attempt, backoff in enumerate([0] + RETRY_BACKOFF):
-        if backoff:
-            await asyncio.sleep(backoff)
-        try:
-            r = await client.get(url, params=params, timeout=30)
-        except (httpx.TimeoutException, httpx.ConnectError) as exc:
-            logger.warning("[SM-WORKER] Red error intento %d: %s", attempt + 1, exc)
-            continue
-
-        if r.status_code == 429:
-            logger.warning("[SM-WORKER] Rate limit (429) — pausando %ds", RATE_LIMIT_PAUSE_S)
-            await asyncio.sleep(RATE_LIMIT_PAUSE_S)
-            attempt = 0  # reset retries after pause
-            continue
-
-        if r.status_code >= 500:
-            logger.warning("[SM-WORKER] Server error %d intento %d/3", r.status_code, attempt + 1)
-            continue
-
-        if r.status_code == 200:
-            return r.json()
-
-        logger.error("[SM-WORKER] HTTP %d — %s", r.status_code, url)
-        return None
-
-    logger.error("[SM-WORKER] Max reintentos alcanzados — %s", url)
-    return None
+SM_INCLUDE_DEGRADE_MAX = 48
 
 
 async def fetch_fixtures_for_date(
@@ -78,19 +47,75 @@ async def fetch_fixtures_for_date(
     all_fixtures: List[dict] = []
     league_set = set(league_ids) if league_ids else None
     page = 1
+    effective_include = BT2_SM_FIXTURE_INCLUDES
+    core = BT2_SM_FIXTURE_INCLUDES_CORE
+    sm_degrade_steps = 0
+    url = f"{SM_BASE_URL}/football/fixtures/date/{date_str}"
 
     while True:
-        params: dict = {
-            "api_token": api_key,
-            "include": SM_INCLUDES,
-            "page": page,
-        }
+        data = None
+        for _ in range(SM_INCLUDE_DEGRADE_MAX + 1):
+            params: dict = {
+                "api_token": api_key,
+                "include": effective_include,
+                "page": page,
+            }
+            r = None
+            for attempt, backoff in enumerate([0] + RETRY_BACKOFF):
+                if backoff:
+                    await asyncio.sleep(backoff)
+                try:
+                    r = await client.get(url, params=params, timeout=30)
+                except (httpx.TimeoutException, httpx.ConnectError) as exc:
+                    logger.warning("[SM-WORKER] Red error intento %d: %s", attempt + 1, exc)
+                    r = None
+                    continue
 
-        data = await _get_with_retry(
-            client,
-            f"{SM_BASE_URL}/football/fixtures/date/{date_str}",
-            params,
-        )
+                if r.status_code == 429:
+                    logger.warning("[SM-WORKER] Rate limit (429) — pausando %ds", RATE_LIMIT_PAUSE_S)
+                    await asyncio.sleep(RATE_LIMIT_PAUSE_S)
+                    continue
+
+                if r.status_code >= 500:
+                    logger.warning("[SM-WORKER] Server error %d intento %d/3", r.status_code, attempt + 1)
+                    continue
+
+                break
+
+            if r is None:
+                logger.error("[SM-WORKER] Sin respuesta — %s página %s", date_str, page)
+                return all_fixtures
+
+            if r.status_code == 403:
+                sm_degrade_steps += 1
+                if sm_degrade_steps > SM_INCLUDE_DEGRADE_MAX:
+                    logger.error("[SM-WORKER] Demasiados 403 ajustando includes — abortando")
+                    return all_fixtures
+                try:
+                    body = r.json()
+                except Exception:
+                    body = r.text
+                nxt = bt2_sm_next_include_on_forbidden(
+                    effective_include, core=core, response_body=body
+                )
+                if nxt is not None:
+                    logger.warning("[SM-WORKER] SM 403 — degradando includes (subset)")
+                    effective_include = nxt
+                    continue
+                logger.error("[SM-WORKER] HTTP 403 — %s", url)
+                return all_fixtures
+
+            if r.status_code != 200:
+                logger.error("[SM-WORKER] HTTP %d — %s", r.status_code, url)
+                return all_fixtures
+
+            try:
+                data = r.json()
+            except Exception as exc:
+                logger.error("[SM-WORKER] JSON inválido: %s", exc)
+                return all_fixtures
+            break
+
         if data is None:
             break
 

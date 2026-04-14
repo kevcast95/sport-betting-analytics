@@ -6,6 +6,10 @@
 
 **Cierre del sprint anterior:** [`../sprint-06.2/CIERRE_S6_2.md`](../sprint-06.2/CIERRE_S6_2.md).
 
+**Plan mejora base (datos / snapshot / DSR / coste — borrador + preguntas):** [`Plan_mejora_base.md`](./Plan_mejora_base.md).  
+**Roadmap PO (norte, capas, frentes F1–F6, fases 0–4 — cuando hay “mucho en el aire”):** [`ROADMAP_PO_NORTE_Y_FASES.md`](./ROADMAP_PO_NORTE_Y_FASES.md).  
+**Handoff liviano (contexto + identidad + integraciones + enlace al roadmap — nuevo chat):** [`CONTEXTO_Y_ROADMAP_HANDOFF.md`](./CONTEXTO_Y_ROADMAP_HANDOFF.md).
+
 ---
 
 ## 1. Objetivo
