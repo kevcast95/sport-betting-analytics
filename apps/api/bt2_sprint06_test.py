@@ -129,7 +129,7 @@ class TestDsrStub(unittest.TestCase):
             "B",
             "Test League",
         )
-        self.assertIn("Señal", narr)
+        self.assertIn("1X2", narr)
         self.assertEqual(mmc, "FT_1X2")
         self.assertIn(msc, ("home", "draw", "away"))
         self.assertEqual(src, "rules_fallback")

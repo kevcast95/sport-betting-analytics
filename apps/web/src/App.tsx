@@ -27,6 +27,7 @@ import LedgerPage from '@/pages/LedgerPage'
 import PerformancePage from '@/pages/PerformancePage'
 import AdminCdmAuditPage from '@/pages/AdminCdmAuditPage'
 import AdminDsrAccuracyPage from '@/pages/AdminDsrAccuracyPage'
+import AdminFase1OperationalPage from '@/pages/AdminFase1OperationalPage'
 import ProfilePage from '@/pages/ProfilePage'
 import SettlementPage from '@/pages/SettlementPage'
 import PickDetailPage from '@/pages/PickDetailPage'
@@ -298,6 +299,10 @@ function AppLayout() {
                     <Route
                       path="admin/cdm-audit"
                       element={<AdminCdmAuditPage />}
+                    />
+                    <Route
+                      path="admin/fase1-operational"
+                      element={<AdminFase1OperationalPage />}
                     />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="dashboard" element={<V2DashboardPage />} />

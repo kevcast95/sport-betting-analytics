@@ -440,6 +440,123 @@ class Bt2AdminDsrRangeOut(BaseModel):
     totals: Bt2AdminDsrRangeTotalsOut
 
 
+class Bt2AdminOfficialEvaluationLoopOut(BaseModel):
+    """T-233 / base T-238 — métricas del cierre de loop vs verdad oficial (ACTA T-244)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    suggested_picks_count: int = Field(
+        ...,
+        alias="suggestedPicksCount",
+        description="Filas `bt2_daily_picks` (opcionalmente filtradas por día operativo).",
+    )
+    official_evaluation_enrolled: int = Field(
+        ...,
+        alias="officialEvaluationEnrolled",
+        description="Filas en `bt2_pick_official_evaluation` (misma ventana que el filtro).",
+    )
+    pending_result: int = Field(..., alias="pendingResult")
+    evaluated_hit: int = Field(..., alias="evaluatedHit")
+    evaluated_miss: int = Field(..., alias="evaluatedMiss")
+    void_count: int = Field(..., alias="voidCount")
+    no_evaluable: int = Field(..., alias="noEvaluable")
+    hit_rate_on_scored_pct: Optional[float] = Field(
+        None,
+        alias="hitRateOnScoredPct",
+        description="hits / (hits + misses) × 100; excluye void, no_evaluable y pending.",
+    )
+    no_evaluable_by_reason: dict[str, int] = Field(
+        default_factory=dict,
+        alias="noEvaluableByReason",
+    )
+    summary_human_es: str = Field("", alias="summaryHumanEs")
+    operating_day_key_filter: Optional[str] = Field(
+        None,
+        alias="operatingDayKeyFilter",
+        description="Si se pasó filtro YYYY-MM-DD; None = global.",
+    )
+
+
+class Bt2AdminPoolCoverageOut(BaseModel):
+    """Cobertura pool desde `bt2_pool_eligibility_audit` (última fila por evento)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    candidate_events_count: int = Field(
+        ...,
+        alias="candidateEventsCount",
+        description="Eventos distintos en `bt2_daily_picks` para el día.",
+    )
+    eligible_events_count: int = Field(
+        ...,
+        alias="eligibleEventsCount",
+        description="Candidatos cuya última auditoría marca `is_eligible=true`.",
+    )
+    events_with_latest_audit: int = Field(
+        ...,
+        alias="eventsWithLatestAudit",
+        description="Candidatos con al menos una fila de auditoría.",
+    )
+    pool_eligibility_rate_pct: Optional[float] = Field(
+        None,
+        alias="poolEligibilityRatePct",
+        description="elegibles / candidatos × 100 (sin auditoría cuenta como no elegible).",
+    )
+    pool_discard_reason_breakdown: dict[str, int] = Field(
+        default_factory=dict,
+        alias="poolDiscardReasonBreakdown",
+        description="Solo filas ineligibles o sin auditoría; claves canónicas ACTA + `(sin auditoría reciente)`.",
+    )
+
+
+class Bt2AdminOfficialPrecisionBucketOut(BaseModel):
+    """Desglose de precisión oficial por mercado o por bucket de confianza (T-239)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    bucket_key: str = Field(
+        ...,
+        alias="bucketKey",
+        description="`market_canonical` o `dsr_confidence_label` normalizado.",
+    )
+    evaluated_hit: int = Field(..., alias="evaluatedHit")
+    evaluated_miss: int = Field(..., alias="evaluatedMiss")
+    pending_result: int = Field(..., alias="pendingResult")
+    no_evaluable: int = Field(..., alias="noEvaluable")
+    void_count: int = Field(..., alias="voidCount")
+    hit_rate_on_scored_pct: Optional[float] = Field(
+        None,
+        alias="hitRateOnScoredPct",
+        description="Solo hit/(hit+miss) en el bucket; no mezcla pending/no_evaluable.",
+    )
+
+
+class Bt2AdminFase1OperationalSummaryOut(BaseModel):
+    """US-BE-052 / T-238 — resumen admin: pool, loop oficial, precisión por mercado y confianza."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(
+        ...,
+        alias="operatingDayKey",
+        description="YYYY-MM-DD día operativo (misma ventana para todos los bloques).",
+    )
+    pool_coverage: Bt2AdminPoolCoverageOut = Field(..., alias="poolCoverage")
+    official_evaluation_loop: Bt2AdminOfficialEvaluationLoopOut = Field(
+        ...,
+        alias="officialEvaluationLoop",
+    )
+    precision_by_market: List[Bt2AdminOfficialPrecisionBucketOut] = Field(
+        default_factory=list,
+        alias="precisionByMarket",
+    )
+    precision_by_confidence: List[Bt2AdminOfficialPrecisionBucketOut] = Field(
+        default_factory=list,
+        alias="precisionByConfidence",
+    )
+    summary_human_es: str = Field("", alias="summaryHumanEs")
+
+
 OPERATOR_PROFILE_VALUES = {
     "DISCIPLINE_TRADER",
     "IMPULSE_REACTIVE",
