@@ -539,7 +539,10 @@ class Bt2AdminFase1OperationalSummaryOut(BaseModel):
     operating_day_key: str = Field(
         ...,
         alias="operatingDayKey",
-        description="YYYY-MM-DD día operativo (misma ventana para todos los bloques).",
+        description=(
+            "YYYY-MM-DD del día operativo, o `__ALL__` cuando la petición usó "
+            "`accumulated=true` (métricas sin filtrar por día)."
+        ),
     )
     pool_coverage: Bt2AdminPoolCoverageOut = Field(..., alias="poolCoverage")
     official_evaluation_loop: Bt2AdminOfficialEvaluationLoopOut = Field(

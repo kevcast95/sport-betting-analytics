@@ -31,6 +31,9 @@ class _DbCursor(Protocol):
     def connection(self) -> Any: ...
 
 
+FASE1_ACCUMULATED_DAY_KEY = "__ALL__"
+
+
 def fetch_candidate_event_ids_for_day(cur: _DbCursor, operating_day_key: str) -> list[int]:
     cur.execute(
         """
@@ -40,6 +43,18 @@ def fetch_candidate_event_ids_for_day(cur: _DbCursor, operating_day_key: str) ->
         ORDER BY event_id
         """,
         (operating_day_key,),
+    )
+    return [int(r["event_id"]) for r in cur.fetchall()]
+
+
+def fetch_candidate_event_ids_all(cur: _DbCursor) -> list[int]:
+    """Todos los `event_id` distintos que alguna vez aparecieron en picks sugeridos."""
+    cur.execute(
+        """
+        SELECT DISTINCT event_id
+        FROM bt2_daily_picks
+        ORDER BY event_id
+        """
     )
     return [int(r["event_id"]) for r in cur.fetchall()]
 
@@ -74,7 +89,15 @@ def compute_pool_coverage_block(
     }
 
 
-def _precision_bucket_rows(cur: _DbCursor, operating_day_key: str, group_expr: str) -> list[dict[str, Any]]:
+def _precision_bucket_rows(
+    cur: _DbCursor, operating_day_key: Optional[str], group_expr: str
+) -> list[dict[str, Any]]:
+    if operating_day_key:
+        where_sql = "WHERE dp.operating_day_key = %s"
+        params: tuple[Any, ...] = (operating_day_key,)
+    else:
+        where_sql = ""
+        params = ()
     cur.execute(
         f"""
         SELECT {group_expr} AS bk,
@@ -85,11 +108,11 @@ def _precision_bucket_rows(cur: _DbCursor, operating_day_key: str, group_expr: s
                COUNT(*) FILTER (WHERE e.evaluation_status = 'void')::int AS void_count
         FROM bt2_pick_official_evaluation e
         INNER JOIN bt2_daily_picks dp ON dp.id = e.daily_pick_id
-        WHERE dp.operating_day_key = %s
+        {where_sql}
         GROUP BY 1
         ORDER BY 1
         """,
-        (operating_day_key,),
+        params,
     )
     rows: list[dict[str, Any]] = []
     for raw in cur.fetchall():
@@ -111,7 +134,9 @@ def _precision_bucket_rows(cur: _DbCursor, operating_day_key: str, group_expr: s
     return rows
 
 
-def fetch_precision_by_market(cur: _DbCursor, operating_day_key: str) -> list[dict[str, Any]]:
+def fetch_precision_by_market(
+    cur: _DbCursor, operating_day_key: Optional[str]
+) -> list[dict[str, Any]]:
     return _precision_bucket_rows(
         cur,
         operating_day_key,
@@ -119,7 +144,9 @@ def fetch_precision_by_market(cur: _DbCursor, operating_day_key: str) -> list[di
     )
 
 
-def fetch_precision_by_confidence(cur: _DbCursor, operating_day_key: str) -> list[dict[str, Any]]:
+def fetch_precision_by_confidence(
+    cur: _DbCursor, operating_day_key: Optional[str]
+) -> list[dict[str, Any]]:
     return _precision_bucket_rows(
         cur,
         operating_day_key,
@@ -128,17 +155,20 @@ def fetch_precision_by_confidence(cur: _DbCursor, operating_day_key: str) -> lis
 
 
 def _loop_metrics_when_official_eval_table_missing(
-    cur: _DbCursor, operating_day_key: str
+    cur: _DbCursor, operating_day_key: Optional[str]
 ) -> dict[str, Any]:
     """Tras rollback: solo conteo de `bt2_daily_picks` (evaluación oficial no migrada)."""
-    cur.execute(
-        """
-        SELECT COUNT(*)::int AS n
-        FROM bt2_daily_picks
-        WHERE operating_day_key = %s
-        """,
-        (operating_day_key,),
-    )
+    if operating_day_key:
+        cur.execute(
+            """
+            SELECT COUNT(*)::int AS n
+            FROM bt2_daily_picks
+            WHERE operating_day_key = %s
+            """,
+            (operating_day_key,),
+        )
+    else:
+        cur.execute("SELECT COUNT(*)::int AS n FROM bt2_daily_picks")
     row = cur.fetchone()
     r = dict(row) if isinstance(row, Mapping) else {}
     suggested = int(r.get("n") or 0)
@@ -164,24 +194,41 @@ def _loop_metrics_when_official_eval_table_missing(
 
 def build_fase1_operational_summary(
     cur: _DbCursor,
-    operating_day_key: str,
+    operating_day_key: Optional[str],
+    *,
+    accumulated: bool = False,
 ) -> dict[str, Any]:
-    cands = fetch_candidate_event_ids_for_day(cur, operating_day_key)
+    """
+    Si `accumulated` es True, `operating_day_key` se ignora: pool sobre todos los eventos
+    candidatos históricos; loop y precisión sin filtro de día (misma semántica que
+    `fetch_official_evaluation_loop_metrics(..., operating_day_key=None)`).
+    """
+    if accumulated:
+        odk_for_metrics: Optional[str] = None
+        response_odk = FASE1_ACCUMULATED_DAY_KEY
+        cands = fetch_candidate_event_ids_all(cur)
+    else:
+        if not operating_day_key:
+            raise ValueError("operating_day_key es obligatorio si accumulated es False")
+        odk_for_metrics = operating_day_key
+        response_odk = operating_day_key
+        cands = fetch_candidate_event_ids_for_day(cur, operating_day_key)
+
     latest = fetch_latest_eligibility_by_event_ids(cur, cands)
     pool = compute_pool_coverage_block(cands, latest)
     try:
         loop = fetch_official_evaluation_loop_metrics(
-            cur, operating_day_key=operating_day_key
+            cur, operating_day_key=odk_for_metrics
         )
-        by_m = fetch_precision_by_market(cur, operating_day_key)
-        by_c = fetch_precision_by_confidence(cur, operating_day_key)
+        by_m = fetch_precision_by_market(cur, odk_for_metrics)
+        by_c = fetch_precision_by_confidence(cur, odk_for_metrics)
     except psycopg2.errors.UndefinedTable:
         cur.connection.rollback()
         logger.warning(
             "bt2_pick_official_evaluation (u otra relación del loop) ausente: "
             "alembic upgrade head. Devolviendo métricas de loop/precisión vacías."
         )
-        loop = _loop_metrics_when_official_eval_table_missing(cur, operating_day_key)
+        loop = _loop_metrics_when_official_eval_table_missing(cur, odk_for_metrics)
         by_m = []
         by_c = []
 
@@ -189,17 +236,27 @@ def build_fase1_operational_summary(
     hr = loop.get("hit_rate_on_scored_pct")
     pe_s = f"{pe}%" if pe is not None else "n/d"
     hr_s = f"{hr}%" if hr is not None else "n/d"
-    summary_es = (
-        f"Día operativo {operating_day_key}: "
-        f"pool elegibilidad {pe_s} "
-        f"({pool['eligible_events_count']}/{pool['candidate_events_count']} eventos). "
-        f"Loop oficial — hit rate scored {hr_s} "
-        f"({loop.get('evaluated_hit')} hit / {loop.get('evaluated_miss')} miss). "
-        f"Pendientes evaluación: {loop.get('pending_result')}, no evaluable: {loop.get('no_evaluable')}."
-    )
+    if accumulated:
+        summary_es = (
+            "Vista acumulada (todos los `operating_day_key` con picks en BT2): "
+            f"pool elegibilidad {pe_s} "
+            f"({pool['eligible_events_count']}/{pool['candidate_events_count']} eventos distintos). "
+            f"Loop oficial — hit rate scored {hr_s} "
+            f"({loop.get('evaluated_hit')} hit / {loop.get('evaluated_miss')} miss). "
+            f"Pendientes evaluación: {loop.get('pending_result')}, no evaluable: {loop.get('no_evaluable')}."
+        )
+    else:
+        summary_es = (
+            f"Día operativo {response_odk}: "
+            f"pool elegibilidad {pe_s} "
+            f"({pool['eligible_events_count']}/{pool['candidate_events_count']} eventos). "
+            f"Loop oficial — hit rate scored {hr_s} "
+            f"({loop.get('evaluated_hit')} hit / {loop.get('evaluated_miss')} miss). "
+            f"Pendientes evaluación: {loop.get('pending_result')}, no evaluable: {loop.get('no_evaluable')}."
+        )
 
     return {
-        "operating_day_key": operating_day_key,
+        "operating_day_key": response_odk,
         "pool_coverage": pool,
         "official_evaluation_loop": loop,
         "precision_by_market": by_m,

@@ -3244,22 +3244,42 @@ def bt2_admin_official_evaluation_loop(
     tags=["bt2-admin"],
 )
 def bt2_admin_fase1_operational_summary(
-    operating_day_key: str = Query(
-        ...,
+    operating_day_key: Optional[str] = Query(
+        None,
         min_length=10,
         max_length=10,
         alias="operatingDayKey",
-        description="YYYY-MM-DD — misma ventana para pool, loop y buckets de precisión.",
+        description=(
+            "YYYY-MM-DD — misma ventana para pool, loop y buckets. "
+            "Omitir si `accumulated=true`."
+        ),
+    ),
+    accumulated: bool = Query(
+        False,
+        alias="accumulated",
+        description=(
+            "Si true: métricas acumuladas sobre todos los picks/eventos históricos "
+            "(sin filtrar por día). Ignora `operatingDayKey`."
+        ),
     ),
 ) -> Bt2AdminFase1OperationalSummaryOut:
     """
     US-BE-052 / T-238–T-240 — tres bloques: cobertura pool (auditoría), loop oficial, precisión
     por mercado y por confianza. Header: **X-BT2-Admin-Key**.
     """
+    if not accumulated and not (operating_day_key and len(operating_day_key) == 10):
+        raise HTTPException(
+            status_code=422,
+            detail="operatingDayKey (YYYY-MM-DD) es obligatorio salvo accumulated=true",
+        )
     conn = _db_conn()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     try:
-        raw = build_fase1_operational_summary(cur, operating_day_key)
+        raw = build_fase1_operational_summary(
+            cur,
+            operating_day_key,
+            accumulated=accumulated,
+        )
     finally:
         cur.close()
         conn.close()

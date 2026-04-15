@@ -3,12 +3,14 @@ import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { fetchBt2AdminFase1OperationalSummary } from '@/lib/api'
 import type { Bt2AdminFase1OperationalSummaryOut } from '@/lib/bt2Types'
 
-function defaultOperatingDayKey(): string {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+/** Alineado con `bt2_router._operating_day_key` (America/Bogota), no con la TZ del navegador. */
+function defaultOperatingDayKeyBogota(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Bogota',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
 }
 
 function Kpi(props: { label: string; value: string; hint?: string }) {
@@ -51,7 +53,8 @@ function SectionCard(props: {
 }
 
 export default function AdminFase1OperationalPage() {
-  const [operatingDayKey, setOperatingDayKey] = useState(defaultOperatingDayKey)
+  const [operatingDayKey, setOperatingDayKey] = useState(defaultOperatingDayKeyBogota)
+  const [accumulatedView, setAccumulatedView] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<Bt2AdminFase1OperationalSummaryOut | null>(null)
@@ -60,7 +63,9 @@ export default function AdminFase1OperationalPage() {
     setLoading(true)
     setError(null)
     try {
-      const out = await fetchBt2AdminFase1OperationalSummary(operatingDayKey)
+      const out = await fetchBt2AdminFase1OperationalSummary(operatingDayKey, {
+        accumulated: accumulatedView,
+      })
       setData(out)
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -81,7 +86,7 @@ export default function AdminFase1OperationalPage() {
     } finally {
       setLoading(false)
     }
-  }, [operatingDayKey])
+  }, [operatingDayKey, accumulatedView])
 
   useEffect(() => {
     void load()
@@ -96,6 +101,10 @@ export default function AdminFase1OperationalPage() {
     pool.candidateEventsCount === 0 &&
     loop.suggestedPicksCount === 0
 
+  const scopeHint = accumulatedView
+    ? 'Vista acumulada: todos los días con picks en BT2 (12 abr incluido si hay filas).'
+    : 'Solo el día operativo seleccionado (Bogotá). Cambiá la fecha para ver 12, 13 u otro día.'
+
   return (
     <div className="w-full space-y-8" aria-label="Operación Fase 1 administración">
       <BunkerViewHeader
@@ -103,15 +112,27 @@ export default function AdminFase1OperationalPage() {
         subtitle="Métricas contra resultado CDM, no contra liquidación del usuario en app"
         rightActions={
           <div className="flex flex-col items-stretch gap-2 sm:items-end">
+            <label className="flex cursor-pointer items-center justify-end gap-2 text-right">
+              <input
+                type="checkbox"
+                checked={accumulatedView}
+                onChange={(e) => setAccumulatedView(e.target.checked)}
+                className="h-4 w-4 rounded border-[#a4b4be]/40"
+              />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                Acumulado histórico
+              </span>
+            </label>
             <label className="flex flex-col gap-1 text-right">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
-                Día operativo
+                Día operativo (Bogotá)
               </span>
               <input
                 type="date"
                 value={operatingDayKey}
                 onChange={(e) => setOperatingDayKey(e.target.value)}
-                className="rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-1.5 font-mono text-xs text-[#26343d]"
+                disabled={accumulatedView}
+                className="rounded-lg border border-[#a4b4be]/30 bg-[#eef4fa] px-3 py-1.5 font-mono text-xs text-[#26343d] disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
             <button
@@ -151,11 +172,16 @@ export default function AdminFase1OperationalPage() {
           <p className="rounded-lg border border-[#a4b4be]/20 bg-white/80 px-4 py-3 text-sm leading-relaxed text-[#26343d]">
             {data.summaryHumanEs}
           </p>
+          <p className="text-xs leading-relaxed text-[#52616a]">{scopeHint}</p>
 
           <SectionCard
             sectionId="fase1-admin-pool"
             title="1 · Cobertura del pool"
-            subtitle="Auditoría `bt2_pool_eligibility_audit` (última fila por evento). Sin fila de auditoría = no elegible en la tasa."
+            subtitle={
+              accumulatedView
+                ? 'Auditoría por evento distinto con pick histórico (todos los operating_day_key).'
+                : 'Auditoría `bt2_pool_eligibility_audit` (última fila por evento del día). Sin fila = no elegible en la tasa.'
+            }
           >
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Kpi label="Eventos candidatos" value={String(pool.candidateEventsCount)} />
@@ -205,7 +231,11 @@ export default function AdminFase1OperationalPage() {
           <SectionCard
             sectionId="fase1-admin-loop"
             title="2 · Cierre de loop (evaluación oficial)"
-            subtitle="Estados ACTA T-244. Pendientes y no evaluables se muestran aparte del hit rate."
+            subtitle={
+              accumulatedView
+                ? 'Todos los `daily_picks` con fila de evaluación oficial (cualquier día).'
+                : 'Estados ACTA T-244 para el día elegido. Pendientes y no evaluables aparte del hit rate.'
+            }
           >
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Kpi
@@ -234,13 +264,16 @@ export default function AdminFase1OperationalPage() {
             </div>
             <div className="mt-4 rounded-lg border border-[#8B5CF6]/20 bg-violet-50/50 px-4 py-3">
               <p className="font-mono text-sm font-semibold text-[#4c1d95]">
-                Hit rate global (solo scored){' '}
+                {accumulatedView
+                  ? 'Hit rate (scored, acumulado histórico)'
+                  : 'Hit rate (scored, este día)'}{' '}
                 <span className="tabular-nums">
                   {loop.hitRateOnScoredPct != null ? `${loop.hitRateOnScoredPct}%` : '—'}
                 </span>
               </p>
               <p className="mt-1 text-xs text-[#5b21b6]/90">
-                Fórmula: hit ÷ (hit + miss). No incluye pendientes, void ni no evaluable.
+                Fórmula: hit ÷ (hit + miss). No incluye pendientes, void ni no evaluable. Partidos sin
+                resultado siguen en pending → hit/miss en cero hasta que corra el job de evaluación.
               </p>
             </div>
             <h3 className="mt-6 font-mono text-xs font-bold uppercase tracking-wide text-[#52616a]">
@@ -273,7 +306,11 @@ export default function AdminFase1OperationalPage() {
           <SectionCard
             sectionId="fase1-admin-precision"
             title="3 · Desempeño por mercado y confianza"
-            subtitle="Misma regla de hit rate por bucket: solo hit+miss dentro del bucket."
+            subtitle={
+              accumulatedView
+                ? 'Buckets sobre todas las filas de evaluación enlazadas a picks (histórico).'
+                : 'Solo picks del día seleccionado; hit rate por bucket excluye pending/void/N.E.'
+            }
           >
             <h3 className="font-mono text-xs font-bold uppercase tracking-wide text-[#52616a]">
               Por mercado canónico

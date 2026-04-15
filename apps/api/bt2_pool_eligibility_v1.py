@@ -193,7 +193,14 @@ def evaluate_pool_eligibility_v1_from_db(
     row = cur.fetchone()
     if not row:
         return None
-    ht_id, at_id, ko, sm_fid = row[0], row[1], row[2], row[3]
+    if isinstance(row, Mapping):
+        r = dict(row)
+        ht_id = r["home_team_id"]
+        at_id = r["away_team_id"]
+        ko = r["kickoff_utc"]
+        sm_fid = r["sportmonks_fixture_id"]
+    else:
+        ht_id, at_id, ko, sm_fid = row[0], row[1], row[2], row[3]
 
     return evaluate_pool_eligibility_v1(
         sportmonks_fixture_id=int(sm_fid) if sm_fid is not None else None,

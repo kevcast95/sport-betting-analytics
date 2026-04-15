@@ -394,6 +394,7 @@ export async function fetchBt2AdminVaultPickDistribution(
  */
 export async function fetchBt2AdminFase1OperationalSummary(
   operatingDayKey: string,
+  options?: { accumulated?: boolean },
 ): Promise<Bt2AdminFase1OperationalSummaryOut> {
   const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
   if (!key) {
@@ -401,7 +402,12 @@ export async function fetchBt2AdminFase1OperationalSummary(
       'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
     )
   }
-  const qs = new URLSearchParams({ operatingDayKey: operatingDayKey.trim() })
+  const qs = new URLSearchParams()
+  if (options?.accumulated) {
+    qs.set('accumulated', 'true')
+  } else {
+    qs.set('operatingDayKey', operatingDayKey.trim())
+  }
   return fetchJson<Bt2AdminFase1OperationalSummaryOut>(
     `/bt2/admin/analytics/fase1-operational-summary?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
