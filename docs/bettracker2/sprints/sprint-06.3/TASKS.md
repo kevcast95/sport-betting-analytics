@@ -89,7 +89,7 @@ Gobernanza / runbook / cierre técnico | transversal | T-244–T-245
 
 - [x] Todas las filas del checklist de cobertura arriba tienen al menos una tarea implementada o diferida por decisión explícita.
 - [x] La medición del modelo contra resultado oficial ya no depende de `bt2_picks` liquidados por usuario.
-- [ ] Existe evidencia de cierre de loop para un subconjunto real de picks. *(Pendiente operación / staging: ver [`EJECUCION.md`](./EJECUCION.md) § Check cierre.)*
+- [x] Existe evidencia de cierre de loop para un subconjunto real de picks — ver [`EJECUCION.md`](./EJECUCION.md) § T-247 / T-248 y [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md).
 - [x] `pool_eligibility_rate` sale de auditoría persistida y no de conteos ad hoc.
 - [x] La vista admin separa cobertura, loop y precisión sin mezclar pendientes/no evaluables dentro del hit rate.
 - [x] T-245 referenciado en entrega / acta de cierre.

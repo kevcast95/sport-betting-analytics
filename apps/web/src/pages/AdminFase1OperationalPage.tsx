@@ -27,6 +27,69 @@ function Kpi(props: { label: string; value: string; hint?: string }) {
   )
 }
 
+function PassFail({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <li className="flex items-start gap-2 text-sm leading-snug text-[#26343d]">
+      <span
+        className={ok ? 'font-mono text-emerald-700' : 'font-mono text-amber-800'}
+        aria-hidden
+      >
+        {ok ? '✓' : '○'}
+      </span>
+      <span>{label}</span>
+    </li>
+  )
+}
+
+/** US-FE-062 / T-254 — lectura binaria desde el mismo payload del summary (sin recalcular métricas). */
+function OperationalClosureChecklist(props: {
+  pool: Bt2AdminFase1OperationalSummaryOut['poolCoverage']
+  loop: Bt2AdminFase1OperationalSummaryOut['officialEvaluationLoop']
+}) {
+  const { pool, loop } = props
+  const c1 = pool.candidateEventsCount > 0
+  const c2 = pool.eventsWithLatestAudit > 0
+  const c3 = loop.officialEvaluationEnrolled > 0
+  /** Loop con filas inscritas debe mostrar algún estado en KPIs (pendiente o resuelto). */
+  const c4 =
+    loop.officialEvaluationEnrolled === 0 ||
+    loop.pendingResult > 0 ||
+    loop.evaluatedHit > 0 ||
+    loop.evaluatedMiss > 0 ||
+    loop.voidCount > 0 ||
+    loop.noEvaluable > 0
+  return (
+    <section
+      className="rounded-xl border border-[#0f766e]/25 bg-[#ecfdf5]/60 px-4 py-3"
+      aria-label="Checklist cierre operativo US-FE-062"
+    >
+      <p className="text-[10px] font-bold uppercase tracking-wider text-[#0f766e]">
+        Checklist cierre operativo (T-254)
+      </p>
+      <p className="mt-1 text-[11px] leading-relaxed text-[#52616a]">
+        Umbrales alineados a US-FE-062; valores son los del endpoint{' '}
+        <span className="font-mono">fase1-operational-summary</span>, no se corrigen en cliente
+        (D-06-052).
+      </p>
+      <ul className="mt-3 space-y-1.5">
+        <PassFail ok={c1} label={`Candidatos > 0 (actual: ${pool.candidateEventsCount})`} />
+        <PassFail
+          ok={c2}
+          label={`Con auditoría reciente > 0 (actual: ${pool.eventsWithLatestAudit})`}
+        />
+        <PassFail
+          ok={c3}
+          label={`Fila evaluación oficial > 0 (actual: ${loop.officialEvaluationEnrolled})`}
+        />
+        <PassFail
+          ok={c4}
+          label={`KPIs de loop con datos (pending_result=${loop.pendingResult}; hit/miss/void/N.E. según bloque 2)`}
+        />
+      </ul>
+    </section>
+  )
+}
+
 function SectionCard(props: {
   sectionId: string
   title: string
@@ -172,7 +235,20 @@ export default function AdminFase1OperationalPage() {
           <p className="rounded-lg border border-[#a4b4be]/20 bg-white/80 px-4 py-3 text-sm leading-relaxed text-[#26343d]">
             {data.summaryHumanEs}
           </p>
+          {!accumulatedView ? (
+            <p
+              className="font-mono text-xs text-[#52616a]"
+              data-testid="fase1-operating-day-api"
+            >
+              <span className="font-sans font-semibold text-[#26343d]">
+                operatingDayKey (respuesta API):{' '}
+              </span>
+              {data.operatingDayKey}
+            </p>
+          ) : null}
           <p className="text-xs leading-relaxed text-[#52616a]">{scopeHint}</p>
+
+          <OperationalClosureChecklist pool={pool} loop={loop} />
 
           <SectionCard
             sectionId="fase1-admin-pool"

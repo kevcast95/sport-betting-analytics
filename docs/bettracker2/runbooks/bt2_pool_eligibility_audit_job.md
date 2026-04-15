@@ -13,6 +13,8 @@ export BT2_DATABASE_URL='postgresql://…'
 python3 scripts/bt2_cdm/job_pool_eligibility_audit.py
 python3 scripts/bt2_cdm/job_pool_eligibility_audit.py --dry-run --limit 50
 python3 scripts/bt2_cdm/job_pool_eligibility_audit.py --event-id 42
+# Misma ventana que bóveda / summary Fase 1 (eventos distintos del día operativo):
+python3 scripts/bt2_cdm/job_pool_eligibility_audit.py --operating-day-key 2026-04-14 --limit 200
 ```
 
 La tabla **`bt2_pool_eligibility_audit`** es **append-only** (cada corrida inserta filas). Para el último estado por evento:
