@@ -348,6 +348,29 @@ export interface Bt2AdminFase1OperationalSummaryOut {
   precisionByMarket: Bt2AdminOfficialPrecisionBucketOut[]
   precisionByConfidence: Bt2AdminOfficialPrecisionBucketOut[]
   summaryHumanEs: string
+  /** Umbral activo (env `BT2_POOL_ELIGIBILITY_MIN_FAMILIES`, default 2 = canónico S6.3). */
+  poolEligibilityMinFamiliesRequired: number
+  /** Referencia fija de producto (2); no depende del env. */
+  poolEligibilityOfficialReferenceS63: number
+  /** True si el umbral activo &lt; referencia oficial (observabilidad interna). */
+  poolEligibilityObservabilityRelaxed: boolean
+  poolEligibilityConfigNoteEs: string
+}
+
+/** POST /bt2/admin/operations/refresh-cdm-from-sm-for-operating-day */
+export interface Bt2AdminRefreshCdmFromSmOut {
+  ok: boolean
+  operatingDayKey: string
+  messageEs: string
+  fixturesTargeted: number
+  uniqueSportmonksFixturesProcessed: number
+  smFetchOk: number
+  rawUpsertOk: number
+  cdmNormalizedOk: number
+  cdmSkipped: number
+  cdmErrors: number
+  officialEvaluation: Record<string, unknown> | null
+  notes: string[]
 }
 
 // ─── US-DX-001 — Razones canónicas bt2_dp_ledger.reason (Sprint 05) ─────────

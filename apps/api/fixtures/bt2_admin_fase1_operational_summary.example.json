@@ -67,5 +67,9 @@
       "hitRateOnScoredPct": 50.0
     }
   ],
-  "summaryHumanEs": "Día operativo 2026-04-09: pool elegibilidad 58.33% (7/12 eventos). Loop oficial — hit rate scored 54.55% (6 hit / 5 miss). Pendientes evaluación: 4, no evaluable: 2."
+  "summaryHumanEs": "[Pool elegibilidad: umbral activo env = 2 familias; referencia oficial S6.3 = 2.] Día operativo 2026-04-09: pool elegibilidad 58.33% (7/12 eventos). Loop oficial — hit rate scored 54.55% (6 hit / 5 miss). Pendientes evaluación: 4, no evaluable: 2.",
+  "poolEligibilityMinFamiliesRequired": 2,
+  "poolEligibilityOfficialReferenceS63": 2,
+  "poolEligibilityObservabilityRelaxed": false,
+  "poolEligibilityConfigNoteEs": ""
 }

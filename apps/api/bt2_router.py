@@ -65,6 +65,7 @@ from apps.api.bt2_schemas import (
     Bt2AdminDsrRangeTotalsOut,
     Bt2AdminFase1OperationalSummaryOut,
     Bt2AdminOfficialEvaluationLoopOut,
+    Bt2AdminRefreshCdmFromSmOut,
     Bt2AdminOfficialPrecisionBucketOut,
     Bt2AdminPoolCoverageOut,
     Bt2AdminScoreBucketOut,
@@ -82,6 +83,7 @@ from apps.api.bt2_schemas import (
     VaultPremiumUnlockOut,
 )
 from apps.api.bt2_admin_fase1_summary import build_fase1_operational_summary
+from apps.api.bt2_admin_refresh_cdm_from_sm import admin_refresh_cdm_from_sm_for_operating_day
 from apps.api.bt2_official_evaluation_job import fetch_official_evaluation_loop_metrics
 from apps.api.bt2_dev_sm_refresh import refresh_raw_sportmonks_for_value_pool_today
 from apps.api.bt2_settings import bt2_settings
@@ -3296,7 +3298,65 @@ def bt2_admin_fase1_operational_summary(
             Bt2AdminOfficialPrecisionBucketOut(**x) for x in raw["precision_by_confidence"]
         ],
         summary_human_es=raw["summary_human_es"],
+        pool_eligibility_min_families_required=raw["pool_eligibility_min_families_required"],
+        pool_eligibility_official_reference_s63=raw["pool_eligibility_official_reference_s63"],
+        pool_eligibility_observability_relaxed=raw["pool_eligibility_observability_relaxed"],
+        pool_eligibility_config_note_es=raw.get("pool_eligibility_config_note_es") or "",
     )
+
+
+@router.post(
+    "/admin/operations/refresh-cdm-from-sm-for-operating-day",
+    response_model=Bt2AdminRefreshCdmFromSmOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_post_refresh_cdm_from_sm_for_operating_day(
+    operating_day_key: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKey",
+        description="Mismo YYYY-MM-DD que la vista Fase 1 (picks sugeridos de ese día).",
+    ),
+    limit: int = Query(
+        100,
+        ge=1,
+        le=500,
+        description="Máximo de eventos distintos (bt2_events) a refrescar.",
+    ),
+    run_official_evaluation: bool = Query(
+        True,
+        alias="runOfficialEvaluation",
+        description="Si true, tras actualizar CDM ejecuta backfill+evaluate del job oficial.",
+    ),
+) -> Bt2AdminRefreshCdmFromSmOut:
+    """
+    SportMonks en vivo → `raw_sportmonks_fixtures` → normaliza `bt2_events` (resultados/status).
+
+    No depende del snapshot de bóveda. Requiere `SPORTMONKS_API_KEY` en el servidor.
+    Tras el refresh, opcionalmente cierra filas `pending_result` en `bt2_pick_official_evaluation`
+    usando la verdad CDM actualizada.
+    """
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        raw = admin_refresh_cdm_from_sm_for_operating_day(
+            cur,
+            operating_day_key=operating_day_key.strip(),
+            sportmonks_api_key=bt2_settings.sportmonks_api_key,
+            limit=limit,
+            run_official_evaluation=run_official_evaluation,
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
+    return Bt2AdminRefreshCdmFromSmOut(**raw)
 
 
 _BT2_ADMIN_DSR_RANGE_MAX_DAYS = 366

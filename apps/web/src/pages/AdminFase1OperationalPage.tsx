@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
-import { fetchBt2AdminFase1OperationalSummary } from '@/lib/api'
+import { fetchBt2AdminFase1OperationalSummary, postBt2AdminRefreshCdmFromSm } from '@/lib/api'
 import type { Bt2AdminFase1OperationalSummaryOut } from '@/lib/bt2Types'
 
 /** Alineado con `bt2_router._operating_day_key` (America/Bogota), no con la TZ del navegador. */
@@ -121,6 +121,8 @@ export default function AdminFase1OperationalPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<Bt2AdminFase1OperationalSummaryOut | null>(null)
+  const [refreshSmBusy, setRefreshSmBusy] = useState(false)
+  const [refreshSmMsg, setRefreshSmMsg] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -150,6 +152,24 @@ export default function AdminFase1OperationalPage() {
       setLoading(false)
     }
   }, [operatingDayKey, accumulatedView])
+
+  const onRefreshCdmFromSm = useCallback(async () => {
+    if (accumulatedView) return
+    setRefreshSmBusy(true)
+    setRefreshSmMsg(null)
+    try {
+      const out = await postBt2AdminRefreshCdmFromSm(operatingDayKey)
+      const extra =
+        out.notes?.length > 0 ? ` · ${out.notes.slice(0, 6).join(' · ')}` : ''
+      setRefreshSmMsg(`${out.messageEs}${extra}`)
+      await load()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      setRefreshSmMsg(msg.length > 400 ? `${msg.slice(0, 400)}…` : msg)
+    } finally {
+      setRefreshSmBusy(false)
+    }
+  }, [accumulatedView, operatingDayKey, load])
 
   useEffect(() => {
     void load()
@@ -206,6 +226,19 @@ export default function AdminFase1OperationalPage() {
             >
               {loading ? 'Cargando…' : 'Actualizar'}
             </button>
+            <button
+              type="button"
+              onClick={() => void onRefreshCdmFromSm()}
+              disabled={loading || refreshSmBusy || accumulatedView}
+              title={
+                accumulatedView
+                  ? 'Desactivá «Acumulado histórico» para refrescar un día concreto desde SportMonks.'
+                  : 'SportMonks → raw → bt2_events y re-evaluación oficial (no usa snapshot de bóveda).'
+              }
+              className="rounded-lg border border-[#0d9488]/40 bg-white px-3 py-1.5 text-xs font-semibold text-[#0f766e] hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {refreshSmBusy ? 'Refrescando CDM…' : 'Refrescar CDM (SM) + evaluar'}
+            </button>
           </div>
         }
       />
@@ -216,6 +249,16 @@ export default function AdminFase1OperationalPage() {
           className="rounded-xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-900"
         >
           {error}
+        </div>
+      ) : null}
+
+      {refreshSmMsg ? (
+        <div
+          role="status"
+          className="rounded-xl border border-teal-200/80 bg-teal-50/80 px-4 py-3 text-sm text-[#134e4a]"
+        >
+          <p className="font-semibold text-[#0f766e]">Último refresco CDM (SportMonks)</p>
+          <p className="mt-1 font-mono text-xs leading-relaxed text-[#115e59]">{refreshSmMsg}</p>
         </div>
       ) : null}
 
@@ -235,6 +278,24 @@ export default function AdminFase1OperationalPage() {
           <p className="rounded-lg border border-[#a4b4be]/20 bg-white/80 px-4 py-3 text-sm leading-relaxed text-[#26343d]">
             {data.summaryHumanEs}
           </p>
+          <div
+            className={`rounded-lg border px-4 py-2 text-xs leading-relaxed ${
+              data.poolEligibilityObservabilityRelaxed
+                ? 'border-amber-300/80 bg-amber-50/90 text-amber-950'
+                : 'border-[#a4b4be]/25 bg-[#f1f5f9]/80 text-[#475569]'
+            }`}
+            data-testid="fase1-pool-eligibility-config"
+          >
+            <p className="font-mono text-[11px] text-[#334155]">
+              Pool elegibilidad (familias): umbral activo env ={' '}
+              {data.poolEligibilityMinFamiliesRequired} · referencia oficial S6.3 ={' '}
+              {data.poolEligibilityOfficialReferenceS63}
+              {data.poolEligibilityObservabilityRelaxed ? ' · modo observabilidad' : ''}
+            </p>
+            {data.poolEligibilityConfigNoteEs ? (
+              <p className="mt-1 text-[11px] text-[#92400e]">{data.poolEligibilityConfigNoteEs}</p>
+            ) : null}
+          </div>
           {!accumulatedView ? (
             <p
               className="font-mono text-xs text-[#52616a]"

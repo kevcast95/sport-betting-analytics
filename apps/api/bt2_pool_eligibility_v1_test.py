@@ -36,8 +36,8 @@ def _agg_two_families() -> AggregatedOdds:
     )
 
 
-def _base_kw(agg: AggregatedOdds):
-    return dict(
+def _base_kw(agg: AggregatedOdds, **extra):
+    kw = dict(
         sportmonks_fixture_id=12345,
         home_team_id=1,
         away_team_id=2,
@@ -48,14 +48,19 @@ def _base_kw(agg: AggregatedOdds):
         ds_fetch_errors=[],
         raw_fixture_missing=False,
     )
+    kw.update(extra)
+    return kw
 
 
 class TestPoolEligibilityV1(unittest.TestCase):
     def test_eligible_two_families_clean_ds(self) -> None:
-        r = evaluate_pool_eligibility_v1(**_base_kw(_agg_two_families()))
+        r = evaluate_pool_eligibility_v1(
+            **_base_kw(_agg_two_families(), min_distinct_market_families=2)
+        )
         self.assertTrue(r.is_eligible)
         self.assertIsNone(r.primary_discard_reason)
         self.assertEqual(r.detail.get("rule_version"), ELIGIBILITY_RULE_VERSION_V1)
+        self.assertEqual(r.detail.get("min_distinct_market_families_required"), 2)
 
     def test_missing_fixture_no_sm_id(self) -> None:
         kw = _base_kw(_agg_two_families())
@@ -93,8 +98,17 @@ class TestPoolEligibilityV1(unittest.TestCase):
         self.assertEqual(r.primary_discard_reason, "MISSING_VALID_ODDS")
 
     def test_insufficient_market_families(self) -> None:
-        r = evaluate_pool_eligibility_v1(**_base_kw(_agg_ft_only()))
+        r = evaluate_pool_eligibility_v1(
+            **_base_kw(_agg_ft_only(), min_distinct_market_families=2)
+        )
         self.assertEqual(r.primary_discard_reason, "INSUFFICIENT_MARKET_FAMILIES")
+
+    def test_single_family_eligible_when_min_is_one(self) -> None:
+        r = evaluate_pool_eligibility_v1(
+            **_base_kw(_agg_ft_only(), min_distinct_market_families=1)
+        )
+        self.assertTrue(r.is_eligible)
+        self.assertIsNone(r.primary_discard_reason)
 
     def test_missing_ds_input_critical_raw_flag(self) -> None:
         kw = {**_base_kw(_agg_two_families()), "raw_fixture_missing": True}

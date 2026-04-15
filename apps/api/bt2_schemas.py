@@ -5,7 +5,7 @@ Serialización con alias camelCase para alinear con el cliente TypeScript.
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -558,6 +558,55 @@ class Bt2AdminFase1OperationalSummaryOut(BaseModel):
         alias="precisionByConfidence",
     )
     summary_human_es: str = Field("", alias="summaryHumanEs")
+    pool_eligibility_min_families_required: int = Field(
+        ...,
+        alias="poolEligibilityMinFamiliesRequired",
+        description=(
+            "Umbral activo leído de BT2_POOL_ELIGIBILITY_MIN_FAMILIES (default 2 = canónico S6.3). "
+            "Las filas de `poolCoverage` siguen viniendo de la última auditoría en BD."
+        ),
+    )
+    pool_eligibility_official_reference_s63: int = Field(
+        ...,
+        alias="poolEligibilityOfficialReferenceS63",
+        description="Referencia fija de producto: mínimo 2 familias (S6.3); no depende del env.",
+    )
+    pool_eligibility_observability_relaxed: bool = Field(
+        ...,
+        alias="poolEligibilityObservabilityRelaxed",
+        description="True si el umbral activo es menor que la referencia oficial (modo observabilidad).",
+    )
+    pool_eligibility_config_note_es: str = Field(
+        "",
+        alias="poolEligibilityConfigNoteEs",
+        description="Nota cuando el umbral está relajado; vacío si modo oficial (min ≥ referencia).",
+    )
+
+
+class Bt2AdminRefreshCdmFromSmOut(BaseModel):
+    """POST refresh SM → raw → CDM + evaluación oficial opcional (admin Fase 1)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    ok: bool
+    operating_day_key: str = Field(..., alias="operatingDayKey")
+    message_es: str = Field(..., alias="messageEs")
+    fixtures_targeted: int = Field(..., alias="fixturesTargeted")
+    unique_sportmonks_fixtures_processed: int = Field(
+        0,
+        alias="uniqueSportmonksFixturesProcessed",
+    )
+    sm_fetch_ok: int = Field(..., alias="smFetchOk")
+    raw_upsert_ok: int = Field(..., alias="rawUpsertOk")
+    cdm_normalized_ok: int = Field(..., alias="cdmNormalizedOk")
+    cdm_skipped: int = Field(..., alias="cdmSkipped")
+    cdm_errors: int = Field(..., alias="cdmErrors")
+    official_evaluation: Optional[Dict[str, Any]] = Field(
+        None,
+        alias="officialEvaluation",
+        description="Salida de `job_summary_dict` si se ejecutó evaluate; null si se omitió.",
+    )
+    notes: List[str] = Field(default_factory=list)
 
 
 OPERATOR_PROFILE_VALUES = {

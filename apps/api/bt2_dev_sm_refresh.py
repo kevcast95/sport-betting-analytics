@@ -106,6 +106,11 @@ def _fetch_sm_fixture_dict(fixture_id: int, api_key: str) -> dict[str, Any] | No
     return None
 
 
+def fetch_sportmonks_fixture_dict(fixture_id: int, api_key: str) -> dict[str, Any] | None:
+    """GET fixture by id (v3) con includes BT2; mismo comportamiento que el refresco dev."""
+    return _fetch_sm_fixture_dict(fixture_id, api_key)
+
+
 def refresh_raw_sportmonks_for_value_pool_today(
     cur,
     *,
