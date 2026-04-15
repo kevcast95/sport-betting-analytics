@@ -24,6 +24,12 @@ Incluye `bt2_pool_eligibility_audit` y `bt2_pick_official_evaluation`. Sin esas 
 4. **Error**: quitar o falsificar clave → mensaje de configuración o 401/503 entendible.
 5. **Actualizar**: cambiar fecha o pulsar botón → nueva llamada a `fase1-operational-summary`.
 
+## US-FE-062 / T-254–T-255 (cierre S6.3)
+
+- La vista incluye **checklist T-254** (bloque verde bajo el resumen humano): candidatos, auditoría reciente, filas de evaluación oficial y KPIs de loop; los umbrales usan **solo** el JSON del endpoint (D-06-052: sin recalcular en cliente).
+- Se muestra **`operatingDayKey (respuesta API)`** para cruzar UI ↔ contrato ↔ BD en la misma ventana (`operating_day_key` del summary).
+- **T-255 (evidencia):** capturar pantalla de la vista con datos reales no vacíos (checklist con ✓ en los ítems de cierre) y archivar en el acta de sprint / `EJECUCION.md` según gobernanza del repo.
+
 ## Contrato
 
 - Tipos TS: `Bt2AdminFase1OperationalSummaryOut` en `apps/web/src/lib/bt2Types.ts`.

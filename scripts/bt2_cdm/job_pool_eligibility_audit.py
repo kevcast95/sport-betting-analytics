@@ -40,6 +40,16 @@ def main() -> int:
         default=None,
         help="Solo este bt2_events.id",
     )
+    parser.add_argument(
+        "--operating-day-key",
+        type=str,
+        default=None,
+        metavar="YYYY-MM-DD",
+        help=(
+            "Restringe a event_id distintos en bt2_daily_picks para ese día "
+            "(orden por event_id; respeta --limit)."
+        ),
+    )
     args = parser.parse_args()
 
     url = os.getenv("BT2_DATABASE_URL", "").replace("postgresql+asyncpg://", "postgresql://")
@@ -59,6 +69,18 @@ def main() -> int:
     try:
         if args.event_id is not None:
             ids = [int(args.event_id)]
+        elif args.operating_day_key:
+            cur.execute(
+                """
+                SELECT DISTINCT event_id
+                FROM bt2_daily_picks
+                WHERE operating_day_key = %s
+                ORDER BY event_id
+                LIMIT %s
+                """,
+                (args.operating_day_key, max(1, args.limit)),
+            )
+            ids = [int(r[0]) for r in cur.fetchall()]
         else:
             cur.execute(
                 """

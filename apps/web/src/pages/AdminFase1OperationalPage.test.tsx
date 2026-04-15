@@ -77,6 +77,11 @@ describe('AdminFase1OperationalPage (US-FE-061)', () => {
     expect(screen.getByText(/Desempeño por mercado/i)).toBeInTheDocument()
     expect(screen.getByText(/OUTSIDE_SUPPORTED_MARKET_V1/)).toBeInTheDocument()
     expect(screen.getByText(/Hit rate \(scored, este día\)/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Checklist cierre operativo US-FE-062/i)).toBeInTheDocument()
+    expect(screen.getByTestId('fase1-operating-day-api')).toHaveTextContent(
+      'operatingDayKey (respuesta API):',
+    )
+    expect(screen.getByTestId('fase1-operating-day-api')).toHaveTextContent('2026-04-09')
     expect(spy).toHaveBeenCalled()
   })
 
