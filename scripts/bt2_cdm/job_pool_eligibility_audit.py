@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(_repo_root) / ".env")
 
-import psycopg2.extras
+import psycopg2
 
 
 def main() -> int:
@@ -53,7 +53,8 @@ def main() -> int:
     )
 
     conn = psycopg2.connect(url)
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    # Cursor estándar (tuplas): el builder DSR y elegibilidad v1 usan row[i], no RealDictRow.
+    cur = conn.cursor()
     n_ok = n_skip = 0
     try:
         if args.event_id is not None:
@@ -67,7 +68,7 @@ def main() -> int:
                 """,
                 (max(1, args.limit),),
             )
-            ids = [int(r["id"]) for r in cur.fetchall()]
+            ids = [int(r[0]) for r in cur.fetchall()]
 
         for eid in ids:
             res = evaluate_pool_eligibility_v1_from_db(cur, eid)

@@ -5,7 +5,7 @@ US-BE-032 — Builder `ds_input` rico desde Postgres (whitelist T-171).
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Mapping, Optional
 
 from apps.api.bt2_dsr_context_queries import (
     extract_lineups_summary_from_raw_payload,
@@ -275,11 +275,11 @@ def build_ds_input_item_from_db(
             e.id,
             e.kickoff_utc,
             e.status,
-            COALESCE(l.name, ''),
-            l.country,
-            l.tier,
-            COALESCE(th.name, ''),
-            COALESCE(ta.name, ''),
+            COALESCE(l.name, '') AS league_name,
+            l.country AS league_country,
+            l.tier AS league_tier,
+            COALESCE(th.name, '') AS home_team_name,
+            COALESCE(ta.name, '') AS away_team_name,
             e.home_team_id,
             e.away_team_id,
             e.sportmonks_fixture_id
@@ -294,19 +294,32 @@ def build_ds_input_item_from_db(
     row = cur.fetchone()
     if not row:
         return None
-    (
-        _eid,
-        kickoff_utc,
-        ev_status,
-        league_name,
-        country,
-        league_tier,
-        home_team,
-        away_team,
-        home_team_id,
-        away_team_id,
-        sportmonks_fixture_id,
-    ) = row
+    if isinstance(row, Mapping):
+        r = dict(row)
+        kickoff_utc = r["kickoff_utc"]
+        ev_status = r["status"]
+        league_name = r["league_name"]
+        country = r["league_country"]
+        league_tier = r["league_tier"]
+        home_team = r["home_team_name"]
+        away_team = r["away_team_name"]
+        home_team_id = r["home_team_id"]
+        away_team_id = r["away_team_id"]
+        sportmonks_fixture_id = r["sportmonks_fixture_id"]
+    else:
+        (
+            _eid,
+            kickoff_utc,
+            ev_status,
+            league_name,
+            country,
+            league_tier,
+            home_team,
+            away_team,
+            home_team_id,
+            away_team_id,
+            sportmonks_fixture_id,
+        ) = row
     odds_rows = fetch_event_odds_rows_for_aggregation(cur, event_id)
     agg = aggregate_odds_for_event(
         [(b, m, s, o, f) for b, m, s, o, f in odds_rows],

@@ -76,7 +76,7 @@ describe('AdminFase1OperationalPage (US-FE-061)', () => {
     expect(screen.getByText(/Cierre de loop/i)).toBeInTheDocument()
     expect(screen.getByText(/Desempeño por mercado/i)).toBeInTheDocument()
     expect(screen.getByText(/OUTSIDE_SUPPORTED_MARKET_V1/)).toBeInTheDocument()
-    expect(screen.getByText(/Hit rate global/i)).toBeInTheDocument()
+    expect(screen.getByText(/Hit rate \(scored, este día\)/i)).toBeInTheDocument()
     expect(spy).toHaveBeenCalled()
   })
 
