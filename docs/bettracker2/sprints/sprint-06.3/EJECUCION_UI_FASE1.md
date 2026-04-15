@@ -16,6 +16,10 @@ Si `python3 -m alembic` dice que no existe el módulo: `pip install -r requireme
 
 Incluye `bt2_pool_eligibility_audit` y `bt2_pick_official_evaluation`. Sin esas tablas, el endpoint intenta degradar con métricas vacías y aviso en texto; lo correcto en dev es estar en **head**.
 
+**Umbral de familias (observabilidad):** variable `BT2_POOL_ELIGIBILITY_MIN_FAMILIES` (default `2` = canónico S6.3). Para pruebas internas con umbral relajado (`1`), ver `.env.example` y runbook `docs/bettracker2/runbooks/bt2_pool_eligibility_audit_job.md`; re-ejecutar job de auditoría tras cambiar el env, y revisar en la vista el bloque “Pool elegibilidad (familias): umbral activo env”.
+
+**Resultados finales sin depender del snapshot de bóveda:** botón «Refrescar CDM (SM) + evaluar» en esta vista → `POST /bt2/admin/operations/refresh-cdm-from-sm-for-operating-day?operatingDayKey=YYYY-MM-DD` (header `X-BT2-Admin-Key`). Hace GET SportMonks por fixture, UPSERT `raw_sportmonks_fixtures`, normaliza `bt2_events` y ejecuta el job de evaluación oficial. Requiere `SPORTMONKS_API_KEY` en el servidor.
+
 ## QA manual mínimo
 
 1. Con API y clave configuradas, abrir la vista: deben verse **tres bloques** (pool, loop, desempeño).

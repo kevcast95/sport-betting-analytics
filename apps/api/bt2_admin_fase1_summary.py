@@ -16,7 +16,11 @@ from apps.api.bt2_official_evaluation_job import (
     fetch_official_evaluation_loop_metrics,
     hit_rate_on_scored_pct,
 )
-from apps.api.bt2_pool_eligibility_v1 import fetch_latest_eligibility_by_event_ids
+from apps.api.bt2_pool_eligibility_v1 import (
+    POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63,
+    fetch_latest_eligibility_by_event_ids,
+    pool_eligibility_min_families_from_env,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -192,6 +196,25 @@ def _loop_metrics_when_official_eval_table_missing(
     }
 
 
+def _pool_eligibility_config_block() -> dict[str, Any]:
+    """Expone umbral activo (env) vs referencia oficial S6.3 para el admin Fase 1."""
+    min_req = pool_eligibility_min_families_from_env()
+    relaxed = min_req < POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63
+    note = ""
+    if relaxed:
+        note = (
+            "Umbral de familias relajado para observabilidad interna (no canónico S6.3). "
+            "Las métricas de pool usan la última fila de `bt2_pool_eligibility_audit`; "
+            "tras cambiar BT2_POOL_ELIGIBILITY_MIN_FAMILIES re-ejecutá el job de auditoría."
+        )
+    return {
+        "pool_eligibility_min_families_required": min_req,
+        "pool_eligibility_official_reference_s63": POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63,
+        "pool_eligibility_observability_relaxed": relaxed,
+        "pool_eligibility_config_note_es": note,
+    }
+
+
 def build_fase1_operational_summary(
     cur: _DbCursor,
     operating_day_key: Optional[str],
@@ -236,6 +259,13 @@ def build_fase1_operational_summary(
     hr = loop.get("hit_rate_on_scored_pct")
     pe_s = f"{pe}%" if pe is not None else "n/d"
     hr_s = f"{hr}%" if hr is not None else "n/d"
+    cfg = _pool_eligibility_config_block()
+    min_fam = int(cfg["pool_eligibility_min_families_required"])
+    official_ref = int(cfg["pool_eligibility_official_reference_s63"])
+    cfg_banner = (
+        f"[Pool elegibilidad: umbral activo env = {min_fam} familias; "
+        f"referencia oficial S6.3 = {official_ref}.] "
+    )
     if accumulated:
         summary_es = (
             "Vista acumulada (todos los `operating_day_key` con picks en BT2): "
@@ -254,8 +284,13 @@ def build_fase1_operational_summary(
             f"({loop.get('evaluated_hit')} hit / {loop.get('evaluated_miss')} miss). "
             f"Pendientes evaluación: {loop.get('pending_result')}, no evaluable: {loop.get('no_evaluable')}."
         )
+    summary_es = cfg_banner + summary_es
+    if cfg.get("pool_eligibility_observability_relaxed") and cfg.get(
+        "pool_eligibility_config_note_es"
+    ):
+        summary_es = summary_es + " " + str(cfg["pool_eligibility_config_note_es"])
 
-    return {
+    out: dict[str, Any] = {
         "operating_day_key": response_odk,
         "pool_coverage": pool,
         "official_evaluation_loop": loop,
@@ -263,3 +298,5 @@ def build_fase1_operational_summary(
         "precision_by_confidence": by_c,
         "summary_human_es": summary_es,
     }
+    out.update(cfg)
+    return out

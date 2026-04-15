@@ -4,7 +4,11 @@ T-235–T-237 — Elegibilidad v1 del pool (Fase 0 §6) sin LLM.
 Regla `pool-eligibility-v1`:
 1. Fixture CDM utilizable (ids equipos, kickoff, nombres, `sportmonks_fixture_id`).
 2. Cuotas válidas: al menos un mercado canónico completo (`event_passes_value_pool`).
-3. ≥ 2 familias de mercado con cobertura completa (`market_diversity_family`).
+3. ≥ N familias de mercado con cobertura completa (`market_diversity_family`).
+   **N canónico S6.3 = 2** (`POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63`).
+   Umbral configurable vía **`BT2_POOL_ELIGIBILITY_MIN_FAMILIES`** (default `2`) solo para
+   observabilidad interna mientras se endurece odds/snapshots; `N=1` no sustituye la
+   referencia oficial de producto.
 4. Sin faltantes críticos en trazas `ds_input` / builder (raw SportMonks mínimo).
 
 Códigos de descarte = subset ACTA T-244 §4 (mismos literales).
@@ -13,6 +17,7 @@ Códigos de descarte = subset ACTA T-244 §4 (mismos literales).
 from __future__ import annotations
 
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Mapping, Optional, Protocol, runtime_checkable
@@ -26,6 +31,51 @@ from apps.api.bt2_dsr_odds_aggregation import AggregatedOdds, event_passes_value
 from apps.api.bt2_vault_market_mix import market_diversity_family
 
 ELIGIBILITY_RULE_VERSION_V1 = "pool-eligibility-v1"
+
+# Referencia oficial de sprint (no se “apaga” con env; el env solo baja el umbral operativo).
+POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63 = 2
+
+_ENV_MIN_FAMILIES = "BT2_POOL_ELIGIBILITY_MIN_FAMILIES"
+
+
+def pool_eligibility_min_families_from_env() -> int:
+    """
+    Umbral mínimo de familias de mercado distintas para pasar el chequeo
+    `INSUFFICIENT_MARKET_FAMILIES`.
+
+    - Default **2** = comportamiento canónico S6.3 (misma regla que antes de esta palanca).
+    - **1** = relajación temporal de observabilidad (pruebas internas); requiere re-ejecutar
+      el job de auditoría para materializar filas nuevas en `bt2_pool_eligibility_audit`.
+    """
+    raw = (os.getenv(_ENV_MIN_FAMILIES) or "").strip()
+    if not raw:
+        return POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63
+    try:
+        n = int(raw, 10)
+    except ValueError:
+        logger.warning(
+            "%s=%r inválido; usando %s",
+            _ENV_MIN_FAMILIES,
+            raw,
+            POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63,
+        )
+        return POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63
+    if n < 1:
+        logger.warning(
+            "%s=%s < 1; usando 1",
+            _ENV_MIN_FAMILIES,
+            n,
+        )
+        return 1
+    if n > 20:
+        logger.warning(
+            "%s=%s > 20; usando 20",
+            _ENV_MIN_FAMILIES,
+            n,
+        )
+        return 20
+    return n
+
 
 # Códigos canónicos v1 (ACTA T-244 §4 — solo los que aplica esta regla).
 POOL_ELIGIBILITY_DISCARD_CODES_V1 = frozenset(
@@ -108,13 +158,27 @@ def evaluate_pool_eligibility_v1(
     agg: AggregatedOdds,
     ds_fetch_errors: list[str],
     raw_fixture_missing: bool,
+    min_distinct_market_families: Optional[int] = None,
 ) -> PoolEligibilityResult:
     """
     Evaluación determinística; primer fallo define `primary_discard_reason`.
+
+    `min_distinct_market_families`: si es None, se usa `pool_eligibility_min_families_from_env()`;
+    tests y llamadas explícitas pueden fijar el umbral sin depender del entorno.
     """
+    min_fam = (
+        pool_eligibility_min_families_from_env()
+        if min_distinct_market_families is None
+        else int(min_distinct_market_families)
+    )
+    if min_fam < 1:
+        min_fam = 1
+
     d: dict[str, Any] = {
         "rule_version": ELIGIBILITY_RULE_VERSION_V1,
         "families_covered": sorted(_distinct_covered_families(agg)),
+        "min_distinct_market_families_required": min_fam,
+        "min_families_official_reference_s63": POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63,
     }
 
     if sportmonks_fixture_id is None:
@@ -149,8 +213,8 @@ def evaluate_pool_eligibility_v1(
 
     fams = _distinct_covered_families(agg)
     d["families_covered"] = sorted(fams)
-    if len(fams) < 2:
-        d["reason_detail"] = "distinct_market_families_lt_2"
+    if len(fams) < min_fam:
+        d["reason_detail"] = f"distinct_market_families_lt_{min_fam}"
         return PoolEligibilityResult(
             False, "INSUFFICIENT_MARKET_FAMILIES", d
         )

@@ -51,6 +51,10 @@ const mockSummary = {
     },
   ],
   summaryHumanEs: 'Texto agregado día.',
+  poolEligibilityMinFamiliesRequired: 2,
+  poolEligibilityOfficialReferenceS63: 2,
+  poolEligibilityObservabilityRelaxed: false,
+  poolEligibilityConfigNoteEs: '',
 }
 
 describe('AdminFase1OperationalPage (US-FE-061)', () => {

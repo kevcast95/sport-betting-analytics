@@ -2,7 +2,9 @@
 
 ## Regla
 
-`pool-eligibility-v1` (Fase 0 §6, US-BE-051): fixture CDM + cuotas válidas (`event_passes_value_pool`) + **≥ 2 familias** de mercado con cobertura completa + sin faltantes críticos en trazas `ds_input` (raw SportMonks mínimo).
+`pool-eligibility-v1` (Fase 0 §6, US-BE-051): fixture CDM + cuotas válidas (`event_passes_value_pool`) + **≥ N familias** de mercado con cobertura completa + sin faltantes críticos en trazas `ds_input` (raw SportMonks mínimo).
+
+**N canónico S6.3 = 2** (referencia de producto). El umbral operativo se lee de **`BT2_POOL_ELIGIBILITY_MIN_FAMILIES`** (default `2`). Con **`BT2_POOL_ELIGIBILITY_MIN_FAMILIES=1`** solo se relaja la decisión de `INSUFFICIENT_MARKET_FAMILIES` para **observabilidad interna** mientras se corrige rigurosidad de odds/snapshots; no reemplaza la referencia oficial. Cada fila de auditoría guarda en `detail_json` el `min_distinct_market_families_required` usado en esa evaluación. Tras cambiar el env, **re-ejecutar este job** para nuevas filas append-only. El GET `fase1-operational-summary` expone `poolEligibilityMinFamiliesRequired` vs `poolEligibilityOfficialReferenceS63`.
 
 Códigos: `MISSING_FIXTURE_CORE`, `MISSING_VALID_ODDS`, `INSUFFICIENT_MARKET_FAMILIES`, `MISSING_DS_INPUT_CRITICAL` (ACTA T-244 §4).
 

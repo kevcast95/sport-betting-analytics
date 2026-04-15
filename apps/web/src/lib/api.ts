@@ -2,6 +2,7 @@ import type {
   Bt2AdminDsrDayOut,
   Bt2AdminDsrRangeOut,
   Bt2AdminFase1OperationalSummaryOut,
+  Bt2AdminRefreshCdmFromSmOut,
   Bt2AdminVaultPickDistributionOut,
   Bt2AdminVaultRegenerateSnapshotOut,
   Bt2DpInsufficientPremiumDetail,
@@ -411,6 +412,28 @@ export async function fetchBt2AdminFase1OperationalSummary(
   return fetchJson<Bt2AdminFase1OperationalSummaryOut>(
     `/bt2/admin/analytics/fase1-operational-summary?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
+/**
+ * POST /bt2/admin/operations/refresh-cdm-from-sm-for-operating-day — SM vivo → raw → CDM + eval oficial.
+ */
+export async function postBt2AdminRefreshCdmFromSm(
+  operatingDayKey: string,
+  options?: { limit?: number; runOfficialEvaluation?: boolean },
+): Promise<Bt2AdminRefreshCdmFromSmOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams({ operatingDayKey: operatingDayKey.trim() })
+  if (options?.limit != null) qs.set('limit', String(options.limit))
+  if (options?.runOfficialEvaluation === false) qs.set('runOfficialEvaluation', 'false')
+  return fetchJson<Bt2AdminRefreshCdmFromSmOut>(
+    `/bt2/admin/operations/refresh-cdm-from-sm-for-operating-day?${qs.toString()}`,
+    { method: 'POST', headers: { 'X-BT2-Admin-Key': key } },
   )
 }
 

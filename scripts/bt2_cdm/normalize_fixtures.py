@@ -305,6 +305,121 @@ def insert_odds_bulk(cur, event_id: int, odds_entries: list, fetched_at: datetim
     return len(args)
 
 
+def normalize_single_fixture_payload(
+    cur,
+    fixture_id: int,
+    payload: dict,
+    *,
+    fetched_at: Optional[datetime] = None,
+    dry_run: bool = False,
+) -> dict:
+    """
+    Aplica un payload SportMonks (dict `data` del GET fixture) al CDM para **un** fixture.
+
+    Misma lógica que el bucle principal de `run_normalization` (liga/equipos/evento/odds).
+    Pensado para refrescos puntuales (p. ej. admin) tras UPSERT en `raw_sportmonks_fixtures`.
+
+    Retorna dict con: ``ok`` (bool), ``event_internal_id`` (Optional[int]),
+    ``skipped`` (motivo corto o None), ``error`` (str o None).
+    """
+    if fetched_at is None:
+        fetched_at = datetime.now(tz=timezone.utc)
+
+    base: dict = {
+        "fixture_id": int(fixture_id),
+        "event_internal_id": None,
+        "skipped": None,
+        "error": None,
+        "ok": False,
+    }
+
+    league_id_raw = payload.get("league_id")
+    league_obj = payload.get("league") or {}
+    league_name = ""
+    if isinstance(league_obj, dict):
+        league_name = league_obj.get("name") or ""
+
+    league_id_sm = int(league_id_raw) if league_id_raw else None
+
+    if should_exclude_league(league_id_sm, league_name):
+        base["skipped"] = "league_excluded"
+        return base
+
+    participants = payload.get("participants") or []
+    home_team_raw = away_team_raw = None
+    if isinstance(participants, list):
+        for p in participants:
+            if not isinstance(p, dict):
+                continue
+            meta = p.get("meta") or {}
+            loc = meta.get("location", "") if isinstance(meta, dict) else ""
+            if loc == "home":
+                home_team_raw = p
+            elif loc == "away":
+                away_team_raw = p
+
+    if not home_team_raw or not away_team_raw:
+        base["skipped"] = "missing_participants"
+        return base
+
+    if dry_run:
+        base["ok"] = True
+        base["skipped"] = "dry_run"
+        return base
+
+    try:
+        cur.execute("SAVEPOINT sp_normalize_single_fixture")
+
+        country = ""
+        if isinstance(league_obj, dict):
+            country_obj = league_obj.get("country") or {}
+            if isinstance(country_obj, dict):
+                country = country_obj.get("name") or ""
+
+        league_internal_id = None
+        if league_id_sm and league_name:
+            league_internal_id = upsert_league(cur, league_id_sm, league_name, country)
+
+        home_sm_id = home_team_raw.get("id")
+        away_sm_id = away_team_raw.get("id")
+        home_name = home_team_raw.get("name") or "Unknown"
+        away_name = away_team_raw.get("name") or "Unknown"
+
+        home_internal_id = (
+            upsert_team(cur, int(home_sm_id), home_name, league_internal_id) if home_sm_id else None
+        )
+        away_internal_id = (
+            upsert_team(cur, int(away_sm_id), away_name, league_internal_id) if away_sm_id else None
+        )
+
+        event_internal_id = upsert_event(
+            cur,
+            int(fixture_id),
+            league_internal_id,
+            home_internal_id,
+            away_internal_id,
+            _parse_kickoff(payload),
+            _parse_status(payload),
+            *_parse_result(payload),
+            _parse_season(payload),
+        )
+        base["event_internal_id"] = event_internal_id
+
+        if event_internal_id:
+            odds_entries = _extract_odds(payload)
+            if odds_entries:
+                insert_odds_bulk(cur, event_internal_id, odds_entries, fetched_at)
+
+        cur.execute("RELEASE SAVEPOINT sp_normalize_single_fixture")
+        base["ok"] = True
+    except Exception as exc:
+        cur.execute("ROLLBACK TO SAVEPOINT sp_normalize_single_fixture")
+        base["error"] = str(exc)
+        base["ok"] = False
+
+    return base
+
+
 # ── Runner principal ──────────────────────────────────────────────────────────
 
 def run_normalization(batch_size: int = 1000, dry_run: bool = False) -> dict:
