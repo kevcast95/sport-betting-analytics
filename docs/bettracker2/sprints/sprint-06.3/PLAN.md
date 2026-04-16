@@ -40,7 +40,10 @@ Prioridad y orden los fija PO/BA en kickoff; esta lista **no** sustituye `US.md`
 - [`TASKS.md`](./TASKS.md) — numeración continua desde el último ID acordado (p. ej. post **T-226**).
 - [`DECISIONES.md`](./DECISIONES.md) — nuevas **D-06-0xx** solo cuando haya regla normativa nueva.
 - [`EJECUCION.md`](./EJECUCION.md) — registro de avance y cierre S6.3.
+- [`DECISIONES_CIERRE_S6_3.md`](./DECISIONES_CIERRE_S6_3.md) + [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md) + [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md) — cierre operativo real (D-06-051…054) trazado a tareas y evidencia.
+- [`DECISIONES_CIERRE_F2_S6_3_FINAL.md`](./DECISIONES_CIERRE_F2_S6_3_FINAL.md) + [`TASKS_CIERRE_F2_S6_3.md`](./TASKS_CIERRE_F2_S6_3.md) + [`US_CIERRE_F2_S6_3.md`](./US_CIERRE_F2_S6_3.md) + [`HANDOFF_CIERRE_F2_S6_3.md`](./HANDOFF_CIERRE_F2_S6_3.md) — backlog **post–cierre core** para implementar la norma F2 extendida (T-258…T-266). Borrador de referencia: [`PROPUESTA_INTEGRADA_CIERRE_EXTENDIDO_F2_S6_3.md`](./PROPUESTA_INTEGRADA_CIERRE_EXTENDIDO_F2_S6_3.md).
 
 ---
 
-*2026-04-09 — creado al actar cierre S6.2.*
+*2026-04-09 — creado al actar cierre S6.2.*  
+*2026-04-15 — enlace a artefactos de cierre operativo y paquete F2 extendido.*

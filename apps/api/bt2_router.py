@@ -64,6 +64,7 @@ from apps.api.bt2_schemas import (
     Bt2AdminDsrRangeOut,
     Bt2AdminDsrRangeTotalsOut,
     Bt2AdminFase1OperationalSummaryOut,
+    Bt2AdminF2PoolMetricsOut,
     Bt2AdminOfficialEvaluationLoopOut,
     Bt2AdminRefreshCdmFromSmOut,
     Bt2AdminOfficialPrecisionBucketOut,
@@ -83,6 +84,7 @@ from apps.api.bt2_schemas import (
     VaultPremiumUnlockOut,
 )
 from apps.api.bt2_admin_fase1_summary import build_fase1_operational_summary
+from apps.api.bt2_f2_metrics import build_f2_pool_eligibility_metrics
 from apps.api.bt2_admin_refresh_cdm_from_sm import admin_refresh_cdm_from_sm_for_operating_day
 from apps.api.bt2_official_evaluation_job import fetch_official_evaluation_loop_metrics
 from apps.api.bt2_dev_sm_refresh import refresh_raw_sportmonks_for_value_pool_today
@@ -3302,6 +3304,56 @@ def bt2_admin_fase1_operational_summary(
         pool_eligibility_official_reference_s63=raw["pool_eligibility_official_reference_s63"],
         pool_eligibility_observability_relaxed=raw["pool_eligibility_observability_relaxed"],
         pool_eligibility_config_note_es=raw.get("pool_eligibility_config_note_es") or "",
+    )
+
+
+@router.get(
+    "/admin/analytics/f2-pool-eligibility-metrics",
+    response_model=Bt2AdminF2PoolMetricsOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_f2_pool_eligibility_metrics(
+    operating_day_key: Optional[str] = Query(
+        None,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKey",
+        description="Opcional: un solo día YYYY-MM-DD (solo picks en 5 ligas F2).",
+    ),
+    days: int = Query(
+        30,
+        ge=1,
+        le=366,
+        alias="days",
+        description="Ventana rolling en días si no se pasa operatingDayKey (hasta el MAX day en picks).",
+    ),
+) -> Bt2AdminF2PoolMetricsOut:
+    """
+    T-263 — KPI F2: `pool_eligibility_rate_official` vs relajado (min familias = 1), umbrales 60/40.
+    """
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        raw = build_f2_pool_eligibility_metrics(
+            cur,
+            operating_day_key=operating_day_key,
+            days=days,
+        )
+    finally:
+        cur.close()
+        conn.close()
+    return Bt2AdminF2PoolMetricsOut(
+        league_bt2_ids_resolved=list(raw.get("league_bt2_ids_resolved") or []),
+        window_from=raw.get("window_from"),
+        window_to=raw.get("window_to"),
+        operating_day_key_filter=raw.get("operating_day_key_filter"),
+        metrics_global=dict(raw.get("metrics_global") or {}),
+        metrics_by_league=list(raw.get("metrics_by_league") or []),
+        thresholds=dict(raw.get("thresholds") or {}),
+        insufficient_market_families_dominant=raw.get("insufficient_market_families_dominant"),
+        note_es=raw.get("note_es") or "",
     )
 
 

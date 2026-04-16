@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import os
 import unittest
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from apps.api.bt2_dsr_odds_aggregation import AggregatedOdds
 from apps.api.bt2_pool_eligibility_v1 import (
-    ELIGIBILITY_RULE_VERSION_V1,
+    ELIGIBILITY_RULE_VERSION_F2,
     evaluate_pool_eligibility_v1,
     assert_pool_eligibility_discard_code,
 )
@@ -59,7 +61,7 @@ class TestPoolEligibilityV1(unittest.TestCase):
         )
         self.assertTrue(r.is_eligible)
         self.assertIsNone(r.primary_discard_reason)
-        self.assertEqual(r.detail.get("rule_version"), ELIGIBILITY_RULE_VERSION_V1)
+        self.assertEqual(r.detail.get("rule_version"), ELIGIBILITY_RULE_VERSION_F2)
         self.assertEqual(r.detail.get("min_distinct_market_families_required"), 2)
 
     def test_missing_fixture_no_sm_id(self) -> None:
@@ -111,7 +113,41 @@ class TestPoolEligibilityV1(unittest.TestCase):
         self.assertIsNone(r.primary_discard_reason)
 
     def test_missing_ds_input_critical_raw_flag(self) -> None:
-        kw = {**_base_kw(_agg_two_families()), "raw_fixture_missing": True}
+        # Tier Base: raw ausente no bloquea solo (F2 §3); con dos familias core → elegible.
+        kw = {**_base_kw(_agg_two_families()), "raw_fixture_missing": True, "pool_tier": "BASE"}
+        r = evaluate_pool_eligibility_v1(**kw)
+        self.assertTrue(r.is_eligible)
+        self.assertIsNone(r.primary_discard_reason)
+
+    def test_tier_a_raw_missing_blocks(self) -> None:
+        kw = {
+            **_base_kw(_agg_two_families()),
+            "raw_fixture_missing": True,
+            "pool_tier": "A",
+        }
+        r = evaluate_pool_eligibility_v1(**kw)
+        self.assertEqual(r.primary_discard_reason, "MISSING_DS_INPUT_CRITICAL")
+
+    def test_tier_a_lineups_skipped_when_env_off(self) -> None:
+        kw = {
+            **_base_kw(_agg_two_families()),
+            "pool_tier": "A",
+            "league_id": 7,
+            "f2_official_league_bt2_ids": {7},
+            "lineups_ok": False,
+        }
+        r = evaluate_pool_eligibility_v1(**kw)
+        self.assertTrue(r.is_eligible)
+
+    @patch.dict(os.environ, {"BT2_F2_TIER_A_REQUIRE_LINEUPS": "1"})
+    def test_tier_a_lineups_required_when_env_on(self) -> None:
+        kw = {
+            **_base_kw(_agg_two_families()),
+            "pool_tier": "A",
+            "league_id": 7,
+            "f2_official_league_bt2_ids": {7},
+            "lineups_ok": False,
+        }
         r = evaluate_pool_eligibility_v1(**kw)
         self.assertEqual(r.primary_discard_reason, "MISSING_DS_INPUT_CRITICAL")
 

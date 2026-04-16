@@ -1,5 +1,7 @@
 # Evidencia — UI admin Fase 1 (S6.3 / US-FE-061)
 
+> **Cierre normativo (D-06-052 / D-06-054):** matriz decisión → task → [`EJECUCION.md`](./EJECUCION.md) en [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).
+
 ## Ruta
 
 `/v2/admin/fase1-operational` (misma clave `VITE_BT2_ADMIN_API_KEY` que Precisión DSR).
@@ -22,11 +24,18 @@ Incluye `bt2_pool_eligibility_audit` y `bt2_pick_official_evaluation`. Sin esas 
 
 ## QA manual mínimo
 
-1. Con API y clave configuradas, abrir la vista: deben verse **tres bloques** (pool, loop, desempeño).
+1. Con API y clave configuradas, abrir la vista: deben verse **cuatro bloques** (pool, loop, desempeño, **F2 pool elegibilidad**).
 2. **Hit rate global**: texto explícito “solo hit+miss”; pendientes y no evaluables en KPIs separados.
 3. **Día sin datos**: candidatos 0 y picks 0 → aviso ámbar de vacío operativo.
 4. **Error**: quitar o falsificar clave → mensaje de configuración o 401/503 entendible.
 5. **Actualizar**: cambiar fecha o pulsar botón → nueva llamada a `fase1-operational-summary`.
+
+## T-265 / T-266 — Bloque F2 (norma F2, T-263)
+
+- **Endpoint:** `GET /bt2/admin/analytics/f2-pool-eligibility-metrics` (misma clave admin). La UI **no recalcula** KPIs: solo muestra el JSON (`metricsGlobal`, `metricsByLeague`, `thresholds`, etc.).
+- **Etiquetas:** tasas y conteos **oficial** (norma F2) vs **relajado / observabilidad** (min familias = 1), alineado al texto `noteEs` del API.
+- **Ventana:** con día seleccionado se envía `operatingDayKey`; con **Acumulado histórico** se usa ventana rolling `days=30` (sin `operatingDayKey`), coherente con el BE.
+- **T-266 (evidencia):** cuando haya datos reales en API, capturar pantalla o enlazar la vista con el bloque F2 poblado (checklist operativo + KPIs F2 visibles).
 
 ## US-FE-062 / T-254–T-255 (cierre S6.3)
 
@@ -36,7 +45,7 @@ Incluye `bt2_pool_eligibility_audit` y `bt2_pick_official_evaluation`. Sin esas 
 
 ## Contrato
 
-- Tipos TS: `Bt2AdminFase1OperationalSummaryOut` en `apps/web/src/lib/bt2Types.ts`.
+- Tipos TS: `Bt2AdminFase1OperationalSummaryOut` y `Bt2AdminF2PoolMetricsOut` en `apps/web/src/lib/bt2Types.ts`; fetch en `fetchBt2AdminF2PoolEligibilityMetrics` (`apps/web/src/lib/api.ts`).
 - Ejemplo JSON backend: `apps/api/fixtures/bt2_admin_fase1_operational_summary.example.json`.
 
 ## Tests automáticos

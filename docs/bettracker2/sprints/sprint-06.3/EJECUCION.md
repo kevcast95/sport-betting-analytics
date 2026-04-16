@@ -1,7 +1,7 @@
 # Sprint 06.3 — EJECUCION
 
 > **T-245:** regresión CI. **T-246–T-253:** cierre operativo real + mínimo paralelo F2 (este archivo).  
-> **TASKS:** [`TASKS.md`](./TASKS.md) · **Cierre:** [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md) · **Handoff:** [`HANDOFF_CIERRE_S6_3.md`](./HANDOFF_CIERRE_S6_3.md) · **UI Fase 1:** [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md).
+> **TASKS:** [`TASKS.md`](./TASKS.md) · **Cierre:** [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md) · **Handoff:** [`HANDOFF_CIERRE_S6_3.md`](./HANDOFF_CIERRE_S6_3.md) · **UI Fase 1:** [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md) · **Trazabilidad decisiones cierre (D-06-051…054):** [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).
 
 ---
 
@@ -149,7 +149,7 @@ ORDER BY a.event_id, a.evaluated_at DESC;
 | Picks sugeridos / enrolados / pendientes | 13 / 13 / 13 | `suggestedPicksCount` 13, `officialEvaluationEnrolled` 13, `pendingResult` 13 |
 | Precisión por mercado | solo `FT_1X2`, 13 pending | `precisionByMarket[0].bucketKey` = `FT_1X2`, `pendingResult` = 13 |
 
-**Conclusión:** el contrato admin refleja la BD para la ventana elegida. **FE (T-254–T-255)** puede validarse visualmente sobre la misma clave y día cuando se desee cerrar captura en UI.
+**Conclusión:** el contrato admin refleja la BD para la ventana elegida. **FE (T-254–T-255) ya validado** sobre la misma clave/día y documentado en [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md).
 
 ---
 
@@ -184,9 +184,9 @@ ORDER BY a.event_id, a.evaluated_at DESC;
 
 1. **Loop oficial real:** § T-247 / T-248.  
 2. **Elegibilidad / auditoría real:** § T-249 / T-251.  
-3. **Summary / backend (contrato admin):** § T-250. Evidencia de **pantalla** FE: pendiente **T-254–T-255**.  
+3. **Summary / backend (contrato admin):** § T-250 + validación FE en **T-254–T-255** (`EJECUCION_UI_FASE1.md`).  
 4. **Paralelo F2 mínimo:** § T-252 / T-253.
 
 ---
 
-*Última actualización: cierre operativo BE documentado con muestra real **2026-04-14** (entorno local del repositorio).*
+*Última actualización: cierre operativo **BE + FE** documentado con muestra real **2026-04-14** (entorno local del repositorio).*

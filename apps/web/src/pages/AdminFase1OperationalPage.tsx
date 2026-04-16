@@ -1,7 +1,38 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
-import { fetchBt2AdminFase1OperationalSummary, postBt2AdminRefreshCdmFromSm } from '@/lib/api'
-import type { Bt2AdminFase1OperationalSummaryOut } from '@/lib/bt2Types'
+import {
+  fetchBt2AdminFase1OperationalSummary,
+  fetchBt2AdminF2PoolEligibilityMetrics,
+  postBt2AdminRefreshCdmFromSm,
+} from '@/lib/api'
+import type {
+  Bt2AdminFase1OperationalSummaryOut,
+  Bt2AdminF2PoolMetricsOut,
+} from '@/lib/bt2Types'
+
+function formatAdminBlockError(msg: string): string {
+  if (msg.includes('Falta VITE_BT2_ADMIN_API_KEY')) {
+    return 'Configura VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el API).'
+  }
+  if (msg.startsWith('503') || msg.includes('503')) {
+    return 'Admin no disponible: define BT2_ADMIN_API_KEY en el entorno del API.'
+  }
+  if (msg.startsWith('401') || msg.includes('401')) {
+    return 'Clave admin rechazada; revisa VITE_BT2_ADMIN_API_KEY.'
+  }
+  return msg.length > 240 ? `${msg.slice(0, 240)}…` : msg
+}
+
+/** Solo presentación: valores tal cual vienen en `metricsGlobal` (T-263), sin recomputar tasas. */
+function fmtF2Num(n: unknown): string {
+  if (n == null || typeof n !== 'number' || Number.isNaN(n)) return '—'
+  return String(n)
+}
+
+function fmtF2Pct(n: unknown): string {
+  if (n == null || typeof n !== 'number' || Number.isNaN(n)) return '—'
+  return `${n}%`
+}
 
 /** Alineado con `bt2_router._operating_day_key` (America/Bogota), no con la TZ del navegador. */
 function defaultOperatingDayKeyBogota(): string {
@@ -115,42 +146,265 @@ function SectionCard(props: {
   )
 }
 
+/** T-265 — KPIs F2 solo desde GET f2-pool-eligibility-metrics (T-263); sin recalcular en cliente. */
+function F2PoolSection(props: {
+  accumulatedView: boolean
+  f2Data: Bt2AdminF2PoolMetricsOut | null
+  f2Error: string | null
+  loading: boolean
+}) {
+  const { accumulatedView, f2Data, f2Error, loading } = props
+  const subtitle = accumulatedView
+    ? 'Ventana rolling (30 días hasta el último día con picks en BT2), universo ligas F2. Valores = payload T-263.'
+    : 'Día operativo seleccionado (Bogotá), ligas F2. Oficial = norma F2 (min familias canónico); relajado = observabilidad (min fam = 1).'
+
+  return (
+    <div data-testid="fase1-f2-block">
+      <SectionCard
+        sectionId="fase1-admin-f2-pool"
+        title="4 · Pool elegibilidad F2 (oficial vs relajado)"
+        subtitle={subtitle}
+      >
+        {loading && !f2Data && !f2Error ? (
+          <p className="text-sm text-[#52616a]">Cargando métricas F2…</p>
+        ) : null}
+        {f2Error ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50/90 px-3 py-2 text-sm text-red-900"
+          >
+            {f2Error}
+          </div>
+        ) : null}
+        {!f2Error && f2Data ? (
+          <>
+            <p className="font-mono text-[11px] leading-relaxed text-[#475569]">
+              Ventana:{' '}
+              <span className="tabular-nums">
+                {f2Data.windowFrom ?? '—'} … {f2Data.windowTo ?? '—'}
+              </span>
+              {' · '}
+              <span className="font-sans text-[#52616a]">operatingDayKeyFilter (API):</span>{' '}
+              <span className="tabular-nums">{f2Data.operatingDayKeyFilter ?? '—'}</span>
+              {' · '}
+              <span className="font-sans text-[#52616a]">ligas BT2 resueltas:</span>{' '}
+              <span className="tabular-nums">
+                {f2Data.leagueBt2IdsResolved.length > 0
+                  ? f2Data.leagueBt2IdsResolved.join(', ')
+                  : '—'}
+              </span>
+            </p>
+            {f2Data.noteEs ? (
+              <p className="mt-2 text-xs leading-relaxed text-[#52616a]">{f2Data.noteEs}</p>
+            ) : null}
+
+            <h3 className="mt-4 font-mono text-xs font-bold uppercase tracking-wide text-[#52616a]">
+              Globales (payload)
+            </h3>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Kpi
+                label="Candidatos (eventos)"
+                value={fmtF2Num(f2Data.metricsGlobal.candidate_events_count)}
+              />
+              <Kpi
+                label="Elegibles · oficial (norma F2)"
+                value={fmtF2Num(f2Data.metricsGlobal.eligible_official_count)}
+                hint="min familias canónico (re-evaluación en vivo)"
+              />
+              <Kpi
+                label="Elegibles · relajado (observabilidad)"
+                value={fmtF2Num(f2Data.metricsGlobal.eligible_relaxed_count)}
+                hint="min familias = 1"
+              />
+              <Kpi
+                label="INSUFFICIENT_MARKET_FAMILIES dominante"
+                value={
+                  f2Data.insufficientMarketFamiliesDominant == null
+                    ? '—'
+                    : f2Data.insufficientMarketFamiliesDominant
+                      ? 'Sí'
+                      : 'No'
+                }
+              />
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Kpi
+                label="Tasa pool elegibilidad · oficial"
+                value={fmtF2Pct(f2Data.metricsGlobal.pool_eligibility_rate_official_pct)}
+              />
+              <Kpi
+                label="Tasa pool elegibilidad · relajado"
+                value={fmtF2Pct(f2Data.metricsGlobal.pool_eligibility_rate_relaxed_pct)}
+              />
+            </div>
+
+            <h3 className="mt-6 font-mono text-xs font-bold uppercase tracking-wide text-[#52616a]">
+              Umbrales (payload)
+            </h3>
+            <ul className="mt-2 space-y-1 text-sm text-[#26343d]">
+              <li>
+                <span className="font-mono text-[#52616a]">pass_global_60:</span>{' '}
+                {String(f2Data.thresholds['pass_global_60'] ?? '—')}
+              </li>
+              <li>
+                <span className="font-mono text-[#52616a]">pass_all_leagues_40:</span>{' '}
+                {String(f2Data.thresholds['pass_all_leagues_40'] ?? '—')}
+              </li>
+              <li>
+                <span className="font-mono text-[#52616a]">target_global_official_pct:</span>{' '}
+                {String(f2Data.thresholds['target_global_official_pct'] ?? '—')}
+              </li>
+              <li>
+                <span className="font-mono text-[#52616a]">target_per_league_official_pct:</span>{' '}
+                {String(f2Data.thresholds['target_per_league_official_pct'] ?? '—')}
+              </li>
+            </ul>
+
+            <h3 className="mt-6 font-mono text-xs font-bold uppercase tracking-wide text-[#52616a]">
+              Descarte primario (oficial)
+            </h3>
+            {f2Data.metricsGlobal.primary_discard_breakdown_official &&
+            Object.keys(f2Data.metricsGlobal.primary_discard_breakdown_official).length > 0 ? (
+              <table className="mt-2 w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#a4b4be]/25 text-[10px] uppercase text-[#52616a]">
+                    <th className="py-2 pr-2">Motivo</th>
+                    <th className="py-2 font-mono tabular-nums">Cant.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(f2Data.metricsGlobal.primary_discard_breakdown_official)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([k, v]) => (
+                      <tr key={k} className="border-b border-[#a4b4be]/10">
+                        <td className="py-2 pr-2 font-mono text-xs text-[#26343d]">{k}</td>
+                        <td className="py-2 font-mono tabular-nums text-[#26343d]">{v}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="mt-2 text-sm text-[#52616a]">Sin desglose en el payload.</p>
+            )}
+
+            <h3 className="mt-6 font-mono text-xs font-bold uppercase tracking-wide text-[#52616a]">
+              Cobertura núcleo (conteos)
+            </h3>
+            {f2Data.metricsGlobal.core_family_coverage_counts &&
+            Object.keys(f2Data.metricsGlobal.core_family_coverage_counts).length > 0 ? (
+              <table className="mt-2 w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#a4b4be]/25 text-[10px] uppercase text-[#52616a]">
+                    <th className="py-2 pr-2">Clave</th>
+                    <th className="py-2 font-mono tabular-nums">Cant.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(f2Data.metricsGlobal.core_family_coverage_counts).map(
+                    ([k, v]) => (
+                      <tr key={k} className="border-b border-[#a4b4be]/10">
+                        <td className="py-2 pr-2 font-mono text-xs text-[#26343d]">{k}</td>
+                        <td className="py-2 font-mono tabular-nums text-[#26343d]">{String(v)}</td>
+                      </tr>
+                    ),
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <p className="mt-2 text-sm text-[#52616a]">Sin conteos en el payload.</p>
+            )}
+
+            <h3 className="mt-6 font-mono text-xs font-bold uppercase tracking-wide text-[#52616a]">
+              Por liga (payload)
+            </h3>
+            {f2Data.metricsByLeague.length === 0 ? (
+              <p className="mt-2 text-sm text-[#52616a]">Sin filas en metricsByLeague.</p>
+            ) : (
+              <table className="mt-2 w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-[#a4b4be]/25 text-[10px] uppercase text-[#52616a]">
+                    <th className="py-2 pr-2">Liga</th>
+                    <th className="py-2 font-mono">Candidatos</th>
+                    <th className="py-2 font-mono">% oficial</th>
+                    <th className="py-2 font-mono">pass_league_40</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {f2Data.metricsByLeague.map((row) => (
+                    <tr
+                      key={`${row.league_id ?? 'x'}-${row.league_name ?? ''}`}
+                      className="border-b border-[#a4b4be]/10"
+                    >
+                      <td className="py-2 pr-2 font-mono text-[#26343d]">
+                        {row.league_name ?? '—'}{' '}
+                        <span className="text-[#52616a]">(id {row.league_id ?? '—'})</span>
+                      </td>
+                      <td className="py-2 font-mono tabular-nums">
+                        {fmtF2Num(row.candidate_events_count)}
+                      </td>
+                      <td className="py-2 font-mono tabular-nums">
+                        {fmtF2Pct(row.pool_eligibility_rate_official_pct)}
+                      </td>
+                      <td className="py-2 font-mono tabular-nums">
+                        {row.pass_league_40 == null ? '—' : String(row.pass_league_40)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        ) : null}
+        {!f2Error && !f2Data && !loading ? (
+          <p className="text-sm text-[#52616a]">Sin datos F2.</p>
+        ) : null}
+      </SectionCard>
+    </div>
+  )
+}
+
 export default function AdminFase1OperationalPage() {
   const [operatingDayKey, setOperatingDayKey] = useState(defaultOperatingDayKeyBogota)
   const [accumulatedView, setAccumulatedView] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<Bt2AdminFase1OperationalSummaryOut | null>(null)
+  const [f2Data, setF2Data] = useState<Bt2AdminF2PoolMetricsOut | null>(null)
+  const [f2Error, setF2Error] = useState<string | null>(null)
   const [refreshSmBusy, setRefreshSmBusy] = useState(false)
   const [refreshSmMsg, setRefreshSmMsg] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
-    try {
-      const out = await fetchBt2AdminFase1OperationalSummary(operatingDayKey, {
+    setF2Error(null)
+    const f2Opts = accumulatedView ? { days: 30 } : { operatingDayKey }
+    const [r1, r2] = await Promise.allSettled([
+      fetchBt2AdminFase1OperationalSummary(operatingDayKey, {
         accumulated: accumulatedView,
-      })
-      setData(out)
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e)
-      if (msg.includes('Falta VITE_BT2_ADMIN_API_KEY')) {
-        setError(
-          'Configura VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el API).',
-        )
-      } else if (msg.startsWith('503') || msg.includes('503')) {
-        setError(
-          'Admin no disponible: define BT2_ADMIN_API_KEY en el entorno del API.',
-        )
-      } else if (msg.startsWith('401') || msg.includes('401')) {
-        setError('Clave admin rechazada; revisa VITE_BT2_ADMIN_API_KEY.')
-      } else {
-        setError(msg.length > 240 ? `${msg.slice(0, 240)}…` : msg)
-      }
+      }),
+      fetchBt2AdminF2PoolEligibilityMetrics(f2Opts),
+    ])
+
+    if (r1.status === 'fulfilled') {
+      setData(r1.value)
+      setError(null)
+    } else {
+      const msg = r1.reason instanceof Error ? r1.reason.message : String(r1.reason)
       setData(null)
-    } finally {
-      setLoading(false)
+      setError(formatAdminBlockError(msg))
     }
+
+    if (r2.status === 'fulfilled') {
+      setF2Data(r2.value)
+      setF2Error(null)
+    } else {
+      setF2Data(null)
+      const msg = r2.reason instanceof Error ? r2.reason.message : String(r2.reason)
+      setF2Error(formatAdminBlockError(msg))
+    }
+
+    setLoading(false)
   }, [operatingDayKey, accumulatedView])
 
   const onRefreshCdmFromSm = useCallback(async () => {
@@ -520,7 +774,23 @@ export default function AdminFase1OperationalPage() {
               </table>
             )}
           </SectionCard>
+
+          <F2PoolSection
+            accumulatedView={accumulatedView}
+            f2Data={f2Data}
+            f2Error={f2Error}
+            loading={loading}
+          />
         </>
+      ) : null}
+
+      {!data && (f2Data || f2Error) ? (
+        <F2PoolSection
+          accumulatedView={accumulatedView}
+          f2Data={f2Data}
+          f2Error={f2Error}
+          loading={loading}
+        />
       ) : null}
     </div>
   )

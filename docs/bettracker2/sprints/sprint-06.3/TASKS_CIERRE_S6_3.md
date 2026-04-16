@@ -5,6 +5,21 @@
 > Base vigente del sprint: `TASKS.md`, `US.md`, `EJECUCION.md`, `EJECUCION_UI_FASE1.md`.
 > Documentos de cierre: `DECISIONES_CIERRE_S6_3.md`, `US_CIERRE_S6_3.md`, `HANDOFF_CIERRE_S6_3.md`.
 > Foco: evidencia operativa real de Fase 1 + mínimo paralelo de F2 dentro de S6.3 + cierre documental honesto.
+> **Trazabilidad decisiones → ejecución:** [`DECISIONES_CIERRE_S6_3.md`](./DECISIONES_CIERRE_S6_3.md) (D-06-051 … D-06-054) · **Índice de ejecución:** [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).
+>
+> **Cierre core (T-246…T-257):** este archivo — **cerrado** en línea principal.  
+> **Siguiente frente — norma F2 extendida** (implementación y KPI según [`DECISIONES_CIERRE_F2_S6_3_FINAL.md`](./DECISIONES_CIERRE_F2_S6_3_FINAL.md)): [`TASKS_CIERRE_F2_S6_3.md`](./TASKS_CIERRE_F2_S6_3.md) · [`US_CIERRE_F2_S6_3.md`](./US_CIERRE_F2_S6_3.md) · [`HANDOFF_CIERRE_F2_S6_3.md`](./HANDOFF_CIERRE_F2_S6_3.md). Referencia borrador GPT: [`PROPUESTA_INTEGRADA_CIERRE_EXTENDIDO_F2_S6_3.md`](./PROPUESTA_INTEGRADA_CIERRE_EXTENDIDO_F2_S6_3.md).
+
+* * *
+
+## Matriz decisión → tareas (backlog normativo)
+
+| Decisión | Rango tasks | Evidencia enlazada |
+|----------|-------------|-------------------|
+| **D-06-051** — evidencia loop real | T-246, T-247, T-248 | [`EJECUCION.md`](./EJECUCION.md) § T-246, T-247 / T-248 |
+| **D-06-052** — elegibilidad + admin con datos reales | T-249, T-250, T-251, T-254, T-255 | [`EJECUCION.md`](./EJECUCION.md) § T-249–T-251, T-250 · [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md) |
+| **D-06-053** — paralelo F2 mínimo | T-252, T-253 | [`EJECUCION.md`](./EJECUCION.md) § T-252 / T-253 |
+| **D-06-054** — cierre documental explícito | T-256, T-257 | [`EJECUCION.md`](./EJECUCION.md) + este archivo (casillas) |
 
 * * *
 
@@ -79,4 +94,5 @@ Cierre documental del sprint | transversal | T-256–T-257
 
 * * *
 
-Creación: 2026-04-14 — tasks finales para cierre real de S6.3.
+Creación: 2026-04-14 — tasks finales para cierre real de S6.3.  
+*Actualización: 2026-04-15 — matriz D-06-051…054 → tasks; enlace a [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).*

@@ -4,6 +4,7 @@
 > Backlog de cierre: `TASKS_CIERRE_S6_3.md`.
 > US: `US_CIERRE_S6_3.md`.
 > Decisiones: `DECISIONES_CIERRE_S6_3.md`.
+> **Índice ejecución (decisión → task → evidencia):** [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).
 > Base de contexto: `CIERRE_RESTANTE_S6_3.md`.
 > Este handoff no redefine el sprint: solo ordena la operación final y la evidencia.
 
@@ -150,9 +151,11 @@ Salida mínima:
 
 * * *
 
-## 4. Qué debe quedar en `EJECUCION.md`
+## 4. Qué debe quedar en `EJECUCION.md` y en `EJECUCION_CIERRE_S6_3.md`
 
-`EJECUCION.md` debe salir de este cierre con cuatro bloques explícitos:
+[`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md) documenta la **trazabilidad** **D-06-051 … D-06-054** → **T-246…T-257** → secciones de `EJECUCION.md` / UI; úsalo como checklist normativo y para onboarding sin releer todo el sprint.
+
+`EJECUCION.md` debe contener **cuatro bloques explícitos** (evidencia del corte real):
 
 1. evidencia de loop oficial real,
 2. evidencia de auditoría/elegibilidad real,
@@ -191,4 +194,16 @@ Con brecha explícita documentada y sin fingir cierre.
 
 * * *
 
-Creación: 2026-04-14 — handoff de ejecución para cierre restante de S6.3.
+## 7. Después del cierre core: norma F2 extendida (otro frente)
+
+Si **T-246…T-257** están cumplidas y el PO prioriza alinear código con [`DECISIONES_CIERRE_F2_S6_3_FINAL.md`](./DECISIONES_CIERRE_F2_S6_3_FINAL.md) (anexo de validación), seguir **no** este handoff sino:
+
+- [`HANDOFF_CIERRE_F2_S6_3.md`](./HANDOFF_CIERRE_F2_S6_3.md)
+- [`TASKS_CIERRE_F2_S6_3.md`](./TASKS_CIERRE_F2_S6_3.md) (T-258…T-266)
+
+La propuesta larga [`PROPUESTA_INTEGRADA_CIERRE_EXTENDIDO_F2_S6_3.md`](./PROPUESTA_INTEGRADA_CIERRE_EXTENDIDO_F2_S6_3.md) es referencia de redacción; el backlog ejecutable vive en los tres archivos `*_F2_*`.
+
+* * *
+
+Creación: 2026-04-14 — handoff de ejecución para cierre restante de S6.3.  
+*Actualización: 2026-04-15 — enlace a [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).*

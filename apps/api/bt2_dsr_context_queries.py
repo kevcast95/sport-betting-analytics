@@ -7,7 +7,7 @@ No serializa marcadores ni claves prohibidas (D-06-002): solo agregados y forma 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Mapping, Optional
 
 
 def _utc_iso(dt: datetime) -> str:
@@ -200,9 +200,16 @@ def fetch_odds_ingest_meta(cur, event_id: int) -> Optional[dict[str, Any]]:
         (event_id,),
     )
     row = cur.fetchone()
-    if not row or row[0] is None or row[1] is None:
+    if not row:
         return None
-    mn, mx, batches = row[0], row[1], row[2]
+    if isinstance(row, Mapping):
+        mn = row.get("mn")
+        mx = row.get("mx")
+        batches = row.get("batches")
+    else:
+        mn, mx, batches = row[0], row[1], row[2]
+    if mn is None or mx is None:
+        return None
     try:
         b = int(batches)
     except (TypeError, ValueError):
