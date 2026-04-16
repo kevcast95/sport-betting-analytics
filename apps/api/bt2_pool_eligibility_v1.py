@@ -361,8 +361,9 @@ def evaluate_pool_eligibility_v1_from_db(
 
     league_id = int(lg_id) if lg_id is not None else None
     tier = f2_pool_tier_label(league_id, f2_ids)
+    raw_missing = bool(diag.get("raw_fixture_missing"))
 
-    return evaluate_pool_eligibility_v1(
+    res = evaluate_pool_eligibility_v1(
         sportmonks_fixture_id=int(sm_fid) if sm_fid is not None else None,
         home_team_id=int(ht_id) if ht_id is not None else None,
         away_team_id=int(at_id) if at_id is not None else None,
@@ -371,13 +372,18 @@ def evaluate_pool_eligibility_v1_from_db(
         away_team_name=str(ctx.get("away_team") or ""),
         agg=agg,
         ds_fetch_errors=list(diag.get("fetch_errors") or []),
-        raw_fixture_missing=bool(diag.get("raw_fixture_missing")),
+        raw_fixture_missing=raw_missing,
         league_id=league_id,
         pool_tier=tier,
         f2_official_league_bt2_ids=f2_ids,
         lineups_ok=lineups_ok,
         min_distinct_market_families=min_distinct_market_families,
     )
+    # Métricas F2 §6 (T-263): proxies raw/lineups en detail sin re-ejecutar el builder.
+    if res is not None:
+        res.detail["raw_fixture_missing"] = raw_missing
+        res.detail["lineups_ok"] = lineups_ok
+    return res
 
 
 def insert_pool_eligibility_audit_row(

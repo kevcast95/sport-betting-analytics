@@ -3320,14 +3320,19 @@ def bt2_admin_f2_pool_eligibility_metrics(
         min_length=10,
         max_length=10,
         alias="operatingDayKey",
-        description="Opcional: un solo día YYYY-MM-DD (solo picks en 5 ligas F2).",
+        description=(
+            "Opcional: un solo día YYYY-MM-DD — eventos F2 cuyo kickoff (fecha Bogotá) cae ese día."
+        ),
     ),
     days: int = Query(
         30,
         ge=1,
         le=366,
         alias="days",
-        description="Ventana rolling en días si no se pasa operatingDayKey (hasta el MAX day en picks).",
+        description=(
+            "Ventana rolling en días calendario Bogotá sobre kickoff de bt2_events en 5 ligas F2; "
+            "fin anclado a MAX(operating_day_key) en picks o hoy Bogota si no hay picks."
+        ),
     ),
 ) -> Bt2AdminF2PoolMetricsOut:
     """

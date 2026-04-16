@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-T-235 / T-236 — Job batch: evalúa elegibilidad pool v1 y persiste `bt2_pool_eligibility_audit`.
+T-235 / T-236 — Job batch: evalúa elegibilidad pool y persiste `bt2_pool_eligibility_audit`.
+
+Persistencia **siempre** con umbral oficial de familias = 2 (`min_distinct_market_families=2`),
+independiente de `BT2_POOL_ELIGIBILITY_MIN_FAMILIES` (ese env solo afecta pruebas/KPI relajado
+en memoria, no la verdad append-only en BD).
 
 Append-only: cada corrida inserta filas nuevas; métricas “último estado” vía DISTINCT ON en consultas admin.
 
@@ -58,6 +62,7 @@ def main() -> int:
         return 1
 
     from apps.api.bt2_pool_eligibility_v1 import (  # noqa: E402
+        POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63,
         evaluate_pool_eligibility_v1_from_db,
         insert_pool_eligibility_audit_row,
     )
@@ -93,7 +98,11 @@ def main() -> int:
             ids = [int(r[0]) for r in cur.fetchall()]
 
         for eid in ids:
-            res = evaluate_pool_eligibility_v1_from_db(cur, eid)
+            res = evaluate_pool_eligibility_v1_from_db(
+                cur,
+                eid,
+                min_distinct_market_families=POOL_ELIGIBILITY_MIN_FAMILIES_OFFICIAL_S63,
+            )
             if res is None:
                 n_skip += 1
                 continue

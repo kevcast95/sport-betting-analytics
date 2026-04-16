@@ -385,3 +385,20 @@ Leyenda: **Sí** = alineado de forma clara · **Parcial** = existe algo relacion
 *Actualización: 2026-04-15 — enlaces al paquete de backlog F2.*
 
 **Actualización implementación 2026-04-15:** las tareas **T-258–T-264** quedaron implementadas en repo (constantes 5 ligas, regla `pool-eligibility-f2-v1`, métricas/API `f2-pool-eligibility-metrics`, script `job_f2_closure_report.py`). Evidencia de primer run y notas: [`EJECUCION_CIERRE_F2_S6_3.md`](./EJECUCION_CIERRE_F2_S6_3.md). La tabla del anexo superior describe el estado *previo* a este corte; el cierre de producto sobre umbrales 60/40 sigue siendo **dato de entorno**, no automáticamente “OK” al merge.
+
+---
+
+## Anexo (b) — Validación post-implementación T-258–T265 (repo, 2026-04-15)
+
+Tabla **sustitutiva del estado de implementación** respecto a la tabla histórica de arriba. No modifica el texto normativo de §1–§7.
+
+| Bloque normativo | Estado en código actual | Notas |
+|------------------|-------------------------|--------|
+| §1 Tier Base vs Tier A | **Parcial** | Tier **A** = ligas del universo F2 (`f2_pool_tier_label` en `bt2_f2_league_constants.py`); refuerzo **raw** obligatorio en A (`_ds_input_critical_f2`). “Mayor exigencia de mercados” vs Base **no** codificada como umbral extra. |
+| §2 Bloques SM mínimos vs reforzados | **Parcial** | Raw/lineups vía `ds_input` + regla `pool-eligibility-f2-v1`. `available: false` por bloque SM **no** mapeado 1:1 a causal; se usa `lineups_ok` / `raw_fixture_missing`. |
+| §3 Auditoría fina | **Parcial** | `causal_audit_class` en `detail_json` (`bt2_pool_eligibility_v1.py`); heurística, no las cuatro etiquetas literales §3. |
+| §4 Whitelist FT_1X2 + 1 core | **Sí** | `_f2_core_whitelist_satisfied` + conteo familias cuando `official_style`. |
+| §5 Oficial vs relajado | **Sí** / **Parcial** | KPI F2 recalcula oficial `min_fam=2` vs relajado `min_fam=1` (`bt2_f2_metrics.py`). Job batch `job_pool_eligibility_audit.py` **persiste siempre** con `min_fam=2` oficial (el env `BT2_POOL_ELIGIBILITY_MIN_FAMILIES` no altera filas append-only). |
+| §6 KPI + secundarias + 30d + 5 ligas + 60/40 | **Parcial** | Endpoint + script **30d**; umbrales 60/40 en payload (**meta acta**, no bloqueo S6.3). Candidatos = **`bt2_events`** en 5 ligas con kickoff en ventana (fecha **America/Bogota**); `core_family_coverage_counts` incluye raw/lineups. Ver [`EJECUCION_CIERRE_F2_S6_3.md`](./EJECUCION_CIERRE_F2_S6_3.md) § acuerdos. |
+| §7 Cinco ligas | **Sí** | `bt2_f2_league_constants.py` + env `BT2_F2_OFFICIAL_LEAGUE_IDS`. |
+| §6 lectura admin / T-265 | **Sí** | `AdminFase1OperationalPage.tsx` bloque F2 + `fetchBt2AdminF2PoolEligibilityMetrics`. |
