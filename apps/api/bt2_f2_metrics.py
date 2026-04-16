@@ -36,26 +36,48 @@ def fetch_f2_event_ids_in_window(
     league_bt2_ids: list[int],
     from_day_key: str,
     to_day_key: str,
+    single_league_id: Optional[int] = None,
 ) -> list[int]:
+    """
+    Candidatos KPI F2: todos los `bt2_events` de la(s) liga(s) con `kickoff_utc` no nulo
+    cuya fecha local **America/Bogota** cae en [from_day_key, to_day_key] (inclusive).
+
+    Acuerdo S6.3: universo = eventos CDM en ventana, **no** solo eventos con fila en
+    `bt2_daily_picks`.
+    """
     if not league_bt2_ids:
         return []
-    cur.execute(
-        """
-        SELECT DISTINCT dp.event_id
-        FROM bt2_daily_picks dp
-        INNER JOIN bt2_events e ON e.id = dp.event_id
-        WHERE e.league_id = ANY(%s::int[])
-          AND dp.operating_day_key >= %s
-          AND dp.operating_day_key <= %s
-        ORDER BY 1
-        """,
-        (league_bt2_ids, from_day_key, to_day_key),
-    )
+    if single_league_id is not None:
+        cur.execute(
+            """
+            SELECT e.id
+            FROM bt2_events e
+            WHERE e.league_id = %s
+              AND e.kickoff_utc IS NOT NULL
+              AND (e.kickoff_utc AT TIME ZONE 'America/Bogota')::date >= %s::date
+              AND (e.kickoff_utc AT TIME ZONE 'America/Bogota')::date <= %s::date
+            ORDER BY e.id
+            """,
+            (int(single_league_id), from_day_key, to_day_key),
+        )
+    else:
+        cur.execute(
+            """
+            SELECT e.id
+            FROM bt2_events e
+            WHERE e.league_id = ANY(%s::int[])
+              AND e.kickoff_utc IS NOT NULL
+              AND (e.kickoff_utc AT TIME ZONE 'America/Bogota')::date >= %s::date
+              AND (e.kickoff_utc AT TIME ZONE 'America/Bogota')::date <= %s::date
+            ORDER BY e.id
+            """,
+            (league_bt2_ids, from_day_key, to_day_key),
+        )
     rows = cur.fetchall()
     out: list[int] = []
     for r in rows:
         if isinstance(r, Mapping):
-            out.append(int(r["event_id"]))
+            out.append(int(r["id"]))
         else:
             out.append(int(r[0]))
     return out
@@ -96,11 +118,14 @@ def compute_f2_live_metrics_for_events(
         fc = det.get("families_covered") or []
         if "FT_1X2" in fc:
             core_cov["ft_1x2_complete"] += 1
-        if any(x in fc for x in ("OU_GOALS", "BTTS", "DOUBLE_CHANCE")):
+        if any(
+            fam == "OU_GOALS" or fam == "BTTS" or fam == "DOUBLE_CHANCE" for fam in fc
+        ):
             core_cov["second_core_family"] += 1
-        # proxies desde detail si existieran en futuras versiones
-        if det.get("pool_tier") == "A":
-            pass
+        if not det.get("raw_fixture_missing", True):
+            core_cov["raw_present"] += 1
+        if det.get("lineups_ok"):
+            core_cov["lineups_ok"] += 1
 
     def _pct(num: int, den: int) -> Optional[float]:
         if den <= 0:
@@ -125,8 +150,11 @@ def build_f2_pool_eligibility_metrics(
     days: int = 30,
 ) -> dict[str, Any]:
     """
-    T-263 — Ventana: un día (`operating_day_key`) o últimos `days` días calendario
-    respecto al máximo `operating_day_key` presente en `bt2_daily_picks`, restringido a 5 ligas F2.
+    T-263 — Ventana calendario **America/Bogota** sobre `bt2_events.kickoff_utc` en las 5 ligas F2.
+
+    Fin de ventana rolling: MAX(`operating_day_key`) en `bt2_daily_picks` si existe;
+    si no hay picks, se usa la fecha actual en Bogota (para que el KPI siga siendo computable).
+    Candidatos: **todos** los eventos de esas ligas con kickoff en la ventana (acuerdo S6.3).
     """
     league_ids = resolve_f2_official_league_bt2_ids(cur)
     if not league_ids:
@@ -163,16 +191,25 @@ def build_f2_pool_eligibility_metrics(
             else:
                 mx = row[0]
         if not mx:
-            return {
-                "league_bt2_ids_resolved": league_ids,
-                "window_from": None,
-                "window_to": None,
-                "operating_day_key_filter": None,
-                "metrics_global": {},
-                "thresholds": {},
-                "note_es": "Sin operating_day_key en bt2_daily_picks.",
-            }
-        end = _parse_day(str(mx))
+            cur.execute(
+                "SELECT (current_timestamp AT TIME ZONE 'America/Bogota')::date AS d"
+            )
+            dr = cur.fetchone()
+            if dr:
+                d0 = dr["d"] if isinstance(dr, Mapping) else dr[0]
+                end = d0 if isinstance(d0, date) else _parse_day(str(d0))
+            else:
+                return {
+                    "league_bt2_ids_resolved": league_ids,
+                    "window_from": None,
+                    "window_to": None,
+                    "operating_day_key_filter": None,
+                    "metrics_global": {},
+                    "thresholds": {},
+                    "note_es": "No se pudo anclar fin de ventana (Bogota).",
+                }
+        else:
+            end = _parse_day(str(mx))
         start = end - timedelta(days=max(1, int(days)) - 1)
         w_from = _day_key(start)
         w_to = _day_key(end)
@@ -204,18 +241,13 @@ def build_f2_pool_eligibility_metrics(
         for lr in cur.fetchall():
             lid = int(lr["id"] if isinstance(lr, Mapping) else lr[0])
             lname = str(lr["name"] if isinstance(lr, Mapping) else lr[1])
-            cur.execute(
-                """
-                SELECT DISTINCT dp.event_id
-                FROM bt2_daily_picks dp
-                INNER JOIN bt2_events e ON e.id = dp.event_id
-                WHERE e.league_id = %s
-                  AND dp.operating_day_key >= %s
-                  AND dp.operating_day_key <= %s
-                """,
-                (lid, w_from, w_to),
+            eids = fetch_f2_event_ids_in_window(
+                cur,
+                league_bt2_ids=league_ids,
+                from_day_key=w_from,
+                to_day_key=w_to,
+                single_league_id=lid,
             )
-            eids = [int(r["event_id"] if isinstance(r, Mapping) else r[0]) for r in cur.fetchall()]
             m = compute_f2_live_metrics_for_events(cur, eids)
             pct = m.get("pool_eligibility_rate_official_pct")
             pl_ok = pct is not None and pct >= 40.0
@@ -251,7 +283,10 @@ def build_f2_pool_eligibility_metrics(
         "insufficient_market_families_dominant": dominant_ins,
         "note_es": (
             "KPI oficial = re-evaluación en vivo con min_fam=2 (norma F2). "
-            "Relajado = min_fam=1 (observabilidad §5)."
+            "Relajado = min_fam=1 (observabilidad §5). "
+            "Candidatos = todos los bt2_events de las 5 ligas F2 con kickoff en ventana "
+            "(fecha local America/Bogota). Umbrales 60/40 = meta operativa, no bloqueo de acta (S6.3). "
+            "Fin ventana rolling = MAX(operating_day_key) en picks si existe; si no, hoy Bogota."
         ),
     }
 

@@ -39,11 +39,11 @@
 
 ## US-FE-062 (extensión)
 
-- [ ] **T-265** — **Admin:** consumir contrato T-263 (tipos TS + UI) para mostrar bloque F2 sin recalcular métricas en cliente; coherencia con [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md).
+- [x] **T-265** — **Admin:** consumir contrato T-263 (tipos TS + UI) para mostrar bloque F2 sin recalcular métricas en cliente; coherencia con [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md). *(Implementado: `AdminFase1OperationalPage.tsx` + tests.)*
 
 ## Gobernanza
 
-- [x] **T-266** — **Documentación:** [`EJECUCION_CIERRE_F2_S6_3.md`](./EJECUCION_CIERRE_F2_S6_3.md) (evidencia primer run T-264 + enlaces). Screenshot FE T-265 pendiente.
+- [x] **T-266** — **Documentación:** [`EJECUCION_CIERRE_F2_S6_3.md`](./EJECUCION_CIERRE_F2_S6_3.md) (evidencia run T-264 **30d** + definición candidatos + FE). Captura UI opcional.
 
 * * *
 
@@ -52,7 +52,7 @@
 - [x] Las 5 ligas y el tier son **reproducibles** en entorno dev/staging.
 - [x] KPI oficial vs relajado **no** se confunden en un solo número en API/UI.
 - [x] Reporte T-264 ejecutado al menos una vez con resultado archivado.
-- [ ] Anexo de [`DECISIONES_CIERRE_F2_S6_3_FINAL.md`](./DECISIONES_CIERRE_F2_S6_3_FINAL.md) actualizado o sustituido por “validación OK” cuando corresponda.
+- [x] Anexo de [`DECISIONES_CIERRE_F2_S6_3_FINAL.md`](./DECISIONES_CIERRE_F2_S6_3_FINAL.md) actualizado (**Anexo (b)** post-implementación) cuando corresponda.
 
 * * *
 

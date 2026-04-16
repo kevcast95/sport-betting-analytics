@@ -155,8 +155,8 @@ function F2PoolSection(props: {
 }) {
   const { accumulatedView, f2Data, f2Error, loading } = props
   const subtitle = accumulatedView
-    ? 'Ventana rolling (30 días hasta el último día con picks en BT2), universo ligas F2. Valores = payload T-263.'
-    : 'Día operativo seleccionado (Bogotá), ligas F2. Oficial = norma F2 (min familias canónico); relajado = observabilidad (min fam = 1).'
+    ? 'Ventana rolling (kickoff en America/Bogota): todos los bt2_events de las 5 ligas F2 en esos días; fin de ventana anclado al último operating_day_key con picks (o hoy Bogotá si no hay). Valores = payload T-263.'
+    : 'Día calendario Bogotá: eventos F2 con kickoff ese día. Oficial = norma F2 (min familias canónico); relajado = observabilidad (min fam = 1).'
 
   return (
     <div data-testid="fase1-f2-block">

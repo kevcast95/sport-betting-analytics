@@ -189,4 +189,8 @@ ORDER BY a.event_id, a.evaluated_at DESC;
 
 ---
 
+**Cierre normativo F2 extendido (T-258–T-266):** [`EJECUCION_CIERRE_F2_S6_3.md`](./EJECUCION_CIERRE_F2_S6_3.md).
+
+---
+
 *Última actualización: cierre operativo **BE + FE** documentado con muestra real **2026-04-14** (entorno local del repositorio).*

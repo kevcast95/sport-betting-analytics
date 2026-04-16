@@ -23,7 +23,7 @@
 3. **T-262** — Auditoría con matices (puede requerir migración JSON/códigos).
 4. **T-263–T-264** — Métricas y reporte de cierre (puede depender de datos históricos suficientes).
 5. **T-265** — FE cuando el contrato T-263 esté estable.
-6. **T-266** — Evidencia en `EJECUCION.md`.
+6. **T-266** — Evidencia en [`EJECUCION_CIERRE_F2_S6_3.md`](./EJECUCION_CIERRE_F2_S6_3.md) (y enlace desde `EJECUCION.md` del sprint si se desea índice único).
 
 * * *
 

@@ -2,6 +2,9 @@
 """
 T-264 — Reporte de cierre F2: ventana 30d (configurable), 5 ligas, umbrales 60% / 40% por liga.
 
+Candidatos del KPI: `bt2_events` en esas ligas con kickoff (fecha America/Bogota) en la ventana
+(ver `bt2_f2_metrics.fetch_f2_event_ids_in_window`).
+
 Salida: JSON a stdout y opcionalmente Markdown para pegar en `EJECUCION_CIERRE_F2_S6_3.md`.
 
   BT2_DATABASE_URL=... python3 scripts/bt2_cdm/job_f2_closure_report.py
