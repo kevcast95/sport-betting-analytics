@@ -135,6 +135,42 @@ ORDER BY 1;
 | **Disclaimer** | Frase explícita: **SofaScore solo benchmark/discovery; sin fallback productivo aprobado en S6.4** (**D-06-066**, **T-286**) |
 | Gate | Checklist **T-286**: sin feature flag de fallback; sin consumo SofaScore en rutas productivas BT2/CDM; tablas benchmark **no** usadas por producto |
 
+### US-BE-062 — Comandos, tablas e informe (T-283…T-286)
+
+| Task | Tabla / script | Notas |
+|------|----------------|--------|
+| **T-283** | `bt2_nonprod_sm_sofascore_fixture_map_s64` | `python3 scripts/bt2_cdm/job_sm_sofascore_fixture_map.py` — agenda SofaScore + UPSERT; `needs_review` si ambigüedad o sin candidato. Env: `BT2_SOFASCORE_MAP_SKEW_SEC` (default 720). |
+| **T-288** | `bt2_nonprod_sofascore_fixture_observation_s64` | Solo SofaScore; mismas señales que **T-287** + `sofascore_event_id`. |
+| **T-284** | (T-288) | `python3 scripts/bt2_cdm/job_sofascore_intraday_observation.py` — cadencia **D-06-068** §2; `lineups` + `odds/1/all` + `odds/1/featured` → `processors/lineups_processor`, `odds_all_processor`, `odds_feature_processor`. Omite fixtures sin mapeo resuelto. Env: `BT2_SOFA_OBS_SLEEP_S`. |
+| **T-285** | `out/bt2_benchmark_sm_sofa_s64_<fecha>.{json,md}` | `python3 scripts/bt2_cdm/job_benchmark_sm_sofa_report.py --operating-day YYYY-MM-DD` (`out/` en `.gitignore`). |
+| **T-286** | Checklist (abajo) | Gate **D-06-066**. |
+
+**Orden operativo diario (UTC):** (1) `job_sm_intraday_observation.py` (**T-287**), (2) `job_sm_sofascore_fixture_map.py` (**T-283**), (3) `job_sofascore_intraday_observation.py` (**T-288**), (4) `job_benchmark_sm_sofa_report.py` (**T-285**).
+
+#### SQL comparativo (T-287 ∪ T-288)
+
+```sql
+SELECT 'sm' AS src, sm_fixture_id, observed_at, lineup_available,
+       ft_1x2_available, ou_goals_2_5_available, btts_available
+FROM bt2_nonprod_sm_fixture_observation_s64
+WHERE observed_at >= timestamptz '2026-04-16 00:00:00+00'
+  AND observed_at <  timestamptz '2026-04-17 00:00:00+00'
+UNION ALL
+SELECT 'sofa' AS src, sm_fixture_id, observed_at, lineup_available,
+       ft_1x2_available, ou_goals_2_5_available, btts_available
+FROM bt2_nonprod_sofascore_fixture_observation_s64
+WHERE observed_at >= timestamptz '2026-04-16 00:00:00+00'
+  AND observed_at <  timestamptz '2026-04-17 00:00:00+00'
+ORDER BY sm_fixture_id, observed_at, src;
+```
+
+#### Checklist **T-286** (gate — **D-06-066**)
+
+- [ ] Sin fallback productivo a SofaScore ni feature flag que active consumo SofaScore en pipeline productivo BT2/CDM.
+- [ ] Sin sustitución de verdad SM: tablas `bt2_nonprod_*_s64` no consumidas por rutas productivas CDM/API (solo scripts/jobs benchmark).
+- [ ] Evidencia: sección anterior + artefactos **T-285** tras una corrida real.
+- [ ] **Disclaimer:** SofaScore solo medición/discovery en S6.4 — ver **D-06-066** en [`DECISIONES.md`](./DECISIONES.md).
+
 ---
 
 ## Criterios para declarar **cerrado F3 dentro de S6.4**

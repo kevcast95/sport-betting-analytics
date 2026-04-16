@@ -81,6 +81,8 @@
 
 **Orden sugerido:** T-283 → **T-288** → T-284 → T-285 → **T-286**.
 
+**Scripts:** `scripts/bt2_cdm/job_sm_sofascore_fixture_map.py` → `job_sofascore_intraday_observation.py` → `job_benchmark_sm_sofa_report.py`; gate **T-286** en `EJECUCION.md`. Runbook: [`../../runbooks/bt2_f3_sm_intraday_observation_d06_068.md`](../../runbooks/bt2_f3_sm_intraday_observation_d06_068.md) §10.
+
 **Reglas duras:**
 
 - **SofaScore = solo benchmark/discovery** (**D-06-066**); sin fallback productivo (**T-286**). Tablas **T-287** / **T-288** fuera de rutas productivas.

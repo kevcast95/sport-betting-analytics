@@ -134,11 +134,25 @@ Detener con `Ctrl+C`. Ajustá `sleep` si querés otra periodicidad (debe ser coh
 
 ---
 
-## 8. Referencias cruzadas
+## 10. US-BE-062 — benchmark SofaScore (**D-06-066**)
 
-- **SofaScore solo benchmark:** **D-06-066**; tabla paralela **T-288** (migración separada).
-- **Cadena de revisiones Alembic:** revisar `apps/api/alembic/versions/` — revisión que crea `bt2_nonprod_sm_fixture_observation_s64`.
+| Paso | Script | Tabla |
+|------|--------|--------|
+| Mapeo §6 | `scripts/bt2_cdm/job_sm_sofascore_fixture_map.py` | `bt2_nonprod_sm_sofascore_fixture_map_s64` |
+| Observación (misma cadencia §2 que §9) | `scripts/bt2_cdm/job_sofascore_intraday_observation.py` | `bt2_nonprod_sofascore_fixture_observation_s64` |
+| Informe | `scripts/bt2_cdm/job_benchmark_sm_sofa_report.py --operating-day …` | `out/bt2_benchmark_sm_sofa_s64_*.json` / `.md` |
+
+- **IDs `uniqueTournament` SofaScore ↔ ligas F2:** `apps/api/bt2_f2_sofascore_constants.py`; override env **`BT2_F2_SOFASCORE_UNIQUE_TOURNAMENT_IDS`** (JSON `sportmonks_id` → entero UT) si tu entorno difiere.
+- **No re-poll SM** en el job SofaScore; lado SM = **T-287** / `job_sm_intraday_observation.py`.
+- **Checklist productivo:** ver **T-286** en [`../sprints/sprint-06.4/EJECUCION.md`](../sprints/sprint-06.4/EJECUCION.md).
 
 ---
 
-*2026-04-16 — T-280 / T-287 / T-281; congelación **D-06-068**.*
+## 8. Referencias cruzadas
+
+- **SofaScore solo benchmark:** **D-06-066**; tablas **T-283**, **T-288** (migración `k5a6b7c8d9e0`).
+- **Cadena Alembic:** `j4a5b6c7d8e9` (**T-287**), `k5a6b7c8d9e0` (**T-283** + **T-288**).
+
+---
+
+*2026-04-16 — T-280…T-288 / US-BE-061–062; congelación **D-06-068**.*
