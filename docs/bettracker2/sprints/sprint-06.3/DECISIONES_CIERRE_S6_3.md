@@ -92,5 +92,18 @@ Trazabilidad: US-BE-053, US-BE-054, US-BE-055, US-FE-062.
 
 * * *
 
-Creación: 2026-04-14 — decisiones puntuales para cierre real de S6.3.
-Pendiente siguiente artefacto: `US_CIERRE_S6_3.md`.
+## Backlog operativo (bajada a ejecución)
+
+| Decisión | Tasks cierre | Documento de ejecución |
+|----------|--------------|-------------------------|
+| D-06-051 | T-246–T-248 | [`EJECUCION.md`](./EJECUCION.md) § T-246, T-247 / T-248 · índice [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md) |
+| D-06-052 | T-249–T-251, T-254–T-255 | [`EJECUCION.md`](./EJECUCION.md) § T-249–T-251, T-250 · UI [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md) |
+| D-06-053 | T-252–T-253 | [`EJECUCION.md`](./EJECUCION.md) § T-252 / T-253 |
+| D-06-054 | T-256–T-257 | [`EJECUCION.md`](./EJECUCION.md) (cuerpo completo) + [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md) |
+
+**US de cierre:** [`US_CIERRE_S6_3.md`](./US_CIERRE_S6_3.md) · **Handoff:** [`HANDOFF_CIERRE_S6_3.md`](./HANDOFF_CIERRE_S6_3.md).
+
+* * *
+
+Creación: 2026-04-14 — decisiones puntuales para cierre real de S6.3.  
+*Actualización: 2026-04-15 — backlog enlazado a tasks y a [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).*

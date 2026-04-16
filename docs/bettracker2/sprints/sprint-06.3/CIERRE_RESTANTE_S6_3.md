@@ -1,10 +1,12 @@
 # CIERRE_RESTANTE_S6_3.md
 
+> **Estado (2026-04-15):** el cierre operativo del slice descrito aquí quedó **documentado** en [`EJECUCION.md`](./EJECUCION.md) (muestra **2026-04-14**), con trazabilidad normativa en [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md) y tasks en [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md). El texto de las §2–5 sigue siendo la **definición** del pendiente que movió el cierre; la **resolución** efectiva está en §10.
+
 ## Propósito
 
-Este documento define **qué falta exactamente para cerrar S6.3 de forma real**, sin reabrir fases futuras ni mezclar pendientes operativos con nuevas iniciativas.
+Este documento define **qué faltaba para cerrar S6.3 de forma real**, sin reabrir fases futuras ni mezclar pendientes operativos con nuevas iniciativas.
 
-S6.3 ya cerró gran parte del marco de Fase 0 y del slice principal de Fase 1, pero todavía no debe darse por completamente cerrado mientras falte evidencia operativa con picks reales y mientras no se valide el mínimo paralelo de F2 en datos reales.
+En la línea temporal del repo, el trabajo operativo y documental alineado a [`DECISIONES_CIERRE_S6_3.md`](./DECISIONES_CIERRE_S6_3.md) se cerró con evidencia en `EJECUCION.md`; si reaparece una brecha en otro entorno, usar de nuevo este documento como lista de comprobación.
 
 ---
 
@@ -205,7 +207,7 @@ El objetivo es **cerrar honestamente S6.3**, no diluirlo.
 La resolución correcta para este punto del proyecto es:
 
 - **Fase 0: cerrada**
-- **Fase 1: implementada, pero pendiente de evidencia operativa real**
+- **Fase 1: implementada**; la **evidencia operativa real** del corte documentado consta en [`EJECUCION.md`](./EJECUCION.md) / [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).
 - **F2: solo mínimo paralelo dentro de S6.3**
 - **S6.3 no debe crecer a cubrir fases futuras**
 - **Una vez se cumpla el DoD real, se cierra S6.3 y el siguiente frente va a sprint nuevo**
@@ -224,3 +226,16 @@ Lo que falta no es rediseñar producto desde cero, sino:
 - y cerrar documentalmente el pendiente final.
 
 Ese es el trabajo restante correcto para terminar S6.3.
+
+---
+
+## 10. Cierre efectuado (referencia)
+
+Con la evidencia registrada en [`EJECUCION.md`](./EJECUCION.md) y el mapa [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md):
+
+- **DoD-S6.3-1 … DoD-S6.3-5** (§5 de este archivo) quedaron cubiertos para el entorno y ventana documentados.
+- **D-06-051 … D-06-054** quedaron trazados a tasks T-246…T-257 en [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md).
+
+Ampliaciones posteriores al acta de decisiones (p. ej. refresco CDM desde SportMonks para resultados sin depender del snapshot de bóveda, variable `BT2_POOL_ELIGIBILITY_MIN_FAMILIES`) están descritas en [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md) §3 y en [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md); **no** reabren el cierre normativo de D-06-051…054 si la evidencia base ya existía.
+
+*Añadido: 2026-04-15.*

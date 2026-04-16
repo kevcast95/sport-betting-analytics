@@ -6,6 +6,39 @@ import * as api from '@/lib/api'
 import type { Bt2AdminFase1OperationalSummaryOut } from '@/lib/bt2Types'
 import AdminFase1OperationalPage from '@/pages/AdminFase1OperationalPage'
 
+const mockF2 = {
+  leagueBt2IdsResolved: [1, 2],
+  windowFrom: '2026-04-09',
+  windowTo: '2026-04-09',
+  operatingDayKeyFilter: '2026-04-09',
+  metricsGlobal: {
+    candidate_events_count: 10,
+    eligible_official_count: 6,
+    eligible_relaxed_count: 8,
+    pool_eligibility_rate_official_pct: 60,
+    pool_eligibility_rate_relaxed_pct: 80,
+    primary_discard_breakdown_official: { INSUFFICIENT_MARKET_FAMILIES: 2 },
+    core_family_coverage_counts: { ft_1x2_complete: 5 },
+  },
+  metricsByLeague: [
+    {
+      league_id: 1,
+      league_name: 'Test League',
+      candidate_events_count: 4,
+      pool_eligibility_rate_official_pct: 50,
+      pass_league_40: true,
+    },
+  ],
+  thresholds: {
+    target_global_official_pct: 60,
+    target_per_league_official_pct: 40,
+    pass_global_60: true,
+    pass_all_leagues_40: true,
+  },
+  insufficientMarketFamiliesDominant: false,
+  noteEs: 'Nota F2 de prueba.',
+}
+
 const mockSummary = {
   operatingDayKey: '2026-04-09',
   poolCoverage: {
@@ -59,14 +92,18 @@ const mockSummary = {
 
 describe('AdminFase1OperationalPage (US-FE-061)', () => {
   let spy: ReturnType<typeof vi.spyOn>
+  let spyF2: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
     spy = vi
       .spyOn(api, 'fetchBt2AdminFase1OperationalSummary')
       .mockResolvedValue(mockSummary as Bt2AdminFase1OperationalSummaryOut)
+    spyF2 = vi
+      .spyOn(api, 'fetchBt2AdminF2PoolEligibilityMetrics')
+      .mockResolvedValue(mockF2)
   })
 
-  it('muestra tres bloques y KPIs del loop', async () => {
+  it('muestra bloques Fase 1 + F2 y KPIs del loop', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
@@ -79,6 +116,9 @@ describe('AdminFase1OperationalPage (US-FE-061)', () => {
     })
     expect(screen.getByText(/Cierre de loop/i)).toBeInTheDocument()
     expect(screen.getByText(/Desempeño por mercado/i)).toBeInTheDocument()
+    expect(screen.getByTestId('fase1-f2-block')).toBeInTheDocument()
+    expect(screen.getByText(/Pool elegibilidad F2/i)).toBeInTheDocument()
+    expect(screen.getByText(/Nota F2 de prueba/)).toBeInTheDocument()
     expect(screen.getByText(/OUTSIDE_SUPPORTED_MARKET_V1/)).toBeInTheDocument()
     expect(screen.getByText(/Hit rate \(scored, este día\)/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Checklist cierre operativo US-FE-062/i)).toBeInTheDocument()
@@ -87,6 +127,7 @@ describe('AdminFase1OperationalPage (US-FE-061)', () => {
     )
     expect(screen.getByTestId('fase1-operating-day-api')).toHaveTextContent('2026-04-09')
     expect(spy).toHaveBeenCalled()
+    expect(spyF2).toHaveBeenCalledWith({ operatingDayKey: expect.any(String) })
   })
 
   it('botón Actualizar vuelve a pedir datos', async () => {

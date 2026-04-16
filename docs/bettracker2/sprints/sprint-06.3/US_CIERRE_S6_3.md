@@ -2,6 +2,8 @@
 
 > Base normativa: `PLAN.md`, `DECISIONES.md`, `DECISIONES_CIERRE_S6_3.md`, `ROADMAP_PO_NORTE_Y_FASES.md`.
 > Base vigente del sprint: `US.md`, `TASKS.md`, `EJECUCION.md`.
+> **Índice ejecución cierre (D-06-051…054):** [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).
+> **Norma F2 extendida** (Tier 5 ligas, KPI §6, **no** sustituye US de este cierre core): [`US_CIERRE_F2_S6_3.md`](./US_CIERRE_F2_S6_3.md) · [`TASKS_CIERRE_F2_S6_3.md`](./TASKS_CIERRE_F2_S6_3.md) · [`HANDOFF_CIERRE_F2_S6_3.md`](./HANDOFF_CIERRE_F2_S6_3.md) · [`DECISIONES_CIERRE_F2_S6_3_FINAL.md`](./DECISIONES_CIERRE_F2_S6_3_FINAL.md).
 > Documento base de cierre: `CIERRE_RESTANTE_S6_3.md`.
 > Contrato de formato US: `../../01_CONTRATO_US.md`.
 > Numeración continua: BE desde `US-BE-053`; FE desde `US-FE-062`.
@@ -57,7 +59,7 @@ Demostrar que la capacidad ya implementada de evaluación oficial por pick y cie
 
 #### 5) Definition of Done
 
-* Evidencia operativa real del loop anexada en `EJECUCION.md`.
+* Evidencia operativa real del loop anexada en `EJECUCION.md` (y trazabilidad en `EJECUCION_CIERRE_S6_3.md` si aplica).
 * SQL o salida de job documentada.
 * Estado del cierre reflejado en `TASKS_CIERRE_S6_3.md`.
 
@@ -93,7 +95,7 @@ Demostrar que la capa de elegibilidad, su auditoría persistida y el summary adm
 
 #### 5) Definition of Done
 
-* Evidencia de auditoría real anexada en `EJECUCION.md`.
+* Evidencia de auditoría real anexada en `EJECUCION.md` / referencia cruzada `EJECUCION_CIERRE_S6_3.md`.
 * Endpoint summary validado contra BD.
 * Coverage y descarte real documentados para el cierre del sprint.
 
@@ -132,7 +134,7 @@ Validar si la regla mínima actual de elegibilidad se sostiene con datos reales 
 
 #### 5) Definition of Done
 
-* Validación mínima F2 documentada en `EJECUCION.md`.
+* Validación mínima F2 documentada en `EJECUCION.md` (matriz decisión → task en `EJECUCION_CIERRE_S6_3.md`).
 * Recomendación final explícita emitida.
 * Sin apertura de backlog grande nuevo dentro de S6.3.
 
@@ -173,7 +175,7 @@ Confirmar que la vista `/v2/admin/fase1-operational` funciona correctamente con 
 
 #### 5) Definition of Done
 
-* Validación visual/funcional anexada en `EJECUCION.md` o anexo asociado.
+* Validación visual/funcional anexada en `EJECUCION.md` / `EJECUCION_UI_FASE1.md` (y cierre normativo en `EJECUCION_CIERRE_S6_3.md`).
 * Consistencia endpoint ↔ UI revisada.
 * Estado final del frente reflejado en `TASKS_CIERRE_S6_3.md`.
 
@@ -181,4 +183,4 @@ Madre: US-FE-061.
 
 * * *
 
-Última actualización: 2026-04-14 — backlog final de cierre real para S6.3.
+Última actualización: 2026-04-15 — referencia a [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md) para trazabilidad D-06-051…054.

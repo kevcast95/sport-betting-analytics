@@ -1,7 +1,7 @@
 # Sprint 06.3 — EJECUCION
 
 > **T-245:** regresión CI. **T-246–T-253:** cierre operativo real + mínimo paralelo F2 (este archivo).  
-> **TASKS:** [`TASKS.md`](./TASKS.md) · **Cierre:** [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md) · **Handoff:** [`HANDOFF_CIERRE_S6_3.md`](./HANDOFF_CIERRE_S6_3.md) · **UI Fase 1:** [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md).
+> **TASKS:** [`TASKS.md`](./TASKS.md) · **Cierre:** [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md) · **Handoff:** [`HANDOFF_CIERRE_S6_3.md`](./HANDOFF_CIERRE_S6_3.md) · **UI Fase 1:** [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md) · **Trazabilidad decisiones cierre (D-06-051…054):** [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md).
 
 ---
 

@@ -1,6 +1,7 @@
 import type {
   Bt2AdminDsrDayOut,
   Bt2AdminDsrRangeOut,
+  Bt2AdminF2PoolMetricsOut,
   Bt2AdminFase1OperationalSummaryOut,
   Bt2AdminRefreshCdmFromSmOut,
   Bt2AdminVaultPickDistributionOut,
@@ -411,6 +412,33 @@ export async function fetchBt2AdminFase1OperationalSummary(
   }
   return fetchJson<Bt2AdminFase1OperationalSummaryOut>(
     `/bt2/admin/analytics/fase1-operational-summary?${qs.toString()}`,
+    { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
+/**
+ * GET /bt2/admin/analytics/f2-pool-eligibility-metrics (T-263).
+ * Un día (`operatingDayKey`) o ventana rolling (`days`, default 30) si no se pasa día.
+ */
+export async function fetchBt2AdminF2PoolEligibilityMetrics(options: {
+  operatingDayKey?: string
+  days?: number
+}): Promise<Bt2AdminF2PoolMetricsOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams()
+  if (options.operatingDayKey?.trim()) {
+    qs.set('operatingDayKey', options.operatingDayKey.trim())
+  }
+  if (options.days != null) {
+    qs.set('days', String(options.days))
+  }
+  return fetchJson<Bt2AdminF2PoolMetricsOut>(
+    `/bt2/admin/analytics/f2-pool-eligibility-metrics?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
   )
 }

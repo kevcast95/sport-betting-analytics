@@ -81,7 +81,7 @@ Gobernanza / runbook / cierre técnico | transversal | T-244–T-245
 ## Gobernanza y documentación
 
 - [x] **T-244 (S6.3 transversal)** — Acta de congelación: [`ACTA_T244_CONTRATO_TECNICO_FASE_1.md`](./ACTA_T244_CONTRATO_TECNICO_FASE_1.md) + [`HANDOFF_BE_EJECUCION_S6_3.md`](./HANDOFF_BE_EJECUCION_S6_3.md) §0 + **D-06-050** en `DECISIONES.md`. **TL validado** — §0 cerrado; siguiente paso **PR-BE-1** (T-227, T-228).
-- [x] **T-245 (S6.3 transversal)** — Regresión final backend/frontend: tests BT2 tocados + build web + checklist DoD por US; evidencia en [`EJECUCION.md`](./EJECUCION.md) y detalle UI en [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md).
+- [x] **T-245 (S6.3 transversal)** — Regresión final backend/frontend: tests BT2 tocados + build web + checklist DoD por US; evidencia en [`EJECUCION.md`](./EJECUCION.md) y detalle UI en [`EJECUCION_UI_FASE1.md`](./EJECUCION_UI_FASE1.md). Trazabilidad de cierre **D-06-051…054** → tasks T-246…T-257: [`EJECUCION_CIERRE_S6_3.md`](./EJECUCION_CIERRE_S6_3.md) + [`TASKS_CIERRE_S6_3.md`](./TASKS_CIERRE_S6_3.md).
 
 * * *
 

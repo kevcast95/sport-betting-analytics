@@ -357,6 +357,40 @@ export interface Bt2AdminFase1OperationalSummaryOut {
   poolEligibilityConfigNoteEs: string
 }
 
+/**
+ * GET /bt2/admin/analytics/f2-pool-eligibility-metrics (T-263).
+ * `metricsGlobal` y filas de liga vienen en snake_case desde el API (dict anidado).
+ */
+export interface Bt2AdminF2MetricsGlobal {
+  candidate_events_count?: number
+  eligible_official_count?: number
+  eligible_relaxed_count?: number
+  pool_eligibility_rate_official_pct?: number | null
+  pool_eligibility_rate_relaxed_pct?: number | null
+  primary_discard_breakdown_official?: Record<string, number>
+  core_family_coverage_counts?: Record<string, number>
+}
+
+export interface Bt2AdminF2MetricsByLeagueRow {
+  league_id?: number
+  league_name?: string
+  candidate_events_count?: number
+  pool_eligibility_rate_official_pct?: number | null
+  pass_league_40?: boolean | null
+}
+
+export interface Bt2AdminF2PoolMetricsOut {
+  leagueBt2IdsResolved: number[]
+  windowFrom: string | null
+  windowTo: string | null
+  operatingDayKeyFilter: string | null
+  metricsGlobal: Bt2AdminF2MetricsGlobal
+  metricsByLeague: Bt2AdminF2MetricsByLeagueRow[]
+  thresholds: Record<string, unknown>
+  insufficientMarketFamiliesDominant: boolean | null
+  noteEs: string
+}
+
 /** POST /bt2/admin/operations/refresh-cdm-from-sm-for-operating-day */
 export interface Bt2AdminRefreshCdmFromSmOut {
   ok: boolean

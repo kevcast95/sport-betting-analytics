@@ -583,6 +583,37 @@ class Bt2AdminFase1OperationalSummaryOut(BaseModel):
     )
 
 
+class Bt2AdminF2PoolMetricsOut(BaseModel):
+    """T-263 — KPI F2: oficial vs relajado, umbrales 60/40, desglose por liga (§6 norma F2)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    league_bt2_ids_resolved: List[int] = Field(
+        default_factory=list,
+        alias="leagueBt2IdsResolved",
+        description="IDs `bt2_leagues` del universo de 5 ligas (env o resolución por sportmonks_id).",
+    )
+    window_from: Optional[str] = Field(None, alias="windowFrom")
+    window_to: Optional[str] = Field(None, alias="windowTo")
+    operating_day_key_filter: Optional[str] = Field(
+        None,
+        alias="operatingDayKeyFilter",
+        description="Si se filtró un solo día; null = ventana rolling `days`.",
+    )
+    metrics_global: Dict[str, Any] = Field(default_factory=dict, alias="metricsGlobal")
+    metrics_by_league: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        alias="metricsByLeague",
+    )
+    thresholds: Dict[str, Any] = Field(default_factory=dict)
+    insufficient_market_families_dominant: Optional[bool] = Field(
+        None,
+        alias="insufficientMarketFamiliesDominant",
+        description="True si INSUFFICIENT_MARKET_FAMILIES ≥ ~50% descartes oficiales.",
+    )
+    note_es: str = Field("", alias="noteEs")
+
+
 class Bt2AdminRefreshCdmFromSmOut(BaseModel):
     """POST refresh SM → raw → CDM + evaluación oficial opcional (admin Fase 1)."""
 

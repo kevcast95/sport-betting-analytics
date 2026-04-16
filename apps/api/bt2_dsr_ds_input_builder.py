@@ -200,8 +200,15 @@ def apply_postgres_context_to_ds_item(
             (int(sportmonks_fixture_id),),
         )
         raw_row = cur.fetchone()
-        if raw_row and raw_row[0] is not None:
-            sm_payload = raw_row[0] if isinstance(raw_row[0], dict) else None
+        payload_col = None
+        if raw_row:
+            payload_col = (
+                raw_row["payload"]
+                if isinstance(raw_row, Mapping)
+                else raw_row[0]
+            )
+        if raw_row and payload_col is not None:
+            sm_payload = payload_col if isinstance(payload_col, dict) else None
             if sm_payload is None:
                 fe.append("lineups:raw_payload_not_object")
                 diag["raw_fixture_missing"] = True
