@@ -181,6 +181,68 @@ class Bt2NonprodSmFixtureObservationS64(Base):
     )
 
 
+class Bt2NonprodSmSofascoreFixtureMapS64(Base):
+    """
+    T-283 / US-BE-062 — mapeo SM ↔ SofaScore (benchmark; D-06-068 §6).
+    """
+
+    __tablename__ = "bt2_nonprod_sm_sofascore_fixture_map_s64"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    operating_day_utc: Mapped[date] = mapped_column(Date, nullable=False)
+    sm_fixture_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    kickoff_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    bt2_league_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("bt2_leagues.id", ondelete="SET NULL"), nullable=True
+    )
+    home_name_norm: Mapped[str] = mapped_column(Text, nullable=False)
+    away_name_norm: Mapped[str] = mapped_column(Text, nullable=False)
+    sofascore_event_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    needs_review: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    map_note: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "sm_fixture_id",
+            "operating_day_utc",
+            name="uq_bt2_nonprod_sm_sofa_map_s64_sm_day",
+        ),
+        Index("ix_bt2_nonprod_sm_sofa_map_s64_day", "operating_day_utc"),
+    )
+
+
+class Bt2NonprodSofascoreFixtureObservationS64(Base):
+    """
+    T-288 / US-BE-062 — observaciones append-only solo SofaScore (benchmark).
+    Claves de unión con T-287: sm_fixture_id + observed_at (D-06-066).
+    """
+
+    __tablename__ = "bt2_nonprod_sofascore_fixture_observation_s64"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    sm_fixture_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    sofascore_event_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    lineup_home_usable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    lineup_away_usable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    lineup_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    ft_1x2_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    ou_goals_2_5_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    btts_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+    __table_args__ = (
+        Index("ix_bt2_nonprod_sofa_obs_s64_smfx_obs", "sm_fixture_id", "observed_at"),
+        Index("ix_bt2_nonprod_sofa_obs_s64_ss_ev_obs", "sofascore_event_id", "observed_at"),
+        CheckConstraint(
+            "lineup_available = (lineup_home_usable AND lineup_away_usable)",
+            name="ck_bt2_nonprod_sofa_obs_s64_lineup_avail",
+        ),
+    )
+
+
 # ── Auth (Sprint 03 US-BE-006) ────────────────────────────────────────────────
 
 class Bt2User(Base):
