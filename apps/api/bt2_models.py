@@ -154,6 +154,33 @@ class Bt2OddsSnapshot(Base):
     )
 
 
+class Bt2NonprodSmFixtureObservationS64(Base):
+    """
+    T-287 / US-BE-061 — observaciones append-only SM intradía (F3 S6.4).
+    No productivo; no consumir desde rutas CDM/BT2 productivas (D-06-066 / T-286).
+    """
+
+    __tablename__ = "bt2_nonprod_sm_fixture_observation_s64"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    sm_fixture_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    lineup_home_usable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    lineup_away_usable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    lineup_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    ft_1x2_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    ou_goals_2_5_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    btts_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+    __table_args__ = (
+        Index("ix_bt2_nonprod_sm_obs_s64_smfx_obs", "sm_fixture_id", "observed_at"),
+        CheckConstraint(
+            "lineup_available = (lineup_home_usable AND lineup_away_usable)",
+            name="ck_bt2_nonprod_sm_obs_s64_lineup_avail",
+        ),
+    )
+
+
 # ── Auth (Sprint 03 US-BE-006) ────────────────────────────────────────────────
 
 class Bt2User(Base):
