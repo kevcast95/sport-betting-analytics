@@ -28,6 +28,15 @@ class BT2Settings(BaseSettings):
     # Solo desarrollo: habilita POST /bt2/dev/reset-operating-day-for-tests (JWT del usuario).
     bt2_dev_operating_day_reset: bool = False
 
+    # S6.5 — experimento SofaScore (US-OPS-003 / EJECUCION.md; staging solamente).
+    bt2_sfs_experiment_enabled: bool = False
+    bt2_sfs_experiment_max_events_per_run: int = 500
+    bt2_sfs_http_max_rps: float = 4.0
+    bt2_sfs_http_timeout_sec: int = 25
+    bt2_sfs_base_url: str = "https://www.sofascore.com/api/v1"
+    bt2_sfs_join_seed_json_path: str = ""  # opcional: map sportmonks_fixture_id → sofascore_event_id
+    bt2_sfs_v1_sqlite_path: str = ""  # opcional bootstrap; no pipeline operativo
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 

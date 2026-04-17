@@ -117,6 +117,7 @@ class Bt2Event(Base):
         Integer, ForeignKey("bt2_teams.id"), nullable=True
     )
     kickoff_utc: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    sofascore_event_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
     status: Mapped[str] = mapped_column(String(30), server_default="scheduled", nullable=False)
     result_home: Mapped[Optional[int]] = mapped_column(Integer)
     result_away: Mapped[Optional[int]] = mapped_column(Integer)
@@ -509,3 +510,95 @@ class Bt2VaultPremiumUnlock(Base):
         ),
         Index("ix_bt2_vault_premium_unlocks_user_day", "user_id", "operating_day_key"),
     )
+
+
+# ── S6.5 Validate SFS — experimento staging (D-06-069 / US-BE-058) ─────────────
+
+
+class Bt2ProviderOddsSnapshot(Base):
+    """Odds raw por proveedor y source_scope; idempotencia por (event, provider, scope, run)."""
+
+    __tablename__ = "bt2_provider_odds_snapshot"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    bt2_event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_events.id", ondelete="CASCADE"), nullable=False
+    )
+    provider: Mapped[str] = mapped_column(String(40), nullable=False)
+    source_scope: Mapped[str] = mapped_column(String(32), nullable=False)
+    run_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    canonical_version: Mapped[str] = mapped_column(String(32), nullable=False, server_default="s65-v0")
+    provider_event_ref: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    raw_payload: Mapped[Any] = mapped_column(JSONB, nullable=False)
+    ingested_at_utc: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "bt2_event_id",
+            "provider",
+            "source_scope",
+            "run_id",
+            name="uq_bt2_provider_odds_snap_evt_prov_scope_run",
+        ),
+        Index("ix_bt2_prov_odds_snap_run", "run_id", "bt2_event_id"),
+    )
+
+
+class Bt2SfsEventOverride(Base):
+    """Capa 3 join: override manual SM fixture → SofaScore event id."""
+
+    __tablename__ = "bt2_sfs_event_override"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    bt2_event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_events.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    sofascore_event_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class Bt2SfsJoinAudit(Base):
+    """Auditoría de resolución join por corrida (T-280)."""
+
+    __tablename__ = "bt2_sfs_join_audit"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    bt2_event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_events.id", ondelete="CASCADE"), nullable=False
+    )
+    sofascore_event_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    match_layer: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True)
+    match_status: Mapped[str] = mapped_column(String(24), nullable=False)
+    detail_json: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint("run_id", "bt2_event_id", name="uq_bt2_sfs_join_audit_run_event"),
+        Index("ix_bt2_sfs_join_audit_run", "run_id"),
+    )
+
+
+class Bt2DsrDsInputShadow(Base):
+    """Fragmento ds_input experimental (D-06-070)."""
+
+    __tablename__ = "bt2_dsr_ds_input_shadow"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    bt2_event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("bt2_events.id", ondelete="CASCADE"), nullable=False
+    )
+    run_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload_json: Mapped[Any] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (Index("ix_bt2_ds_input_shadow_run_event", "run_id", "bt2_event_id"),)
