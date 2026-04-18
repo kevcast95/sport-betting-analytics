@@ -35,6 +35,24 @@ class Bt2MetaOut(BaseModel):
         serialization_alias="settlementVerificationMode",
         description="MVP cliente = trust; verified requiere US-BE + resultado canónico CDM.",
     )
+    dsr_enabled: bool = Field(
+        default=True,
+        serialization_alias="dsrEnabled",
+        description="Lo que el proceso del API leyó al arrancar; deepseek batch solo si true y clave.",
+    )
+    dsr_provider: str = Field(
+        default="rules",
+        serialization_alias="dsrProvider",
+    )
+    deepseek_configured: bool = Field(
+        default=False,
+        serialization_alias="deepseekConfigured",
+        description="Clave no vacía (no se expone el valor).",
+    )
+    sfs_markets_fusion_enabled: bool = Field(
+        default=False,
+        serialization_alias="sfsMarketsFusionEnabled",
+    )
 
 
 class Bt2SessionDayOut(BaseModel):

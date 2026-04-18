@@ -453,7 +453,14 @@ def _fetch_upcoming_events(hours: int, require_active_league: bool = True) -> li
 def bt2_meta() -> Bt2MetaOut:
     import os
     mode = os.getenv("BT2_SETTLEMENT_MODE", "trust")
-    return Bt2MetaOut(settlement_verification_mode=cast(Literal["trust", "verified"], mode))
+    dkey = (bt2_settings.deepseek_api_key or "").strip()
+    return Bt2MetaOut(
+        settlement_verification_mode=cast(Literal["trust", "verified"], mode),
+        dsr_enabled=bool(bt2_settings.bt2_dsr_enabled),
+        dsr_provider=str(bt2_settings.bt2_dsr_provider or "rules").strip().lower(),
+        deepseek_configured=bool(dkey),
+        sfs_markets_fusion_enabled=bool(getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False)),
+    )
 
 
 @router.get("/session/day", response_model=Bt2SessionDayOut, response_model_by_alias=True)

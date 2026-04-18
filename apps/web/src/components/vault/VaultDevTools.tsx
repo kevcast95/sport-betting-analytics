@@ -109,13 +109,16 @@ export function VaultDevTools() {
         Solo desarrollo
       </p>
       <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
-        <span className="font-mono">Reset día</span> hace el flujo completo de prueba: primero
-        vuelve a pedir a SportMonks cada fixture del pool valor del día (includes actuales) y
-        hace UPSERT en <span className="font-mono">raw_sportmonks_fixtures</span>; después borra
-        snapshot de bóveda, desbloqueos y metadata, y cierra la sesión operativa. Luego esta
-        pantalla vuelve a abrir sesión y cargar picks (nuevo <span className="font-mono">ds_input</span>{' '}
-        + DSR). Requiere <span className="font-mono">BT2_DEV_OPERATING_DAY_RESET=1</span> y clave SM
-        en el API. «Solo cerrar sesión» no refresca raw ni borra snapshot.
+        <span className="font-mono">Reset día</span>: refresca SM raw (UPSERT{' '}
+        <span className="font-mono">raw_sportmonks_fixtures</span>), borra bóveda/metadata y cierra
+        sesión en servidor. Al terminar este botón llama{' '}
+        <span className="font-mono">loadApiPicks</span> → <span className="font-mono">POST /bt2/session/open</span>{' '}
+        (materializa snapshot <span className="font-mono">ds_input</span> + lote DeepSeek si{' '}
+        <span className="font-mono">BT2_DSR_ENABLED</span> y clave) y luego{' '}
+        <span className="font-mono">GET /bt2/vault/picks</span>. Si el lote DSR falla o degrada, los
+        picks siguen creándose con <span className="font-mono">sql_stat_fallback</span> (UI parecida,
+        consumo API distinto). Requiere <span className="font-mono">BT2_DEV_OPERATING_DAY_RESET=1</span>{' '}
+        y clave SM. «Solo cerrar sesión» no refresca raw ni borra snapshot.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
