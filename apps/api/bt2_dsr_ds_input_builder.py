@@ -21,6 +21,8 @@ from apps.api.bt2_dsr_sm_statistics import (
     sm_fixture_statistics_block,
 )
 from apps.api.bt2_dsr_odds_aggregation import AggregatedOdds, aggregate_odds_for_event
+from apps.api.bt2_settings import bt2_settings
+from apps.api.bt2_sfs_odds_bridge import synthetic_odds_tuples_for_bt2_event_psycopg
 
 SelectionTier = Literal["A", "B"]
 
@@ -50,6 +52,8 @@ def build_ds_input_item(
     home_team: str,
     away_team: str,
     agg: AggregatedOdds,
+    sfs_fusion_applied: Optional[bool] = None,
+    sfs_fusion_synthetic_rows: Optional[int] = None,
 ) -> dict[str, Any]:
     utc_iso = ""
     if kickoff_utc is not None:
@@ -107,6 +111,10 @@ def build_ds_input_item(
             "team_season_stats_reason": None,
         },
     }
+    if sfs_fusion_applied is not None:
+        item["diagnostics"]["sfs_fusion_applied"] = sfs_fusion_applied
+    if sfs_fusion_synthetic_rows is not None:
+        item["diagnostics"]["sfs_fusion_synthetic_rows"] = sfs_fusion_synthetic_rows
     if country is not None:
         item["event_context"]["country"] = country
     if league_tier is not None:
@@ -328,10 +336,24 @@ def build_ds_input_item_from_db(
             sportmonks_fixture_id,
         ) = row
     odds_rows = fetch_event_odds_rows_for_aggregation(cur, event_id)
-    agg = aggregate_odds_for_event(
-        [(b, m, s, o, f) for b, m, s, o, f in odds_rows],
-        min_decimal=min_decimal,
-    )
+    fusion_applied = False
+    fusion_n = 0
+    rows_for_agg: list[tuple[Any, ...]] = [(b, m, s, o, f) for b, m, s, o, f in odds_rows]
+    if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False):
+        extras, fusion_meta = synthetic_odds_tuples_for_bt2_event_psycopg(
+            cur,
+            event_id,
+            provider=str(getattr(bt2_settings, "bt2_sfs_odds_provider_slug", "") or "sofascore_experimental"),
+        )
+        if extras:
+            rows_for_agg = rows_for_agg + extras
+            fusion_applied = bool(fusion_meta.get("applied"))
+            fusion_n = int(fusion_meta.get("synthetic_rows") or len(extras))
+        else:
+            fusion_applied = False
+            fusion_n = 0
+
+    agg = aggregate_odds_for_event(rows_for_agg, min_decimal=min_decimal)
     item = build_ds_input_item(
         event_id=event_id,
         selection_tier=selection_tier,
@@ -343,6 +365,8 @@ def build_ds_input_item_from_db(
         home_team=home_team,
         away_team=away_team,
         agg=agg,
+        sfs_fusion_applied=fusion_applied if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False) else None,
+        sfs_fusion_synthetic_rows=fusion_n if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False) else None,
     )
     apply_postgres_context_to_ds_item(
         cur,

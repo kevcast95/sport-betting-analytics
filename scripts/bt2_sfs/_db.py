@@ -16,7 +16,15 @@ from sqlalchemy.orm import Session, sessionmaker
 from apps.api.bt2_settings import bt2_settings
 
 
+def _sync_database_url() -> str:
+    """SQLAlchemy sync no puede usar driver asyncpg."""
+    url = (os.environ.get("BT2_DATABASE_URL") or bt2_settings.bt2_database_url or "").strip()
+    if url.startswith("postgresql+asyncpg://"):
+        return url.replace("postgresql+asyncpg://", "postgresql://", 1)
+    return url
+
+
 def make_session() -> Session:
-    url = os.environ.get("BT2_DATABASE_URL") or bt2_settings.bt2_database_url
+    url = _sync_database_url()
     eng = create_engine(url, pool_pre_ping=True)
     return sessionmaker(bind=eng, expire_on_commit=False)()

@@ -31,6 +31,7 @@ from dotenv import load_dotenv
 load_dotenv(_repo / ".env")
 
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 from apps.api.bt2_models import Bt2DsrDsInputShadow, Bt2Event, Bt2ProviderOddsSnapshot, Bt2SfsJoinAudit
 from apps.api.bt2.providers.sofascore.canonical_map import (
     CANONICAL_VERSION_S65,
@@ -97,6 +98,8 @@ def _process_event_batch(
             session, ev, client, seed_by_sm_fixture=seed, try_layer2=not skip_layer2
         )
         persist_join_audit(session, run_id=run_id, bt2_event_id=ev.id, result=jr)
+        if jr.sofascore_event_id is not None and not dry_run:
+            ev.sofascore_event_id = int(jr.sofascore_event_id)
         if jr.sofascore_event_id is None or dry_run:
             session.flush()
             continue

@@ -36,6 +36,9 @@ class BT2Settings(BaseSettings):
     bt2_sfs_base_url: str = "https://www.sofascore.com/api/v1"
     bt2_sfs_join_seed_json_path: str = ""  # opcional: map sportmonks_fixture_id → sofascore_event_id
     bt2_sfs_v1_sqlite_path: str = ""  # opcional bootstrap; no pipeline operativo
+    # Piloto / producción: mezcla cuotas SFS (tabla bt2_provider_odds_snapshot) con SM en ds_input.
+    bt2_sfs_markets_fusion_enabled: bool = False
+    bt2_sfs_odds_provider_slug: str = "sofascore_experimental"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

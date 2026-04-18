@@ -174,6 +174,9 @@ class DsDiagnosticsF1(BaseModel):
     # T-203 / D-06-038 — gap explícito cuando no hay fila raw (ingesta/429/worker).
     raw_fixture_missing: bool = False
     team_season_stats_reason: Optional[str] = None
+    # Fusión SM + SofaScore (mercados extra desde snapshot proveedor).
+    sfs_fusion_applied: Optional[bool] = None
+    sfs_fusion_synthetic_rows: Optional[int] = None
 
 
 class DsInputItem(BaseModel):
