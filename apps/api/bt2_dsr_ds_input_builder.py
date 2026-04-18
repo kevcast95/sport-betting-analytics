@@ -274,6 +274,33 @@ def fetch_event_odds_rows_for_aggregation(cur, event_id: int) -> list[tuple[Any,
     return list(cur.fetchall())
 
 
+def aggregated_odds_for_event_psycopg(
+    cur,
+    event_id: int,
+    *,
+    min_decimal: float = 1.30,
+) -> tuple[AggregatedOdds, dict[str, Any]]:
+    """
+    Misma agregación que `build_ds_input_item_from_db` (incl. fusión SFS si está activa).
+    Reutilizable para GET bóveda y otras rutas que necesiten `consensus` alineado al DSR.
+    """
+    odds_rows = fetch_event_odds_rows_for_aggregation(cur, event_id)
+    rows_for_agg: list[tuple[Any, ...]] = [(b, m, s, o, f) for b, m, s, o, f in odds_rows]
+    fusion_meta: dict[str, Any] = {"applied": False, "synthetic_rows": 0}
+    if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False):
+        extras, fm = synthetic_odds_tuples_for_bt2_event_psycopg(
+            cur,
+            event_id,
+            provider=str(getattr(bt2_settings, "bt2_sfs_odds_provider_slug", "") or "sofascore_experimental"),
+        )
+        if extras:
+            rows_for_agg = rows_for_agg + extras
+            fusion_meta["applied"] = bool(fm.get("applied"))
+            fusion_meta["synthetic_rows"] = int(fm.get("synthetic_rows") or len(extras))
+    agg = aggregate_odds_for_event(rows_for_agg, min_decimal=min_decimal)
+    return agg, fusion_meta
+
+
 def build_ds_input_item_from_db(
     cur,
     event_id: int,
@@ -335,25 +362,13 @@ def build_ds_input_item_from_db(
             away_team_id,
             sportmonks_fixture_id,
         ) = row
-    odds_rows = fetch_event_odds_rows_for_aggregation(cur, event_id)
+    agg, fusion_meta = aggregated_odds_for_event_psycopg(cur, event_id, min_decimal=min_decimal)
     fusion_applied = False
     fusion_n = 0
-    rows_for_agg: list[tuple[Any, ...]] = [(b, m, s, o, f) for b, m, s, o, f in odds_rows]
     if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False):
-        extras, fusion_meta = synthetic_odds_tuples_for_bt2_event_psycopg(
-            cur,
-            event_id,
-            provider=str(getattr(bt2_settings, "bt2_sfs_odds_provider_slug", "") or "sofascore_experimental"),
-        )
-        if extras:
-            rows_for_agg = rows_for_agg + extras
-            fusion_applied = bool(fusion_meta.get("applied"))
-            fusion_n = int(fusion_meta.get("synthetic_rows") or len(extras))
-        else:
-            fusion_applied = False
-            fusion_n = 0
+        fusion_applied = bool(fusion_meta.get("applied"))
+        fusion_n = int(fusion_meta.get("synthetic_rows") or 0)
 
-    agg = aggregate_odds_for_event(rows_for_agg, min_decimal=min_decimal)
     item = build_ds_input_item(
         event_id=event_id,
         selection_tier=selection_tier,

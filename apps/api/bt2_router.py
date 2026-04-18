@@ -35,7 +35,7 @@ from apps.api.bt2_dx_constants import (
 )
 from apps.api.bt2_dsr_contract import PIPELINE_VERSION_DEFAULT
 from apps.api.bt2_dsr_deepseek import deepseek_suggest_batch
-from apps.api.bt2_dsr_ds_input_builder import build_ds_input_item_from_db
+from apps.api.bt2_dsr_ds_input_builder import aggregated_odds_for_event_psycopg, build_ds_input_item_from_db
 from apps.api.bt2_dsr_odds_aggregation import data_completeness_score
 from apps.api.bt2_dsr_postprocess import hash_for_ds_input_item, postprocess_dsr_pick
 from apps.api.bt2_dsr_suggest import (
@@ -45,6 +45,7 @@ from apps.api.bt2_dsr_suggest import (
     suggest_sql_stat_fallback_from_consensus,
 )
 from apps.api.bt2_value_pool import (
+    MIN_ODDS_DECIMAL_DEFAULT,
     build_value_pool_for_snapshot,
     count_future_events_window,
     parse_priority_league_ids,
@@ -55,6 +56,7 @@ from apps.api.bt2_market_canonical import (
     evaluate_model_vs_result,
     market_canonical_label_es,
     normalized_pick_to_canonical,
+    selection_canonical_summary_es,
 )
 from apps.api.bt2_schemas import (
     Bt2AdminCountRowOut,
@@ -153,6 +155,54 @@ def _vault_suggested_ml_display(
             return ("ML_AWAY", f"Victoria {away_team}", odds_away)
         return ("ML_SIDE", "Empate", odds_draw)
     return ("ML_SIDE", f"{home_team} vs {away_team}", 2.0)
+
+
+def _vault_line_from_consensus_or_ml(
+    *,
+    agg: Optional[Any],
+    model_market_canonical: Optional[str],
+    model_selection_canonical: Optional[str],
+    home_team: str,
+    away_team: str,
+    odds_home: float,
+    odds_draw: float,
+    odds_away: float,
+) -> Tuple[str, str, float]:
+    """
+    Cuota + selección visibles en bóveda: misma mediana `consensus` que DSR (agregación + fusión SFS).
+    Sin esto, mercados ≠ FT_1X2 quedaban con línea/cuota del 1X2 (`_vault_suggested_ml_display`).
+    """
+    mmc = (model_market_canonical or "").strip().upper()
+    msc = (model_selection_canonical or "").strip().lower()
+    if agg is not None and mmc and mmc != "UNKNOWN" and msc and msc != "unknown_side":
+        sub = getattr(agg, "consensus", None) or {}
+        if isinstance(sub, dict):
+            mc_map = sub.get(mmc)
+            if isinstance(mc_map, dict):
+                consensus_val = mc_map.get(msc)
+                try:
+                    co = float(consensus_val) if consensus_val is not None else 0.0
+                except (TypeError, ValueError):
+                    co = 0.0
+                if co > 1.0:
+                    sel_es = selection_canonical_summary_es(
+                        model_market_canonical,
+                        model_selection_canonical,
+                        home_team=home_team,
+                        away_team=away_team,
+                    )
+                    if sel_es:
+                        return (mmc, sel_es, co)
+    return _vault_suggested_ml_display(
+        model_market_canonical=model_market_canonical,
+        model_selection_canonical=model_selection_canonical,
+        home_team=home_team,
+        away_team=away_team,
+        odds_home=odds_home,
+        odds_draw=odds_draw,
+        odds_away=odds_away,
+    )
+
 
 # Bono único al completar onboarding fase A (ledger como fuente de verdad; US-FE-011).
 ONBOARDING_PHASE_A_DP_GRANT = 250
@@ -785,6 +835,21 @@ def _build_bt2_vault_picks_page_out(user_id: str) -> Bt2VaultPicksPageOut:
         )
         rows = cur.fetchall()
 
+        agg_by_eid: dict[int, Any] = {}
+        if rows:
+            seen_ev: set[int] = set()
+            for _r in rows:
+                _eid = int(_r["event_id"])
+                if _eid in seen_ev:
+                    continue
+                seen_ev.add(_eid)
+                _agg, _ = aggregated_odds_for_event_psycopg(
+                    cur,
+                    _eid,
+                    min_decimal=MIN_ODDS_DECIMAL_DEFAULT,
+                )
+                agg_by_eid[_eid] = _agg
+
         cur.execute(
             """SELECT daily_pick_id FROM bt2_vault_premium_unlocks
                WHERE user_id = %s::uuid AND operating_day_key = %s""",
@@ -865,9 +930,11 @@ def _build_bt2_vault_picks_page_out(user_id: str) -> Bt2VaultPicksPageOut:
         odds_home = float(row["odds_home"] or 0.0)
         odds_draw = float(row["odds_draw"] or 0.0)
         odds_away = float(row["odds_away"] or 0.0)
+        ev_id = int(row["event_id"])
         mmc_row = row.get("model_market_canonical")
         msc_row = row.get("model_selection_canonical")
-        mc, selection, odds_val = _vault_suggested_ml_display(
+        mc, selection, odds_val = _vault_line_from_consensus_or_ml(
+            agg=agg_by_eid.get(ev_id),
             model_market_canonical=str(mmc_row) if mmc_row is not None else None,
             model_selection_canonical=str(msc_row) if msc_row is not None else None,
             home_team=home_team,
@@ -885,7 +952,6 @@ def _build_bt2_vault_picks_page_out(user_id: str) -> Bt2VaultPicksPageOut:
         titulo = f"{league_name} · {kickoff.strftime('%d/%m') if kickoff else odk}"
         tier_label = row["access_tier"]  # "standard" | "premium"
         dp_id = int(row["dp_id"])
-        ev_id = int(row["event_id"])
         premium_unlocked = False
         if tier_label == "premium":
             premium_unlocked = dp_id in unlocked_dp_ids or ev_id in legacy_open_event_ids
@@ -905,7 +971,9 @@ def _build_bt2_vault_picks_page_out(user_id: str) -> Bt2VaultPicksPageOut:
                 id=f"dp-{dp_id}",
                 event_id=ev_id,
                 market_class=mc,
-                market_label_es=_MARKET_LABEL_ES.get(mc, mc),
+                market_label_es=(
+                    mcl_es if mmc and mmc != "UNKNOWN" else _MARKET_LABEL_ES.get(mc, mc)
+                ),
                 event_label=f"{home_team} vs {away_team}",
                 titulo=titulo,
                 suggested_decimal_odds=round(float(odds_val), 2),
