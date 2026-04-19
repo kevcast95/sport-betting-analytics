@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 from apps.api.bt2_dsr_contract import CONTRACT_VERSION_PUBLIC
 from apps.api.bt2_vault_pool import (
@@ -102,6 +102,14 @@ class Bt2VaultPickOut(BaseModel):
     unlock_cost_dp: int = Field(serialization_alias="unlockCostDp")
     operating_day_key: str = Field(serialization_alias="operatingDayKey")
     is_available: bool = Field(True, serialization_alias="isAvailable")
+    unlock_eligible: bool = Field(
+        True,
+        serialization_alias="unlockEligible",
+        description=(
+            "True si POST /vault/standard-unlock y /vault/premium-unlock pueden aplicar "
+            "(no estado terminal / kickoff futuro). Distinto de is_available (estricto para POST /picks)."
+        ),
+    )
     kickoff_utc: str = Field(
         "",
         serialization_alias="kickoffUtc",
@@ -116,7 +124,22 @@ class Bt2VaultPickOut(BaseModel):
     premium_unlocked: bool = Field(
         False,
         serialization_alias="premiumUnlocked",
-        description="True si el usuario ya desbloqueó este ítem premium hoy (US-BE-029) o legado con pick abierto.",
+        description="True si desbloqueó premium (DP) o legado con pick abierto en el evento.",
+    )
+    standard_unlocked: bool = Field(
+        False,
+        serialization_alias="standardUnlocked",
+        description="True si liberó el ítem estándar explícitamente o legado con pick abierto en el evento.",
+    )
+    content_unlocked: bool = Field(
+        False,
+        serialization_alias="contentUnlocked",
+        description="True si puede ver selección/cuota/racional completo (standard o premium liberado).",
+    )
+    user_pick_commitment: Optional[Literal["taken", "not_taken"]] = Field(
+        None,
+        serialization_alias="userPickCommitment",
+        description="Marcación manual tomó apuesta / no tomó (solo tras liberar).",
     )
     time_band: VaultTimeBandLiteral = Field(
         ...,
@@ -142,7 +165,27 @@ class Bt2VaultPickOut(BaseModel):
     dsr_confidence_label: str = Field(
         "",
         serialization_alias="dsrConfidenceLabel",
-        description="Etiqueta simbólica de confianza (p. ej. low, medium).",
+        description="Legado; reemplazada en producto por evidence/predictive tiers.",
+    )
+    estimated_hit_probability: Optional[float] = Field(
+        None,
+        serialization_alias="estimatedHitProbability",
+        description="Estimación 0–1 (no calibración definitiva).",
+    )
+    evidence_quality: Optional[str] = Field(
+        None,
+        serialization_alias="evidenceQuality",
+        description="low | medium | high — respaldo del input.",
+    )
+    predictive_tier: Optional[str] = Field(
+        None,
+        serialization_alias="predictiveTier",
+        description="low | medium | high — fuerza relativa en el ranking del día.",
+    )
+    action_tier: Optional[str] = Field(
+        None,
+        serialization_alias="actionTier",
+        description="free | premium — tratamiento producto/bóveda.",
     )
     dsr_source: str = Field(
         "",
@@ -191,6 +234,7 @@ class VaultPremiumUnlockIn(BaseModel):
     vault_pick_id: str = Field(
         ...,
         min_length=1,
+        validation_alias=AliasChoices("vaultPickId", "vault_pick_id"),
         serialization_alias="vaultPickId",
         description="Id del ítem en vault (p. ej. dp-7).",
     )
@@ -202,6 +246,43 @@ class VaultPremiumUnlockOut(BaseModel):
     vault_pick_id: str = Field(..., serialization_alias="vaultPickId")
     premium_unlocked: bool = Field(True, serialization_alias="premiumUnlocked")
     dp_balance_after: int = Field(..., serialization_alias="dpBalanceAfter")
+
+
+class VaultStandardUnlockIn(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vault_pick_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("vaultPickId", "vault_pick_id"),
+        serialization_alias="vaultPickId",
+        description="Ítem vault (dp-12 o 12).",
+    )
+
+
+class VaultStandardUnlockOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vault_pick_id: str = Field(..., serialization_alias="vaultPickId")
+    standard_unlocked: bool = Field(True, serialization_alias="standardUnlocked")
+
+
+class VaultPickCommitmentIn(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vault_pick_id: str = Field(
+        ...,
+        validation_alias=AliasChoices("vaultPickId", "vault_pick_id"),
+        serialization_alias="vaultPickId",
+    )
+    commitment: Literal["taken", "not_taken"] = Field(...)
+
+
+class VaultPickCommitmentOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vault_pick_id: str = Field(..., serialization_alias="vaultPickId")
+    commitment: Literal["taken", "not_taken"] = Field(...)
 
 
 class Bt2VaultPicksPageOut(BaseModel):
@@ -283,6 +364,21 @@ class Bt2VaultPicksPageOut(BaseModel):
         0,
         serialization_alias="fallbackEligiblePoolCount",
         description="Filas elegibles en pool SQL tras filtros T-177 al generar snapshot (≤ valuePoolUniverseMax al componer).",
+    )
+    free_picks_unlocked_today: int = Field(
+        0,
+        serialization_alias="freePicksUnlockedToday",
+        description="Liberaciones estándar (sin DP) del día operativo.",
+    )
+    premium_picks_unlocked_today: int = Field(
+        0,
+        serialization_alias="premiumPicksUnlockedToday",
+        description="Liberaciones premium (con DP) del día operativo.",
+    )
+    total_picks_unlocked_today: int = Field(
+        0,
+        serialization_alias="totalPicksUnlockedToday",
+        description="Total ítems liberados hoy (≤5; conteo servidor).",
     )
 
 
@@ -760,6 +856,110 @@ class Bt2AdminMonitorSmSyncOut(BaseModel):
     )
 
 
+class Bt2AdminBacktestReplayRangeOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    range_from: str = Field(..., alias="from")
+    range_to: str = Field(..., alias="to")
+    preset: str = Field("range", alias="preset")
+
+
+class Bt2AdminBacktestReplaySummaryOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    total_picks: int = Field(..., alias="totalPicks")
+    hits: int
+    misses: int
+    pending: int
+    void_count: int = Field(..., alias="voidCount")
+    no_evaluable: int = Field(..., alias="noEvaluable")
+    evaluated_scored: int = Field(..., alias="evaluatedScored")
+    hit_rate_pct: Optional[float] = Field(None, alias="hitRatePct")
+    candidate_events: int = Field(..., alias="candidateEvents")
+    eligible_events: int = Field(..., alias="eligibleEvents")
+    useful_input_events: int = Field(
+        ...,
+        alias="usefulInputEvents",
+        description="Elegibles con completitud de mercados en consensus ≥ umbral replay.",
+    )
+    generated_days: int = Field(..., alias="generatedDays")
+
+
+class Bt2AdminBacktestReplayDailyOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(..., alias="operatingDayKey")
+    total_picks: int = Field(..., alias="totalPicks")
+    hits: int
+    misses: int
+    pending: int
+    void_count: int = Field(..., alias="voidCount")
+    no_evaluable: int = Field(..., alias="noEvaluable")
+    evaluated_scored: int = Field(..., alias="evaluatedScored")
+    hit_rate_pct: Optional[float] = Field(None, alias="hitRatePct")
+    candidate_events: int = Field(..., alias="candidateEvents")
+    eligible_events: int = Field(..., alias="eligibleEvents")
+    useful_input_events: int = Field(..., alias="usefulInputEvents")
+    scored_picks: int = Field(..., alias="scoredPicks")
+    by_market: dict[str, int] = Field(default_factory=dict, alias="byMarket")
+    by_action_tier: dict[str, int] = Field(default_factory=dict, alias="byActionTier")
+
+
+class Bt2AdminBacktestReplayDistributionRowOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    market: Optional[str] = None
+    action_tier: Optional[str] = Field(None, alias="actionTier")
+    picks: int
+    hits: int
+    misses: int
+
+
+class Bt2AdminBacktestReplayDistributionOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    by_market: List[Bt2AdminBacktestReplayDistributionRowOut] = Field(
+        default_factory=list,
+        alias="byMarket",
+    )
+    by_action_tier: List[Bt2AdminBacktestReplayDistributionRowOut] = Field(
+        default_factory=list,
+        alias="byActionTier",
+    )
+
+
+class Bt2AdminBacktestReplayRowOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(..., alias="operatingDayKey")
+    real_kickoff_day_key: str = Field(..., alias="realKickoffDayKey")
+    daily_pick_id: int = Field(..., alias="dailyPickId")
+    event_id: int = Field(..., alias="eventId")
+    event_label: str = Field(..., alias="eventLabel")
+    league_label: Optional[str] = Field(None, alias="leagueLabel")
+    market_label_es: str = Field(..., alias="marketLabelEs")
+    selection_summary_es: str = Field(..., alias="selectionSummaryEs")
+    action_tier: str = Field(..., alias="actionTier")
+    outcome: str
+    score_text: str = Field(..., alias="scoreText")
+    input_coverage_score: int = Field(..., alias="inputCoverageScore")
+
+
+class Bt2AdminBacktestReplayOut(BaseModel):
+    """GET admin — replay ciego del pipeline DSR sobre datos históricos en Postgres."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    timezone_label: str = Field("America/Bogota", alias="timezoneLabel")
+    summary_human_es: str = Field("", alias="summaryHumanEs")
+    replay_range: Bt2AdminBacktestReplayRangeOut = Field(..., alias="range")
+    summary: Bt2AdminBacktestReplaySummaryOut
+    daily: List[Bt2AdminBacktestReplayDailyOut] = Field(default_factory=list)
+    distribution: Bt2AdminBacktestReplayDistributionOut
+    rows: List[Bt2AdminBacktestReplayRowOut] = Field(default_factory=list)
+    replay_meta: dict[str, Any] = Field(default_factory=dict, alias="replayMeta")
+
+
 class Bt2AdminMonitorResultadosOut(BaseModel):
     """GET admin — monitor de resultados (evaluación oficial vs `bt2_daily_picks`)."""
 
@@ -783,6 +983,13 @@ class Bt2AdminMonitorResultadosOut(BaseModel):
     rows: List[Bt2AdminMonitorRowOut] = Field(default_factory=list)
     summary_human_es: str = Field("", alias="summaryHumanEs")
     sm_sync: Bt2AdminMonitorSmSyncOut = Field(..., alias="smSync")
+    rows_total: Optional[int] = Field(
+        None,
+        alias="rowsTotal",
+        description="Total de filas que cumplen filtros (paginación servidor).",
+    )
+    rows_offset: int = Field(0, alias="rowsOffset")
+    rows_limit: int = Field(1500, alias="rowsLimit")
 
 
 OPERATOR_PROFILE_VALUES = {

@@ -14,6 +14,29 @@ from typing import Any, Mapping, Optional
 from apps.api.bt2_dsr_ds_input_builder import aggregated_odds_for_event_psycopg
 from apps.api.bt2_dsr_odds_aggregation import consensus_decimal_for_canonical_pick
 from apps.api.bt2_market_canonical import market_canonical_label_es, selection_canonical_summary_es
+from apps.api.bt2_official_truth_resolver import normalize_official_eval_market
+
+# Vista admin: incluir cuotas que en el pipeline de valor se filtran con min 1.30 — si no, muchas
+# filas quedan sin mediana aunque exista snapshot CDM (p. ej. solo casas con cuota < 1.30 en una pierna).
+_MONITOR_CONSENSUS_MIN_DECIMAL = 1.01
+
+
+def _consensus_decimal_for_pick_row(
+    consensus: dict[str, dict[str, float]],
+    market_canonical: str,
+    selection_canonical: str,
+) -> Optional[float]:
+    """Alinea claves de mercado al diccionario consensus (p. ej. 1X2 → FT_1X2)."""
+    mc_in = (market_canonical or "").strip()
+    key = normalize_official_eval_market(mc_in)
+    if key is None:
+        key = mc_in
+    dec = consensus_decimal_for_canonical_pick(consensus, key, selection_canonical)
+    if dec is not None:
+        return dec
+    if key != mc_in:
+        return consensus_decimal_for_canonical_pick(consensus, mc_in, selection_canonical)
+    return None
 
 
 def _roi_flat_stake_accumulate(
@@ -143,6 +166,18 @@ def _today_block(cur: Any, *, today_key: str) -> dict[str, Any]:
     }
 
 
+def _monitor_outcome_filter_to_eval_status(ui: Optional[str]) -> Optional[str]:
+    if not ui or ui == "all":
+        return None
+    return {
+        "si": "evaluated_hit",
+        "no": "evaluated_miss",
+        "pendiente": "pending_result",
+        "void": "void",
+        "ne": "no_evaluable",
+    }.get(ui.strip())
+
+
 def build_monitor_resultados_payload(
     cur: Any,
     *,
@@ -150,11 +185,17 @@ def build_monitor_resultados_payload(
     operating_day_key_to: str,
     monitor_user_id: Optional[str] = None,
     rows_limit: int = 1500,
+    rows_offset: int = 0,
+    outcome_filter: Optional[str] = None,
+    market_substring: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Construye el payload JSON-serializable para GET admin monitor-resultados.
     """
     tz = "America/Bogota"
+    lim = max(1, min(int(rows_limit or 1500), 3000))
+    off = max(0, int(rows_offset or 0))
 
     base_range = (
         "dp.operating_day_key >= %s AND dp.operating_day_key <= %s",
@@ -195,6 +236,44 @@ def build_monitor_resultados_payload(
         focus_day_key = calendar_today_key
     today_summary = _today_block(cur, today_key=focus_day_key)
 
+    base_where = "dp.operating_day_key >= %s AND dp.operating_day_key <= %s"
+    params_base: list[Any] = [operating_day_key_from, operating_day_key_to]
+    extra_where: list[str] = []
+    eval_st = _monitor_outcome_filter_to_eval_status(outcome_filter)
+    if eval_st:
+        extra_where.append("COALESCE(e.evaluation_status, 'pending_result') = %s")
+        params_base.append(eval_st)
+    ms = (market_substring or "").strip()
+    if ms:
+        extra_where.append(
+            "COALESCE(e.market_canonical, dp.model_market_canonical, '') ILIKE %s"
+        )
+        params_base.append(f"%{ms}%")
+    sq = (search or "").strip()
+    if sq:
+        extra_where.append(
+            "(COALESCE(ht.name, '') ILIKE %s OR COALESCE(at2.name, '') ILIKE %s)"
+        )
+        like = f"%{sq}%"
+        params_base.extend([like, like])
+
+    where_sql = base_where + ((" AND " + " AND ".join(extra_where)) if extra_where else "")
+
+    cur.execute(
+        f"""
+        SELECT COUNT(*)::int AS c
+        FROM bt2_daily_picks dp
+        LEFT JOIN bt2_pick_official_evaluation e ON e.daily_pick_id = dp.id
+        INNER JOIN bt2_events ev ON ev.id = dp.event_id
+        LEFT JOIN bt2_teams ht ON ht.id = ev.home_team_id
+        LEFT JOIN bt2_teams at2 ON at2.id = ev.away_team_id
+        WHERE {where_sql}
+        """,
+        tuple(params_base),
+    )
+    crow = cur.fetchone()
+    rows_total = int(crow["c"] if isinstance(crow, Mapping) else crow[0]) if crow else 0
+
     cur.execute(
         f"""
         SELECT
@@ -220,11 +299,11 @@ def build_monitor_resultados_payload(
         INNER JOIN bt2_events ev ON ev.id = dp.event_id
         LEFT JOIN bt2_teams ht ON ht.id = ev.home_team_id
         LEFT JOIN bt2_teams at2 ON at2.id = ev.away_team_id
-        WHERE dp.operating_day_key >= %s AND dp.operating_day_key <= %s
+        WHERE {where_sql}
         ORDER BY dp.operating_day_key DESC, dp.id DESC
-        LIMIT %s
+        LIMIT %s OFFSET %s
         """,
-        (operating_day_key_from, operating_day_key_to, rows_limit),
+        tuple(params_base + [lim, off]),
     )
     raw_rows = cur.fetchall()
 
@@ -259,7 +338,9 @@ def build_monitor_resultados_payload(
 
         eid = int(r["event_id"])
         if eid not in consensus_cache:
-            agg, _ = aggregated_odds_for_event_psycopg(cur, eid)
+            agg, _ = aggregated_odds_for_event_psycopg(
+                cur, eid, min_decimal=_MONITOR_CONSENSUS_MIN_DECIMAL
+            )
             consensus_cache[eid] = agg.consensus
         consensus = consensus_cache[eid]
         ref_p = r.get("reference_decimal_odds")
@@ -271,7 +352,7 @@ def build_monitor_resultados_payload(
             except (TypeError, ValueError):
                 dec = None
         if dec is None:
-            dec = consensus_decimal_for_canonical_pick(consensus, mmc, msc)
+            dec = _consensus_decimal_for_pick_row(consensus, mmc, msc)
         outcome_ui = evaluation_status_to_outcome_ui(str(r.get("evaluation_status")))
 
         sys_net, sys_nc, sys_nm = _roi_flat_stake_accumulate(
@@ -354,6 +435,9 @@ def build_monitor_resultados_payload(
         "yours": yours,
         "today": today_summary,
         "rows": rows_out,
+        "rows_total": rows_total,
+        "rows_offset": off,
+        "rows_limit": lim,
         "summary_human_es": summary_human_es,
         "sm_sync": {
             "attempted": False,

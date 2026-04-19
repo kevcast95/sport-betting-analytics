@@ -42,6 +42,9 @@ class BT2Settings(BaseSettings):
     # Tras SportMonks en `fetch_upcoming`: join + fetch SofaScore y UPSERT en bt2_provider_odds_snapshot.
     bt2_sfs_auto_ingest_enabled: bool = True
     bt2_sfs_cdm_run_id: str = "cdm_fetch_upcoming"
+    # Replay / backtest admin (GET /bt2/admin/analytics/backtest-replay).
+    bt2_backtest_max_span_days: int = 31
+    bt2_backtest_max_events_per_day: int = 20
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

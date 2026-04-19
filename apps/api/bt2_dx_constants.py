@@ -11,6 +11,11 @@ from typing import Final, Literal
 # Coste canónico de desbloqueo premium (D-04-011 / D-05-004). No confundir con “tomar pick”.
 DP_PREMIUM_UNLOCK_COST: Final[int] = 50
 
+# Topes diarios de liberación en bóveda (liberar ≠ tomar): 3 libres + 2 premium DP, máx. 5 total.
+VAULT_DAILY_UNLOCK_CAP_STANDARD: Final[int] = 3
+VAULT_DAILY_UNLOCK_CAP_PREMIUM: Final[int] = 2
+VAULT_DAILY_UNLOCK_CAP_TOTAL: Final[int] = 5
+
 # Códigos de error HTTP para contrato FE (D-05-005 en DECISIONES).
 BT2_ERR_DP_INSUFFICIENT_PREMIUM: Final[str] = "dp_insufficient_for_premium_unlock"
 # D-05.2-001 (estricto kickoff) — POST /bt2/picks cuando ya pasó el inicio.

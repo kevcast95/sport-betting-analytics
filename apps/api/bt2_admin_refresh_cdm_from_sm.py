@@ -177,8 +177,6 @@ def admin_refresh_cdm_from_sm_for_operating_day(
             dry_run=False,
             skip_backfill=False,
             skip_evaluate=False,
-            refresh_stale_no_evaluable=True,
-            limit_refresh_ne=5000,
         )
         eval_block = job_summary_dict(stats)
 
@@ -272,8 +270,6 @@ def admin_refresh_cdm_from_sm_for_daily_pick_day_range(
             dry_run=False,
             skip_backfill=False,
             skip_evaluate=False,
-            refresh_stale_no_evaluable=True,
-            limit_refresh_ne=5000,
         )
         eval_block = job_summary_dict(stats)
 

@@ -433,16 +433,40 @@ def apply_postgres_context_to_ds_item(
     validate_ds_input_item_dict(item)
 
 
-def fetch_event_odds_rows_for_aggregation(cur, event_id: int) -> list[tuple[Any, ...]]:
-    cur.execute(
-        """
-        SELECT bookmaker, market, selection, odds, fetched_at
-        FROM bt2_odds_snapshot
-        WHERE event_id = %s
-        ORDER BY fetched_at DESC
-        """,
-        (event_id,),
-    )
+def fetch_event_odds_rows_for_aggregation(
+    cur,
+    event_id: int,
+    *,
+    max_fetched_at: Optional[datetime] = None,
+) -> list[tuple[Any, ...]]:
+    """
+    Filas para `aggregate_odds_for_event`.
+    Si `max_fetched_at` está definido, solo incluye snapshots con `fetched_at` <= corte (replay histórico).
+    """
+    if max_fetched_at is None:
+        cur.execute(
+            """
+            SELECT bookmaker, market, selection, odds, fetched_at
+            FROM bt2_odds_snapshot
+            WHERE event_id = %s
+            ORDER BY fetched_at DESC
+            """,
+            (event_id,),
+        )
+    else:
+        mf = max_fetched_at
+        if mf.tzinfo is None:
+            mf = mf.replace(tzinfo=timezone.utc)
+        cur.execute(
+            """
+            SELECT bookmaker, market, selection, odds, fetched_at
+            FROM bt2_odds_snapshot
+            WHERE event_id = %s
+              AND (fetched_at <= %s OR fetched_at IS NULL)
+            ORDER BY fetched_at DESC
+            """,
+            (event_id, mf),
+        )
     return list(cur.fetchall())
 
 
@@ -451,15 +475,25 @@ def aggregated_odds_for_event_psycopg(
     event_id: int,
     *,
     min_decimal: float = 1.30,
+    odds_cutoff_utc: Optional[datetime] = None,
+    skip_sfs_fusion: bool = False,
 ) -> tuple[AggregatedOdds, dict[str, Any]]:
     """
     Misma agregación que `build_ds_input_item_from_db` (incl. fusión SFS si está activa).
     Reutilizable para GET bóveda y otras rutas que necesiten `consensus` alineado al DSR.
+
+    `odds_cutoff_utc`: solo filas de cuota con `fetched_at` <= corte (backtest / replay por día).
+    `skip_sfs_fusion`: en replay no mezclar filas sintéticas posteriores al contexto histórico.
     """
-    odds_rows = fetch_event_odds_rows_for_aggregation(cur, event_id)
+    odds_rows = fetch_event_odds_rows_for_aggregation(
+        cur, event_id, max_fetched_at=odds_cutoff_utc
+    )
     rows_for_agg: list[tuple[Any, ...]] = [(b, m, s, o, f) for b, m, s, o, f in odds_rows]
     fusion_meta: dict[str, Any] = {"applied": False, "synthetic_rows": 0}
-    if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False):
+    if (
+        not skip_sfs_fusion
+        and getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False)
+    ):
         extras, fm = synthetic_odds_tuples_for_bt2_event_psycopg(
             cur,
             event_id,

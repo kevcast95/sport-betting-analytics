@@ -247,6 +247,15 @@ def determine_settlement_outcome(
             return "won" if total < threshold else "lost"
         return "void"
 
+    if m == "BTTS":
+        su = s.upper().strip()
+        both_scored = result_home > 0 and result_away > 0
+        if su == "YES":
+            return "won" if both_scored else "lost"
+        if su == "NO":
+            return "won" if not both_scored else "lost"
+        return "void"
+
     return "void"
 
 

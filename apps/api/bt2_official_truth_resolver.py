@@ -1,7 +1,7 @@
 """
 T-229 — Resolver canónico pick sugerido → verdad oficial CDM (ACTA T-244).
 
-Mercados v1: `1X2` / `FT_1X2` y `TOTAL_GOALS_OU_2_5` / `OU_GOALS_2_5`.
+Mercados v1: `1X2` / `FT_1X2`, `TOTAL_GOALS_OU_2_5` / `OU_GOALS_2_5`, `BTTS` (ambos marcan).
 Sin mapeo reproducible → `no_evaluable` con código de catálogo.
 """
 
@@ -42,7 +42,7 @@ class OfficialEvaluationResolution:
 
 def normalize_official_eval_market(market_canonical: Optional[str]) -> Optional[str]:
     """
-    Acta §2 (`1X2`, `TOTAL_GOALS_OU_2_5`) + códigos ya usados en bóveda (`FT_1X2`, `OU_GOALS_2_5`).
+    Acta §2 (`1X2`, `TOTAL_GOALS_OU_2_5`, `BTTS`) + aliases de bóveda (`FT_1X2`, `OU_GOALS_2_5`).
     Retorna mercado interno único o None si fuera de soporte v1.
     """
     if not market_canonical:
@@ -52,11 +52,14 @@ def normalize_official_eval_market(market_canonical: Optional[str]) -> Optional[
         return "FT_1X2"
     if m in ("TOTAL_GOALS_OU_2_5", "OU_GOALS_2_5"):
         return "OU_GOALS_2_5"
+    if m == "BTTS":
+        return "BTTS"
     return None
 
 
 _FT_SEL = frozenset({"home", "draw", "away"})
 _OU_SEL = frozenset({"over_2_5", "under_2_5"})
+_BTT_SEL = frozenset({"yes", "no"})
 
 
 def normalize_official_eval_selection(
@@ -71,6 +74,8 @@ def normalize_official_eval_selection(
         return s if s in _FT_SEL else None
     if internal_market == "OU_GOALS_2_5":
         return s if s in _OU_SEL else None
+    if internal_market == "BTTS":
+        return s if s in _BTT_SEL else None
     return None
 
 
