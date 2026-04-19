@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 PIPELINE_VERSION_DEFAULT: str = "s6-rules-v0"
 # Versión pública API (`GET /bt2/meta`) y hito DX S6.2 cubo A + diagnostics ampliados.
-CONTRACT_VERSION_PUBLIC: str = "bt2-dx-001-s6.2r2"
+CONTRACT_VERSION_PUBLIC: str = "bt2-dx-001-s6.2r3"
 CONTRACT_VERSION_S6_1: str = "bt2-dx-001-s6.1r1"  # histórico / comparativas
 
 # Claves prohibidas en objetos anidados (substring case-insensitive)
@@ -162,6 +162,21 @@ class DsProcessedF1(BaseModel):
         raise ValueError("bloque processed: {}, {available:false} o {available:true} sin claves prohibidas (D-06-002)")
 
 
+ProbCoherenceFlag = Literal["coherence_ok", "coherence_warning", "coherence_na"]
+
+
+class DsProbCoherenceDiagnostics(BaseModel):
+    """§1.3 — métricas compactas sobre `processed.odds_featured.consensus` (diagnostics whitelist)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    flag: ProbCoherenceFlag
+    ft_1x2_implied_sum_raw: Optional[float] = None
+    ft_1x2_book_spread_ratio: Optional[float] = None
+    ou_25_implied_sum_raw: Optional[float] = None
+    notes: list[str] = Field(default_factory=list)
+
+
 class DsDiagnosticsF1(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -177,6 +192,8 @@ class DsDiagnosticsF1(BaseModel):
     # Fusión SM + SofaScore (mercados extra desde snapshot proveedor).
     sfs_fusion_applied: Optional[bool] = None
     sfs_fusion_synthetic_rows: Optional[int] = None
+    # §1.3 — coherencia numérica del consensus (siempre presente si el ítem pasó por builder).
+    prob_coherence: DsProbCoherenceDiagnostics
 
 
 class DsInputItem(BaseModel):

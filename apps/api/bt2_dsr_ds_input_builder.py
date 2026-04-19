@@ -7,6 +7,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Literal, Mapping, Optional
 
+from apps.api.bt2_fixture_prob_coherence import prob_coherence_dict_for_ds_input
 from apps.api.bt2_dsr_context_queries import (
     extract_lineups_summary_from_raw_payload,
     fetch_h2h_aggregate,
@@ -109,6 +110,7 @@ def build_ds_input_item(
             "fetch_errors": [],
             "raw_fixture_missing": False,
             "team_season_stats_reason": None,
+            "prob_coherence": prob_coherence_dict_for_ds_input(agg.consensus),
         },
     }
     if sfs_fusion_applied is not None:
