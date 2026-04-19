@@ -38,6 +38,7 @@ class TestApplyPostgresRawDiagnostics(unittest.TestCase):
         cur = MagicMock()
         cur.fetchone.side_effect = [
             (None, None, None),
+            (None, None),
             None,
         ]
         apply_postgres_context_to_ds_item(
@@ -71,6 +72,7 @@ class TestApplyPostgresRawDiagnostics(unittest.TestCase):
         cur = MagicMock()
         cur.fetchone.side_effect = [
             (None, None, None),
+            (None, None),
             (payload,),
         ]
         apply_postgres_context_to_ds_item(
@@ -117,6 +119,7 @@ class TestApplyPostgresRawDiagnostics(unittest.TestCase):
         cur = MagicMock()
         cur.fetchone.side_effect = [
             (None, None, None),
+            (None, None),
             (payload,),
         ]
         apply_postgres_context_to_ds_item(

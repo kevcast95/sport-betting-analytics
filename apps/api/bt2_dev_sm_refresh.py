@@ -117,14 +117,15 @@ def refresh_raw_sportmonks_for_value_pool_today(
     tz_name: str,
     sportmonks_api_key: str,
     priority_league_ids_csv: str,
-) -> tuple[int, list[str]]:
+) -> tuple[int, list[str], list[int]]:
     """
-    Devuelve (cuántos payloads upsert OK, lista mensajes error / skip).
+    Devuelve (cuántos payloads upsert OK, lista mensajes error / skip,
+    lista bt2_event_id del pool valor día — misma orden que build_value_pool).
     """
     notes: list[str] = []
     if not (sportmonks_api_key or "").strip():
         notes.append("sm:sin_sportmonks_api_key_skip_refresh")
-        return 0, notes
+        return 0, notes, []
 
     day_start_utc, day_end_utc = _user_day_window_utc(tz_name)
     league_filter = parse_priority_league_ids(priority_league_ids_csv)
@@ -136,7 +137,7 @@ def refresh_raw_sportmonks_for_value_pool_today(
 
     if not pool:
         notes.append("sm:pool_vacio_nada_que_refrescar")
-        return 0, notes
+        return 0, notes, []
 
     eids = [int(t[0]) for t in pool]
     cur.execute(
@@ -166,7 +167,7 @@ def refresh_raw_sportmonks_for_value_pool_today(
 
     if not ordered_sm:
         notes.append("sm:sin_fixture_ids_en_pool")
-        return 0, notes
+        return 0, notes, eids
 
     key = sportmonks_api_key.strip()
     ok = 0
@@ -183,4 +184,4 @@ def refresh_raw_sportmonks_for_value_pool_today(
             notes.append(f"sm:fixture_{fid}_upsert_params_invalidos")
 
     notes.insert(0, f"sm:refrescados_{ok}_de_{len(ordered_sm)}_fixtures_unicos")
-    return ok, notes
+    return ok, notes, eids

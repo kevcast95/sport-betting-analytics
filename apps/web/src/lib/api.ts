@@ -3,6 +3,7 @@ import type {
   Bt2AdminDsrRangeOut,
   Bt2AdminF2PoolMetricsOut,
   Bt2AdminFase1OperationalSummaryOut,
+  Bt2AdminMonitorResultadosOut,
   Bt2AdminRefreshCdmFromSmOut,
   Bt2AdminVaultPickDistributionOut,
   Bt2AdminVaultRegenerateSnapshotOut,
@@ -394,6 +395,40 @@ export async function fetchBt2AdminVaultPickDistribution(
  * GET /bt2/admin/analytics/fase1-operational-summary (US-BE-052 / US-FE-061).
  * Verdad oficial CDM + elegibilidad pool + buckets mercado/confianza.
  */
+/**
+ * GET /bt2/admin/analytics/monitor-resultados — bóveda vs evaluación oficial.
+ */
+export async function fetchBt2AdminMonitorResultados(
+  operatingDayKeyFrom: string,
+  operatingDayKeyTo: string,
+  options?: {
+    monitorUserId?: string | null
+    /** Refresca marcadores desde SportMonks y re-evalúa pendientes (cuota API). */
+    syncFromSportmonks?: boolean
+    smSyncEventLimit?: number
+  },
+): Promise<Bt2AdminMonitorResultadosOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams()
+  qs.set('operatingDayKeyFrom', operatingDayKeyFrom.trim())
+  qs.set('operatingDayKeyTo', operatingDayKeyTo.trim())
+  const uid = options?.monitorUserId?.trim()
+  if (uid) qs.set('monitorUserId', uid)
+  if (options?.syncFromSportmonks) qs.set('syncFromSportmonks', 'true')
+  if (options?.smSyncEventLimit != null) {
+    qs.set('smSyncEventLimit', String(options.smSyncEventLimit))
+  }
+  return fetchJson<Bt2AdminMonitorResultadosOut>(
+    `/bt2/admin/analytics/monitor-resultados?${qs.toString()}`,
+    { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
 export async function fetchBt2AdminFase1OperationalSummary(
   operatingDayKey: string,
   options?: { accumulated?: boolean },

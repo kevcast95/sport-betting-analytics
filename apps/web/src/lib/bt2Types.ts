@@ -357,6 +357,75 @@ export interface Bt2AdminFase1OperationalSummaryOut {
   poolEligibilityConfigNoteEs: string
 }
 
+/** GET /bt2/admin/analytics/monitor-resultados — evaluación oficial vs bóveda */
+export type Bt2MonitorOutcome = 'si' | 'no' | 'pendiente' | 'void' | 'ne'
+
+/** Stake fijo 1 u por pick; cuota = consenso CDM (mediana entre casas). */
+export interface Bt2AdminMonitorRoiFlatStakeOut {
+  netUnits: number
+  roiPct: number | null
+  picksCounted: number
+  picksMissingOdds: number
+}
+
+export interface Bt2AdminMonitorSummaryOut {
+  totalPicks: number
+  hits: number
+  misses: number
+  pending: number
+  voidCount: number
+  noEvaluable: number
+  evaluatedScored: number
+  hitRatePct: number | null
+  roiFlatStake: Bt2AdminMonitorRoiFlatStakeOut
+}
+
+export interface Bt2AdminMonitorTodayOut {
+  operatingDayKey: string
+  totalPicks: number
+  resolved: number
+  pending: number
+}
+
+export interface Bt2AdminMonitorRowOut {
+  dailyPickId: number
+  operatingDayKey: string
+  eventId: number
+  userId: string
+  eventLabel: string
+  marketLabelEs: string
+  selectionSummaryEs: string
+  scoreText: string
+  outcome: Bt2MonitorOutcome
+  iOperated: boolean
+  decimalOdds?: number | null
+  flatStakeReturnUnits?: number | null
+}
+
+export interface Bt2AdminMonitorSmSyncOut {
+  attempted: boolean
+  ok: boolean
+  messageEs: string
+  fixturesTargeted: number
+  uniqueFixturesProcessed: number
+  closedPendingToFinal: number | null
+}
+
+export interface Bt2AdminMonitorResultadosOut {
+  operatingDayKeyFrom: string
+  operatingDayKeyTo: string
+  timezoneLabel: string
+  todayOperatingDayKey: string
+  /** Día del resumen lateral «Hoy» (alineado al rango si consultás un solo día). */
+  focusOperatingDayKey: string
+  system: Bt2AdminMonitorSummaryOut
+  yours: Bt2AdminMonitorSummaryOut | null
+  today: Bt2AdminMonitorTodayOut
+  rows: Bt2AdminMonitorRowOut[]
+  summaryHumanEs: string
+  smSync: Bt2AdminMonitorSmSyncOut
+}
+
 /**
  * GET /bt2/admin/analytics/f2-pool-eligibility-metrics (T-263).
  * `metricsGlobal` y filas de liga vienen en snake_case desde el API (dict anidado).

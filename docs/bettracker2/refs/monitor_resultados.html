@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Geist+Mono:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,700;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-dim": "#44546a",
+                    "on-background": "#D1D1D1",
+                    "on-primary-fixed-variant": "#6a37d4",
+                    "on-error-container": "#782232",
+                    "primary-dim": "#612aca",
+                    "on-surface": "#D1D1D1",
+                    "secondary-container": "#d3e4fe",
+                    "error": "#9e3f4e",
+                    "surface-tint": "#6d3bd7",
+                    "surface-dim": "#cadde9",
+                    "surface-container-lowest": "#0a0f12",
+                    "on-secondary": "#f7f9ff",
+                    "surface-variant": "#1a1f24",
+                    "on-tertiary-fixed": "#240f00",
+                    "tertiary-fixed": "#fe932c",
+                    "inverse-primary": "#a078ff",
+                    "on-surface-variant": "#52616a",
+                    "outline": "#333b41",
+                    "on-primary-fixed": "#4d00b7",
+                    "surface-bright": "#f6fafe",
+                    "error-container": "#ff8b9a",
+                    "tertiary": "#914d00",
+                    "on-primary": "#fcf5ff",
+                    "tertiary-container": "#fe932c",
+                    "on-tertiary-fixed-variant": "#572c00",
+                    "surface-container-highest": "#1e242a",
+                    "tertiary-fixed-dim": "#ed871e",
+                    "on-secondary-fixed-variant": "#4d5d73",
+                    "primary-container": "#e9ddff",
+                    "surface-container": "#0f1418",
+                    "on-secondary-fixed": "#314055",
+                    "on-primary-container": "#6029c9",
+                    "background": "#050505",
+                    "tertiary-dim": "#804300",
+                    "surface": "#050505",
+                    "inverse-on-surface": "#999da1",
+                    "primary-fixed-dim": "#ddcdff",
+                    "primary-fixed": "#e9ddff",
+                    "on-error": "#fff7f7",
+                    "primary": "#8B5CF6",
+                    "surface-container-high": "#161c21",
+                    "on-secondary-container": "#435368",
+                    "surface-container-low": "#0a0c0e",
+                    "error-dim": "#4f0116",
+                    "on-tertiary": "#fff7f4",
+                    "inverse-surface": "#0a0f12",
+                    "secondary-fixed-dim": "#c5d6f0",
+                    "outline-variant": "#1f2937",
+                    "secondary-fixed": "#d3e4fe",
+                    "secondary": "#506076",
+                    "on-tertiary-container": "#4a2500"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0px",
+                    "lg": "0px",
+                    "xl": "0.125rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Playfair Display", "serif"],
+                    "body": ["Inter", "sans-serif"],
+                    "label": ["Inter", "sans-serif"],
+                    "mono": ["Geist Mono", "monospace"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #050505;
+            color: #D1D1D1;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            font-size: 1.25rem;
+        }
+        .ghost-border {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .geist-mono { font-family: 'Geist Mono', monospace; }
+        .playfair { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="min-h-screen flex">
+<!-- Sidebar (As dictated by JSON) -->
+<aside class="hidden md:flex flex-col h-screen w-64 bg-slate-100 dark:bg-[#0a0f12] p-4 gap-2 border-r border-slate-800/15 fixed left-0 top-0">
+<div class="mb-8 flex items-center gap-3 px-2">
+<div class="h-8 w-8 bg-violet-600 rounded-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-100 font-bold text-xs tracking-widest uppercase">Terminal v4.2</p>
+<p class="text-slate-500 text-[10px] uppercase tracking-tighter">Active Session</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/30 transition-transform duration-200 hover:translate-x-1 group" href="#">
+<span class="material-symbols-outlined text-sm">grid_view</span>
+<span class="text-sm uppercase tracking-widest">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white dark:bg-[#ffffff0d] text-violet-600 dark:text-violet-400 rounded-lg shadow-sm font-bold transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined text-sm">monitoring</span>
+<span class="text-sm uppercase tracking-widest">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/30 transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined text-sm">shield</span>
+<span class="text-sm uppercase tracking-widest">Discipline</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/30 transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined text-sm">security</span>
+<span class="text-sm uppercase tracking-widest">Risk</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/30 transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined text-sm">tune</span>
+<span class="text-sm uppercase tracking-widest">Settings</span>
+</a>
+</nav>
+<div class="mt-auto">
+<button class="w-full py-3 bg-violet-600 text-white font-bold text-xs tracking-widest uppercase rounded hover:bg-violet-700 transition-colors">
+                New Analysis
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen">
+<!-- Top Navigation Bar (JSON Structure) -->
+<header class="flex justify-between items-center w-full px-6 py-3 bg-slate-50 dark:bg-[#050505] border-b border-slate-200/15 dark:border-slate-800/15 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<h1 class="text-lg font-black tracking-tighter text-slate-900 dark:text-slate-100">VAULT SENTINEL</h1>
+<div class="hidden lg:flex items-center gap-4">
+<span class="text-slate-500 dark:text-slate-400 font-medium hover:text-violet-500 transition-colors cursor-pointer text-xs">1H</span>
+<span class="text-violet-600 dark:text-violet-400 font-bold border-b-2 border-violet-600 dark:border-violet-400 text-xs">1D</span>
+<span class="text-slate-500 dark:text-slate-400 font-medium hover:text-violet-500 transition-colors cursor-pointer text-xs">1W</span>
+<span class="text-slate-500 dark:text-slate-400 font-medium hover:text-violet-500 transition-colors cursor-pointer text-xs">1M</span>
+<span class="text-slate-500 dark:text-slate-400 font-medium hover:text-violet-500 transition-colors cursor-pointer text-xs">YTD</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:text-violet-400 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:text-violet-400 transition-colors">
+<span class="material-symbols-outlined">account_balance</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
+<img alt="Chief Analyst Profile" class="h-full w-full object-cover" data-alt="close-up portrait of a professional analyst in a dark suit with soft atmospheric lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE6CqpafcFjlU9dTPr4w4xje5LpS4PppshngxyO1dsXErkayj2iYKDm-ST2Z9LiQ6wnkkDzBM3i_DK8bw3jVuLtS4snUG1LUkagKyis9QP1GfdLX_mRVuDb4ScVOCdx0XijK2RzDi8g5xasX_esmU8UNyka7bnVqnG_D0QS-Y8t4gCT0qQBJvLD0zt7oVpxnBA6_rFb3W290lygKqlW7oNdsLe15z4wkoUWxxUgHIEOc6sTWzQ0uOC5Ld9KzwGYW5V3iDsIISsrhU"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-6 md:p-8 space-y-12 max-w-7xl mx-auto w-full">
+<!-- Hero Header Section -->
+<section class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-8">
+<div>
+<h2 class="playfair text-4xl md:text-5xl font-bold text-white mb-2 italic">Monitor de resultados</h2>
+<p class="text-on-surface-variant font-medium tracking-wide">Picks sistema vs picks operados <span class="mx-2 text-white/10">|</span> <span class="text-primary tracking-tighter geist-mono text-sm">TZ: America/Bogota</span></p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-surface-container-high rounded p-1 border border-white/5">
+<button class="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors">Hoy</button>
+<button class="px-4 py-1.5 text-xs font-bold uppercase tracking-widest bg-surface-container-highest text-white rounded-sm shadow-xl">7d</button>
+<button class="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors">30d</button>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 border border-white/10 hover:bg-white/5 transition-all group">
+<span class="material-symbols-outlined text-[18px] group-hover:rotate-180 transition-transform duration-500">sync</span>
+<span class="text-xs font-bold uppercase tracking-widest">Actualizar</span>
+</button>
+</div>
+</section>
+<!-- Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: KPIs -->
+<div class="lg:col-span-8 space-y-12">
+<!-- SISTEMA SECTION -->
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="playfair text-2xl text-white/90">SISTEMA</h3>
+<div class="flex items-center gap-2 text-[10px] text-on-surface-variant uppercase tracking-[0.2em]">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                                Denominador excluye PND, VOID, N.E.
+                            </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-0.5 bg-white/5 border border-white/5 overflow-hidden">
+<!-- Tasa Card -->
+<div class="bg-surface p-6 flex flex-col justify-between aspect-video">
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary">Tasa de Acierto</span>
+<div class="flex items-baseline gap-2">
+<span class="geist-mono text-6xl font-light text-white">68.4</span>
+<span class="geist-mono text-2xl text-on-surface-variant">%</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="h-1 flex-1 bg-white/5 overflow-hidden">
+<div class="h-full bg-primary" style="width: 68.4%"></div>
+</div>
+</div>
+</div>
+<!-- Evaluados Card -->
+<div class="bg-surface p-6 flex flex-col justify-between aspect-video">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Evaluados (A/F)</span>
+<div class="space-y-1">
+<div class="flex justify-between items-baseline">
+<span class="text-xs text-on-surface-variant">Aciertos</span>
+<span class="geist-mono text-3xl text-white">142</span>
+</div>
+<div class="flex justify-between items-baseline">
+<span class="text-xs text-on-surface-variant">Fallos</span>
+<span class="geist-mono text-3xl text-tertiary">64</span>
+</div>
+</div>
+</div>
+<!-- Counts Card -->
+<div class="bg-surface p-6 grid grid-cols-2 gap-4 aspect-video">
+<div class="flex flex-col justify-center">
+<span class="text-[9px] font-bold uppercase tracking-[0.15em] text-on-surface-variant mb-1">Pendientes</span>
+<span class="geist-mono text-2xl text-white">12</span>
+</div>
+<div class="flex flex-col justify-center">
+<span class="text-[9px] font-bold uppercase tracking-[0.15em] text-on-surface-variant mb-1">Void</span>
+<span class="geist-mono text-2xl text-white">4</span>
+</div>
+<div class="flex flex-col justify-center col-span-2 border-t border-white/5 pt-2">
+<span class="text-[9px] font-bold uppercase tracking-[0.15em] text-on-surface-variant mb-1">No Ejecutados (N.E.)</span>
+<span class="geist-mono text-2xl text-white">28</span>
+</div>
+</div>
+</div>
+</div>
+<!-- TUS PICKS SECTION -->
+<div class="space-y-6">
+<h3 class="playfair text-2xl text-white/90">TUS PICKS</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-0.5 bg-white/5 border border-white/5">
+<div class="bg-surface-container-low p-8 flex items-center justify-between group cursor-default">
+<div class="space-y-2">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-primary transition-colors">Success Rate</span>
+<div class="flex items-baseline gap-2">
+<span class="geist-mono text-5xl font-light text-white">72.1</span>
+<span class="geist-mono text-xl text-on-surface-variant">%</span>
+</div>
+</div>
+<div class="h-16 w-16 flex items-center justify-center border border-primary/20 rounded-full">
+<span class="material-symbols-outlined text-primary text-3xl">trending_up</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-8 flex items-center justify-between group cursor-default">
+<div class="space-y-2">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-primary transition-colors">Operados Total</span>
+<span class="geist-mono text-5xl font-light text-white block">86</span>
+</div>
+<div class="h-16 w-16 flex items-center justify-center border border-white/10 rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl" style="font-variation-settings: 'FILL' 1;">target</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Featured Today -->
+<div class="lg:col-span-4">
+<div class="sticky top-24">
+<div class="bg-surface-container-high border border-white/10 p-1">
+<div class="bg-surface p-6 border border-white/5">
+<div class="flex justify-between items-start mb-12">
+<div>
+<h4 class="text-2xl playfair font-bold text-white italic">Hoy</h4>
+<p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">Resumen diario</p>
+</div>
+<div class="h-10 w-10 bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+</div>
+</div>
+<div class="space-y-6 mb-12">
+<div class="flex justify-between items-center pb-4 border-b border-white/5">
+<span class="text-sm font-medium">Total picks</span>
+<span class="geist-mono text-2xl text-white">18</span>
+</div>
+<div class="flex justify-between items-center pb-4 border-b border-white/5">
+<span class="text-sm font-medium">Evaluados</span>
+<span class="geist-mono text-2xl text-white">12</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-primary">Pendientes</span>
+<span class="geist-mono text-2xl text-primary">6</span>
+</div>
+</div>
+<div class="bg-primary/5 p-4 border-l-2 border-primary">
+<p class="text-xs text-primary leading-relaxed font-medium">
+                                        Quedan <span class="geist-mono font-bold">6</span> picks esperando resultado final en las próximas horas.
+                                    </p>
+</div>
+</div>
+</div>
+<!-- Secondary visual element: Grainy gradient card -->
+<div class="mt-6 aspect-video bg-gradient-to-br from-primary/20 to-transparent border border-white/5 relative overflow-hidden flex items-end p-6">
+<div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+<div class="relative z-10">
+<p class="text-[10px] font-black tracking-widest text-primary mb-1 uppercase">Market Insight</p>
+<p class="text-lg playfair italic text-white/80">"Discipline over dopamine."</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Table Section -->
+<section class="space-y-6 pt-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-6">
+<div class="flex gap-8">
+<button class="relative pb-4 text-xs font-bold uppercase tracking-widest text-white after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-primary">
+                            Todos los picks del sistema
+                        </button>
+<button class="pb-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors">
+                            Solo los que tomé
+                        </button>
+</div>
+<div class="flex items-center gap-6">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input class="peer appearance-none h-4 w-4 border border-white/20 checked:bg-primary checked:border-primary transition-all rounded-none" type="checkbox"/>
+<span class="material-symbols-outlined absolute opacity-0 peer-checked:opacity-100 text-white text-[14px] pointer-events-none left-0.5">check</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-white transition-colors">Solo con resultado</span>
+</label>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-0">
+<thead>
+<tr class="bg-surface-container-high">
+<th class="p-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant border-b border-white/10">Día</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant border-b border-white/10">Evento</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant border-b border-white/10">Mercado</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant border-b border-white/10">Pronóstico</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant border-b border-white/10 text-right">Resultado</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant border-b border-white/10 text-right">¿Cumplió?</th>
+</tr>
+</thead>
+<tbody class="geist-mono text-sm">
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="p-4 border-b border-white/5 text-on-surface-variant">24.05</td>
+<td class="p-4 border-b border-white/5 text-white font-medium">Lakers vs Warriors</td>
+<td class="p-4 border-b border-white/5 text-on-surface-variant">Over 224.5</td>
+<td class="p-4 border-b border-white/5 text-white">Puntos Totales</td>
+<td class="p-4 border-b border-white/5 text-right text-white">231</td>
+<td class="p-4 border-b border-white/5 text-right">
+<span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 font-bold uppercase tracking-widest">Sí</span>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="p-4 border-b border-white/5 text-on-surface-variant">24.05</td>
+<td class="p-4 border-b border-white/5 text-white font-medium">Real Madrid vs Betis</td>
+<td class="p-4 border-b border-white/5 text-on-surface-variant">Hándicap -1</td>
+<td class="p-4 border-b border-white/5 text-white">Ganador Local</td>
+<td class="p-4 border-b border-white/5 text-right text-white">0-0</td>
+<td class="p-4 border-b border-white/5 text-right">
+<span class="text-[10px] px-2 py-0.5 bg-tertiary/10 text-tertiary border border-tertiary/20 font-bold uppercase tracking-widest">No</span>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="p-4 border-b border-white/5 text-on-surface-variant">23.05</td>
+<td class="p-4 border-b border-white/5 text-white font-medium">Man City vs West Ham</td>
+<td class="p-4 border-b border-white/5 text-on-surface-variant">Asian H. 0</td>
+<td class="p-4 border-b border-white/5 text-white">Local Draw No Bet</td>
+<td class="p-4 border-b border-white/5 text-right text-white">1-1</td>
+<td class="p-4 border-b border-white/5 text-right">
+<span class="text-[10px] px-2 py-0.5 bg-white/5 text-on-surface-variant border border-white/10 font-bold uppercase tracking-widest">Void</span>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="p-4 border-b border-white/5 text-on-surface-variant">23.05</td>
+<td class="p-4 border-b border-white/5 text-white font-medium">Djokovic vs Ruud</td>
+<td class="p-4 border-b border-white/5 text-on-surface-variant">Winner Set 1</td>
+<td class="p-4 border-b border-white/5 text-white">Sets Favorito</td>
+<td class="p-4 border-b border-white/5 text-right text-on-surface-variant italic">Waiting...</td>
+<td class="p-4 border-b border-white/5 text-right">
+<span class="text-[10px] px-2 py-0.5 bg-white/5 text-white border border-white/20 font-bold uppercase tracking-widest">Pendiente</span>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="p-4 border-b border-white/5 text-on-surface-variant">22.05</td>
+<td class="p-4 border-b border-white/5 text-white font-medium">Knicks vs Pacers</td>
+<td class="p-4 border-b border-white/5 text-on-surface-variant">Brunson Over 28.5</td>
+<td class="p-4 border-b border-white/5 text-white">Props Jugador</td>
+<td class="p-4 border-b border-white/5 text-right text-on-surface-variant">N/A</td>
+<td class="p-4 border-b border-white/5 text-right">
+<span class="text-[10px] px-2 py-0.5 bg-white/5 text-on-surface-variant border border-white/10 font-bold uppercase tracking-widest opacity-50">N.E.</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Footer Section -->
+<footer class="pt-24 pb-12 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-white/5">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-black tracking-widest text-on-surface-variant">BETTRACKER 2.0</span>
+<span class="h-1 w-1 bg-primary rounded-full"></span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Sentinel Engine v4.2</span>
+</div>
+<div class="flex items-center gap-8">
+<a class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Términos</a>
+<a class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors underline underline-offset-4 decoration-primary/30" href="#">Definiciones</a>
+<a class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Soporte técnico</a>
+</div>
+</footer>
+</div>
+</main>
+<!-- Contextual Floating Indicator (Discipline Shield Concept) -->
+<div class="fixed bottom-8 right-8 z-40 group">
+<div class="bg-surface-container-high border border-white/10 p-3 shadow-2xl flex items-center gap-4 hover:border-primary/50 transition-all cursor-pointer">
+<div class="h-10 w-10 bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div>
+<p class="text-[9px] font-bold uppercase tracking-widest text-primary leading-none mb-1">Discipline Score</p>
+<p class="geist-mono text-xl text-white font-bold leading-none">98.2</p>
+</div>
+</div>
+</div>
+</body></html>

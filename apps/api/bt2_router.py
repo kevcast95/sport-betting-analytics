@@ -36,7 +36,10 @@ from apps.api.bt2_dx_constants import (
 from apps.api.bt2_dsr_contract import PIPELINE_VERSION_DEFAULT
 from apps.api.bt2_dsr_deepseek import deepseek_suggest_batch
 from apps.api.bt2_dsr_ds_input_builder import aggregated_odds_for_event_psycopg, build_ds_input_item_from_db
-from apps.api.bt2_dsr_odds_aggregation import data_completeness_score
+from apps.api.bt2_dsr_odds_aggregation import (
+    consensus_decimal_for_canonical_pick,
+    data_completeness_score,
+)
 from apps.api.bt2_dsr_postprocess import hash_for_ds_input_item, postprocess_dsr_pick
 from apps.api.bt2_dsr_suggest import (
     PIPELINE_VERSION_DEEPSEEK,
@@ -67,6 +70,7 @@ from apps.api.bt2_schemas import (
     Bt2AdminDsrRangeTotalsOut,
     Bt2AdminFase1OperationalSummaryOut,
     Bt2AdminF2PoolMetricsOut,
+    Bt2AdminMonitorResultadosOut,
     Bt2AdminOfficialEvaluationLoopOut,
     Bt2AdminRefreshCdmFromSmOut,
     Bt2AdminOfficialPrecisionBucketOut,
@@ -85,11 +89,16 @@ from apps.api.bt2_schemas import (
     VaultPremiumUnlockIn,
     VaultPremiumUnlockOut,
 )
+from apps.api.bt2_monitor_resultados import build_monitor_resultados_payload
 from apps.api.bt2_admin_fase1_summary import build_fase1_operational_summary
 from apps.api.bt2_f2_metrics import build_f2_pool_eligibility_metrics
-from apps.api.bt2_admin_refresh_cdm_from_sm import admin_refresh_cdm_from_sm_for_operating_day
+from apps.api.bt2_admin_refresh_cdm_from_sm import (
+    admin_refresh_cdm_from_sm_for_daily_pick_day_range,
+    admin_refresh_cdm_from_sm_for_operating_day,
+)
 from apps.api.bt2_official_evaluation_job import fetch_official_evaluation_loop_metrics
 from apps.api.bt2_dev_sm_refresh import refresh_raw_sportmonks_for_value_pool_today
+from apps.api.bt2_sfs_cdm_ingest import run_sfs_auto_ingest_after_cdm_fetch
 from apps.api.bt2_settings import bt2_settings
 from apps.api.bt2_vault_market_mix import order_indices_for_top_slate_diversity
 from apps.api.bt2_vault_pool import (
@@ -2187,6 +2196,14 @@ class Bt2DevResetOperatingDayOut(BaseModel):
         serialization_alias="smRefreshLog",
         description="Notas / errores del refresco SM (acotado en servidor).",
     )
+    sfs_auto_ingest: Optional[dict[str, Any]] = Field(
+        None,
+        serialization_alias="sfsAutoIngest",
+        description=(
+            "Tras reset: ingest SofaScore → bt2_provider_odds_snapshot para eventos del pool valor "
+            "(fusion + prob_coherence en ds_input cuando BT2_SFS_MARKETS_FUSION_ENABLED)."
+        ),
+    )
     message_es: str = Field(..., serialization_alias="messageEs")
 
 
@@ -2492,6 +2509,7 @@ def _materialize_daily_picks_snapshot(
                 away,
                 league,
             )
+        ref_odds = consensus_decimal_for_canonical_pick(agg.consensus, mmc, msc)
         row_payloads.append(
             {
                 "event_id": event_id,
@@ -2504,6 +2522,7 @@ def _materialize_daily_picks_snapshot(
                 "pver": pver,
                 "dsrc": dsrc,
                 "dhash": dhash,
+                "ref_odds": ref_odds,
             }
         )
 
@@ -2520,10 +2539,10 @@ def _materialize_daily_picks_snapshot(
             INSERT INTO bt2_daily_picks (
                 user_id, event_id, operating_day_key, access_tier,
                 pipeline_version, dsr_input_hash, dsr_narrative_es, dsr_confidence_label,
-                model_market_canonical, model_selection_canonical, dsr_source,
+                model_market_canonical, model_selection_canonical, reference_decimal_odds, dsr_source,
                 data_completeness_score, slate_rank
             )
-            VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (user_id, event_id, operating_day_key) DO NOTHING
             """,
             (
@@ -2537,6 +2556,7 @@ def _materialize_daily_picks_snapshot(
                 p["conf"],
                 p["mmc"],
                 p["msc"],
+                p.get("ref_odds"),
                 p["dsrc"],
                 p["score_v"],
                 rank,
@@ -2808,8 +2828,9 @@ def bt2_dev_reset_operating_day_for_tests(user_id: Bt2UserId) -> Bt2DevResetOper
     picks_deleted = 0
     sm_ok = 0
     sm_log: list[str] = []
+    pool_event_ids: list[int] = []
     try:
-        sm_ok, sm_log = refresh_raw_sportmonks_for_value_pool_today(
+        sm_ok, sm_log, pool_event_ids = refresh_raw_sportmonks_for_value_pool_today(
             cur,
             tz_name=tz_name,
             sportmonks_api_key=bt2_settings.sportmonks_api_key,
@@ -2847,11 +2868,33 @@ def bt2_dev_reset_operating_day_for_tests(user_id: Bt2UserId) -> Bt2DevResetOper
         cur.close()
         conn.close()
 
+    sfs_auto: Optional[dict[str, Any]] = None
+    if pool_event_ids and getattr(bt2_settings, "bt2_sfs_auto_ingest_enabled", True):
+        try:
+            sfs_auto = run_sfs_auto_ingest_after_cdm_fetch(pool_event_ids)
+        except Exception as exc:
+            logger.warning("[bt2-dev-reset] SFS auto-ingest falló: %s", exc)
+            sfs_auto = {"skipped": False, "error": str(exc)}
+    elif pool_event_ids and not getattr(bt2_settings, "bt2_sfs_auto_ingest_enabled", True):
+        sfs_auto = {"skipped": True, "reason": "bt2_sfs_auto_ingest_disabled"}
+
+    sfs_line = ""
+    if isinstance(sfs_auto, dict):
+        if sfs_auto.get("error"):
+            sfs_line = f" SFS ingest error: {sfs_auto.get('error')!s}."
+        elif sfs_auto.get("skipped") and sfs_auto.get("reason") == "bt2_sfs_auto_ingest_disabled":
+            sfs_line = " SFS ingest omitido (BT2_SFS_AUTO_INGEST_ENABLED=false)."
+        elif sfs_auto.get("snapshots_upserted") is not None:
+            su = sfs_auto.get("snapshots_upserted")
+            sj = sfs_auto.get("skipped_no_join")
+            sfs_line = f" SFS ok: snapshots={su} sin_join={sj}."
+
     msg = (
         f"Día {odk}: SM raw refrescados {sm_ok} fixture(s); "
         f"eliminadas {picks_deleted} filas de bóveda; "
-        f"servidor {'cerró sesión abierta' if session_closed else 'sin sesión abierta (OK)'}. "
-        f"Abrí la bóveda o POST session/open para regenerar snapshot completo (ds_input + DSR)."
+        f"servidor {'cerró sesión abierta' if session_closed else 'sin sesión abierta (OK)'}."
+        f"{sfs_line} "
+        f"Abrí la bóveda o POST session/open para regenerar snapshot (ds_input + prob_coherence + DSR)."
     )
     return Bt2DevResetOperatingDayOut(
         ok=True,
@@ -2860,6 +2903,7 @@ def bt2_dev_reset_operating_day_for_tests(user_id: Bt2UserId) -> Bt2DevResetOper
         server_session_closed=session_closed,
         sm_fixtures_refreshed=sm_ok,
         sm_refresh_log=sm_log[:25],
+        sfs_auto_ingest=sfs_auto,
         message_es=msg,
     )
 
@@ -3489,6 +3533,140 @@ def bt2_admin_post_refresh_cdm_from_sm_for_operating_day(
         cur.close()
         conn.close()
     return Bt2AdminRefreshCdmFromSmOut(**raw)
+
+
+_BT2_ADMIN_MONITOR_MAX_DAYS = 366
+_BT2_ADMIN_MONITOR_SM_SYNC_MAX_SPAN_DAYS = 31
+
+
+@router.get(
+    "/admin/analytics/monitor-resultados",
+    response_model=Bt2AdminMonitorResultadosOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_monitor_resultados(
+    operating_day_key_from: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKeyFrom",
+        description="Inicio inclusive YYYY-MM-DD (`operating_day_key` en bt2_daily_picks).",
+    ),
+    operating_day_key_to: str = Query(
+        ...,
+        min_length=10,
+        max_length=10,
+        alias="operatingDayKeyTo",
+        description="Fin inclusive YYYY-MM-DD.",
+    ),
+    monitor_user_id: Optional[str] = Query(
+        None,
+        alias="monitorUserId",
+        description=(
+            "UUID del operador: si se envía, `yours` agrega solo picks operados "
+            "(bt2_picks el mismo día operativo en America/Bogota)."
+        ),
+    ),
+    sync_from_sportmonks: bool = Query(
+        False,
+        alias="syncFromSportmonks",
+        description=(
+            "Si true: antes de responder, refresca desde SportMonks cada evento con picks "
+            "en el rango [from,to], actualiza bt2_events y ejecuta evaluación oficial pending. "
+            "Usa cuota SM; máximo "
+            + str(_BT2_ADMIN_MONITOR_SM_SYNC_MAX_SPAN_DAYS)
+            + " días de rango."
+        ),
+    ),
+    sm_sync_event_limit: int = Query(
+        250,
+        ge=1,
+        le=500,
+        alias="smSyncEventLimit",
+        description="Máximo eventos distintos a refrescar cuando syncFromSportmonks=true.",
+    ),
+) -> Bt2AdminMonitorResultadosOut:
+    """
+    Monitor de resultados — evaluación oficial por fila de bóveda (`bt2_daily_picks`).
+
+    Tasa del sistema = hits / (hits + misses) sobre filas con estado evaluated_hit|evaluated_miss.
+    Pendientes, void y N.E. no entran en el denominador.
+    Header: **X-BT2-Admin-Key** = `BT2_ADMIN_API_KEY`.
+    """
+    try:
+        d0 = date.fromisoformat(operating_day_key_from)
+        d1 = date.fromisoformat(operating_day_key_to)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="operatingDayKeyFrom y operatingDayKeyTo deben ser YYYY-MM-DD válidos.",
+        )
+    if d0 > d1:
+        raise HTTPException(
+            status_code=400,
+            detail="operatingDayKeyFrom no puede ser posterior a operatingDayKeyTo.",
+        )
+    span = (d1 - d0).days + 1
+    if span > _BT2_ADMIN_MONITOR_MAX_DAYS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Rango máximo {_BT2_ADMIN_MONITOR_MAX_DAYS} días.",
+        )
+    if sync_from_sportmonks and span > _BT2_ADMIN_MONITOR_SM_SYNC_MAX_SPAN_DAYS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"syncFromSportmonks: rango máximo {_BT2_ADMIN_MONITOR_SM_SYNC_MAX_SPAN_DAYS} días "
+                f"(recibido {span}). Acortá el periodo o usa sync en un solo día."
+            ),
+        )
+
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        sm_sync = {
+            "attempted": False,
+            "ok": True,
+            "message_es": "",
+            "fixtures_targeted": 0,
+            "unique_fixtures_processed": 0,
+            "closed_pending_to_final": None,
+        }
+        if sync_from_sportmonks:
+            rr = admin_refresh_cdm_from_sm_for_daily_pick_day_range(
+                cur,
+                operating_day_key_from=operating_day_key_from,
+                operating_day_key_to=operating_day_key_to,
+                sportmonks_api_key=bt2_settings.sportmonks_api_key,
+                limit=int(sm_sync_event_limit),
+                run_official_evaluation=True,
+            )
+            ev = rr.get("official_evaluation") or {}
+            sm_sync = {
+                "attempted": True,
+                "ok": bool(rr.get("ok")),
+                "message_es": str(rr.get("message_es") or ""),
+                "fixtures_targeted": int(rr.get("fixtures_targeted") or 0),
+                "unique_fixtures_processed": int(rr.get("unique_sportmonks_fixtures_processed") or 0),
+                "closed_pending_to_final": ev.get("closed_to_final_this_run"),
+            }
+        raw = build_monitor_resultados_payload(
+            cur,
+            operating_day_key_from=operating_day_key_from,
+            operating_day_key_to=operating_day_key_to,
+            monitor_user_id=monitor_user_id,
+        )
+        raw["sm_sync"] = sm_sync
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
+    return Bt2AdminMonitorResultadosOut.model_validate(raw)
 
 
 _BT2_ADMIN_DSR_RANGE_MAX_DAYS = 366

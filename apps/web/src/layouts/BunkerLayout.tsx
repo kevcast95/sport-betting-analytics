@@ -39,6 +39,7 @@ function mainModuleLabel(pathname: string): string | null {
   if (pathname.startsWith('/v2/daily-review')) return 'Cierre del día'
   if (pathname.startsWith('/v2/ledger')) return 'Libro mayor'
   if (pathname.startsWith('/v2/performance')) return 'Estrategia'
+  if (pathname.startsWith('/v2/admin/monitor-resultados')) return 'Monitor resultados'
   if (pathname.startsWith('/v2/profile')) return 'Perfil'
   if (pathname.startsWith('/v2/settings')) return 'Ajustes'
   if (pathname.startsWith('/v2/dashboard')) return 'Santuario'
@@ -389,6 +390,19 @@ export default function BunkerLayout() {
           Fase 1 · verdad
         </NavLink>
         <NavLink
+          to="/v2/admin/monitor-resultados"
+          className={({ isActive }) =>
+            [
+              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
+              isActive
+                ? 'bg-white text-[#8B5CF6] shadow-sm'
+                : 'text-[#52616a]',
+            ].join(' ')
+          }
+        >
+          Monitor
+        </NavLink>
+        <NavLink
           to="/v2/profile"
           className={({ isActive }) =>
             [
@@ -495,6 +509,15 @@ export default function BunkerLayout() {
                 <Bt2ShieldCheckIcon className="h-5 w-5" />
               </span>
               Fase 1 · verdad
+            </NavLink>
+            <NavLink
+              to="/v2/admin/monitor-resultados"
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Bt2ChartBarsIcon className="h-5 w-5" />
+              </span>
+              Monitor resultados
             </NavLink>
             <NavLink
               to="/v2/profile"

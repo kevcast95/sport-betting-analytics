@@ -5,6 +5,10 @@ Ingesta diaria de fixtures futuros desde Sportmonks.
 Lee bt2_leagues (is_active=true), llama a la API por liga y hace upsert
 en bt2_events + bt2_odds_snapshot + **raw_sportmonks_fixtures** (UPSERT, D-06-037 / T-198).
 
+Si `BT2_SFS_AUTO_INGEST_ENABLED=true` (default), tras persistir SM ejecuta join SofaScore + fetch odds
+y escribe **bt2_provider_odds_snapshot** (`run_id` = `BT2_SFS_CDM_RUN_ID`, default `cdm_fetch_upcoming`).
+Desactivar: `BT2_SFS_AUTO_INGEST_ENABLED=false`. Cap: `BT2_SFS_EXPERIMENT_MAX_EVENTS_PER_RUN`.
+
 Uso:
     python scripts/bt2_cdm/fetch_upcoming.py
     python scripts/bt2_cdm/fetch_upcoming.py --hours-ahead 72
@@ -224,16 +228,17 @@ def process_league_fixtures(
     league_sm_id: int,
     conn,
     dry_run: bool,
-) -> tuple[int, int, int]:
+) -> tuple[int, int, int, list[int]]:
     """
     Hace upsert de los fixtures de una liga en bt2_events + bt2_odds_snapshot.
-    Retorna (nuevos, actualizados, odds_upserted).
+    Retorna (nuevos, actualizados, odds_upserted, bt2_event_ids_tocados).
     """
     if not fixtures:
-        return 0, 0, 0
+        return 0, 0, 0, []
 
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     nuevos = actualizados = odds_total = 0
+    bt2_event_ids: list[int] = []
 
     for fx in fixtures:
         fixture_id = fx.get("id")
@@ -273,6 +278,7 @@ def process_league_fixtures(
                     result_home, result_away, season,
                 )
                 if event_id:
+                    bt2_event_ids.append(int(event_id))
                     odds_entries = _extract_odds(fx)
                     fetched_at = datetime.now(tz=timezone.utc)
                     odds_n = insert_odds_bulk(cur, event_id, odds_entries, fetched_at)
@@ -296,7 +302,7 @@ def process_league_fixtures(
         conn.commit()
 
     cur.close()
-    return nuevos, actualizados, odds_total
+    return nuevos, actualizados, odds_total, bt2_event_ids
 
 
 def generate_report(
@@ -393,6 +399,7 @@ def run_fetch(hours_ahead: int = 48, dry_run: bool = False) -> dict:
 
     t0 = time.time()
     stats: list[dict] = []
+    all_bt2_event_ids: list[int] = []
 
     active_sm_ids = {lg["sportmonks_id"] for lg in active_leagues}
     # Mapa: sportmonks_id → registro completo de la liga
@@ -430,9 +437,10 @@ def run_fetch(hours_ahead: int = 48, dry_run: bool = False) -> dict:
         fixtures = by_league.get(lg_sm_id, [])
         logger.info("[FU] Liga: %s (sm_id=%s tier=%s) → %d fixtures", lg_name, lg_sm_id, lg_tier, len(fixtures))
 
-        nuevos, actualizados, odds_n = process_league_fixtures(
+        nuevos, actualizados, odds_n, eids = process_league_fixtures(
             fixtures, lg_internal_id, lg_name, lg_sm_id, conn, dry_run
         )
+        all_bt2_event_ids.extend(eids)
 
         stats.append({
             "name": lg_name, "tier": lg_tier,
@@ -443,6 +451,19 @@ def run_fetch(hours_ahead: int = 48, dry_run: bool = False) -> dict:
         })
 
     elapsed = time.time() - t0
+
+    if not dry_run and all_bt2_event_ids:
+        try:
+            from apps.api.bt2_sfs_cdm_ingest import run_sfs_auto_ingest_after_cdm_fetch
+
+            sfs_out = run_sfs_auto_ingest_after_cdm_fetch(all_bt2_event_ids)
+            logger.info("[FU] SFS auto-ingest: %s", sfs_out)
+        except Exception as exc:
+            logger.warning(
+                "[FU] SFS auto-ingest falló (cuotas SM ya persistidas): %s",
+                exc,
+                exc_info=logger.isEnabledFor(logging.DEBUG),
+            )
 
     # Snapshot eventos futuros después
     cur_snap2 = conn.cursor()

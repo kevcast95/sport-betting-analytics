@@ -658,6 +658,133 @@ class Bt2AdminRefreshCdmFromSmOut(BaseModel):
     notes: List[str] = Field(default_factory=list)
 
 
+MonitorOutcomeLiteral = Literal["si", "no", "pendiente", "void", "ne"]
+
+
+class Bt2AdminMonitorRoiFlatStakeOut(BaseModel):
+    """ROI con stake fijo 1 unidad por pick y cuota decimal consenso CDM (mediana casas)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    net_units: float = Field(..., alias="netUnits")
+    roi_pct: Optional[float] = Field(
+        None,
+        alias="roiPct",
+        description="net_units / picks_counted × 100 sobre picks SI/NO con cuota.",
+    )
+    picks_counted: int = Field(
+        ...,
+        alias="picksCounted",
+        description="Scored con cuota en consenso (entre en ROI).",
+    )
+    picks_missing_odds: int = Field(
+        0,
+        alias="picksMissingOdds",
+        description="Scored sin selección encontrada en consenso.",
+    )
+
+
+class Bt2AdminMonitorSummaryOut(BaseModel):
+    """Agregados monitor (sistema o «tus picks» operados)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    total_picks: int = Field(..., alias="totalPicks")
+    hits: int
+    misses: int
+    pending: int
+    void_count: int = Field(..., alias="voidCount")
+    no_evaluable: int = Field(..., alias="noEvaluable")
+    evaluated_scored: int = Field(
+        ...,
+        alias="evaluatedScored",
+        description="aciertos + fallos (denominador de la tasa).",
+    )
+    hit_rate_pct: Optional[float] = Field(None, alias="hitRatePct")
+    roi_flat_stake: Bt2AdminMonitorRoiFlatStakeOut = Field(..., alias="roiFlatStake")
+
+
+class Bt2AdminMonitorTodayOut(BaseModel):
+    """Resumen rápido del día operativo actual (America/Bogota)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key: str = Field(..., alias="operatingDayKey")
+    total_picks: int = Field(..., alias="totalPicks")
+    resolved: int = Field(
+        ...,
+        description="Filas con evaluación distinta de pending_result.",
+    )
+    pending: int
+
+
+class Bt2AdminMonitorRowOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    daily_pick_id: int = Field(..., alias="dailyPickId")
+    operating_day_key: str = Field(..., alias="operatingDayKey")
+    event_id: int = Field(..., alias="eventId")
+    user_id: str = Field(..., alias="userId")
+    event_label: str = Field(..., alias="eventLabel")
+    market_label_es: str = Field(..., alias="marketLabelEs")
+    selection_summary_es: str = Field(..., alias="selectionSummaryEs")
+    score_text: str = Field(..., alias="scoreText")
+    outcome: MonitorOutcomeLiteral
+    i_operated: bool = Field(..., alias="iOperated")
+    decimal_odds: Optional[float] = Field(
+        None,
+        alias="decimalOdds",
+        description="Decimal consenso si existe en odds agregadas.",
+    )
+    flat_stake_return_units: Optional[float] = Field(
+        None,
+        alias="flatStakeReturnUnits",
+        description="+(O−1) en acierto, −1 en fallo, stake 1 u.",
+    )
+
+
+class Bt2AdminMonitorSmSyncOut(BaseModel):
+    """SportMonks → CDM + evaluación oficial (solo si `syncFromSportmonks` en el GET)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    attempted: bool
+    ok: bool
+    message_es: str = Field("", alias="messageEs")
+    fixtures_targeted: int = Field(0, alias="fixturesTargeted")
+    unique_fixtures_processed: int = Field(0, alias="uniqueFixturesProcessed")
+    closed_pending_to_final: Optional[int] = Field(
+        None,
+        alias="closedPendingToFinal",
+        description="Filas pending→final en la corrida de evaluación tras el sync.",
+    )
+
+
+class Bt2AdminMonitorResultadosOut(BaseModel):
+    """GET admin — monitor de resultados (evaluación oficial vs `bt2_daily_picks`)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    operating_day_key_from: str = Field(..., alias="operatingDayKeyFrom")
+    operating_day_key_to: str = Field(..., alias="operatingDayKeyTo")
+    timezone_label: str = Field("America/Bogota", alias="timezoneLabel")
+    today_operating_day_key: str = Field(..., alias="todayOperatingDayKey")
+    focus_operating_day_key: str = Field(
+        ...,
+        alias="focusOperatingDayKey",
+        description="Día del bloque «hoy»: coincide con el rango si from==to; si no, hoy calendario TZ ref.",
+    )
+    system: Bt2AdminMonitorSummaryOut
+    yours: Optional[Bt2AdminMonitorSummaryOut] = Field(
+        None,
+        description="Solo si se envió monitorUserId; solo picks operados ese día.",
+    )
+    today: Bt2AdminMonitorTodayOut
+    rows: List[Bt2AdminMonitorRowOut] = Field(default_factory=list)
+    summary_human_es: str = Field("", alias="summaryHumanEs")
+    sm_sync: Bt2AdminMonitorSmSyncOut = Field(..., alias="smSync")
+
+
 OPERATOR_PROFILE_VALUES = {
     "DISCIPLINE_TRADER",
     "IMPULSE_REACTIVE",

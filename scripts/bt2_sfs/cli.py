@@ -40,12 +40,8 @@ from apps.api.bt2.providers.sofascore.canonical_map import (
     map_featured_raw_to_rows,
 )
 from apps.api.bt2.providers.sofascore.client import sfs_client_from_settings
-from apps.api.bt2.providers.sofascore.join_resolve import (
-    load_seed_mapping,
-    persist_join_audit,
-    resolve_sfs_event_id,
-)
-from apps.api.bt2.providers.sofascore.snapshot_repo import upsert_provider_odds_snapshot
+from apps.api.bt2.providers.sofascore.join_resolve import load_seed_mapping
+from apps.api.bt2_sfs_cdm_ingest import process_bt2_events_sfs_odds
 from apps.api.bt2_settings import bt2_settings
 from scripts.bt2_sfs._db import make_session
 from scripts.bt2_sfs._metrics_core import compute_run_metrics, verdict_from_metrics
@@ -93,39 +89,15 @@ def _process_event_batch(
     skip_layer2: bool,
     dry_run: bool,
 ) -> None:
-    for ev in evs:
-        jr = resolve_sfs_event_id(
-            session, ev, client, seed_by_sm_fixture=seed, try_layer2=not skip_layer2
-        )
-        persist_join_audit(session, run_id=run_id, bt2_event_id=ev.id, result=jr)
-        if jr.sofascore_event_id is not None and not dry_run:
-            ev.sofascore_event_id = int(jr.sofascore_event_id)
-        if jr.sofascore_event_id is None or dry_run:
-            session.flush()
-            continue
-        raw_f = client.fetch_odds_featured(jr.sofascore_event_id)
-        raw_a = client.fetch_odds_all(jr.sofascore_event_id)
-        upsert_provider_odds_snapshot(
-            session,
-            bt2_event_id=ev.id,
-            provider=PROVIDER_SFS,
-            source_scope="featured",
-            run_id=run_id,
-            raw_payload=raw_f,
-            provider_event_ref=str(jr.sofascore_event_id),
-            canonical_version=CANONICAL_VERSION_S65,
-        )
-        upsert_provider_odds_snapshot(
-            session,
-            bt2_event_id=ev.id,
-            provider=PROVIDER_SFS,
-            source_scope="all",
-            run_id=run_id,
-            raw_payload=raw_a,
-            provider_event_ref=str(jr.sofascore_event_id),
-            canonical_version=CANONICAL_VERSION_S65,
-        )
-        session.flush()
+    process_bt2_events_sfs_odds(
+        session,
+        evs,
+        run_id=run_id,
+        client=client,
+        seed_by_sm_fixture=seed,
+        skip_layer2=skip_layer2,
+        dry_run=dry_run,
+    )
 
 
 def cmd_historical(args: argparse.Namespace) -> None:

@@ -149,6 +149,358 @@ def fetch_team_form_string(
     return "".join(parts)
 
 
+def fetch_team_form_string_same_league(
+    cur,
+    *,
+    team_id: int,
+    league_id: int,
+    before_kickoff: datetime,
+    max_matches: int = 5,
+) -> Optional[str]:
+    """Últimos partidos terminados del equipo en una liga concreta (`league_id`)."""
+    cur.execute(
+        """
+        SELECT home_team_id, away_team_id, result_home, result_away
+        FROM bt2_events
+        WHERE status = 'finished'
+          AND league_id = %s
+          AND kickoff_utc IS NOT NULL
+          AND kickoff_utc < %s
+          AND result_home IS NOT NULL
+          AND result_away IS NOT NULL
+          AND home_team_id IS NOT NULL
+          AND away_team_id IS NOT NULL
+          AND (home_team_id = %s OR away_team_id = %s)
+        ORDER BY kickoff_utc DESC
+        LIMIT %s
+        """,
+        (league_id, before_kickoff, team_id, team_id, max_matches * 4),
+    )
+    parts: list[str] = []
+    for ht, at, rh, ra in cur.fetchall():
+        try:
+            rih, ria = int(rh), int(ra)
+        except (TypeError, ValueError):
+            continue
+        o = _outcome_for_team(int(ht), int(at), rih, ria, team_id)
+        if o:
+            parts.append(o)
+        if len(parts) >= max_matches:
+            break
+    if not parts:
+        return None
+    return "".join(parts)
+
+
+def fetch_team_form_string_designated_role(
+    cur,
+    *,
+    team_id: int,
+    before_kickoff: datetime,
+    max_matches: int = 5,
+    only_as_home: bool = False,
+    only_as_away: bool = False,
+) -> Optional[str]:
+    """Forma donde el equipo solo cuenta como local o solo como visitante."""
+    if only_as_home == only_as_away:
+        return None
+    if only_as_home:
+        cur.execute(
+            """
+            SELECT home_team_id, away_team_id, result_home, result_away
+            FROM bt2_events
+            WHERE status = 'finished'
+              AND kickoff_utc IS NOT NULL
+              AND kickoff_utc < %s
+              AND result_home IS NOT NULL
+              AND result_away IS NOT NULL
+              AND home_team_id IS NOT NULL
+              AND away_team_id IS NOT NULL
+              AND home_team_id = %s
+            ORDER BY kickoff_utc DESC
+            LIMIT %s
+            """,
+            (before_kickoff, team_id, max_matches * 4),
+        )
+    else:
+        cur.execute(
+            """
+            SELECT home_team_id, away_team_id, result_home, result_away
+            FROM bt2_events
+            WHERE status = 'finished'
+              AND kickoff_utc IS NOT NULL
+              AND kickoff_utc < %s
+              AND result_home IS NOT NULL
+              AND result_away IS NOT NULL
+              AND home_team_id IS NOT NULL
+              AND away_team_id IS NOT NULL
+              AND away_team_id = %s
+            ORDER BY kickoff_utc DESC
+            LIMIT %s
+            """,
+            (before_kickoff, team_id, max_matches * 4),
+        )
+    parts: list[str] = []
+    for ht, at, rh, ra in cur.fetchall():
+        try:
+            rih, ria = int(rh), int(ra)
+        except (TypeError, ValueError):
+            continue
+        o = _outcome_for_team(int(ht), int(at), rih, ria, team_id)
+        if o:
+            parts.append(o)
+        if len(parts) >= max_matches:
+            break
+    if not parts:
+        return None
+    return "".join(parts)
+
+
+def fetch_scored_conceded_last_matches(
+    cur,
+    *,
+    team_id: int,
+    before_kickoff: datetime,
+    max_matches: int = 5,
+    league_id: Optional[int] = None,
+    only_as_home: bool = False,
+    only_as_away: bool = False,
+) -> Optional[tuple[int, int, int]]:
+    """
+    Suma goles a favor / en contra del equipo en los últimos partidos terminados.
+    Devuelve (partidos_usados, scored_sum, conceded_sum).
+    """
+    if only_as_home:
+        if league_id is not None:
+            cur.execute(
+                """
+                SELECT home_team_id, away_team_id, result_home, result_away
+                FROM bt2_events
+                WHERE status = 'finished'
+                  AND league_id = %s
+                  AND kickoff_utc IS NOT NULL
+                  AND kickoff_utc < %s
+                  AND result_home IS NOT NULL
+                  AND result_away IS NOT NULL
+                  AND home_team_id IS NOT NULL
+                  AND away_team_id IS NOT NULL
+                  AND home_team_id = %s
+                ORDER BY kickoff_utc DESC
+                LIMIT %s
+                """,
+                (league_id, before_kickoff, team_id, max_matches * 4),
+            )
+        else:
+            cur.execute(
+                """
+                SELECT home_team_id, away_team_id, result_home, result_away
+                FROM bt2_events
+                WHERE status = 'finished'
+                  AND kickoff_utc IS NOT NULL
+                  AND kickoff_utc < %s
+                  AND result_home IS NOT NULL
+                  AND result_away IS NOT NULL
+                  AND home_team_id IS NOT NULL
+                  AND away_team_id IS NOT NULL
+                  AND home_team_id = %s
+                ORDER BY kickoff_utc DESC
+                LIMIT %s
+                """,
+                (before_kickoff, team_id, max_matches * 4),
+            )
+    elif only_as_away:
+        if league_id is not None:
+            cur.execute(
+                """
+                SELECT home_team_id, away_team_id, result_home, result_away
+                FROM bt2_events
+                WHERE status = 'finished'
+                  AND league_id = %s
+                  AND kickoff_utc IS NOT NULL
+                  AND kickoff_utc < %s
+                  AND result_home IS NOT NULL
+                  AND result_away IS NOT NULL
+                  AND home_team_id IS NOT NULL
+                  AND away_team_id IS NOT NULL
+                  AND away_team_id = %s
+                ORDER BY kickoff_utc DESC
+                LIMIT %s
+                """,
+                (league_id, before_kickoff, team_id, max_matches * 4),
+            )
+        else:
+            cur.execute(
+                """
+                SELECT home_team_id, away_team_id, result_home, result_away
+                FROM bt2_events
+                WHERE status = 'finished'
+                  AND kickoff_utc IS NOT NULL
+                  AND kickoff_utc < %s
+                  AND result_home IS NOT NULL
+                  AND result_away IS NOT NULL
+                  AND home_team_id IS NOT NULL
+                  AND away_team_id IS NOT NULL
+                  AND away_team_id = %s
+                ORDER BY kickoff_utc DESC
+                LIMIT %s
+                """,
+                (before_kickoff, team_id, max_matches * 4),
+            )
+    elif league_id is not None:
+        cur.execute(
+            """
+            SELECT home_team_id, away_team_id, result_home, result_away
+            FROM bt2_events
+            WHERE status = 'finished'
+              AND league_id = %s
+              AND kickoff_utc IS NOT NULL
+              AND kickoff_utc < %s
+              AND result_home IS NOT NULL
+              AND result_away IS NOT NULL
+              AND home_team_id IS NOT NULL
+              AND away_team_id IS NOT NULL
+              AND (home_team_id = %s OR away_team_id = %s)
+            ORDER BY kickoff_utc DESC
+            LIMIT %s
+            """,
+            (league_id, before_kickoff, team_id, team_id, max_matches * 4),
+        )
+    else:
+        cur.execute(
+            """
+            SELECT home_team_id, away_team_id, result_home, result_away
+            FROM bt2_events
+            WHERE status = 'finished'
+              AND kickoff_utc IS NOT NULL
+              AND kickoff_utc < %s
+              AND result_home IS NOT NULL
+              AND result_away IS NOT NULL
+              AND home_team_id IS NOT NULL
+              AND away_team_id IS NOT NULL
+              AND (home_team_id = %s OR away_team_id = %s)
+            ORDER BY kickoff_utc DESC
+            LIMIT %s
+            """,
+            (before_kickoff, team_id, team_id, max_matches * 4),
+        )
+
+    scored = conceded = 0
+    used = 0
+    for ht, at, rh, ra in cur.fetchall():
+        if used >= max_matches:
+            break
+        try:
+            ht_i, at_i = int(ht), int(at)
+            rih, ria = int(rh), int(ra)
+        except (TypeError, ValueError):
+            continue
+        if team_id == ht_i:
+            scored += rih
+            conceded += ria
+        elif team_id == at_i:
+            scored += ria
+            conceded += rih
+        else:
+            continue
+        used += 1
+    if used == 0:
+        return None
+    return used, scored, conceded
+
+
+def fetch_rest_days_before_kickoff(
+    cur,
+    *,
+    team_id: int,
+    before_kickoff: datetime,
+) -> Optional[int]:
+    """Días calendario entre el último partido terminado del equipo y `before_kickoff`."""
+    cur.execute(
+        """
+        SELECT kickoff_utc
+        FROM bt2_events
+        WHERE status = 'finished'
+          AND kickoff_utc IS NOT NULL
+          AND kickoff_utc < %s
+          AND result_home IS NOT NULL
+          AND result_away IS NOT NULL
+          AND home_team_id IS NOT NULL
+          AND away_team_id IS NOT NULL
+          AND (home_team_id = %s OR away_team_id = %s)
+        ORDER BY kickoff_utc DESC
+        LIMIT 1
+        """,
+        (before_kickoff, team_id, team_id),
+    )
+    row = cur.fetchone()
+    if not row:
+        return None
+    prev = row["kickoff_utc"] if isinstance(row, Mapping) else row[0]
+    if not isinstance(prev, datetime):
+        return None
+    if prev.tzinfo is None:
+        prev = prev.replace(tzinfo=timezone.utc)
+    bk = before_kickoff
+    if bk.tzinfo is None:
+        bk = bk.replace(tzinfo=timezone.utc)
+    delta = bk.date() - prev.date()
+    return int(delta.days)
+
+
+def fetch_h2h_aggregate_fixed_orientation(
+    cur,
+    *,
+    host_team_id: int,
+    guest_team_id: int,
+    before_kickoff: datetime,
+    limit: int = 15,
+) -> Optional[dict[str, Any]]:
+    """
+    Enfrentamientos previos con **la misma orientación** que el partido actual:
+    `home_team_id` histórico = `host_team_id`, visita = `guest_team_id`.
+    """
+    cur.execute(
+        """
+        SELECT result_home, result_away
+        FROM bt2_events
+        WHERE status = 'finished'
+          AND kickoff_utc IS NOT NULL
+          AND kickoff_utc < %s
+          AND result_home IS NOT NULL
+          AND result_away IS NOT NULL
+          AND home_team_id = %s
+          AND away_team_id = %s
+        ORDER BY kickoff_utc DESC
+        LIMIT %s
+        """,
+        (before_kickoff, host_team_id, guest_team_id, limit),
+    )
+    rows = cur.fetchall()
+    if not rows:
+        return None
+    hw = dr = gw = 0
+    for rh, ra in rows:
+        try:
+            rih, ria = int(rh), int(ra)
+        except (TypeError, ValueError):
+            continue
+        if rih > ria:
+            hw += 1
+        elif rih < ria:
+            gw += 1
+        else:
+            dr += 1
+    meetings = len(rows)
+    return {
+        "available": True,
+        "meetings_in_sample": meetings,
+        "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+        "host_side_wins": hw,
+        "draws": dr,
+        "guest_side_wins": gw,
+    }
+
+
 def streaks_from_form(form: str) -> dict[str, int]:
     """Rachas simples desde cadena W/D/L (último partido al final de la cadena)."""
 

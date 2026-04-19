@@ -39,6 +39,9 @@ class BT2Settings(BaseSettings):
     # Piloto / producción: mezcla cuotas SFS (tabla bt2_provider_odds_snapshot) con SM en ds_input.
     bt2_sfs_markets_fusion_enabled: bool = False
     bt2_sfs_odds_provider_slug: str = "sofascore_experimental"
+    # Tras SportMonks en `fetch_upcoming`: join + fetch SofaScore y UPSERT en bt2_provider_odds_snapshot.
+    bt2_sfs_auto_ingest_enabled: bool = True
+    bt2_sfs_cdm_run_id: str = "cdm_fetch_upcoming"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

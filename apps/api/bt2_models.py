@@ -380,6 +380,7 @@ class Bt2DailyPick(Base):
     dsr_confidence_label: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     model_market_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
     model_selection_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    reference_decimal_odds: Mapped[Optional[float]] = mapped_column(Numeric(10, 4), nullable=True)
     dsr_source: Mapped[str] = mapped_column(String(24), nullable=False)
     data_completeness_score: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True)
     slate_rank: Mapped[int] = mapped_column(
