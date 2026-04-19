@@ -15,10 +15,13 @@ import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { VektorShortDisclaimer } from '@/components/vault/VektorShortDisclaimer'
 import { vaultMockPicks } from '@/data/vaultMockPicks'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
+import { modelPredictionResultEs } from '@/lib/bt2ProtocolLabels'
 import {
-  vektorModelConfidenceLineEs,
-  modelPredictionResultEs,
-} from '@/lib/bt2ProtocolLabels'
+  formatEstimatedHitPct,
+  labelActionTier,
+  labelEvidenceQuality,
+  labelPredictiveTier,
+} from '@/lib/pickSignalLabels'
 import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
 import { MODEL_WHY_TITLE_ES, modelWhyReading } from '@/lib/vaultModelReading'
 import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
@@ -71,7 +74,12 @@ type AnyPick = {
   eventId?: number
   dsrNarrativeEs?: string
   dsrSource?: string
+  /** @deprecated Legacy; usar las 4 dimensiones de señal. */
   dsrConfidenceLabel?: string
+  estimatedHitProbability?: number | null
+  evidenceQuality?: string | null
+  predictiveTier?: string | null
+  actionTier?: string | null
   /** S6.1 — solo mostrar si existe en snapshot API. */
   dataCompletenessScore?: number | null
   pipelineVersion?: string
@@ -406,9 +414,21 @@ export default function SettlementPage() {
     })
   }, [apiPickMatch, displayPick])
 
-  const settlementDsrMetaLine = useMemo(() => {
-    if (!apiPickMatch || !displayPick) return ''
-    return vektorModelConfidenceLineEs(displayPick.dsrConfidenceLabel)
+  const settlementPickSignals = useMemo(() => {
+    if (!apiPickMatch || !displayPick) return null
+    const est = displayPick.estimatedHitProbability
+    const ev = displayPick.evidenceQuality
+    const pr = displayPick.predictiveTier
+    const ac = displayPick.actionTier
+    if (
+      est == null &&
+      !(ev && String(ev).trim()) &&
+      !(pr && String(pr).trim()) &&
+      !(ac && String(ac).trim())
+    ) {
+      return null
+    }
+    return { est, ev, pr, ac }
   }, [apiPickMatch, displayPick])
 
   // T-057: cuota capturada en casa
@@ -761,10 +781,60 @@ export default function SettlementPage() {
                 </p>
               </div>
             ) : null}
-            {settlementDsrMetaLine ? (
-              <p className="px-1 font-mono text-xs leading-snug text-[#6e7d86]">
-                {settlementDsrMetaLine}
-              </p>
+            {settlementPickSignals ? (
+              <div className="rounded-xl border border-[#a4b4be]/25 bg-white/90 p-6 shadow-sm">
+                <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#52616a]">
+                  Señales del modelo
+                </h3>
+                <dl className="grid gap-4 text-sm text-[#26343d] sm:grid-cols-2">
+                  <div>
+                    <dt className="text-[11px] font-semibold text-[#52616a]">
+                      Probabilidad estimada
+                    </dt>
+                    <dd className="mt-1 font-mono text-lg" style={monoStyle}>
+                      {formatEstimatedHitPct(settlementPickSignals.est)}
+                    </dd>
+                    <p className="mt-2 text-xs leading-snug text-[#6e7d86]">
+                      Es una lectura orientativa del modelo sobre la opción; no garantiza el
+                      resultado del partido.
+                    </p>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold text-[#52616a]">
+                      Respaldo del análisis
+                    </dt>
+                    <dd className="mt-1 font-semibold text-[#26343d]">
+                      {labelEvidenceQuality(settlementPickSignals.ev)}
+                    </dd>
+                    <p className="mt-2 text-xs leading-snug text-[#6e7d86]">
+                      Indica qué tan completos y consistentes están los datos que sustentan
+                      esta lectura (incluye chequeos internos del consenso numérico).
+                    </p>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold text-[#52616a]">
+                      Fuerza del pick
+                    </dt>
+                    <dd className="mt-1 font-semibold text-[#26343d]">
+                      {labelPredictiveTier(settlementPickSignals.pr)}
+                    </dd>
+                    <p className="mt-2 text-xs leading-snug text-[#6e7d86]">
+                      Posición relativa frente al resto de señales del día en el ranking
+                      interno; no es un nivel de acceso del producto.
+                    </p>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold text-[#52616a]">Acceso</dt>
+                    <dd className="mt-1 font-semibold text-[#26343d]">
+                      {labelActionTier(settlementPickSignals.ac)}
+                    </dd>
+                    <p className="mt-2 text-xs leading-snug text-[#6e7d86]">
+                      Cómo se ofrece en la bóveda: lectura libre o desbloqueo premium con DP,
+                      según las reglas del día.
+                    </p>
+                  </div>
+                </dl>
+              </div>
             ) : null}
           </div>
 

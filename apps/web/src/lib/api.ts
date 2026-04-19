@@ -1,6 +1,7 @@
 import type {
   Bt2AdminDsrDayOut,
   Bt2AdminDsrRangeOut,
+  Bt2AdminBacktestReplayOut,
   Bt2AdminF2PoolMetricsOut,
   Bt2AdminFase1OperationalSummaryOut,
   Bt2AdminMonitorResultadosOut,
@@ -10,9 +11,13 @@ import type {
   Bt2DpInsufficientPremiumDetail,
   Bt2PickOut,
   Bt2PickRegisterBody,
+  Bt2VaultPickCommitmentBody,
+  Bt2VaultPickCommitmentOut,
   Bt2VaultPremiumUnlockBody,
   Bt2VaultPremiumUnlockOut,
   Bt2VaultPicksPageOut,
+  Bt2VaultStandardUnlockBody,
+  Bt2VaultStandardUnlockOut,
 } from '@/lib/bt2Types'
 
 // ─── JWT helpers ─────────────────────────────────────────────────────────────
@@ -324,6 +329,69 @@ export async function bt2PostVaultPremiumUnlock(
   }
 }
 
+export type Bt2PostVaultStandardUnlockResult =
+  | { ok: true; data: Bt2VaultStandardUnlockOut }
+  | { ok: false; status: number; message: string }
+
+/** Extrae `detail` legible del JSON que adjunta fetchJson en el Error (422/401). */
+function parseBt2FetchErrorPayload(fullMessage: string): string {
+  const sep = ': '
+  const idx = fullMessage.indexOf(sep)
+  if (idx === -1) return fullMessage.slice(0, 420)
+  const maybeJson = fullMessage.slice(idx + sep.length).trim()
+  try {
+    const j = JSON.parse(maybeJson) as { detail?: unknown }
+    const d = j.detail
+    if (typeof d === 'string') return d.slice(0, 420)
+    if (Array.isArray(d) && d.length > 0) {
+      const row = d[0] as { msg?: string }
+      if (row.msg) return row.msg.slice(0, 420)
+    }
+    if (d && typeof d === 'object' && d !== null && 'message' in d) {
+      return String((d as { message: unknown }).message).slice(0, 420)
+    }
+  } catch {
+    /* cuerpo no JSON */
+  }
+  return fullMessage.slice(0, 420)
+}
+
+/** POST /bt2/vault/standard-unlock — liberar ítem estándar sin DP (topes en servidor). */
+export async function bt2PostVaultStandardUnlock(
+  body: Bt2VaultStandardUnlockBody,
+): Promise<Bt2PostVaultStandardUnlockResult> {
+  try {
+    const data = await bt2FetchJson<Bt2VaultStandardUnlockOut>(
+      '/bt2/vault/standard-unlock',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vaultPickId: body.vaultPickId }),
+      },
+    )
+    return { ok: true, data }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    const m = msg.match(/^(\d{3})\s/)
+    const status = m ? parseInt(m[1], 10) : 0
+    return { ok: false, status, message: parseBt2FetchErrorPayload(msg) }
+  }
+}
+
+/** POST /bt2/vault/pick-commitment — tomó / no tomó (tras liberar). */
+export async function bt2PostVaultPickCommitment(
+  body: Bt2VaultPickCommitmentBody,
+): Promise<Bt2VaultPickCommitmentOut> {
+  return bt2FetchJson<Bt2VaultPickCommitmentOut>('/bt2/vault/pick-commitment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vaultPickId: body.vaultPickId,
+      commitment: body.commitment,
+    }),
+  })
+}
+
 /**
  * GET /bt2/admin/analytics/dsr-day (US-BE-028).
  * Requiere `VITE_BT2_ADMIN_API_KEY` alineada con `BT2_ADMIN_API_KEY` del API.
@@ -406,6 +474,11 @@ export async function fetchBt2AdminMonitorResultados(
     /** Refresca marcadores desde SportMonks y re-evalúa pendientes (cuota API). */
     syncFromSportmonks?: boolean
     smSyncEventLimit?: number
+    rowsOffset?: number
+    rowsLimit?: number
+    outcomeFilter?: string
+    marketSubstring?: string
+    search?: string
   },
 ): Promise<Bt2AdminMonitorResultadosOut> {
   const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
@@ -423,8 +496,42 @@ export async function fetchBt2AdminMonitorResultados(
   if (options?.smSyncEventLimit != null) {
     qs.set('smSyncEventLimit', String(options.smSyncEventLimit))
   }
+  if (options?.rowsOffset != null) qs.set('rowsOffset', String(options.rowsOffset))
+  if (options?.rowsLimit != null) qs.set('rowsLimit', String(options.rowsLimit))
+  const of = options?.outcomeFilter?.trim()
+  if (of && of !== 'all') qs.set('outcomeFilter', of)
+  const mk = options?.marketSubstring?.trim()
+  if (mk) qs.set('marketSubstring', mk)
+  const sq = options?.search?.trim()
+  if (sq) qs.set('search', sq)
   return fetchJson<Bt2AdminMonitorResultadosOut>(
     `/bt2/admin/analytics/monitor-resultados?${qs.toString()}`,
+    { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
+/**
+ * GET /bt2/admin/analytics/backtest-replay — replay ciego del pipeline DSR sobre Postgres.
+ */
+export async function fetchBt2AdminBacktestReplay(
+  operatingDayKeyFrom: string,
+  operatingDayKeyTo: string,
+  options?: { maxEventsPerDay?: number },
+): Promise<Bt2AdminBacktestReplayOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams()
+  qs.set('operatingDayKeyFrom', operatingDayKeyFrom.trim())
+  qs.set('operatingDayKeyTo', operatingDayKeyTo.trim())
+  if (options?.maxEventsPerDay != null) {
+    qs.set('maxEventsPerDay', String(options.maxEventsPerDay))
+  }
+  return fetchJson<Bt2AdminBacktestReplayOut>(
+    `/bt2/admin/analytics/backtest-replay?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
   )
 }

@@ -12,24 +12,26 @@ import { createBt2EncryptedLocalStorage } from '@/lib/bt2EncryptedStorage'
 import {
   bt2FetchJson,
   bt2PostPickRegister,
+  bt2PostVaultPickCommitment,
   bt2PostVaultPremiumUnlock,
+  bt2PostVaultStandardUnlock,
 } from '@/lib/api'
 import { useSessionStore } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
-import type {
-  Bt2DpInsufficientPremiumDetail,
-  Bt2VaultDaySnapshotMeta,
-  Bt2VaultPickOut,
-  Bt2VaultPicksPageOut,
-  Bt2PickRegisterBody,
-  Bt2TakenPickRecord,
+import {
+  bt2VaultPickUnlockEligible,
+  type Bt2DpInsufficientPremiumDetail,
+  type Bt2PickRegisterBody,
+  type Bt2TakenPickRecord,
+  type Bt2VaultDaySnapshotMeta,
+  type Bt2VaultPickOut,
+  type Bt2VaultPicksPageOut,
 } from '@/lib/bt2Types'
 import {
   BT2_ERR_INSUFFICIENT_BANKROLL_STAKE,
   BT2_ERR_PICK_EVENT_KICKOFF_ELAPSED,
 } from '@/lib/bt2VaultConstants'
 import { isKickoffUtcInPast } from '@/lib/vaultKickoff'
-import { computeVaultQuota } from '@/lib/vaultQuota'
 import { computeUnitValue } from '@/lib/treasuryMath'
 import { useBankrollStore } from '@/store/useBankrollStore'
 
@@ -91,6 +93,9 @@ export type VaultStoreState = {
     vaultUniversePersistedCount?: number
     slateBandCycle?: number
     poolBelowTarget: boolean
+    unlockFreeToday?: number
+    unlockPremiumToday?: number
+    unlockTotalToday?: number
   } | null
   /** S6.1 — flags vacío operativo, degradación y conteos (US-BE-036 / T-184). */
   vaultDaySnapshotMeta: Bt2VaultDaySnapshotMeta | null
@@ -127,6 +132,13 @@ export type VaultStoreActions = {
    * Sprint 05.1 / US-BE-029: cobra DP por desbloqueo premium sin crear bt2_picks.
    */
   unlockPremiumVaultPick: (vaultPickId: string) => Promise<VaultUnlockResult>
+  /** Liberar ítem estándar (sin DP); topes en servidor. */
+  unlockStandardVaultPick: (vaultPickId: string) => Promise<VaultUnlockResult>
+  /** Marcar tomó / no tomó tras liberar (persistido en API). */
+  setVaultPickCommitment: (
+    vaultPickId: string,
+    commitment: 'taken' | 'not_taken',
+  ) => Promise<{ ok: true } | { ok: false; message: string }>
   /** Devuelve el bt2PickId tomado para un vault pick dado (o null si no existe). */
   getApiPickRecord: (vaultPickId: string) => Bt2TakenPickRecord | null
   /**
@@ -168,6 +180,9 @@ export const useVaultStore = create<VaultStore>()(
             data.vaultUniversePersistedCount ?? snapshotPicks.length,
           slateBandCycle: data.slateBandCycle ?? 0,
           poolBelowTarget: Boolean(data.poolBelowTarget),
+          unlockFreeToday: data.freePicksUnlockedToday ?? 0,
+          unlockPremiumToday: data.premiumPicksUnlockedToday ?? 0,
+          unlockTotalToday: data.totalPicksUnlockedToday ?? 0,
         }
         const dayMeta: Bt2VaultDaySnapshotMeta = {
           dsrSignalDegraded: Boolean(data.dsrSignalDegraded),
@@ -207,13 +222,10 @@ export const useVaultStore = create<VaultStore>()(
 
       // ── Sprint 01 compat ──────────────────────────────────────────────────
       isUnlocked: (pickId) => {
-        // API picks (string like "dp-7"): check takenApiPicks
         const takenRecord = get().takenApiPicks.find((r) => r.vaultPickId === pickId)
         if (takenRecord) return true
-        // API picks with standard tier: always unlocked
         const apiPick = get().apiPicks.find((p) => p.id === pickId)
-        if (apiPick?.accessTier === 'standard') return true
-        // Legacy string IDs in unlockedPickIds
+        if (apiPick?.contentUnlocked === true) return true
         return get().unlockedPickIds.includes(pickId)
       },
 
@@ -302,6 +314,9 @@ export const useVaultStore = create<VaultStore>()(
                 vaultUniversePersistedCount: poolSize,
                 slateBandCycle: nextCycle,
                 poolBelowTarget: poolSize < 5,
+                unlockFreeToday: 0,
+                unlockPremiumToday: 0,
+                unlockTotalToday: 0,
               },
         })
         return { ok: true as const, cycle: nextCycle, poolSize }
@@ -317,13 +332,6 @@ export const useVaultStore = create<VaultStore>()(
           return { ok: false, reason: 'station_locked' }
         }
 
-        if (
-          vaultPick.accessTier === 'premium' &&
-          !vaultPick.premiumUnlocked
-        ) {
-          return { ok: false, reason: 'premium_not_unlocked' }
-        }
-
         if (vaultPick.isAvailable === false) {
           return { ok: false, reason: 'pick_unavailable' }
         }
@@ -337,24 +345,17 @@ export const useVaultStore = create<VaultStore>()(
           }
         }
 
-        if (!vaultPick.eventId) {
-          return { ok: false, reason: 'no_event_id' }
+        if (vaultPick.contentUnlocked !== true) {
+          return {
+            ok: false,
+            reason: 'premium_not_unlocked',
+            apiMessage:
+              'Libera el contenido del pick antes de registrar stake en el protocolo.',
+          }
         }
 
-        const sessionDay = useSessionStore.getState().operatingDayKey
-        const quota = computeVaultQuota(
-          get().takenApiPicks,
-          sessionDay,
-          get().apiPicks,
-        )
-        if (
-          vaultPick.accessTier === 'standard' &&
-          quota.standardRemaining <= 0
-        ) {
-          return { ok: false, reason: 'quota_standard_exhausted' }
-        }
-        if (vaultPick.accessTier === 'premium' && quota.premiumRemaining <= 0) {
-          return { ok: false, reason: 'quota_premium_exhausted' }
+        if (!vaultPick.eventId) {
+          return { ok: false, reason: 'no_event_id' }
         }
 
         // Construir stake
@@ -465,6 +466,14 @@ export const useVaultStore = create<VaultStore>()(
               'El partido ya inició según el horario del evento; no puedes desbloquear esta señal.',
           }
         }
+        if (!bt2VaultPickUnlockEligible(vaultPick)) {
+          return {
+            ok: false,
+            reason: 'pick_unavailable',
+            apiMessage:
+              'El evento no admite desbloqueo en este momento (estado u horario).',
+          }
+        }
 
         const post = await bt2PostVaultPremiumUnlock({ vaultPickId })
         if (!post.ok) {
@@ -488,11 +497,99 @@ export const useVaultStore = create<VaultStore>()(
         void useUserStore.getState().syncDpBalance()
         set((s) => ({
           apiPicks: s.apiPicks.map((p) =>
-            p.id === vaultPickId ? { ...p, premiumUnlocked: true } : p,
+            p.id === vaultPickId
+              ? { ...p, premiumUnlocked: true, contentUnlocked: true }
+              : p,
           ),
+          vaultPoolMeta: s.vaultPoolMeta
+            ? {
+                ...s.vaultPoolMeta,
+                unlockPremiumToday: (s.vaultPoolMeta.unlockPremiumToday ?? 0) + 1,
+                unlockTotalToday: (s.vaultPoolMeta.unlockTotalToday ?? 0) + 1,
+              }
+            : s.vaultPoolMeta,
         }))
         console.info(`[BT2] Premium desbloqueado (vault): ${vaultPickId}`)
         return { ok: true }
+      },
+
+      unlockStandardVaultPick: async (vaultPickId) => {
+        const vaultPick = get().apiPicks.find((p) => p.id === vaultPickId)
+        if (!vaultPick) {
+          return { ok: false, reason: 'pick_not_found' }
+        }
+        if (vaultPick.accessTier !== 'standard') {
+          return { ok: false, reason: 'pick_unavailable' }
+        }
+        if (useSessionStore.getState().isStationLocked()) {
+          return { ok: false, reason: 'station_locked' }
+        }
+        if (vaultPick.contentUnlocked === true || vaultPick.standardUnlocked === true) {
+          return { ok: false, reason: 'already_unlocked' }
+        }
+        if (isKickoffUtcInPast(vaultPick.kickoffUtc)) {
+          return {
+            ok: false,
+            reason: 'kickoff_elapsed',
+            apiMessage:
+              'El partido ya inició según el horario del evento; no puedes liberar esta señal.',
+          }
+        }
+        if (!bt2VaultPickUnlockEligible(vaultPick)) {
+          return {
+            ok: false,
+            reason: 'pick_unavailable',
+            apiMessage:
+              'El evento no admite liberación ahora (estado u horario). Revisá la pestaña Cerrados.',
+          }
+        }
+        const trimmedId = vaultPickId.trim()
+        if (!trimmedId) {
+          return { ok: false, reason: 'pick_unavailable' }
+        }
+        const post = await bt2PostVaultStandardUnlock({ vaultPickId: trimmedId })
+        if (!post.ok) {
+          return {
+            ok: false,
+            reason: 'api_error',
+            apiMessage: post.message,
+          }
+        }
+        set((s) => ({
+          apiPicks: s.apiPicks.map((p) =>
+            p.id === vaultPickId
+              ? {
+                  ...p,
+                  standardUnlocked: true,
+                  contentUnlocked: true,
+                }
+              : p,
+          ),
+          vaultPoolMeta: s.vaultPoolMeta
+            ? {
+                ...s.vaultPoolMeta,
+                unlockFreeToday: (s.vaultPoolMeta.unlockFreeToday ?? 0) + 1,
+                unlockTotalToday: (s.vaultPoolMeta.unlockTotalToday ?? 0) + 1,
+              }
+            : s.vaultPoolMeta,
+        }))
+        console.info(`[BT2] Estándar liberado (vault): ${vaultPickId}`)
+        return { ok: true }
+      },
+
+      setVaultPickCommitment: async (vaultPickId, commitment) => {
+        try {
+          await bt2PostVaultPickCommitment({ vaultPickId, commitment })
+          set((s) => ({
+            apiPicks: s.apiPicks.map((p) =>
+              p.id === vaultPickId ? { ...p, userPickCommitment: commitment } : p,
+            ),
+          }))
+          return { ok: true as const }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : 'Error al guardar'
+          return { ok: false as const, message: msg }
+        }
       },
 
       getApiPickRecord: (vaultPickId) => {

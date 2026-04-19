@@ -16,15 +16,27 @@ export function parseBt2SettleOut(raw: unknown): Bt2SettleOut | null {
     const n = Number(bankrollRaw)
     if (Number.isFinite(n)) bankrollAfter = n
   }
-  const earned = Number(o.earned_dp ?? o.earnedDp ?? 0)
-  const dpAfter = Number(o.dp_balance_after ?? o.dpBalanceAfter ?? 0)
+  const earnedRaw = o.earned_dp ?? o.earnedDp
+  let earnedDp = 0
+  if (earnedRaw != null && earnedRaw !== '') {
+    const n = Number(earnedRaw)
+    if (Number.isFinite(n)) earnedDp = n
+  }
+
+  let dpBalanceAfter: number | null = null
+  const dpRaw = o.dp_balance_after ?? o.dpBalanceAfter
+  if (dpRaw != null && dpRaw !== '') {
+    const n = Number(dpRaw)
+    if (Number.isFinite(n)) dpBalanceAfter = n
+  }
+
   if (!Number.isFinite(pickId) || !Number.isFinite(pnl)) return null
   return {
     pick_id: pickId,
     status,
     pnl_units: pnl,
     bankroll_after_units: bankrollAfter,
-    earned_dp: Number.isFinite(earned) ? earned : 0,
-    dp_balance_after: Number.isFinite(dpAfter) ? dpAfter : 0,
+    earned_dp: earnedDp,
+    dp_balance_after: dpBalanceAfter,
   }
 }

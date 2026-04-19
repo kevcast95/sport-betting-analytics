@@ -300,12 +300,15 @@ export const useTradeStore = create<TradeStore>()(
           }
 
           const earnedDp = res.earned_dp ?? 0
-          if (Number.isFinite(res.dp_balance_after)) {
+          // Solo fijar saldo si el servidor envió explícitamente dp_balance_after.
+          // Antes: faltar el campo → parse devolvía 0 → setDisciplinePoints(0) borraba todo el saldo DP.
+          if (
+            res.dp_balance_after != null &&
+            Number.isFinite(res.dp_balance_after)
+          ) {
             useUserStore.getState().setDisciplinePoints(res.dp_balance_after)
-          } else {
-            useUserStore.getState().setDisciplinePoints(
-              useUserStore.getState().disciplinePoints + earnedDp,
-            )
+          } else if (earnedDp !== 0) {
+            useUserStore.getState().incrementDisciplinePoints(earnedDp)
           }
 
           const pnlCop = Number.isFinite(res.pnl_units)

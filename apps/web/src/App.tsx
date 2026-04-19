@@ -25,7 +25,6 @@ import DiagnosticPage from '@/pages/DiagnosticPage'
 import DailyReviewPage from '@/pages/DailyReviewPage'
 import LedgerPage from '@/pages/LedgerPage'
 import PerformancePage from '@/pages/PerformancePage'
-import AdminCdmAuditPage from '@/pages/AdminCdmAuditPage'
 import AdminDsrAccuracyPage from '@/pages/AdminDsrAccuracyPage'
 import AdminFase1OperationalPage from '@/pages/AdminFase1OperationalPage'
 import MonitorResultadosPage from '@/pages/MonitorResultadosPage'
@@ -293,14 +292,9 @@ function AppLayout() {
                     <Route path="daily-review" element={<DailyReviewPage />} />
                     <Route path="ledger" element={<LedgerPage />} />
                     <Route path="performance" element={<PerformancePage />} />
-                    <Route
-                      path="admin/dsr-accuracy"
-                      element={<AdminDsrAccuracyPage />}
-                    />
-                    <Route
-                      path="admin/cdm-audit"
-                      element={<AdminCdmAuditPage />}
-                    />
+                    <Route path="admin/dsr-accuracy" element={<Navigate to="/v2/admin/backtest-replay" replace />} />
+                    <Route path="admin/cdm-audit" element={<Navigate to="/v2/admin/backtest-replay" replace />} />
+                    <Route path="admin/backtest-replay" element={<AdminDsrAccuracyPage />} />
                     <Route
                       path="admin/fase1-operational"
                       element={<AdminFase1OperationalPage />}

@@ -6,6 +6,10 @@ import { useUserStore } from '@/store/useUserStore'
 /** Periodo de consulta (UI). */
 type MonitorPeriodPreset = 'today' | '7d' | '30d' | 'range'
 
+const MONITOR_PAGE_SIZE = 25
+
+type MonitorOutcomeFilter = 'all' | 'si' | 'no' | 'pendiente' | 'void' | 'ne'
+
 type OutcomeBadge = Bt2MonitorOutcome
 
 type TableRow = {
@@ -122,9 +126,9 @@ function DefinitionsPanel(props: { open: boolean; onClose: () => void }) {
             entran en el porcentaje.
           </li>
           <li>
-            <strong className="text-[#26343d]">Tu tasa:</strong> misma fórmula sobre solo picks que
-            operaste (registro en <span className="font-mono">bt2_picks</span> el mismo día
-            operativo).
+            <strong className="text-[#26343d]">Tu tasa:</strong> misma fórmula (aciertos ÷ aciertos +
+            fallos), sólo entre tus picks operados con veredicto oficial ya emitido; los pendientes
+            no bajan el % hasta que pasen a Sí/No.
           </li>
           <li>
             <strong className="text-[#26343d]">N.E.:</strong> no evaluable (mercado o reglas fuera
@@ -148,8 +152,9 @@ function DefinitionsPanel(props: { open: boolean; onClose: () => void }) {
           </li>
           <li>
             <strong className="text-[#26343d]">ROI plano:</strong> una unidad por pick; cuota ={' '}
-            <span className="font-mono">reference_decimal_odds</span> si existe, si no consenso CDM
-            actual. Acierto: +(O−1); fallo: −1; pendientes / void / N.E. no entran.
+            <span className="font-mono">reference_decimal_odds</span> si existe, si no mediana del
+            consenso CDM del evento (monitor usa umbral inclusivo para no perder piernas válidas).
+            Acierto: +(O−1); fallo: −1; pendientes / void / N.E. no entran.
           </li>
         </ul>
       </div>
@@ -184,6 +189,10 @@ export default function MonitorResultadosPage() {
   const [error, setError] = useState<string | null>(null)
   /** Trae marcadores desde SportMonks, actualiza CDM y re-evalúa pendientes (más lento, cuota API). */
   const [syncFromSportmonks, setSyncFromSportmonks] = useState(false)
+  const [monitorPage, setMonitorPage] = useState(1)
+  const [outcomeFilter, setOutcomeFilter] = useState<MonitorOutcomeFilter>('all')
+  const [marketFilter, setMarketFilter] = useState('')
+  const [tableSearch, setTableSearch] = useState('')
 
   const rangeKeys = useMemo(
     () => operatingRangeForPreset(preset, rangeFrom, rangeTo),
@@ -194,9 +203,15 @@ export default function MonitorResultadosPage() {
     setLoading(true)
     setError(null)
     try {
+      const offset = (monitorPage - 1) * MONITOR_PAGE_SIZE
       const out = await fetchBt2AdminMonitorResultados(rangeKeys.from, rangeKeys.to, {
         monitorUserId: userId ?? undefined,
         syncFromSportmonks,
+        rowsOffset: offset,
+        rowsLimit: MONITOR_PAGE_SIZE,
+        outcomeFilter: outcomeFilter === 'all' ? undefined : outcomeFilter,
+        marketSubstring: marketFilter.trim() || undefined,
+        search: tableSearch.trim() || undefined,
       })
       setData(out)
     } catch (e) {
@@ -206,11 +221,32 @@ export default function MonitorResultadosPage() {
     } finally {
       setLoading(false)
     }
-  }, [rangeKeys.from, rangeKeys.to, userId, syncFromSportmonks])
+  }, [
+    rangeKeys.from,
+    rangeKeys.to,
+    userId,
+    syncFromSportmonks,
+    monitorPage,
+    outcomeFilter,
+    marketFilter,
+    tableSearch,
+  ])
 
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    setMonitorPage(1)
+  }, [
+    preset,
+    rangeFrom,
+    rangeTo,
+    outcomeFilter,
+    marketFilter,
+    tableSearch,
+    syncFromSportmonks,
+  ])
 
   const sys = data?.system
   const sysRoi = sys?.roiFlatStake
@@ -220,6 +256,7 @@ export default function MonitorResultadosPage() {
   const tasaPct = sys?.hitRatePct ?? null
 
   const tusShowEmpty = yrs != null && yrs.totalPicks === 0
+  const yoursHasPending = yrs != null && yrs.pending > 0
 
   const apiRowsToTable = (rows: Bt2AdminMonitorResultadosOut['rows']): TableRow[] =>
     rows.map((r) => ({
@@ -233,6 +270,12 @@ export default function MonitorResultadosPage() {
       decimalOdds: r.decimalOdds ?? null,
       flatStakeReturnUnits: r.flatStakeReturnUnits ?? null,
     }))
+
+  const rowsTotalFromApi = data?.rowsTotal
+  const monitorTotalPages =
+    rowsTotalFromApi != null && rowsTotalFromApi > 0
+      ? Math.max(1, Math.ceil(rowsTotalFromApi / MONITOR_PAGE_SIZE))
+      : 1
 
   const filteredRows = useMemo(() => {
     if (!data?.rows) return []
@@ -524,6 +567,10 @@ export default function MonitorResultadosPage() {
                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">
                         Tu tasa
                       </span>
+                      <p className="mt-1 text-[10px] leading-snug text-[#6e7d86]">
+                        Sólo sobre picks <strong className="text-[#52616a]">ya evaluados</strong>{' '}
+                        (acierto/fallo oficial). Pendientes no entran en el %.
+                      </p>
                       <div className="mt-1 flex items-baseline gap-1">
                         <span className="font-mono text-5xl font-light text-[#26343d] tabular-nums">
                           {yrs.hitRatePct != null ? yrs.hitRatePct.toFixed(1) : '—'}
@@ -531,9 +578,20 @@ export default function MonitorResultadosPage() {
                         <span className="font-mono text-xl text-[#52616a]">%</span>
                       </div>
                       <p className="mt-2 text-[10px] text-[#6e7d86]">
-                        {yrs.hits} aciertos / {yrs.hits + yrs.misses} scored · {yrs.totalPicks}{' '}
-                        operados
+                        {yrs.hits} aciertos · {yrs.misses} fallos · {yrs.pending} pendientes ·{' '}
+                        <span className="font-mono text-[#435368]">{yrs.evaluatedScored}</span> /
+                        <span className="font-mono text-[#435368]">{yrs.totalPicks}</span> con
+                        veredicto · {yrs.totalPicks} operados
                       </p>
+                      {yoursHasPending ? (
+                        <p className="mt-2 rounded-lg border border-amber-200/90 bg-amber-50/90 px-2 py-2 text-[10px] leading-snug text-amber-950">
+                          Tenés picks operados sin resultado oficial aún: el{' '}
+                          <strong>{yrs.hitRatePct != null ? yrs.hitRatePct.toFixed(1) : '—'} %</strong>{' '}
+                          es <strong>{yrs.hits}</strong> de{' '}
+                          <strong>{yrs.evaluatedScored}</strong> evaluados, no de{' '}
+                          <strong>{yrs.totalPicks}</strong> operados.
+                        </p>
+                      ) : null}
                       <p className="mt-3 border-t border-[#e5eff7] pt-3 text-[10px] leading-relaxed text-[#52616a]">
                         ROI 1 u:{' '}
                         <span className="font-mono font-semibold text-[#26343d]">
@@ -714,6 +772,42 @@ export default function MonitorResultadosPage() {
             </label>
           </div>
 
+          <div className="flex flex-wrap items-end gap-3 rounded-xl border border-[#a4b4be]/15 bg-[#f8fafc]/80 p-4">
+            <label className="flex min-w-[140px] flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+              Resultado
+              <select
+                value={outcomeFilter}
+                onChange={(e) => setOutcomeFilter(e.target.value as MonitorOutcomeFilter)}
+                className="rounded-lg border border-[#a4b4be]/35 bg-white px-2 py-2 text-sm text-[#26343d]"
+              >
+                <option value="all">Todos</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="void">Void</option>
+                <option value="ne">N.E.</option>
+              </select>
+            </label>
+            <label className="flex min-w-[160px] flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+              Mercado (contiene)
+              <input
+                value={marketFilter}
+                onChange={(e) => setMarketFilter(e.target.value)}
+                placeholder="p. ej. 1X2"
+                className="rounded-lg border border-[#a4b4be]/35 bg-white px-2 py-2 font-mono text-xs text-[#26343d]"
+              />
+            </label>
+            <label className="flex min-w-[200px] flex-1 flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+              Buscar equipo
+              <input
+                value={tableSearch}
+                onChange={(e) => setTableSearch(e.target.value)}
+                placeholder="Local o visitante"
+                className="rounded-lg border border-[#a4b4be]/35 bg-white px-2 py-2 text-sm text-[#26343d]"
+              />
+            </label>
+          </div>
+
           <div className="overflow-x-auto rounded-xl border border-[#a4b4be]/15 bg-white">
             <table className="w-full border-separate border-spacing-0 text-left">
               <thead>
@@ -803,11 +897,43 @@ export default function MonitorResultadosPage() {
               </tbody>
             </table>
             <p className="mt-2 px-2 text-[10px] leading-relaxed text-[#6e7d86]">
-              * Cuota: si el pick tiene <span className="font-mono">reference_decimal_odds</span>{' '}
-              (guardada al generar la bóveda), se usa esa; si no, el consenso CDM actual del evento
-              (mediana). Sin dato en ninguna fuente → «—» (no entra en ROI; ejecutá backfill si hace
-              falta).
+              * Cuota: prioridad{' '}
+              <span className="font-mono">reference_decimal_odds</span>; si falta, mediana CDM sobre
+              filas del evento (mercado/selección canónicos). Si no hay snapshot de cuotas en BD para
+              ese evento → «—».
             </p>
+            <div className="flex flex-col gap-3 border-t border-[#e5eff7] px-2 py-4 text-sm text-[#52616a] md:flex-row md:items-center md:justify-between">
+              <p>
+                Página{' '}
+                <span className="font-mono text-[#26343d]">{monitorPage}</span> /{' '}
+                <span className="font-mono text-[#26343d]">{monitorTotalPages}</span>
+                {rowsTotalFromApi != null ? (
+                  <>
+                    {' '}
+                    ·{' '}
+                    <span className="font-mono text-[#26343d]">{rowsTotalFromApi}</span> filas en total
+                  </>
+                ) : null}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={monitorPage <= 1 || loading}
+                  onClick={() => setMonitorPage((p) => Math.max(1, p - 1))}
+                  className="rounded-lg border border-[#a4b4be]/35 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#26343d] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  disabled={monitorPage >= monitorTotalPages || loading}
+                  onClick={() => setMonitorPage((p) => Math.min(monitorTotalPages, p + 1))}
+                  className="rounded-lg border border-[#a4b4be]/35 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#26343d] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 

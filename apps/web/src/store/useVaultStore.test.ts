@@ -186,6 +186,8 @@ describe('useVaultStore', () => {
     const p = {
       id: 'dp-k',
       accessTier: 'standard',
+      contentUnlocked: true,
+      standardUnlocked: true,
       premiumUnlocked: false,
       eventId: 99,
       marketClass: 'h2h',
@@ -235,6 +237,8 @@ describe('useVaultStore', () => {
     const p = {
       id: 'dp-br',
       accessTier: 'standard',
+      contentUnlocked: true,
+      standardUnlocked: true,
       premiumUnlocked: false,
       eventId: 101,
       marketClass: 'h2h',
@@ -293,6 +297,8 @@ describe('useVaultStore', () => {
     const p = {
       id: 'dp-ok',
       accessTier: 'standard',
+      contentUnlocked: true,
+      standardUnlocked: true,
       premiumUnlocked: false,
       eventId: 102,
       marketClass: 'h2h',
