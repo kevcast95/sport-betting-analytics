@@ -205,6 +205,12 @@ export interface Bt2PickOut {
   modelPredictionResult?: string | null
   /** POST /bt2/picks: bankroll tras descontar el stake. */
   bankrollAfterUnits?: number | null
+  /**
+   * Marca declarativa del operador (`pending`|`won`|`lost`|`void`).
+   * No sustituye la liquidación formal (`POST .../settle`).
+   */
+  userResultClaim?: string | null
+  user_result_claim?: string | null
 }
 
 export interface Bt2PicksListOut {
@@ -453,15 +459,21 @@ export interface Bt2AdminMonitorRowOut {
   iOperated: boolean
   decimalOdds?: number | null
   flatStakeReturnUnits?: number | null
+  /** Marca manual en bt2_picks (no altera pendiente oficial CDM). */
+  userResultClaim?: string | null
 }
 
 export interface Bt2AdminMonitorSmSyncOut {
   attempted: boolean
   ok: boolean
   messageEs: string
+  /** Solo fixtures con pick en pending_result en el rango (default true). */
+  pendingOnly?: boolean
   fixturesTargeted: number
   uniqueFixturesProcessed: number
   closedPendingToFinal: number | null
+  /** Notas del backend (p. ej. `sm:fixture_…_fetch_fallo`, CDM skip). */
+  notes?: string[]
 }
 
 /** GET /bt2/admin/analytics/backtest-replay */
@@ -504,6 +516,26 @@ export interface Bt2AdminBacktestReplayDistributionRow {
   picks: number
   hits: number
   misses: number
+}
+
+/** POST refresh-cdm-sm-for-backtest-window — independiente del GET replay. */
+export interface Bt2AdminBacktestWindowSmRefreshOut {
+  ok: boolean
+  operatingDayKeyFrom: string
+  operatingDayKeyTo: string
+  messageEs: string
+  onlyPendingCdm: boolean
+  distinctEventIds: number
+  replayPoolEventCount: number
+  pendingCdmEventCount: number
+  fixturesTargeted: number
+  uniqueSportmonksFixturesProcessed: number
+  smFetchOk: number
+  rawUpsertOk: number
+  cdmNormalizedOk: number
+  cdmSkipped: number
+  cdmErrors: number
+  notes: string[]
 }
 
 export interface Bt2AdminBacktestReplayRowOut {
@@ -593,6 +625,7 @@ export interface Bt2AdminRefreshCdmFromSmOut {
   ok: boolean
   operatingDayKey: string
   messageEs: string
+  onlyPendingOfficialEvaluation?: boolean
   fixturesTargeted: number
   uniqueSportmonksFixturesProcessed: number
   smFetchOk: number

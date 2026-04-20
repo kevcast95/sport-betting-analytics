@@ -2,6 +2,7 @@ import type {
   Bt2AdminDsrDayOut,
   Bt2AdminDsrRangeOut,
   Bt2AdminBacktestReplayOut,
+  Bt2AdminBacktestWindowSmRefreshOut,
   Bt2AdminF2PoolMetricsOut,
   Bt2AdminFase1OperationalSummaryOut,
   Bt2AdminMonitorResultadosOut,
@@ -121,6 +122,27 @@ export async function bt2FetchJson<T>(
     }
     throw err
   }
+}
+
+export type Bt2UserResultClaim = 'pending' | 'won' | 'lost' | 'void'
+
+/** POST — revierte liquidación formal; pick vuelve a `open` (bankroll + DP). */
+export async function bt2PostReopenPickSettlement(pickId: number): Promise<Bt2PickOut> {
+  return bt2FetchJson<Bt2PickOut>(`/bt2/picks/${pickId}/reopen-settlement`, {
+    method: 'POST',
+  })
+}
+
+/** PATCH — criterio declarativo del operador (p. ej. consulta externa); no sustituye liquidación formal. */
+export async function bt2PatchUserResultClaim(
+  pickId: number,
+  claim: Bt2UserResultClaim | null,
+): Promise<Bt2PickOut> {
+  return bt2FetchJson<Bt2PickOut>(`/bt2/picks/${pickId}/user-result-claim`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ claim }),
+  })
 }
 
 /**
@@ -473,6 +495,11 @@ export async function fetchBt2AdminMonitorResultados(
     monitorUserId?: string | null
     /** Refresca marcadores desde SportMonks y re-evalúa pendientes (cuota API). */
     syncFromSportmonks?: boolean
+    /**
+     * Con syncFromSportmonks: si true (default), solo GET SM para eventos con pick pending_result.
+     * Pon false para el modo anterior (todos los eventos con pick hasta el límite).
+     */
+    smSyncPendingOnly?: boolean
     smSyncEventLimit?: number
     rowsOffset?: number
     rowsLimit?: number
@@ -493,6 +520,9 @@ export async function fetchBt2AdminMonitorResultados(
   const uid = options?.monitorUserId?.trim()
   if (uid) qs.set('monitorUserId', uid)
   if (options?.syncFromSportmonks) qs.set('syncFromSportmonks', 'true')
+  if (options?.smSyncPendingOnly === false) {
+    qs.set('smSyncPendingOnly', 'false')
+  }
   if (options?.smSyncEventLimit != null) {
     qs.set('smSyncEventLimit', String(options.smSyncEventLimit))
   }
@@ -533,6 +563,37 @@ export async function fetchBt2AdminBacktestReplay(
   return fetchJson<Bt2AdminBacktestReplayOut>(
     `/bt2/admin/analytics/backtest-replay?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
+/**
+ * POST /bt2/admin/operations/refresh-cdm-sm-for-backtest-window — SM → CDM solo para el pool
+ * candidato del backtest (independiente del GET replay).
+ */
+export async function postBt2AdminRefreshCdmSmForBacktestWindow(
+  operatingDayKeyFrom: string,
+  operatingDayKeyTo: string,
+  options?: { maxEventsPerDay?: number; onlyPendingCdm?: boolean },
+): Promise<Bt2AdminBacktestWindowSmRefreshOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams({
+    operatingDayKeyFrom: operatingDayKeyFrom.trim(),
+    operatingDayKeyTo: operatingDayKeyTo.trim(),
+  })
+  if (options?.maxEventsPerDay != null) {
+    qs.set('maxEventsPerDay', String(options.maxEventsPerDay))
+  }
+  if (options?.onlyPendingCdm === false) {
+    qs.set('onlyPendingCdm', 'false')
+  }
+  return fetchJson<Bt2AdminBacktestWindowSmRefreshOut>(
+    `/bt2/admin/operations/refresh-cdm-sm-for-backtest-window?${qs.toString()}`,
+    { method: 'POST', headers: { 'X-BT2-Admin-Key': key } },
   )
 }
 
@@ -590,7 +651,11 @@ export async function fetchBt2AdminF2PoolEligibilityMetrics(options: {
  */
 export async function postBt2AdminRefreshCdmFromSm(
   operatingDayKey: string,
-  options?: { limit?: number; runOfficialEvaluation?: boolean },
+  options?: {
+    limit?: number
+    runOfficialEvaluation?: boolean
+    onlyPendingOfficialEvaluation?: boolean
+  },
 ): Promise<Bt2AdminRefreshCdmFromSmOut> {
   const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
   if (!key) {
@@ -601,6 +666,9 @@ export async function postBt2AdminRefreshCdmFromSm(
   const qs = new URLSearchParams({ operatingDayKey: operatingDayKey.trim() })
   if (options?.limit != null) qs.set('limit', String(options.limit))
   if (options?.runOfficialEvaluation === false) qs.set('runOfficialEvaluation', 'false')
+  if (options?.onlyPendingOfficialEvaluation === false) {
+    qs.set('onlyPendingOfficialEvaluation', 'false')
+  }
   return fetchJson<Bt2AdminRefreshCdmFromSmOut>(
     `/bt2/admin/operations/refresh-cdm-from-sm-for-operating-day?${qs.toString()}`,
     { method: 'POST', headers: { 'X-BT2-Admin-Key': key } },

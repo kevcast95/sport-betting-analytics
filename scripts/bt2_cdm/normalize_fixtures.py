@@ -5,8 +5,8 @@ Lee raw_sportmonks_fixtures (JSONB) y hace upsert en las 4 tablas CDM:
 
 Estructura real del payload Sportmonks:
   - participants: lista con meta.location="home"/"away"
-  - scores: lista con description="CURRENT"/"1ST_HALF"/"2ND_HALF"
-  - state_id: 5=Finished, 6=Postponed, 7=Cancelled
+  - scores: lista con description (CURRENT, FT, 2ND_HALF, …); también se intenta cualquier par home/away
+  - state_id: 5=Finished → status finished aunque result_info venga vacío
   - result_info: texto (no None) = partido terminado
   - odds[]: market_id=1 (Match Winner), market_id=80 (Goals Over/Under)
              cada entry tiene: label, value (decimal), bookmaker_id, total
@@ -22,7 +22,8 @@ import logging
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+import re
+from typing import Optional, Tuple
 
 _repo_root = str(Path(__file__).resolve().parents[2])
 if _repo_root not in sys.path:
@@ -140,31 +141,96 @@ def _parse_status(payload: dict) -> str:
     # result_info no nulo → partido terminado
     if payload.get("result_info"):
         return "finished"
-    state_id = payload.get("state_id")
-    if state_id in (6, 10):   # Postponed
+    sid = payload.get("state_id")
+    try:
+        sid_int = int(sid) if sid is not None else None
+    except (TypeError, ValueError):
+        sid_int = None
+    # Football SM: 5 = Finished (sin depender de result_info vacío ni scores ya parseados)
+    if sid_int == 5:
+        return "finished"
+    if sid_int in (6, 10):   # Postponed
         return "cancelled"
-    if state_id in (7, 9):    # Cancelled / Abandoned
+    if sid_int in (7, 9):    # Cancelled / Abandoned
         return "cancelled"
     return "scheduled"
 
 
+def _goal_int(v) -> Optional[int]:
+    if v is None:
+        return None
+    try:
+        return int(float(str(v).strip()))
+    except (ValueError, TypeError):
+        return None
+
+
 def _parse_result(payload: dict) -> tuple:
-    """Extrae result_home, result_away del array scores description=CURRENT."""
+    """
+    Extrae result_home, result_away del payload SportMonks.
+
+    Orden: descriptions habituales (CURRENT, FT, …) → cualquier par home/away en scores
+    → texto ``result_info`` estilo ``2 - 1``.
+    """
     scores = payload.get("scores") or []
+    preferred_desc = (
+        "CURRENT",
+        "FULLTIME",
+        "FULL TIME",
+        "FT",
+        "2ND_HALF",
+        "SECOND_HALF",
+    )
+
+    def collect_for_description(target_desc: str) -> Tuple[Optional[int], Optional[int]]:
+        td = target_desc.strip().upper()
+        home_goals = away_goals = None
+        for s in scores:
+            if not isinstance(s, dict):
+                continue
+            desc = str(s.get("description") or "").strip().upper()
+            if desc != td:
+                continue
+            score_data = s.get("score") or {}
+            if isinstance(score_data, dict):
+                participant = str(score_data.get("participant") or "").strip().lower()
+                goals = _goal_int(score_data.get("goals"))
+                if participant == "home":
+                    home_goals = goals
+                elif participant == "away":
+                    away_goals = goals
+        return home_goals, away_goals
+
+    for d in preferred_desc:
+        rh, ra = collect_for_description(d)
+        if rh is not None and ra is not None:
+            return rh, ra
+
+    # Cualquier description: reunir primer par home/away con goles
     home_goals = away_goals = None
     for s in scores:
         if not isinstance(s, dict):
             continue
-        if s.get("description") != "CURRENT":
-            continue
         score_data = s.get("score") or {}
-        participant = score_data.get("participant", "")
-        goals = score_data.get("goals")
-        if participant == "home":
+        if not isinstance(score_data, dict):
+            continue
+        participant = str(score_data.get("participant") or "").strip().lower()
+        goals = _goal_int(score_data.get("goals"))
+        if participant == "home" and goals is not None:
             home_goals = goals
-        elif participant == "away":
+        elif participant == "away" and goals is not None:
             away_goals = goals
-    return home_goals, away_goals
+        if home_goals is not None and away_goals is not None:
+            return home_goals, away_goals
+
+    # result_info textual (p. ej. "2 - 1", "2:1")
+    ri = payload.get("result_info")
+    if isinstance(ri, str) and ri.strip():
+        m = re.search(r"(\d+)\s*[-–:]\s*(\d+)", ri.strip())
+        if m:
+            return _goal_int(m.group(1)), _goal_int(m.group(2))
+
+    return None, None
 
 
 def _parse_season(payload: dict) -> Optional[str]:

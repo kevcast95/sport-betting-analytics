@@ -293,7 +293,14 @@ def build_monitor_resultados_payload(
                 SELECT 1 FROM bt2_picks pk
                 WHERE pk.user_id = dp.user_id AND pk.event_id = dp.event_id
                   AND (timezone('{tz}', pk.opened_at))::date = dp.operating_day_key::date
-            ) AS i_operated
+            ) AS i_operated,
+            (
+                SELECT pk2.user_result_claim
+                FROM bt2_picks pk2
+                WHERE pk2.user_id = dp.user_id AND pk2.event_id = dp.event_id
+                ORDER BY pk2.opened_at DESC NULLS LAST
+                LIMIT 1
+            ) AS user_result_claim
         FROM bt2_daily_picks dp
         LEFT JOIN bt2_pick_official_evaluation e ON e.daily_pick_id = dp.id
         INNER JOIN bt2_events ev ON ev.id = dp.event_id
@@ -395,6 +402,7 @@ def build_monitor_resultados_payload(
                 "i_operated": bool(r.get("i_operated")),
                 "decimal_odds": dec,
                 "flat_stake_return_units": ru,
+                "user_result_claim": r.get("user_result_claim"),
             }
         )
 
@@ -443,9 +451,11 @@ def build_monitor_resultados_payload(
             "attempted": False,
             "ok": True,
             "message_es": "",
+            "pending_only": True,
             "fixtures_targeted": 0,
             "unique_fixtures_processed": 0,
             "closed_pending_to_final": None,
+            "notes": [],
         },
     }
 

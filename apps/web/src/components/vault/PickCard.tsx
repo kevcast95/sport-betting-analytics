@@ -506,17 +506,11 @@ export function PickCard({
   const kickoffUnavailableCopy =
     unavailable && isApi && isKickoffUtcInPast(d.kickoffUtc)
 
-  const articleClass = [
-    eventUi.dimCard || takeBlockedVisual || (unavailable && isApi)
-      ? 'opacity-50 saturate-75'
-      : '',
-  ]
-    .filter(Boolean)
-    .join(' ')
+
 
   return (
     <article
-      className={`relative flex min-h-[220px] flex-col rounded-xl border border-[#a4b4be]/30 bg-white/85 p-5 shadow-sm ${articleClass}`}
+      className={`relative flex min-h-[220px] flex-col rounded-xl border border-[#a4b4be]/30 bg-white/85 p-5 shadow-sm`}
       data-pick-id={d.id}
     >
       {takeBlockedVisual ? <span className="sr-only">{takeBlockedTitle}</span> : null}
@@ -718,12 +712,6 @@ export function PickCard({
               ) : null}
             </motion.div>
           )}
-
-          {vaultCardVariant === 'cerrado' && showPreviewOnly ? (
-            <p className="mt-3 text-center text-xs leading-snug text-[#92400e]">
-              Ventana cerrada: el partido ya inició o el evento no está disponible; solo referencia.
-            </p>
-          ) : null}
 
           {vaultCardVariant === 'disponible' && showPreviewOnly && d.unlockEligible ? (
             <div className="mt-3">

@@ -232,6 +232,8 @@ class Bt2Pick(Base):
     model_market_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
     model_selection_canonical: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
     model_prediction_result: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
+    #: Criterio declarado por el operador (`pending`|`won`|`lost`|`void`); no reemplaza `status`/liquidación.
+    user_result_claim: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
 
     __table_args__ = (
         Index("ix_bt2_picks_user_status", "user_id", "status"),

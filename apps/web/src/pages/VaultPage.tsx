@@ -173,6 +173,11 @@ export default function VaultPage() {
     }
   }, [])
 
+  /** Al entrar en bóveda: alinear ledger/settledPickIds con GET /bt2/picks (p. ej. tras reopen en servidor). */
+  useEffect(() => {
+    void hydrateLedgerFromApi()
+  }, [hydrateLedgerFromApi])
+
   useEffect(() => {
     if (!hasSeenTour && onboardingPhaseAComplete) {
       const t = setTimeout(() => setTourOpen(true), 500)

@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from apps.api.bt2_admin_backtest_replay import (
     BLIND_LOT_OPERATING_DAY_KEY,
     blind_ds_input_item,
     bogota_operating_day_utc_window,
 )
+from apps.api.bt2_dsr_ds_input_builder import _normalize_odds_rows_for_aggregate
+from apps.api.bt2_dsr_odds_aggregation import aggregate_odds_for_event
 
 
 def test_bogota_window_ordering() -> None:
@@ -28,4 +32,19 @@ def test_blind_strips_real_timestamp() -> None:
 
 def test_constant_blind_day_not_calendar() -> None:
     assert BLIND_LOT_OPERATING_DAY_KEY.startswith("2099")
+
+
+def test_normalize_odds_rows_mapping_matches_tuple() -> None:
+    ft = datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc)
+    tup = ("bk", "Match Winner", "Home", 2.1, ft)
+    mapping = {
+        "bookmaker": "bk",
+        "market": "Match Winner",
+        "selection": "Home",
+        "odds": 2.1,
+        "fetched_at": ft,
+    }
+    a1 = aggregate_odds_for_event([tup], min_decimal=1.30)
+    a2 = aggregate_odds_for_event(_normalize_odds_rows_for_aggregate([mapping]), min_decimal=1.30)
+    assert a1.consensus == a2.consensus
 

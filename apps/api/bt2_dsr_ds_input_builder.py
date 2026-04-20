@@ -470,6 +470,33 @@ def fetch_event_odds_rows_for_aggregation(
     return list(cur.fetchall())
 
 
+def _normalize_odds_rows_for_aggregate(rows: list[Any]) -> list[tuple[Any, ...]]:
+    """
+    psycopg2 puede devolver tuplas o mappings (RealDictCursor).
+    aggregate_odds_for_event exige tuplas (bookmaker, market, selection, odds, fetched_at).
+    """
+    out: list[tuple[Any, ...]] = []
+    for row in rows:
+        if isinstance(row, Mapping):
+            out.append(
+                (
+                    row["bookmaker"],
+                    row["market"],
+                    row["selection"],
+                    row["odds"],
+                    row["fetched_at"],
+                )
+            )
+            continue
+        if isinstance(row, (tuple, list)):
+            seq = tuple(row)
+            if len(seq) >= 5:
+                out.append(tuple(seq[:5]))
+            continue
+        raise TypeError(f"fila bt2_odds_snapshot inesperada: {type(row)!r}")
+    return out
+
+
 def aggregated_odds_for_event_psycopg(
     cur,
     event_id: int,
@@ -488,7 +515,7 @@ def aggregated_odds_for_event_psycopg(
     odds_rows = fetch_event_odds_rows_for_aggregation(
         cur, event_id, max_fetched_at=odds_cutoff_utc
     )
-    rows_for_agg: list[tuple[Any, ...]] = [(b, m, s, o, f) for b, m, s, o, f in odds_rows]
+    rows_for_agg = _normalize_odds_rows_for_aggregate(odds_rows)
     fusion_meta: dict[str, Any] = {"applied": False, "synthetic_rows": 0}
     if (
         not skip_sfs_fusion

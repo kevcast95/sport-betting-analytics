@@ -22,6 +22,8 @@ type TableRow = {
   outcome: OutcomeBadge
   decimalOdds: number | null
   flatStakeReturnUnits: number | null
+  /** Marca en `bt2_picks.user_result_claim` (no modifica pendiente CDM). */
+  userResultClaim: string | null
 }
 
 function todayIsoBogota(): string {
@@ -95,6 +97,48 @@ function outcomeClass(o: OutcomeBadge): string {
     default:
       return 'border-[#a4b4be]/35 bg-[#f8fafc] text-[#64748b]'
   }
+}
+
+/** Badge de `user_result_claim` en ledger — no cambia pendiente oficial CDM / monitor. */
+function OperatorClaimPill(props: { claim: string | null }) {
+  const claim = props.claim
+  if (claim === null || claim === '') {
+    return (
+      <span className="font-sans text-[10px] text-[#a4b4be]" title="Sin marca en ledger">
+        —
+      </span>
+    )
+  }
+  const presets: Record<string, { sym: string; cls: string }> = {
+    pending: {
+      sym: '…',
+      cls: 'border-amber-200/90 bg-amber-50/95 text-amber-950',
+    },
+    won: {
+      sym: 'G',
+      cls: 'border-emerald-200/80 bg-emerald-50/95 text-emerald-900',
+    },
+    lost: {
+      sym: 'L',
+      cls: 'border-orange-200/70 bg-orange-50/95 text-orange-950',
+    },
+    void: {
+      sym: '∅',
+      cls: 'border-[#cbd5e1]/80 bg-[#f8fafc] text-[#475569]',
+    },
+  }
+  const x = presets[claim] ?? {
+    sym: claim.slice(0, 3),
+    cls: 'border-[#a4b4be]/35 bg-white text-[#52616a]',
+  }
+  return (
+    <span
+      title="Marca «Tu criterio» en ledger (no altera resultado oficial pendiente)."
+      className={`inline-flex min-h-[1.375rem] min-w-[1.375rem] items-center justify-center rounded border px-1 font-sans text-[10px] font-bold uppercase tracking-tight ${x.cls}`}
+    >
+      {x.sym}
+    </span>
+  )
 }
 
 function DefinitionsPanel(props: { open: boolean; onClose: () => void }) {
@@ -189,6 +233,8 @@ export default function MonitorResultadosPage() {
   const [error, setError] = useState<string | null>(null)
   /** Trae marcadores desde SportMonks, actualiza CDM y re-evalúa pendientes (más lento, cuota API). */
   const [syncFromSportmonks, setSyncFromSportmonks] = useState(false)
+  /** Solo GET SM para fixtures con evaluación oficial pending (ahorra cuota vs. refrescar todos). */
+  const [smSyncPendingOnly, setSmSyncPendingOnly] = useState(true)
   const [monitorPage, setMonitorPage] = useState(1)
   const [outcomeFilter, setOutcomeFilter] = useState<MonitorOutcomeFilter>('all')
   const [marketFilter, setMarketFilter] = useState('')
@@ -207,6 +253,7 @@ export default function MonitorResultadosPage() {
       const out = await fetchBt2AdminMonitorResultados(rangeKeys.from, rangeKeys.to, {
         monitorUserId: userId ?? undefined,
         syncFromSportmonks,
+        smSyncPendingOnly: smSyncPendingOnly ? undefined : false,
         rowsOffset: offset,
         rowsLimit: MONITOR_PAGE_SIZE,
         outcomeFilter: outcomeFilter === 'all' ? undefined : outcomeFilter,
@@ -226,6 +273,7 @@ export default function MonitorResultadosPage() {
     rangeKeys.to,
     userId,
     syncFromSportmonks,
+    smSyncPendingOnly,
     monitorPage,
     outcomeFilter,
     marketFilter,
@@ -246,6 +294,7 @@ export default function MonitorResultadosPage() {
     marketFilter,
     tableSearch,
     syncFromSportmonks,
+    smSyncPendingOnly,
   ])
 
   const sys = data?.system
@@ -269,6 +318,7 @@ export default function MonitorResultadosPage() {
       outcome: r.outcome,
       decimalOdds: r.decimalOdds ?? null,
       flatStakeReturnUnits: r.flatStakeReturnUnits ?? null,
+      userResultClaim: r.userResultClaim ?? null,
     }))
 
   const rowsTotalFromApi = data?.rowsTotal
@@ -317,13 +367,27 @@ export default function MonitorResultadosPage() {
           role="status"
         >
           <strong className="font-semibold">SportMonks / CDM:</strong> {data.smSync.messageEs}
-          {data.smSync.uniqueFixturesProcessed > 0 ? (
+          {data.smSync.attempted ? (
             <span className="mt-1 block font-mono text-[11px] opacity-90">
-              Fixtures SM únicos: {data.smSync.uniqueFixturesProcessed}
+              Modo SM:{' '}
+              {data.smSync.pendingOnly !== false ? 'solo pendientes' : 'todos (hasta límite)'}
+              {data.smSync.uniqueFixturesProcessed > 0 ? (
+                <>
+                  {' · '}
+                  Fixtures SM únicos: {data.smSync.uniqueFixturesProcessed}
+                </>
+              ) : null}
               {data.smSync.closedPendingToFinal != null
                 ? ` · pending→final: ${data.smSync.closedPendingToFinal}`
                 : ''}
             </span>
+          ) : null}
+          {data.smSync.notes && data.smSync.notes.length > 0 ? (
+            <ul className="mt-2 list-inside list-disc space-y-0.5 font-mono text-[10px] text-[#4a5a63]">
+              {data.smSync.notes.slice(0, 20).map((n, i) => (
+                <li key={`${i}-${n.slice(0, 40)}`}>{n}</li>
+              ))}
+            </ul>
           ) : null}
         </div>
       ) : null}
@@ -412,6 +476,17 @@ export default function MonitorResultadosPage() {
               />
               Sync SM
             </label>
+            {syncFromSportmonks ? (
+              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#a4b4be]/30 bg-white/80 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                <input
+                  type="checkbox"
+                  checked={smSyncPendingOnly}
+                  onChange={(e) => setSmSyncPendingOnly(e.target.checked)}
+                  className="rounded border-[#a4b4be]/50 text-[#8B5CF6] focus:ring-[#8B5CF6]/40"
+                />
+                Solo pendientes
+              </label>
+            ) : null}
             <button
               type="button"
               onClick={handleRefresh}
@@ -833,6 +908,9 @@ export default function MonitorResultadosPage() {
                   <th className="border-b border-[#a4b4be]/20 p-4 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-[#52616a]">
                     +/-1 u
                   </th>
+                  <th className="border-b border-[#a4b4be]/20 p-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-[#52616a]">
+                    Tu criterio
+                  </th>
                   <th className="border-b border-[#a4b4be]/20 p-4 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-[#52616a]">
                     ¿Cumplió?
                   </th>
@@ -841,7 +919,7 @@ export default function MonitorResultadosPage() {
               <tbody className="font-mono text-sm text-[#26343d]">
                 {filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-[#52616a]">
+                    <td colSpan={9} className="p-8 text-center text-[#52616a]">
                       {loading ? 'Cargando…' : 'No hay filas con los filtros actuales.'}
                     </td>
                   </tr>
@@ -881,6 +959,9 @@ export default function MonitorResultadosPage() {
                             : r.flatStakeReturnUnits.toFixed(2)
                           : '—'}
                       </td>
+                      <td className="border-b border-[#e5eff7] p-4 text-center">
+                        <OperatorClaimPill claim={r.userResultClaim} />
+                      </td>
                       <td className="border-b border-[#e5eff7] p-4 text-right">
                         <span
                           className={[
@@ -900,7 +981,9 @@ export default function MonitorResultadosPage() {
               * Cuota: prioridad{' '}
               <span className="font-mono">reference_decimal_odds</span>; si falta, mediana CDM sobre
               filas del evento (mercado/selección canónicos). Si no hay snapshot de cuotas en BD para
-              ese evento → «—».
+              ese evento → «—». «Tu criterio» es la marca guardada en ledger (
+              <span className="font-mono">PATCH …/user-result-claim</span>
+              ); no borra pendientes hasta que evalúe el job oficial CDM.
             </p>
             <div className="flex flex-col gap-3 border-t border-[#e5eff7] px-2 py-4 text-sm text-[#52616a] md:flex-row md:items-center md:justify-between">
               <p>

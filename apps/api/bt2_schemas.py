@@ -736,6 +736,11 @@ class Bt2AdminRefreshCdmFromSmOut(BaseModel):
     ok: bool
     operating_day_key: str = Field(..., alias="operatingDayKey")
     message_es: str = Field(..., alias="messageEs")
+    only_pending_official_evaluation: bool = Field(
+        True,
+        alias="onlyPendingOfficialEvaluation",
+        description="Si true, solo GET SM para eventos con pick en pending_result ese día.",
+    )
     fixtures_targeted: int = Field(..., alias="fixturesTargeted")
     unique_sportmonks_fixtures_processed: int = Field(
         0,
@@ -837,6 +842,11 @@ class Bt2AdminMonitorRowOut(BaseModel):
         alias="flatStakeReturnUnits",
         description="+(O−1) en acierto, −1 en fallo, stake 1 u.",
     )
+    user_result_claim: Optional[str] = Field(
+        None,
+        alias="userResultClaim",
+        description="Marca declarativa en bt2_picks (operador); no cambia pending CDM.",
+    )
 
 
 class Bt2AdminMonitorSmSyncOut(BaseModel):
@@ -847,12 +857,21 @@ class Bt2AdminMonitorSmSyncOut(BaseModel):
     attempted: bool
     ok: bool
     message_es: str = Field("", alias="messageEs")
+    pending_only: bool = Field(
+        True,
+        alias="pendingOnly",
+        description="Si true, solo fixtures con al menos un pick pending_result en el rango.",
+    )
     fixtures_targeted: int = Field(0, alias="fixturesTargeted")
     unique_fixtures_processed: int = Field(0, alias="uniqueFixturesProcessed")
     closed_pending_to_final: Optional[int] = Field(
         None,
         alias="closedPendingToFinal",
         description="Filas pending→final en la corrida de evaluación tras el sync.",
+    )
+    notes: List[str] = Field(
+        default_factory=list,
+        description="Notas internas del refresco SM (errores por fixture, límites, etc.).",
     )
 
 
@@ -926,6 +945,36 @@ class Bt2AdminBacktestReplayDistributionOut(BaseModel):
         default_factory=list,
         alias="byActionTier",
     )
+
+
+class Bt2AdminBacktestWindowSmRefreshOut(BaseModel):
+    """POST — SportMonks → CDM para la ventana de candidatos del backtest (independiente del GET replay)."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    ok: bool
+    operating_day_key_from: str = Field("", alias="operatingDayKeyFrom")
+    operating_day_key_to: str = Field("", alias="operatingDayKeyTo")
+    message_es: str = Field("", alias="messageEs")
+    only_pending_cdm: bool = Field(
+        True,
+        alias="onlyPendingCdm",
+        description="Si true, solo GET SM para eventos sin result_home/result_away en CDM.",
+    )
+    distinct_event_ids: int = Field(0, alias="distinctEventIds")
+    replay_pool_event_count: int = Field(0, alias="replayPoolEventCount")
+    pending_cdm_event_count: int = Field(0, alias="pendingCdmEventCount")
+    fixtures_targeted: int = Field(0, alias="fixturesTargeted")
+    unique_sportmonks_fixtures_processed: int = Field(
+        0,
+        alias="uniqueSportmonksFixturesProcessed",
+    )
+    sm_fetch_ok: int = Field(0, alias="smFetchOk")
+    raw_upsert_ok: int = Field(0, alias="rawUpsertOk")
+    cdm_normalized_ok: int = Field(0, alias="cdmNormalizedOk")
+    cdm_skipped: int = Field(0, alias="cdmSkipped")
+    cdm_errors: int = Field(0, alias="cdmErrors")
+    notes: List[str] = Field(default_factory=list)
 
 
 class Bt2AdminBacktestReplayRowOut(BaseModel):

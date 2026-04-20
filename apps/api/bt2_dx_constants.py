@@ -27,6 +27,7 @@ BT2_ERR_INSUFFICIENT_BANKROLL_STAKE: Final[str] = "insufficient_bankroll_for_sta
 # onboarding_phase_a: usado por el endpoint de onboarding existente (alias de bienvenida).
 DpLedgerReason = Literal[
     "pick_settle",
+    "pick_settle_reopen",
     "pick_premium_unlock",
     "session_close_discipline",
     "onboarding_welcome",
@@ -39,6 +40,7 @@ DpLedgerReason = Literal[
 ]
 
 REASON_PICK_SETTLE: Final[str] = "pick_settle"
+REASON_PICK_SETTLE_REOPEN: Final[str] = "pick_settle_reopen"
 REASON_PICK_PREMIUM_UNLOCK: Final[str] = "pick_premium_unlock"
 REASON_SESSION_CLOSE_DISCIPLINE: Final[str] = "session_close_discipline"
 REASON_PENALTY_STATION_UNCLOSED: Final[str] = "penalty_station_unclosed"

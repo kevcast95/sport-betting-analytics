@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ViewTourModal } from '@/components/tours/ViewTourModal'
 import { getTourScript } from '@/components/tours/tourScripts'
@@ -10,10 +10,13 @@ import {
   IconSearch,
 } from '@/components/bt2StitchIcons'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
+import { LedgerOpenClaimsTable } from '@/components/ledger/LedgerOpenClaimsTable'
 import { LedgerTable } from '@/components/ledger/LedgerTable'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
+import { bt2PostReopenPickSettlement } from '@/lib/api'
 import { protocolWinRate } from '@/lib/ledgerAnalytics'
 import type { LedgerRow } from '@/store/useTradeStore'
+import { useBankrollStore } from '@/store/useBankrollStore'
 import { useTradeStore } from '@/store/useTradeStore'
 import { useUserStore } from '@/store/useUserStore'
 
@@ -43,6 +46,30 @@ const LEDGER_TOUR = getTourScript('ledger')!
 
 export default function LedgerPage() {
   const ledger = useTradeStore((s) => s.ledger)
+  const openPickSelfRows = useTradeStore((s) => s.openPickSelfRows)
+  const hydrateLedgerFromApi = useTradeStore((s) => s.hydrateLedgerFromApi)
+
+  const syncLedgerAndBalances = useCallback(async () => {
+    await hydrateLedgerFromApi()
+    await useUserStore.getState().syncDpBalance()
+    await useBankrollStore.getState().syncFromApi()
+  }, [hydrateLedgerFromApi])
+
+  const handleReopenSettlement = useCallback(
+    async (pickId: number) => {
+      const ok = window.confirm(
+        'Se revierte la liquidación formal en servidor (bankroll y DP). El pick vuelve a abierto para liquidar de nuevo. ¿Continuar?',
+      )
+      if (!ok) return
+      try {
+        await bt2PostReopenPickSettlement(pickId)
+        await syncLedgerAndBalances()
+      } catch (e) {
+        console.error('[BT2] reopen-settlement:', e)
+      }
+    },
+    [syncLedgerAndBalances],
+  )
   const disciplinePoints = useUserStore((s) => s.disciplinePoints)
   const [protocol, setProtocol] = useState<string>('TODOS')
   const [idQuery, setIdQuery] = useState('')
@@ -120,6 +147,15 @@ export default function LedgerPage() {
 
   const { factor, label: factorLabel, barPct } = disciplineFactorFromDp(
     disciplinePoints,
+  )
+
+  const openPicksFromVault = useMemo(
+    () => openPickSelfRows.filter((r) => r.vaultPickId != null && r.vaultPickId !== ''),
+    [openPickSelfRows],
+  )
+  const openPicksOrphan = useMemo(
+    () => openPickSelfRows.filter((r) => r.vaultPickId == null || r.vaultPickId === ''),
+    [openPickSelfRows],
   )
 
   const segmentIdleCopy =
@@ -213,10 +249,56 @@ export default function LedgerPage() {
         }
       />
 
+      {openPicksFromVault.length > 0 ? (
+        <LedgerOpenClaimsTable
+          rows={openPicksFromVault}
+          monoStyle={monoStyle}
+          onRefreshClaims={() => void hydrateLedgerFromApi()}
+          title="Picks abiertos — desde tu bóveda"
+          subtitle={
+            'Salen de GET /bt2/picks (filas abiertas) cruzadas con señales que registraste como tomadas (`dp-*`) en este navegador. No mueven bankroll: solo guardan tu criterio; la plata va por Liquidación (/v2/settlement).'
+          }
+        />
+      ) : openPicksOrphan.length > 0 ? (
+        <p className="rounded-xl border border-amber-200/50 bg-amber-50/60 px-4 py-3 text-sm text-[#78350f]">
+          No hay picks abiertos <strong>vinculados a la bóveda</strong> en este entorno, pero tu cuenta tiene{' '}
+          {openPicksOrphan.length} pick(s) abierto(s) sin ese vínculo. Revisá el bloque «Otros» debajo (pruebas,
+          otro dispositivo o POST /bt2/picks sin mapeo local).
+        </p>
+      ) : null}
+
+      {openPicksOrphan.length > 0 ? (
+        <details className="group mb-10 rounded-xl border border-[#a4b4be]/20 bg-white">
+          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-[#52616a] marker:content-none [&::-webkit-details-marker]:hidden">
+            <span className="inline-flex items-center gap-2">
+              Otros picks abiertos en tu cuenta ({openPicksOrphan.length})
+              <span className="text-xs font-normal text-[#6e7d86]">
+                (sin vínculo dp-* en este navegador)
+              </span>
+            </span>
+          </summary>
+          <div className="border-t border-[#a4b4be]/15 px-2 pb-2 pt-1">
+            <LedgerOpenClaimsTable
+              rows={openPicksOrphan}
+              monoStyle={monoStyle}
+              onRefreshClaims={() => void hydrateLedgerFromApi()}
+              variant="muted"
+              noSectionMargin
+              title="Registros abiertos sin mapeo de bóveda"
+              subtitle={
+                'Mismo API GET /bt2/picks — son filas `open` de tu usuario que no pudimos enlazar con `takenApiPicks` (otro equipo, storage limpio, datos de prueba). Sigue sin afectar bankroll.'
+              }
+            />
+          </div>
+        </details>
+      ) : null}
+
       <LedgerTable
         rows={pageRows}
         monoStyle={monoStyle}
         onViewDetails={setDetail}
+        onRefreshClaims={() => void hydrateLedgerFromApi()}
+        onReopenSettlement={handleReopenSettlement}
         pagination={paginationSlot}
       />
 

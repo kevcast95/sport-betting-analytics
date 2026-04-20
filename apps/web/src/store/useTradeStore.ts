@@ -49,6 +49,24 @@ export type LedgerRow = {
   bt2PickId?: number
   /** Sprint 06 — resultado modelo tras liquidar (GET /bt2/picks). */
   modelPredictionResult?: string | null
+  /**
+   * Marca declarativa enviada al servidor (`PATCH .../user-result-claim`);
+   * no confundir con `outcome` (liquidación / PnL).
+   */
+  userResultClaim?: string | null
+  /** Estado en bt2_picks (`open`/`won`/…) para reabrir liquidación. */
+  protocolPickStatus?: string
+}
+
+export type OpenPickSelfRow = {
+  bt2PickId: number
+  vaultPickId?: string
+  eventLabel: string
+  marketClass: string
+  marketCanonicalLabelEs?: string
+  selectionSummaryEs: string
+  openedAt: string
+  userResultClaim: string | null
 }
 
 export type FinalizeSettlementResult =
@@ -67,6 +85,8 @@ export type FinalizeSettlementResult =
 export type TradeStoreState = {
   settledPickIds: string[]
   ledger: LedgerRow[]
+  /** Picks aún abiertos: validación manual del operador (p. ej. sin CDM). */
+  openPickSelfRows: OpenPickSelfRow[]
 }
 
 export type TradeStoreActions = {
@@ -109,6 +129,7 @@ export type TradeStore = TradeStoreState & TradeStoreActions
 const initial: TradeStoreState = {
   settledPickIds: [],
   ledger: [],
+  openPickSelfRows: [],
 }
 
 /** US-BE-020: +10 DP por liquidación en flujo mock (sin API). */
@@ -179,6 +200,12 @@ function bt2NumericPickId(p: Bt2PickOut): number {
   return p.pick_id
 }
 
+function pickUserClaimFromBt2Pick(p: Bt2PickOut): string | null {
+  const ext = p as Bt2PickOut & { user_result_claim?: string | null }
+  const v = p.userResultClaim ?? ext.user_result_claim
+  return v != null && String(v).trim() !== '' ? String(v) : null
+}
+
 function bt2PickToLedgerRow(
   p: Bt2PickOut,
   vaultPickId: string | undefined,
@@ -204,6 +231,8 @@ function bt2PickToLedgerRow(
     earnedDp: p.earned_dp ?? 0,
     bt2PickId: numericId,
     modelPredictionResult: p.modelPredictionResult ?? null,
+    userResultClaim: pickUserClaimFromBt2Pick(p),
+    protocolPickStatus: p.status,
   }
 }
 
@@ -266,6 +295,13 @@ export const useTradeStore = create<TradeStore>()(
       },
 
       settleApiPick: async (input) => {
+        // Tras `reopen-settlement` el servidor deja el pick `open`, pero la lista local
+        // puede seguir marcando liquidado hasta hidratar — sin esto bloqueamos POST /settle y no suman DP.
+        try {
+          await get().hydrateLedgerFromApi()
+        } catch {
+          /* best-effort */
+        }
         if (get().settledPickIds.includes(input.vaultPickId)) {
           return { ok: false, reason: 'already_settled' }
         }
@@ -377,16 +413,42 @@ export const useTradeStore = create<TradeStore>()(
           const apiLedger = settled.map((p) =>
             bt2PickToLedgerRow(p, byBt2.get(bt2NumericPickId(p))),
           )
+          const openPickSelfRows: OpenPickSelfRow[] = data.picks
+            .filter((p) => p.status === 'open')
+            .map((p) => {
+              const bid = bt2NumericPickId(p)
+              return {
+                bt2PickId: bid,
+                vaultPickId: byBt2.get(bid),
+                eventLabel: p.event_label,
+                marketClass: p.market,
+                marketCanonicalLabelEs:
+                  p.marketCanonicalLabelEs ?? undefined,
+                selectionSummaryEs: p.selection,
+                openedAt: p.opened_at,
+                userResultClaim: pickUserClaimFromBt2Pick(p),
+              }
+            })
           const apiBt2Ids = new Set(
             apiLedger.map((r) => r.bt2PickId).filter((x): x is number => x != null),
           )
-          const mockOnly = get().ledger.filter(
-            (r) => r.bt2PickId == null || !apiBt2Ids.has(r.bt2PickId),
+          /** Tras `reopen-settlement` el pick vuelve a `open`: no conservar filas ledger persistidas con ese bt2 id. */
+          const openBt2Ids = new Set(
+            data.picks
+              .filter((p) => p.status === 'open')
+              .map((p) => bt2NumericPickId(p)),
           )
+          const mockOnly = get().ledger.filter((r) => {
+            if (r.bt2PickId != null && openBt2Ids.has(r.bt2PickId)) {
+              return false
+            }
+            return r.bt2PickId == null || !apiBt2Ids.has(r.bt2PickId)
+          })
           const merged = [...apiLedger, ...mockOnly]
           set({
             ledger: merged,
             settledPickIds: [...new Set(merged.map((r) => r.pickId))],
+            openPickSelfRows,
           })
           console.info(`[BT2] Ledger hidratado desde API: ${apiLedger.length} filas`)
         } catch (e) {
@@ -397,7 +459,12 @@ export const useTradeStore = create<TradeStore>()(
         }
       },
 
-      reset: () => set(initial),
+      reset: () =>
+        set({
+          settledPickIds: [],
+          ledger: [],
+          openPickSelfRows: [],
+        }),
     }),
     {
       name: 'bt2_v2_trades',

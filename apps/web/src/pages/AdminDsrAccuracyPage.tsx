@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ResponsiveContainer,
   LineChart,
@@ -12,8 +13,7 @@ import {
   Legend,
 } from 'recharts'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
-import { fetchBt2AdminBacktestReplay } from '@/lib/api'
-import type { Bt2AdminBacktestReplayOut } from '@/lib/bt2Types'
+import { fetchBt2AdminBacktestReplay, postBt2AdminRefreshCdmSmForBacktestWindow } from '@/lib/api'
 
 /**
  * Dependencia sugerida: npm i recharts (gráficas).
@@ -170,38 +170,71 @@ export default function BacktestReplayPage() {
   const [leagueFilter, setLeagueFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  /** POST SM → CDM: solo eventos sin marcador completo en bt2_events (ahorra cuota). */
+  const [smRefreshOnlyPendingCdm, setSmRefreshOnlyPendingCdm] = useState(true)
 
-  const [data, setData] = useState<Bt2AdminBacktestReplayOut | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
+  const queryClient = useQueryClient()
   const rangeKeys = useMemo(
     () => operatingRangeForPreset(preset, rangeFrom, rangeTo),
     [preset, rangeFrom, rangeTo],
   )
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const out = await fetchBt2AdminBacktestReplay(rangeKeys.from, rangeKeys.to)
-      setData(out)
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e)
-      setData(null)
-      setError(msg.length > 260 ? `${msg.slice(0, 260)}…` : msg)
-    } finally {
-      setLoading(false)
-    }
+  const {
+    data,
+    isPending,
+    isFetching,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: ['bt2-admin-backtest-replay', rangeKeys.from, rangeKeys.to],
+    queryFn: () => fetchBt2AdminBacktestReplay(rangeKeys.from, rangeKeys.to),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 7,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  })
+
+  const smRefreshMutation = useMutation({
+    mutationFn: () =>
+      postBt2AdminRefreshCdmSmForBacktestWindow(rangeKeys.from, rangeKeys.to, {
+        onlyPendingCdm: smRefreshOnlyPendingCdm ? undefined : false,
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['bt2-admin-backtest-replay', rangeKeys.from, rangeKeys.to],
+      })
+    },
+  })
+
+  const error =
+    queryError instanceof Error
+      ? queryError.message.length > 260
+        ? `${queryError.message.slice(0, 260)}…`
+        : queryError.message
+      : queryError
+        ? String(queryError).length > 260
+          ? `${String(queryError).slice(0, 260)}…`
+          : String(queryError)
+        : null
+
+  useEffect(() => {
+    smRefreshMutation.reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset al cambiar ventana solamente
   }, [rangeKeys.from, rangeKeys.to])
 
   useEffect(() => {
-    void load()
-  }, [load])
-
-  useEffect(() => {
     setPage(1)
-  }, [preset, rangeFrom, rangeTo, marketFilter, tierFilter, outcomeFilter, leagueFilter, search])
+  }, [
+    preset,
+    rangeFrom,
+    rangeTo,
+    marketFilter,
+    tierFilter,
+    outcomeFilter,
+    leagueFilter,
+    search,
+  ])
 
   const summary = data?.summary
 
@@ -287,17 +320,79 @@ export default function BacktestReplayPage() {
       <div className="mx-auto max-w-[1400px] px-4 py-6 md:px-6 md:py-8">
         <BunkerViewHeader
           title="Backtest / Replay"
-          subtitle="Cómo nos habría ido con el sistema actual usando solo la data histórica ya persistida."
+          subtitle="Replay DSR sobre Postgres (cuotas al corte por día). CDM desde SportMonks es un paso aparte — no mezcla con el cálculo del replay."
           rightActions={
-            <button
-              type="button"
-              onClick={() => void load()}
-              className="rounded-xl border border-[#8B5CF6]/20 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#8B5CF6] transition hover:bg-[#f5f3ff]"
-            >
-              {loading ? 'Cargando…' : 'Actualizar'}
-            </button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#52616a]">
+                <input
+                  type="checkbox"
+                  checked={smRefreshOnlyPendingCdm}
+                  onChange={(e) => setSmRefreshOnlyPendingCdm(e.target.checked)}
+                  className="rounded border-[#a4b4be]/50 text-[#8B5CF6] focus:ring-[#8B5CF6]/40"
+                />
+                SM solo sin marcador
+              </label>
+              <button
+                type="button"
+                onClick={() => void smRefreshMutation.mutateAsync()}
+                disabled={smRefreshMutation.isPending || isFetching}
+                className="rounded-xl border border-[#0f766e]/25 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0f766e] transition hover:bg-teal-50 disabled:opacity-50"
+              >
+                {smRefreshMutation.isPending ? 'SM…' : 'Refrescar CDM (SM)'}
+              </button>
+              <button
+                type="button"
+                onClick={() => void refetch()}
+                disabled={isFetching || smRefreshMutation.isPending}
+                className="rounded-xl border border-[#8B5CF6]/20 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#8B5CF6] transition hover:bg-[#f5f3ff] disabled:opacity-50"
+              >
+                {isFetching ? 'Replay…' : 'Ejecutar replay'}
+              </button>
+            </div>
           }
         />
+
+        <p className="mt-4 max-w-4xl text-xs leading-relaxed text-[#52616a]">
+          <strong className="text-[#26343d]">Por qué ves «pendiente» aunque en admin los picks estén cerrados:</strong>{' '}
+          el backtest no es la lista de picks del día: arma un <span className="font-mono text-[11px]">pool</span> de
+          eventos por ventana de kickoff (y tope por día) y puntúa cada fila contra{' '}
+          <span className="font-mono text-[11px]">bt2_events</span> en ese momento. La vista de picks usa evaluación
+          oficial sobre filas materializadas; pueden ser conjuntos distintos. «Pendiente» aquí = para ese{' '}
+          <span className="font-mono text-[11px]">event_id</span> del pool replay faltaba marcador CDM (
+          <span className="font-mono text-[11px]">result_home/result_away</span>) o el estado no permitía cerrar — no
+          el mismo criterio que «pick cerrado» en otra pantalla.
+        </p>
+
+        {smRefreshMutation.isError ? (
+          <div
+            className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+            role="alert"
+          >
+            <strong className="font-semibold">Refresco SM:</strong>{' '}
+            {smRefreshMutation.error instanceof Error
+              ? smRefreshMutation.error.message
+              : String(smRefreshMutation.error)}
+          </div>
+        ) : null}
+
+        {smRefreshMutation.isSuccess && smRefreshMutation.data?.messageEs ? (
+          <div
+            className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
+              smRefreshMutation.data.ok
+                ? 'border-emerald-200 bg-emerald-50/95 text-emerald-950'
+                : 'border-amber-200 bg-amber-50/95 text-amber-950'
+            }`}
+            role="status"
+          >
+            <strong className="font-semibold">SportMonks → CDM (pool backtest):</strong>{' '}
+            {smRefreshMutation.data.messageEs}
+            <span className="mt-1 block font-mono text-[11px] opacity-90">
+              Pool: {smRefreshMutation.data.replayPoolEventCount} · pendiente CDM:{' '}
+              {smRefreshMutation.data.pendingCdmEventCount} · SM OK: {smRefreshMutation.data.smFetchOk} · CDM OK:{' '}
+              {smRefreshMutation.data.cdmNormalizedOk}
+            </span>
+          </div>
+        ) : null}
 
         <section className="mt-5 rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 md:px-5">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -434,8 +529,7 @@ export default function BacktestReplayPage() {
             </ResponsiveContainer>
           </ChartCard>
         </section>
-
-        <section className="mt-4 grid gap-4 xl:grid-cols-3">
+        <section className="mt-4 grid gap-4 xl:grid-cols-1">
           <ChartCard
             title="Cobertura del input por día"
             subtitle="Candidatos → elegibles → input útil → picks → scored (hit+miss)."
@@ -455,6 +549,9 @@ export default function BacktestReplayPage() {
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
+        </section>
+
+        <section className="mt-4 grid gap-4 xl:grid-cols-2">
 
           <ChartCard title="Distribución por mercado" subtitle="Qué mercados explican el volumen y el resultado.">
             <ResponsiveContainer width="100%" height="100%">
@@ -581,7 +678,7 @@ export default function BacktestReplayPage() {
                 </tr>
               </thead>
               <tbody>
-                {loading && !data ? (
+                {isPending && !data ? (
                   <tr>
                     <td colSpan={6} className="px-3 py-10 text-center text-sm text-[#52616a]">
                       Cargando replay…
