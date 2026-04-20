@@ -26,6 +26,7 @@ BT2_ERR_INSUFFICIENT_BANKROLL_STAKE: Final[str] = "insufficient_bankroll_for_sta
 # Razones que pueden aparecer en bt2_dp_ledger.reason (histórico + Sprint 05).
 # onboarding_phase_a: usado por el endpoint de onboarding existente (alias de bienvenida).
 DpLedgerReason = Literal[
+    "pick_taken",
     "pick_settle",
     "pick_settle_reopen",
     "pick_premium_unlock",
@@ -39,6 +40,7 @@ DpLedgerReason = Literal[
     "parlay_activation_3l",
 ]
 
+REASON_PICK_TAKEN: Final[str] = "pick_taken"
 REASON_PICK_SETTLE: Final[str] = "pick_settle"
 REASON_PICK_SETTLE_REOPEN: Final[str] = "pick_settle_reopen"
 REASON_PICK_PREMIUM_UNLOCK: Final[str] = "pick_premium_unlock"
@@ -51,10 +53,14 @@ REASON_PENALTY_UNSETTLED_NOT_APPLICABLE: Final[str] = "penalty_unsettled_not_app
 # D-05-018 / US-BE-021: recompensa DP al cerrar sesión con protocolo (POST /session/close).
 SESSION_CLOSE_DISCIPLINE_REWARD_DP: Final[int] = 20
 
-# US-BE-020 (D-04-011): misma acreditación al liquidar (won / lost / void).
-PICK_SETTLE_DP_REWARD: Final[int] = 10
+# Acreditación al registrar el pick en protocolo (POST /bt2/picks — stake comprometido).
+PICK_TAKEN_DP_REWARD: Final[int] = 10
 
-PENALTY_UNSETTLED_DP: Final[int] = -25
+# Acreditación al liquidar con marcador (won / lost / void).
+PICK_SETTLE_DP_REWARD: Final[int] = 15
+
+# Gracia vencida con picks abiertos sin liquidar (penalty_unsettled_picks).
+PENALTY_UNSETTLED_DP: Final[int] = -50
 PENALTY_STATION_UNCLOSED_DP: Final[int] = -50
 
 # ── Sprint 06 — mercados canónicos (US-DX-002 / US-BE-027) ─────────────────────

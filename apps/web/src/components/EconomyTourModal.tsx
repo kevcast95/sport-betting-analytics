@@ -58,10 +58,10 @@ function buildTourSteps(dpBalance: number): TourStep[] {
       id: 'ganar-gastar',
       title: 'Cómo ganar y gastar DP',
       body: [
-        'Ganas +10 DP al liquidar con reflexión (misma recompensa de gestión si declaras ganancia, pérdida o empate/anulado; acreditado por el servidor). El onboarding abona +250 DP una sola vez.',
-        'Gastas DP desbloqueando picks premium (−50 DP). La clave es el hábito, no el volumen.',
+        'Ganas +10 DP al tomar un pick en la bóveda (registro en protocolo) y +15 DP al liquidar con reflexión (mismo baremo de gestión en ganancia, pérdida o empate/anulado; el servidor acredita). El onboarding abona +250 DP una sola vez.',
+        'Gastas DP desbloqueando señales premium en bóveda (−50 DP al desbloqueo, distinto del registro de posición). La clave es el hábito, no el volumen.',
       ],
-      highlight: { label: 'DP por liquidación', value: '+10 DP' },
+      highlight: { label: 'DP por tomar + liquidar', value: '+10 + +15' },
     },
     {
       id: 'dia-calendario',

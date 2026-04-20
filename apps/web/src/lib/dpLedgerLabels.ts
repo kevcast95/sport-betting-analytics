@@ -7,7 +7,9 @@ import type { Bt2DpLedgerReason } from '@/lib/bt2Types'
 const ONBOARDING_PHASE_A_LABEL = 'Bienvenida — onboarding fase A'
 
 const REASON_LABEL_ES: Record<Bt2DpLedgerReason, string> = {
+  pick_taken: 'Registro de pick en protocolo',
   pick_settle: 'Liquidación de pick',
+  pick_settle_reopen: 'Reversión de liquidación (reabrir pick)',
   pick_premium_unlock: 'Desbloqueo pick premium',
   session_close_discipline: 'Recompensa por cerrar la estación',
   onboarding_welcome: ONBOARDING_PHASE_A_LABEL,

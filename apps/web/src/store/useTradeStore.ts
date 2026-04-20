@@ -2,7 +2,7 @@
  * US-FE-006 / US-FE-028 (Sprint 04): ledger de liquidaciones.
  * - finalizeSettlement: flujo local (mock picks, modo trust local).
  * - settleApiPick: flujo real vía POST /bt2/picks/{id}/settle.
- * - earnedDp desde API / mock alineado a US-BE-020: +10 DP por liquidación (won/lost/void).
+ * - earnedDp desde API / mock alineado a BT2: +15 DP por liquidación (won/lost/void); mock +15.
  */
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
@@ -18,8 +18,8 @@ import { bt2FetchJson } from '@/lib/api'
 import { parseBt2SettleOut } from '@/lib/bt2SettleParse'
 import type { Bt2PicksListOut, Bt2PickOut } from '@/lib/bt2Types'
 
-/** US-BE-020: misma recompensa DP en mock local que en servidor (+10 cualquier resultado). */
-const SETTLEMENT_DP_REWARD = 10
+/** Misma recompensa DP en mock local que en servidor (+15 cualquier resultado). */
+const SETTLEMENT_DP_REWARD = 15
 
 export type LedgerRow = {
   pickId: string
@@ -43,7 +43,7 @@ export type LedgerRow = {
   /** Cuota real capturada en la casa del operador (US-FE-022 T-057). */
   bookDecimalOdds?: number
   settledAt: string
-  /** DP ganados por liquidación (US-BE-020: +10 won/lost/void). */
+  /** DP ganados por liquidación en mock (+15); API usa servidor. */
   earnedDp?: number
   /** bt2_picks.id del servidor (US-FE-028; null para picks mock). */
   bt2PickId?: number
@@ -132,7 +132,7 @@ const initial: TradeStoreState = {
   openPickSelfRows: [],
 }
 
-/** US-BE-020: +10 DP por liquidación en flujo mock (sin API). */
+/** +15 DP por liquidación en flujo mock (sin API). */
 function earnDpForOutcome(_outcome: SettlementOutcome): number {
   return SETTLEMENT_DP_REWARD
 }

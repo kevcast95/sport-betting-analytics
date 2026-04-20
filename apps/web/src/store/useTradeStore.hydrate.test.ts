@@ -26,7 +26,7 @@ describe('useTradeStore.hydrateLedgerFromApi (US-FE-032)', () => {
           stake_units: 100,
           odds_accepted: 2,
           pnl_units: 100,
-          earned_dp: 10,
+          earned_dp: 25,
           event_id: 9,
           market: 'ML_HOME',
           selection: 'Local',
@@ -55,7 +55,7 @@ describe('useTradeStore.hydrateLedgerFromApi (US-FE-032)', () => {
     const { ledger, settledPickIds } = useTradeStore.getState()
     expect(ledger).toHaveLength(1)
     expect(ledger[0].pickId).toBe('dp-7')
-    expect(ledger[0].earnedDp).toBe(10)
+    expect(ledger[0].earnedDp).toBe(25)
     expect(ledger[0].outcome).toBe('PROFIT')
     expect(settledPickIds).toContain('dp-7')
   })
@@ -71,7 +71,7 @@ describe('useTradeStore.hydrateLedgerFromApi (US-FE-032)', () => {
           stake_units: 50,
           odds_accepted: 1.9,
           pnl_units: null,
-          earned_dp: null,
+          earned_dp: 10,
           event_id: 2,
           market: 'T',
           selection: 'x',
@@ -100,7 +100,7 @@ describe('useTradeStore.hydrateLedgerFromApi (US-FE-032)', () => {
           stakeCop: 100,
           decimalCuota: 2,
           settledAt: '2026-04-07T12:00:00Z',
-          earnedDp: 10,
+          earnedDp: 25,
           bt2PickId: 42,
         },
       ],
@@ -116,7 +116,7 @@ describe('useTradeStore.hydrateLedgerFromApi (US-FE-032)', () => {
           stake_units: 100,
           odds_accepted: 2,
           pnl_units: null,
-          earned_dp: null,
+          earned_dp: 10,
           event_id: 9,
           market: 'ML_HOME',
           selection: 'Local',

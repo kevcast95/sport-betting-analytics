@@ -38,9 +38,9 @@ const TOUR_SANCTUARY: TourScript = {
       title: 'Riqueza de carácter y DP',
       body: [
         'El indicador de Discipline Points (DP) refleja tu coherencia operativa, no tu capital real. Un saldo alto de DP significa que estás siguiendo el protocolo.',
-        'Cada liquidación registrada con reflexión acredita +10 DP en el servidor (recompensa de gestión; mismo valor para ganancia, pérdida o empate/anulado). El saldo total sigue otras reglas del protocolo cuando el backend las activa.',
+        'Cada registro de pick en la bóveda acredita +10 DP; cada liquidación con reflexión +15 DP (recompensa de gestión; mismo baremo en ganancia, pérdida o empate/anulado). El saldo total sigue otras reglas del protocolo.',
       ],
-      highlight: { label: 'DP por liquidación', value: '+10 DP' },
+      highlight: { label: 'DP toma + liquidación', value: '+10 + +15' },
     },
     {
       id: 'sanctuary-day',
@@ -80,9 +80,9 @@ const TOUR_VAULT: TourScript = {
       title: 'Liquidar para ganar DP',
       body: [
         'Después de desbloquear un pick, debes liquidarlo en la Terminal de Liquidación cuando conozcas el resultado.',
-        'Cada liquidación completada con reflexión suma +10 DP a tu saldo (gestión del protocolo, cualquier resultado declarado). El protocolo importa más que el acierto puntual.',
+        'Al tomar un pick se acreditan +10 DP; al completar la liquidación con reflexión, +15 DP (gestión, cualquier resultado). El protocolo importa más que el acierto puntual.',
       ],
-      highlight: { label: 'DP por liquidación', value: '+10 DP' },
+      highlight: { label: 'DP toma + liquidación', value: '+10 + +15' },
     },
   ],
 }
@@ -119,7 +119,7 @@ const TOUR_SETTLEMENT: TourScript = {
         'Escribe tu estado emocional y decisiones clave de la sesión (mínimo 10 caracteres). Esto alimenta tu índice de equilibrio emocional.',
         'Una reflexión genuina te ayuda a identificar patrones de comportamiento que los números solos no revelan.',
       ],
-      highlight: { label: 'DP por liquidación (gestión)', value: '+10 DP' },
+      highlight: { label: 'DP por liquidación (gestión)', value: '+15 DP' },
     },
   ],
 }

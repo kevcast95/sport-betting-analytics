@@ -640,7 +640,9 @@ export interface Bt2AdminRefreshCdmFromSmOut {
 // ─── US-DX-001 — Razones canónicas bt2_dp_ledger.reason (Sprint 05) ─────────
 
 export type Bt2DpLedgerReason =
+  | 'pick_taken'
   | 'pick_settle'
+  | 'pick_settle_reopen'
   | 'pick_premium_unlock'
   | 'session_close_discipline'
   | 'onboarding_welcome'

@@ -32,7 +32,7 @@ export type PreviousDayItem = 'UNSETTLED_PICK' | 'STATION_UNCLOSED'
  *
  * Tabla de consecuencias (DECISIONES.md 2026-04-04):
  * - STATION_UNCLOSED → -50 DP solo si hubo picks tomados ese día (servidor alinea).
- * - UNSETTLED_PICKS  → -25 DP por picks sin liquidar tras gracia.
+ * - UNSETTLED_PICKS  → -50 DP por picks sin liquidar tras gracia.
  */
 export type PenaltyRecord = {
   appliedAt: string
@@ -352,7 +352,7 @@ export const useSessionStore = create<SessionStore>()(
 
 /**
  * US-FE-012 / Sprint 05: tras expirar la gracia, registra pendientes en `penaltiesApplied`.
- * Los cargos −50 / −25 DP los aplica solo el servidor en `POST /bt2/session/open`
+ * Los cargos −50 DP (estación / picks sin liquidar, según caso) los aplica el servidor en `POST /bt2/session/open`
  * (penalty_station_unclosed, penalty_unsettled_picks); el cliente no llama a
  * `incrementDisciplinePoints` aquí.
  */
@@ -389,10 +389,10 @@ function applyPenalties(
       appliedAt: nowIso,
       dayKey,
       reason: 'grace_expired_unsettled_picks',
-      dpPenalty: 25,
+      dpPenalty: 50,
       description:
         'Picks sin liquidar del día anterior tras la ventana de gracia (24 h). ' +
-        'Penalización: -25 DP. Liquida los picks pendientes para mantener la integridad.',
+        'Penalización: -50 DP. Liquida los picks pendientes para mantener la integridad.',
     }
     newPenalties.push(record)
     console.warn(

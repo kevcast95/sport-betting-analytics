@@ -1153,7 +1153,7 @@ export default function SettlementPage() {
                   className="font-mono text-xs font-bold tracking-tight text-[#6d3bd7]"
                   style={monoStyle}
                 >
-                  Recompensa: +10 DP (gestión)
+                  Recompensa: +15 DP (liquidación con reflexión)
                 </span>
               </div>
             </div>
@@ -1399,7 +1399,7 @@ export default function SettlementPage() {
                   : '—'}
               </span>
               {bt2PickRecord
-                ? '. +10 DP por registrar la liquidación con reflexión (ganancia, pérdida o empate/anulado).'
+                ? '. +15 DP por registrar la liquidación con reflexión (ganancia, pérdida o empate/anulado). +10 DP se acreditan al tomar el pick en la bóveda.'
                 : '. DP según resultado.'}
             </p>
             {Number.isFinite(bookOdds) ? (

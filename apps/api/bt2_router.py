@@ -26,6 +26,7 @@ from apps.api.bt2_dx_constants import (
     VAULT_DAILY_UNLOCK_CAP_STANDARD,
     VAULT_DAILY_UNLOCK_CAP_TOTAL,
     PICK_SETTLE_DP_REWARD,
+    PICK_TAKEN_DP_REWARD,
     PENALTY_STATION_UNCLOSED_DP,
     PENALTY_UNSETTLED_DP,
     REASON_PENALTY_STATION_UNCLOSED,
@@ -34,6 +35,7 @@ from apps.api.bt2_dx_constants import (
     REASON_PICK_PREMIUM_UNLOCK,
     REASON_PICK_SETTLE,
     REASON_PICK_SETTLE_REOPEN,
+    REASON_PICK_TAKEN,
     REASON_SESSION_CLOSE_DISCIPLINE,
     SESSION_CLOSE_DISCIPLINE_REWARD_DP,
 )
@@ -2200,6 +2202,15 @@ def bt2_create_pick(body: PickIn, user_id: Bt2UserId) -> PickOut:
                 body.event_id,
             )
 
+        # US-BE-020+: +10 DP por tomar el pick (registro en protocolo), estándar o premium.
+        _append_dp_ledger_move(
+            cur,
+            user_id,
+            PICK_TAKEN_DP_REWARD,
+            REASON_PICK_TAKEN,
+            pick_id,
+        )
+
         logger.info(
             "pick_stake_committed: user=%s pick_id=%s stake=%s bankroll_after=%s",
             user_id,
@@ -2289,7 +2300,6 @@ def bt2_list_picks(
             except ValueError:
                 pass
 
-        ledger_params = [user_id, REASON_PICK_SETTLE]
         cur.execute(
             f"""SELECT p.id, p.event_id, p.market, p.selection,
                        p.odds_taken, p.stake_units, p.status,
@@ -2300,8 +2310,7 @@ def bt2_list_picks(
                        p.user_result_claim,
                        e.kickoff_utc, e.status AS ev_status,
                        COALESCE(th.name,'?') || ' vs ' || COALESCE(ta.name,'?') AS event_label,
-                       CASE WHEN p.status = 'open' THEN NULL
-                            ELSE COALESCE(l.delta_sum, 0)::int END AS earned_dp
+                       COALESCE(l.delta_sum, 0)::int AS earned_dp
                 FROM bt2_picks p
                 LEFT JOIN bt2_events e ON p.event_id = e.id
                 LEFT JOIN bt2_teams th ON e.home_team_id = th.id
@@ -2309,12 +2318,12 @@ def bt2_list_picks(
                 LEFT JOIN (
                     SELECT reference_id, SUM(delta_dp) AS delta_sum
                     FROM bt2_dp_ledger
-                    WHERE user_id = %s::uuid AND reason = %s AND reference_id IS NOT NULL
+                    WHERE user_id = %s::uuid AND reference_id IS NOT NULL
                     GROUP BY reference_id
                 ) l ON l.reference_id = p.id
                 WHERE {' AND '.join(where)}
                 ORDER BY p.opened_at DESC""",
-            ledger_params + params,
+            [user_id] + params,
         )
         rows = cur.fetchall()
     finally:
@@ -2373,8 +2382,7 @@ def bt2_get_pick(pick_id: int, user_id: Bt2UserId) -> PickOut:
                       p.user_result_claim,
                       e.kickoff_utc, e.status AS ev_status,
                       COALESCE(th.name,'?') || ' vs ' || COALESCE(ta.name,'?') AS event_label,
-                      CASE WHEN p.status = 'open' THEN NULL
-                           ELSE COALESCE(l.delta_sum, 0)::int END AS earned_dp
+                      COALESCE(l.delta_sum, 0)::int AS earned_dp
                FROM bt2_picks p
                LEFT JOIN bt2_events e ON p.event_id = e.id
                LEFT JOIN bt2_teams th ON e.home_team_id = th.id
@@ -2382,11 +2390,11 @@ def bt2_get_pick(pick_id: int, user_id: Bt2UserId) -> PickOut:
                LEFT JOIN (
                    SELECT reference_id, SUM(delta_dp) AS delta_sum
                    FROM bt2_dp_ledger
-                   WHERE user_id = %s::uuid AND reason = %s AND reference_id IS NOT NULL
+                   WHERE user_id = %s::uuid AND reference_id IS NOT NULL
                    GROUP BY reference_id
                ) l ON l.reference_id = p.id
                WHERE p.id = %s AND p.user_id = %s::uuid""",
-            (user_id, REASON_PICK_SETTLE, pick_id, user_id),
+            (user_id, pick_id, user_id),
         )
         r = cur.fetchone()
     finally:
@@ -2621,7 +2629,7 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
             bankroll_delta = round(stake, 2)
             event_type = "pick_void"
 
-        # US-BE-020 (D-04-011 / D-05-012): +10 DP en ledger para won, lost y void.
+        # US-BE-020: +15 DP en ledger para won, lost y void.
         dp_earned = PICK_SETTLE_DP_REWARD
 
         now = datetime.now(tz=timezone.utc)
