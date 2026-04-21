@@ -13,11 +13,12 @@ import logging
 import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Optional, Protocol, runtime_checkable
+from typing import Any, Mapping, Optional, Protocol, runtime_checkable
 
 from apps.api.bt2_dev_sm_refresh import fetch_sportmonks_fixture_dict
 from apps.api.bt2_official_evaluation_job import job_summary_dict, run_official_evaluation_job
 from apps.api.bt2_raw_sportmonks_store import upsert_raw_sportmonks_fixture_psycopg2
+from apps.api.bt2_sportmonks_bulk import fetch_fixtures_between_dates
 
 logger = logging.getLogger(__name__)
 
@@ -31,14 +32,38 @@ class _DbCursor(Protocol):
 _normalize_mod: Any = None
 
 
+def _bulk_between_range_for_monitor(
+    operating_day_key_from: str,
+    operating_day_key_to: str,
+    *,
+    pad_days: int = 3,
+) -> tuple[date, date]:
+    """
+    Ventana **solo** para SM ``fixtures/between`` (llenar mapa bulk).
+
+    Coincide con lo que la UI ya envía como ``operatingDayKeyFrom`` / ``To`` (Hoy, 7d…), ampliado
+    ``±pad_days`` por cruces TZ. Los **picks** a refrescar siguen siendo sólo los del rango operativo
+    en SQL; aquí no se piden «resultados futuros» en sentido BT2 — SM devuelve estado scheduled/live.
+    """
+    d0 = date.fromisoformat(str(operating_day_key_from).strip()[:10])
+    d1 = date.fromisoformat(str(operating_day_key_to).strip()[:10])
+    pad = timedelta(days=pad_days)
+    return d0 - pad, d1 + pad
+
+
 def _refresh_distinct_fixtures_from_pick_event_rows(
     cur: _DbCursor,
     rows: list[Any],
     sportmonks_api_key: str,
+    *,
+    fixture_payload_by_sm_id: Optional[Mapping[int, dict[str, Any]]] = None,
 ) -> dict[str, Any]:
     """
-    Para cada fila (event_id, sportmonks_fixture_id) distinta en `rows`: GET SM,
-    UPSERT raw, normaliza CDM. Dedupe por `sportmonks_fixture_id`.
+    Para cada fila (event_id, sportmonks_fixture_id) distinta en `rows`:
+    payload desde ``fixture_payload_by_sm_id`` si existe (GET **between**, mismos ``include`` que
+    ``scripts/bt2_cdm/fetch_upcoming.py``); si no GET por id con **perfil completo**
+    (``BT2_SM_FIXTURE_INCLUDES`` + degradación 403 — igual que el ingesta diaria). UPSERT raw,
+    normaliza CDM. Dedupe por `sportmonks_fixture_id`.
 
     Devuelve contadores + notes (sin evaluación oficial).
     """
@@ -49,7 +74,7 @@ def _refresh_distinct_fixtures_from_pick_event_rows(
     norm = _normalize_module()
     normalize_single = norm.normalize_single_fixture_payload
     fetched_at = datetime.now(tz=timezone.utc)
-    sm_requests = 0
+    id_fetch_count = 0
 
     for row in rows:
         r = dict(row) if isinstance(row, dict) else {"event_id": row[0], "sm_fid": row[1]}
@@ -63,11 +88,16 @@ def _refresh_distinct_fixtures_from_pick_event_rows(
             continue
         seen_sm.add(fid)
 
-        if sm_requests > 0:
-            time.sleep(0.25)
-        sm_requests += 1
-
-        fx = fetch_sportmonks_fixture_dict(fid, sportmonks_api_key.strip())
+        fx: Optional[dict[str, Any]] = None
+        if fixture_payload_by_sm_id is not None:
+            hit = fixture_payload_by_sm_id.get(fid)
+            if isinstance(hit, dict):
+                fx = hit
+        if fx is None:
+            if id_fetch_count > 0:
+                time.sleep(0.25)
+            id_fetch_count += 1
+            fx = fetch_sportmonks_fixture_dict(fid, sportmonks_api_key.strip(), profile="full")
         if fx is None:
             notes.append(f"sm:fixture_{fid}_fetch_fallo")
             continue
@@ -176,7 +206,12 @@ def admin_refresh_cdm_from_sm_for_operating_day(
         (operating_day_key, operating_day_key, lim) if only_pending_official_evaluation else (operating_day_key, lim),
     )
     rows = cur.fetchall()
-    core = _refresh_distinct_fixtures_from_pick_event_rows(cur, rows, sportmonks_api_key)
+    bf, bt = _bulk_between_range_for_monitor(operating_day_key, operating_day_key)
+    bulk_map, bulk_notes, _bulk_req = fetch_fixtures_between_dates(bf, bt, sportmonks_api_key)
+    notes.extend(bulk_notes)
+    core = _refresh_distinct_fixtures_from_pick_event_rows(
+        cur, rows, sportmonks_api_key, fixture_payload_by_sm_id=bulk_map
+    )
     sm_ok = int(core["sm_fetch_ok"])
     raw_ok = int(core["raw_upsert_ok"])
     cdm_ok = int(core["cdm_normalized_ok"])
@@ -296,7 +331,12 @@ def admin_refresh_cdm_from_sm_for_daily_pick_day_range(
         else (operating_day_key_from, operating_day_key_to, lim),
     )
     rows = cur.fetchall()
-    core = _refresh_distinct_fixtures_from_pick_event_rows(cur, rows, sportmonks_api_key)
+    bf, bt = _bulk_between_range_for_monitor(operating_day_key_from, operating_day_key_to)
+    bulk_map, bulk_notes, _bulk_req = fetch_fixtures_between_dates(bf, bt, sportmonks_api_key)
+    notes.extend(bulk_notes)
+    core = _refresh_distinct_fixtures_from_pick_event_rows(
+        cur, rows, sportmonks_api_key, fixture_payload_by_sm_id=bulk_map
+    )
     sm_ok = int(core["sm_fetch_ok"])
     raw_ok = int(core["raw_upsert_ok"])
     cdm_ok = int(core["cdm_normalized_ok"])
@@ -496,7 +536,15 @@ def admin_refresh_cdm_from_sm_for_backtest_replay_window(
             "notes": [],
         }
 
-    core = _refresh_distinct_fixtures_from_pick_event_rows(cur, rows, sportmonks_api_key)
+    bf, bt = _bulk_between_range_for_monitor(
+        operating_day_key_from.strip(),
+        operating_day_key_to.strip(),
+    )
+    bulk_map, bulk_notes, _bulk_req = fetch_fixtures_between_dates(bf, bt, sportmonks_api_key)
+    notes.extend(bulk_notes)
+    core = _refresh_distinct_fixtures_from_pick_event_rows(
+        cur, rows, sportmonks_api_key, fixture_payload_by_sm_id=bulk_map
+    )
     sm_ok = int(core["sm_fetch_ok"])
     raw_ok = int(core["raw_upsert_ok"])
     cdm_ok = int(core["cdm_normalized_ok"])

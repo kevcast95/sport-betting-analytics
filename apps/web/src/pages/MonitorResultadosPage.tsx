@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { fetchBt2AdminMonitorResultados } from '@/lib/api'
 import type { Bt2AdminMonitorResultadosOut, Bt2MonitorOutcome } from '@/lib/bt2Types'
 import { useUserStore } from '@/store/useUserStore'
@@ -24,6 +24,9 @@ type TableRow = {
   flatStakeReturnUnits: number | null
   /** Marca en `bt2_picks.user_result_claim` (no modifica pendiente CDM). */
   userResultClaim: string | null
+  dsrNarrativeEs: string | null
+  dsrConfidenceLabel: string | null
+  dsrSource: string | null
 }
 
 function todayIsoBogota(): string {
@@ -97,6 +100,42 @@ function outcomeClass(o: OutcomeBadge): string {
     default:
       return 'border-[#a4b4be]/35 bg-[#f8fafc] text-[#64748b]'
   }
+}
+
+/** Contenido del panel DSR en la fila expandible (ancho completo). */
+function DsrCollapsePanelBody(props: {
+  narrativeEs: string | null
+  confidenceLabel: string | null
+  source: string | null
+}) {
+  const narrative =
+    props.narrativeEs != null && props.narrativeEs.trim() !== ''
+      ? props.narrativeEs.trim()
+      : null
+  const confidence = props.confidenceLabel?.trim() || null
+  const source = props.source?.trim() || null
+
+  return (
+    <div className="space-y-3 border-l-2 border-[#8B5CF6]/40 pl-4">
+      {(confidence != null || source != null) && (
+        <div className="flex flex-wrap gap-2 font-mono text-[10px] leading-tight text-[#6e7d86]">
+          {confidence != null ? (
+            <span className="rounded border border-[#a4b4be]/25 bg-white px-1.5 py-0.5">
+              conf: {confidence}
+            </span>
+          ) : null}
+          {source != null ? (
+            <span className="rounded border border-[#a4b4be]/25 bg-white px-1.5 py-0.5">
+              fuente: {source}
+            </span>
+          ) : null}
+        </div>
+      )}
+      <p className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-[#435368]">
+        {narrative ?? 'Sin narrativa DSR guardada para esta fila de bóveda.'}
+      </p>
+    </div>
+  )
 }
 
 /** Badge de `user_result_claim` en ledger — no cambia pendiente oficial CDM / monitor. */
@@ -239,6 +278,8 @@ export default function MonitorResultadosPage() {
   const [outcomeFilter, setOutcomeFilter] = useState<MonitorOutcomeFilter>('all')
   const [marketFilter, setMarketFilter] = useState('')
   const [tableSearch, setTableSearch] = useState('')
+  /** Fila cuyo panel DSR está expandido (segunda `<tr>` a ancho completo). */
+  const [dsrExpandedPickId, setDsrExpandedPickId] = useState<number | null>(null)
 
   const rangeKeys = useMemo(
     () => operatingRangeForPreset(preset, rangeFrom, rangeTo),
@@ -297,6 +338,20 @@ export default function MonitorResultadosPage() {
     smSyncPendingOnly,
   ])
 
+  useEffect(() => {
+    setDsrExpandedPickId(null)
+  }, [
+    monitorPage,
+    preset,
+    rangeFrom,
+    rangeTo,
+    outcomeFilter,
+    marketFilter,
+    tableSearch,
+    tableFilter,
+    onlyScored,
+  ])
+
   const sys = data?.system
   const sysRoi = sys?.roiFlatStake
   const yrs = data?.yours
@@ -319,6 +374,9 @@ export default function MonitorResultadosPage() {
       decimalOdds: r.decimalOdds ?? null,
       flatStakeReturnUnits: r.flatStakeReturnUnits ?? null,
       userResultClaim: r.userResultClaim ?? null,
+      dsrNarrativeEs: r.dsrNarrativeEs ?? null,
+      dsrConfidenceLabel: r.dsrConfidenceLabel ?? null,
+      dsrSource: r.dsrSource ?? null,
     }))
 
   const rowsTotalFromApi = data?.rowsTotal
@@ -887,6 +945,12 @@ export default function MonitorResultadosPage() {
             <table className="w-full border-separate border-spacing-0 text-left">
               <thead>
                 <tr className="bg-[#eef4fa]">
+                  <th
+                    scope="col"
+                    className="w-12 border-b border-[#a4b4be]/20 p-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#52616a]"
+                  >
+                    <span className="sr-only">Expandir razón DSR</span>
+                  </th>
                   <th className="border-b border-[#a4b4be]/20 p-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[#52616a]">
                     Día
                   </th>
@@ -919,61 +983,121 @@ export default function MonitorResultadosPage() {
               <tbody className="font-mono text-sm text-[#26343d]">
                 {filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="p-8 text-center text-[#52616a]">
+                    <td colSpan={10} className="p-8 text-center text-[#52616a]">
                       {loading ? 'Cargando…' : 'No hay filas con los filtros actuales.'}
                     </td>
                   </tr>
                 ) : (
-                  filteredRows.map((r) => (
-                    <tr
-                      key={r.dailyPickId}
-                      className="hover:bg-[#f6fafe]"
-                    >
-                      <td className="border-b border-[#e5eff7] p-4 text-[#52616a]">{r.dayKey}</td>
-                      <td className="border-b border-[#e5eff7] p-4 font-medium text-[#26343d]">
-                        {r.eventLabel}
-                      </td>
-                      <td className="border-b border-[#e5eff7] p-4 text-[#52616a]">{r.marketLabel}</td>
-                      <td className="border-b border-[#e5eff7] p-4 text-[#26343d]">
-                        {r.selectionLabel}
-                      </td>
-                      <td className="border-b border-[#e5eff7] p-4 text-right tabular-nums text-[#26343d]">
-                        {r.scoreText}
-                      </td>
-                      <td className="border-b border-[#e5eff7] p-4 text-right tabular-nums text-[#52616a]">
-                        {r.decimalOdds != null ? r.decimalOdds.toFixed(2) : '—'}
-                      </td>
-                      <td
-                        className={[
-                          'border-b border-[#e5eff7] p-4 text-right tabular-nums',
-                          r.flatStakeReturnUnits != null && r.flatStakeReturnUnits >= 0
-                            ? 'text-emerald-800'
-                            : r.flatStakeReturnUnits != null
-                              ? 'text-orange-900'
-                              : 'text-[#52616a]',
-                        ].join(' ')}
-                      >
-                        {r.flatStakeReturnUnits != null
-                          ? r.flatStakeReturnUnits >= 0
-                            ? `+${r.flatStakeReturnUnits.toFixed(2)}`
-                            : r.flatStakeReturnUnits.toFixed(2)
-                          : '—'}
-                      </td>
-                      <td className="border-b border-[#e5eff7] p-4 text-center">
-                        <OperatorClaimPill claim={r.userResultClaim} />
-                      </td>
-                      <td className="border-b border-[#e5eff7] p-4 text-right">
-                        <span
-                          className={[
-                            'inline-block border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest',
-                            outcomeClass(r.outcome),
-                          ].join(' ')}
-                        >
-                          {outcomeLabel(r.outcome)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
+                  filteredRows.map((r) => {
+                    const dsrOpen = dsrExpandedPickId === r.dailyPickId
+                    const panelId = `monitor-dsr-panel-${r.dailyPickId}`
+                    const triggerId = `monitor-dsr-trigger-${r.dailyPickId}`
+                    return (
+                      <Fragment key={r.dailyPickId}>
+                        <tr className={dsrOpen ? 'bg-[#f6fafe]' : 'hover:bg-[#f6fafe]'}>
+                          <td className="border-b border-[#e5eff7] p-2 align-middle">
+                            <button
+                              type="button"
+                              id={triggerId}
+                              aria-expanded={dsrOpen}
+                              aria-controls={panelId}
+                              onClick={() =>
+                                setDsrExpandedPickId((cur) =>
+                                  cur === r.dailyPickId ? null : r.dailyPickId,
+                                )
+                              }
+                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#8B5CF6]/25 bg-[#eef4fa]/80 text-[#6d3bd7] transition-colors hover:bg-[#e5eff7]"
+                              title={dsrOpen ? 'Ocultar razón DSR' : 'Ver razón DSR'}
+                            >
+                              <svg
+                                className={`h-4 w-4 transition-transform ${dsrOpen ? 'rotate-180' : ''}`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                aria-hidden
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+                          </td>
+                          <td className="border-b border-[#e5eff7] p-4 text-[#52616a]">{r.dayKey}</td>
+                          <td className="border-b border-[#e5eff7] p-4 font-medium text-[#26343d]">
+                            {r.eventLabel}
+                          </td>
+                          <td className="border-b border-[#e5eff7] p-4 text-[#52616a]">
+                            {r.marketLabel}
+                          </td>
+                          <td className="border-b border-[#e5eff7] p-4 text-[#26343d]">
+                            {r.selectionLabel}
+                          </td>
+                          <td className="border-b border-[#e5eff7] p-4 text-right tabular-nums text-[#26343d]">
+                            {r.scoreText}
+                          </td>
+                          <td className="border-b border-[#e5eff7] p-4 text-right tabular-nums text-[#52616a]">
+                            {r.decimalOdds != null ? r.decimalOdds.toFixed(2) : '—'}
+                          </td>
+                          <td
+                            className={[
+                              'border-b border-[#e5eff7] p-4 text-right tabular-nums',
+                              r.flatStakeReturnUnits != null && r.flatStakeReturnUnits >= 0
+                                ? 'text-emerald-800'
+                                : r.flatStakeReturnUnits != null
+                                  ? 'text-orange-900'
+                                  : 'text-[#52616a]',
+                            ].join(' ')}
+                          >
+                            {r.flatStakeReturnUnits != null
+                              ? r.flatStakeReturnUnits >= 0
+                                ? `+${r.flatStakeReturnUnits.toFixed(2)}`
+                                : r.flatStakeReturnUnits.toFixed(2)
+                              : '—'}
+                          </td>
+                          <td className="border-b border-[#e5eff7] p-4 text-center">
+                            <OperatorClaimPill claim={r.userResultClaim} />
+                          </td>
+                          <td className="border-b border-[#e5eff7] p-4 text-right">
+                            <span
+                              className={[
+                                'inline-block border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest',
+                                outcomeClass(r.outcome),
+                              ].join(' ')}
+                            >
+                              {outcomeLabel(r.outcome)}
+                            </span>
+                          </td>
+                        </tr>
+                        {dsrOpen ? (
+                          <tr
+                            id={panelId}
+                            role="region"
+                            aria-labelledby={triggerId}
+                            className="bg-[#f8fafc]"
+                          >
+                            <td
+                              colSpan={10}
+                              className="border-b border-[#e5eff7] px-4 pb-5 pt-0"
+                            >
+                              <div className="rounded-b-xl rounded-t-none border border-t-0 border-[#e5eff7] bg-white px-4 py-4 shadow-inner">
+                                <p className="mb-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#8B5CF6]">
+                                  Razón DSR
+                                </p>
+                                <DsrCollapsePanelBody
+                                  narrativeEs={r.dsrNarrativeEs}
+                                  confidenceLabel={r.dsrConfidenceLabel}
+                                  source={r.dsrSource}
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        ) : null}
+                      </Fragment>
+                    )
+                  })
                 )}
               </tbody>
             </table>
@@ -981,7 +1105,9 @@ export default function MonitorResultadosPage() {
               * Cuota: prioridad{' '}
               <span className="font-mono">reference_decimal_odds</span>; si falta, mediana CDM sobre
               filas del evento (mercado/selección canónicos). Si no hay snapshot de cuotas en BD para
-              ese evento → «—». «Tu criterio» es la marca guardada en ledger (
+              ese evento → «—». Razón DSR: texto materializado en{' '}
+              <span className="font-mono">bt2_daily_picks.dsr_narrative_es</span> al generar la bóveda.
+              «Tu criterio» es la marca guardada en ledger (
               <span className="font-mono">PATCH …/user-result-claim</span>
               ); no borra pendientes hasta que evalúe el job oficial CDM.
             </p>

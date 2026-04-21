@@ -225,6 +225,8 @@ export interface Bt2SettleOut {
   earned_dp: number
   /** Null si el JSON no traía saldo (no confundir con saldo real 0). */
   dp_balance_after: number | null
+  /** `cdm` | `user` | `user_claim` — ver apps.api SettleOut. */
+  settlement_source?: string
 }
 
 // ─── Session ──────────────────────────────────────────────────────────────────
@@ -461,6 +463,10 @@ export interface Bt2AdminMonitorRowOut {
   flatStakeReturnUnits?: number | null
   /** Marca manual en bt2_picks (no altera pendiente oficial CDM). */
   userResultClaim?: string | null
+  /** Narrativa DSR desde bóveda (`bt2_daily_picks.dsr_narrative_es`). */
+  dsrNarrativeEs?: string | null
+  dsrConfidenceLabel?: string | null
+  dsrSource?: string | null
 }
 
 export interface Bt2AdminMonitorSmSyncOut {

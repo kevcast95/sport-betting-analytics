@@ -847,6 +847,21 @@ class Bt2AdminMonitorRowOut(BaseModel):
         alias="userResultClaim",
         description="Marca declarativa en bt2_picks (operador); no cambia pending CDM.",
     )
+    dsr_narrative_es: Optional[str] = Field(
+        None,
+        alias="dsrNarrativeEs",
+        description="Narrativa / razón DSR materializada en `bt2_daily_picks`.",
+    )
+    dsr_confidence_label: Optional[str] = Field(
+        None,
+        alias="dsrConfidenceLabel",
+        description="Etiqueta de confianza DSR (`bt2_daily_picks`).",
+    )
+    dsr_source: Optional[str] = Field(
+        None,
+        alias="dsrSource",
+        description="Origen de la señal DSR (p. ej. deepseek, sql_stat_fallback).",
+    )
 
 
 class Bt2AdminMonitorSmSyncOut(BaseModel):

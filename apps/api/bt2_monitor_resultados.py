@@ -14,7 +14,10 @@ from typing import Any, Mapping, Optional
 from apps.api.bt2_dsr_ds_input_builder import aggregated_odds_for_event_psycopg
 from apps.api.bt2_dsr_odds_aggregation import consensus_decimal_for_canonical_pick
 from apps.api.bt2_market_canonical import market_canonical_label_es, selection_canonical_summary_es
-from apps.api.bt2_official_truth_resolver import normalize_official_eval_market
+from apps.api.bt2_official_truth_resolver import (
+    normalize_official_eval_market,
+    resolve_official_evaluation_from_cdm_truth,
+)
 
 # Vista admin: incluir cuotas que en el pipeline de valor se filtran con min 1.30 — si no, muchas
 # filas quedan sin mediana aunque exista snapshot CDM (p. ej. solo casas con cuota < 1.30 en una pierna).
@@ -78,6 +81,85 @@ def evaluation_status_to_outcome_ui(st: Optional[str]) -> str:
         return "void"
     if st == "no_evaluable":
         return "ne"
+    return "pendiente"
+
+
+def _user_protocol_and_claim_to_outcome_ui(
+    pick_protocol_status: Optional[str],
+    user_claim: Optional[str],
+) -> Optional[str]:
+    """Misma jerarquía que liquidación sin CDM: pick protocolo > claim ledger."""
+    ps = (pick_protocol_status or "").strip().lower()
+    if ps == "won":
+        return "si"
+    if ps == "lost":
+        return "no"
+    if ps == "void":
+        return "void"
+    c = (user_claim or "").strip().lower()
+    if c == "won":
+        return "si"
+    if c == "lost":
+        return "no"
+    if c == "void":
+        return "void"
+    return None
+
+
+def _cdm_resolver_to_outcome_ui_or_fallback(resolution_status: str) -> Optional[str]:
+    """
+    Si el resolver CDM da veredicto reproducible → badge monitor.
+    None si sigue pending o no_evaluable (sin verdad usable) → operador.
+    """
+    if resolution_status == "pending_result":
+        return None
+    if resolution_status == "no_evaluable":
+        return None
+    return evaluation_status_to_outcome_ui(resolution_status)
+
+
+def effective_monitor_outcome_ui(
+    *,
+    evaluation_status: str,
+    mmc: str,
+    msc: str,
+    result_home: Any,
+    result_away: Any,
+    event_status: Optional[str],
+    pick_protocol_status: Optional[str],
+    user_claim: Optional[str],
+) -> str:
+    """
+    Columna «¿Cumplió?»: alineada a la jerarquía de liquidación.
+
+    1. Fila materializada `bt2_pick_official_evaluation` si ya no está pending_result.
+    2. Verdad desde CDM (`bt2_events` + resolver oficial) cuando basta marcador/mercado.
+    3. Estado del pick en protocolo (`won`/`lost`/`void`) o `user_result_claim`.
+    4. pendiente.
+    """
+    es = (evaluation_status or "").strip() or "pending_result"
+    if es != "pending_result":
+        return evaluation_status_to_outcome_ui(es)
+
+    ev_st = (event_status or "").lower().strip()
+    if ev_st in ("cancelled", "canceled", "postponed", "abandoned"):
+        return "void"
+
+    res = resolve_official_evaluation_from_cdm_truth(
+        market_canonical=mmc or None,
+        selection_canonical=msc or None,
+        result_home=int(result_home) if result_home is not None else None,
+        result_away=int(result_away) if result_away is not None else None,
+        event_status=event_status,
+    )
+    mapped = _cdm_resolver_to_outcome_ui_or_fallback(str(res.evaluation_status))
+    if mapped is not None:
+        return mapped
+
+    u = _user_protocol_and_claim_to_outcome_ui(pick_protocol_status, user_claim)
+    if u is not None:
+        return u
+
     return "pendiente"
 
 
@@ -282,6 +364,9 @@ def build_monitor_resultados_payload(
             dp.user_id::text AS user_id,
             dp.event_id,
             dp.reference_decimal_odds AS reference_decimal_odds,
+            dp.dsr_narrative_es AS dsr_narrative_es,
+            dp.dsr_confidence_label AS dsr_confidence_label,
+            dp.dsr_source AS dsr_source,
             COALESCE(e.market_canonical, dp.model_market_canonical, '') AS mmc,
             COALESCE(e.selection_canonical, dp.model_selection_canonical, '') AS msc,
             COALESCE(e.evaluation_status, 'pending_result') AS evaluation_status,
@@ -289,6 +374,7 @@ def build_monitor_resultados_payload(
             ev.result_away,
             COALESCE(ht.name, '') AS home_team,
             COALESCE(at2.name, '') AS away_team,
+            ev.status AS ev_status,
             EXISTS (
                 SELECT 1 FROM bt2_picks pk
                 WHERE pk.user_id = dp.user_id AND pk.event_id = dp.event_id
@@ -298,9 +384,18 @@ def build_monitor_resultados_payload(
                 SELECT pk2.user_result_claim
                 FROM bt2_picks pk2
                 WHERE pk2.user_id = dp.user_id AND pk2.event_id = dp.event_id
+                  AND (timezone('{tz}', pk2.opened_at))::date = dp.operating_day_key::date
                 ORDER BY pk2.opened_at DESC NULLS LAST
                 LIMIT 1
-            ) AS user_result_claim
+            ) AS user_result_claim,
+            (
+                SELECT pk4.status
+                FROM bt2_picks pk4
+                WHERE pk4.user_id = dp.user_id AND pk4.event_id = dp.event_id
+                  AND (timezone('{tz}', pk4.opened_at))::date = dp.operating_day_key::date
+                ORDER BY pk4.opened_at DESC NULLS LAST
+                LIMIT 1
+            ) AS pick_protocol_status
         FROM bt2_daily_picks dp
         LEFT JOIN bt2_pick_official_evaluation e ON e.daily_pick_id = dp.id
         INNER JOIN bt2_events ev ON ev.id = dp.event_id
@@ -360,7 +455,24 @@ def build_monitor_resultados_payload(
                 dec = None
         if dec is None:
             dec = _consensus_decimal_for_pick_row(consensus, mmc, msc)
-        outcome_ui = evaluation_status_to_outcome_ui(str(r.get("evaluation_status")))
+        outcome_ui = effective_monitor_outcome_ui(
+            evaluation_status=str(r.get("evaluation_status") or "pending_result"),
+            mmc=mmc,
+            msc=msc,
+            result_home=rh,
+            result_away=ra,
+            event_status=r.get("ev_status") if isinstance(r, Mapping) else None,
+            pick_protocol_status=(
+                str(r.get("pick_protocol_status"))
+                if r.get("pick_protocol_status") is not None
+                else None
+            ),
+            user_claim=(
+                str(r.get("user_result_claim"))
+                if r.get("user_result_claim") is not None
+                else None
+            ),
+        )
 
         sys_net, sys_nc, sys_nm = _roi_flat_stake_accumulate(
             outcome_ui=outcome_ui,
@@ -388,6 +500,13 @@ def build_monitor_resultados_payload(
         else:
             ru = None
 
+        narr = r.get("dsr_narrative_es")
+        narr_s = str(narr).strip() if narr is not None else ""
+        dsr_conf = r.get("dsr_confidence_label")
+        dsr_conf_s = str(dsr_conf).strip() if dsr_conf is not None else None
+        dsr_src = r.get("dsr_source")
+        dsr_src_s = str(dsr_src).strip() if dsr_src is not None else None
+
         rows_out.append(
             {
                 "daily_pick_id": int(r["daily_pick_id"]),
@@ -403,6 +522,9 @@ def build_monitor_resultados_payload(
                 "decimal_odds": dec,
                 "flat_stake_return_units": ru,
                 "user_result_claim": r.get("user_result_claim"),
+                "dsr_narrative_es": narr_s if narr_s else None,
+                "dsr_confidence_label": dsr_conf_s if dsr_conf_s else None,
+                "dsr_source": dsr_src_s if dsr_src_s else None,
             }
         )
 

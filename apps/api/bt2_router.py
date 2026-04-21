@@ -60,6 +60,8 @@ from apps.api.bt2_value_pool import (
     parse_priority_league_ids,
 )
 from apps.api.bt2_market_canonical import (
+    MODEL_PREDICTION_NA,
+    MODEL_PREDICTION_VOID,
     determine_settlement_outcome,
     evaluate_model_vs_result,
     market_canonical_label_es,
@@ -1967,8 +1969,13 @@ class UserResultClaimIn(BaseModel):
 
 
 class SettleIn(BaseModel):
-    result_home: int
-    result_away: int
+    """Marcador opcional si la verdad CDM no está en `bt2_events`; obligatorio si no hay CDM ni `user_result_claim` válido."""
+
+    result_home: Optional[int] = Field(
+        default=None,
+        description="Marcador local preferido solo cuando CDM/SM no tiene resultado final.",
+    )
+    result_away: Optional[int] = Field(default=None, description="Par de result_home.")
 
 
 class SettleOut(BaseModel):
@@ -1985,6 +1992,111 @@ class SettleOut(BaseModel):
     )
     earned_dp: int = Field(serialization_alias="earnedDp")
     dp_balance_after: int = Field(serialization_alias="dpBalanceAfter")
+    settlement_source: str = Field(
+        serialization_alias="settlementSource",
+        description="cdm | user | user_claim — origen efectivo del resultado.",
+    )
+
+
+def _cdm_truth_tier(
+    result_home: Optional[Any],
+    result_away: Optional[Any],
+    event_status: Optional[str],
+) -> str:
+    """
+    Prioridad jerárquica del marcador CDM (`bt2_events`, alimentado por SportMonks):
+    - void_official: evento cancelado/aplazado/abandonado → void de oficio.
+    - scores: marcador final presente (fuente autoritativa por encima del usuario).
+    - none: sin verdad reproducible desde CDM → usar liquidación manual o claim.
+    """
+    st = (event_status or "").lower().strip()
+    if st in ("cancelled", "canceled", "postponed", "abandoned"):
+        return "void_official"
+    if result_home is not None and result_away is not None:
+        try:
+            int(result_home)
+            int(result_away)
+        except (TypeError, ValueError):
+            return "none"
+        return "scores"
+    return "none"
+
+
+def _outcome_from_user_result_claim(claim: Optional[str]) -> Optional[str]:
+    if not claim:
+        return None
+    c = str(claim).strip().lower()
+    if c == "won":
+        return "won"
+    if c == "lost":
+        return "lost"
+    if c == "void":
+        return "void"
+    return None
+
+
+def _resolve_settlement_outcome_for_pick(
+    *,
+    pick_market: str,
+    pick_selection: str,
+    model_mm: Optional[str],
+    model_ms: Optional[str],
+    ev_home: Optional[Any],
+    ev_away: Optional[Any],
+    ev_status: Optional[str],
+    body_home: Optional[int],
+    body_away: Optional[int],
+    user_result_claim: Optional[str],
+) -> Tuple[str, Optional[int], Optional[int], str, str]:
+    """
+    Jerarquía:
+    1) CDM (`bt2_events`): marcador final o void oficial — por encima del usuario.
+    2) Marcador enviado en POST /settle (declaración en liquidación).
+    3) `user_result_claim` en ledger (won | lost | void).
+
+    Retorna: outcome, result_home, result_away (persistidos), model_prediction_result, settlement_source.
+    """
+    tier = _cdm_truth_tier(ev_home, ev_away, ev_status)
+    if tier == "void_official":
+        return ("void", None, None, MODEL_PREDICTION_VOID, "cdm")
+
+    if tier == "scores":
+        rh = int(ev_home)
+        ra = int(ev_away)
+        out = _determine_outcome(pick_market, pick_selection, rh, ra)
+        mp = evaluate_model_vs_result(
+            model_mm,
+            model_ms,
+            rh,
+            ra,
+            _determine_outcome,
+        )
+        return (out, rh, ra, mp, "cdm")
+
+    if body_home is not None and body_away is not None:
+        rh = int(body_home)
+        ra = int(body_away)
+        out = _determine_outcome(pick_market, pick_selection, rh, ra)
+        mp = evaluate_model_vs_result(
+            model_mm,
+            model_ms,
+            rh,
+            ra,
+            _determine_outcome,
+        )
+        return (out, rh, ra, mp, "user")
+
+    claim_out = _outcome_from_user_result_claim(user_result_claim)
+    if claim_out is not None:
+        return (claim_out, None, None, MODEL_PREDICTION_NA, "user_claim")
+
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=(
+            "Sin resultado en CDM/SM para este evento. Indicá el marcador en la liquidación "
+            "o registrá ganado/perdido/void en «Tu criterio» del ledger antes de liquidar sin marcador."
+        ),
+    )
 
 
 # ── Picks endpoints (T-098, T-099) ───────────────────────────────────────────
@@ -2590,7 +2702,8 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
     try:
         cur.execute(
             """SELECT id, status, market, selection, odds_taken, stake_units,
-                      model_market_canonical, model_selection_canonical
+                      model_market_canonical, model_selection_canonical,
+                      event_id, user_result_claim
                FROM bt2_picks WHERE id = %s AND user_id = %s::uuid""",
             (pick_id, user_id),
         )
@@ -2600,16 +2713,33 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
         if pick[1] != "open":
             raise HTTPException(status_code=409, detail="El pick ya está liquidado")
 
-        outcome = _determine_outcome(pick[2], pick[3], body.result_home, body.result_away)
-        model_pred = evaluate_model_vs_result(
-            pick[6],
-            pick[7],
-            body.result_home,
-            body.result_away,
-            _determine_outcome,
+        _pid, _pst, market, selection, odds_taken, stake_u, mm, ms = pick[:8]
+        event_id_pick = pick[8]
+        user_claim = pick[9]
+
+        cur.execute(
+            """SELECT result_home, result_away, status FROM bt2_events WHERE id = %s""",
+            (event_id_pick,),
         )
-        odds = float(pick[4])
-        stake = float(pick[5])
+        ev = cur.fetchone()
+        ev_home = ev[0] if ev else None
+        ev_away = ev[1] if ev else None
+        ev_status = ev[2] if ev else None
+
+        outcome, rh_fin, ra_fin, model_pred, settle_src = _resolve_settlement_outcome_for_pick(
+            pick_market=market,
+            pick_selection=selection,
+            model_mm=mm,
+            model_ms=ms,
+            ev_home=ev_home,
+            ev_away=ev_away,
+            ev_status=str(ev_status) if ev_status is not None else None,
+            body_home=body.result_home,
+            body_away=body.result_away,
+            user_result_claim=user_claim,
+        )
+        odds = float(odds_taken)
+        stake = float(stake_u)
 
         # Stake ya descontado al abrir el pick (POST /bt2/picks). Liquidación:
         # - won: reintegrar stake×cuota (apuesta + beneficio).
@@ -2638,10 +2768,10 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
             """UPDATE bt2_picks
                SET status = %s, settled_at = %s,
                    result_home = %s, result_away = %s, pnl_units = %s,
-                   settlement_source = 'user',
+                   settlement_source = %s,
                    model_prediction_result = %s
                WHERE id = %s""",
-            (outcome, now, body.result_home, body.result_away, pnl, model_pred, pick_id),
+            (outcome, now, rh_fin, ra_fin, pnl, settle_src, model_pred, pick_id),
         )
 
         cur.execute(
@@ -2687,6 +2817,7 @@ def bt2_settle_pick(pick_id: int, body: SettleIn, user_id: Bt2UserId) -> SettleO
         bankroll_after_units=new_bankroll,
         earned_dp=dp_earned,
         dp_balance_after=dp_balance_after,
+        settlement_source=settle_src,
     )
 
 

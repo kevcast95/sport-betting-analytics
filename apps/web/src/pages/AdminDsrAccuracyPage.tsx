@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ResponsiveContainer,
@@ -14,15 +14,58 @@ import {
 } from 'recharts'
 import { BunkerViewHeader } from '@/components/layout/BunkerViewHeader'
 import { fetchBt2AdminBacktestReplay, postBt2AdminRefreshCdmSmForBacktestWindow } from '@/lib/api'
+import type { Bt2AdminBacktestReplayOut } from '@/lib/bt2Types'
 
 /**
  * Dependencia sugerida: npm i recharts (gráficas).
  */
 
+const STORAGE_UI_KEY = 'bt2.admin.backtestReplay.ui.v1'
+const STORAGE_CACHE_PREFIX = 'bt2.admin.backtestReplay.cache.v1:'
+
+function cacheStorageKey(from: string, to: string): string {
+  return `${STORAGE_CACHE_PREFIX}${from}|${to}`
+}
+
 type ReplayPreset = 'today' | '7d' | '30d' | 'range'
 type ReplayOutcome = 'si' | 'no' | 'pendiente' | 'void' | 'ne'
 type TierFilter = 'all' | 'free' | 'premium' | 'blocked'
 type OutcomeFilter = 'all' | ReplayOutcome
+
+type PersistedReplayUi = {
+  preset?: ReplayPreset
+  rangeFrom?: string
+  rangeTo?: string
+  marketFilter?: string
+  tierFilter?: string
+  outcomeFilter?: string
+  leagueFilter?: string
+  search?: string
+  page?: number
+  smRefreshOnlyPendingCdm?: boolean
+}
+
+function readPersistedUi(): PersistedReplayUi {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = localStorage.getItem(STORAGE_UI_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw) as PersistedReplayUi
+  } catch {
+    return {}
+  }
+}
+
+function readCachedReplay(from: string, to: string): Bt2AdminBacktestReplayOut | undefined {
+  if (typeof window === 'undefined') return undefined
+  try {
+    const raw = localStorage.getItem(cacheStorageKey(from, to))
+    if (!raw) return undefined
+    return JSON.parse(raw) as Bt2AdminBacktestReplayOut
+  } catch {
+    return undefined
+  }
+}
 
 const PAGE_SIZE = 12
 
@@ -159,29 +202,50 @@ function ChartCard(props: { title: string; subtitle?: string; children: React.Re
   )
 }
 
-export default function BacktestReplayPage() {
-  const [preset, setPreset] = useState<ReplayPreset>('7d')
-  const t0 = todayIsoBogota()
-  const [rangeFrom, setRangeFrom] = useState(() => addDaysIso(t0, -6))
-  const [rangeTo, setRangeTo] = useState(t0)
-  const [marketFilter, setMarketFilter] = useState('all')
-  const [tierFilter, setTierFilter] = useState<TierFilter>('all')
-  const [outcomeFilter, setOutcomeFilter] = useState<OutcomeFilter>('all')
-  const [leagueFilter, setLeagueFilter] = useState('all')
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  /** POST SM → CDM: solo eventos sin marcador completo en bt2_events (ahorra cuota). */
-  const [smRefreshOnlyPendingCdm, setSmRefreshOnlyPendingCdm] = useState(true)
+const PRESETS: ReplayPreset[] = ['today', '7d', '30d', 'range']
 
-  const queryClient = useQueryClient()
+export default function BacktestReplayPage() {
+  const t0 = todayIsoBogota()
+  const persisted = readPersistedUi()
+  const initialPreset = PRESETS.includes(persisted.preset as ReplayPreset)
+    ? (persisted.preset as ReplayPreset)
+    : '7d'
+
+  const [preset, setPreset] = useState<ReplayPreset>(initialPreset)
+  const [rangeFrom, setRangeFrom] = useState(() => persisted.rangeFrom ?? addDaysIso(t0, -6))
+  const [rangeTo, setRangeTo] = useState(() => persisted.rangeTo ?? t0)
+  const [marketFilter, setMarketFilter] = useState(() => persisted.marketFilter ?? 'all')
+  const [tierFilter, setTierFilter] = useState<TierFilter>(() => {
+    const x = persisted.tierFilter
+    return x === 'free' || x === 'premium' || x === 'blocked' ? x : 'all'
+  })
+  const [outcomeFilter, setOutcomeFilter] = useState<OutcomeFilter>(() => {
+    const x = persisted.outcomeFilter
+    const ok: OutcomeFilter[] = ['all', 'si', 'no', 'pendiente', 'void', 'ne']
+    return ok.includes(x as OutcomeFilter) ? (x as OutcomeFilter) : 'all'
+  })
+  const [leagueFilter, setLeagueFilter] = useState(() => persisted.leagueFilter ?? 'all')
+  const [search, setSearch] = useState(() => persisted.search ?? '')
+  const [page, setPage] = useState(() =>
+    typeof persisted.page === 'number' && persisted.page >= 1 ? persisted.page : 1,
+  )
+  /** POST SM → CDM: solo eventos sin marcador completo en bt2_events (ahorra cuota). */
+  const [smRefreshOnlyPendingCdm, setSmRefreshOnlyPendingCdm] = useState(
+    () => persisted.smRefreshOnlyPendingCdm !== false,
+  )
+
   const rangeKeys = useMemo(
     () => operatingRangeForPreset(preset, rangeFrom, rangeTo),
     [preset, rangeFrom, rangeTo],
   )
 
+  const cachedReplayInitial = useMemo(
+    () => readCachedReplay(rangeKeys.from, rangeKeys.to),
+    [rangeKeys.from, rangeKeys.to],
+  )
+
   const {
     data,
-    isPending,
     isFetching,
     error: queryError,
     refetch,
@@ -190,21 +254,58 @@ export default function BacktestReplayPage() {
     queryFn: () => fetchBt2AdminBacktestReplay(rangeKeys.from, rangeKeys.to),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 7,
+    enabled: false,
+    initialData: cachedReplayInitial,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   })
+
+  useEffect(() => {
+    if (!data) return
+    try {
+      localStorage.setItem(cacheStorageKey(rangeKeys.from, rangeKeys.to), JSON.stringify(data))
+    } catch (e) {
+      console.warn('[BT2] No se pudo persistir backtest-replay en localStorage:', e)
+    }
+  }, [data, rangeKeys.from, rangeKeys.to])
+
+  useEffect(() => {
+    try {
+      const payload: PersistedReplayUi = {
+        preset,
+        rangeFrom,
+        rangeTo,
+        marketFilter,
+        tierFilter,
+        outcomeFilter,
+        leagueFilter,
+        search,
+        page,
+        smRefreshOnlyPendingCdm,
+      }
+      localStorage.setItem(STORAGE_UI_KEY, JSON.stringify(payload))
+    } catch {
+      /* noop */
+    }
+  }, [
+    preset,
+    rangeFrom,
+    rangeTo,
+    marketFilter,
+    tierFilter,
+    outcomeFilter,
+    leagueFilter,
+    search,
+    page,
+    smRefreshOnlyPendingCdm,
+  ])
 
   const smRefreshMutation = useMutation({
     mutationFn: () =>
       postBt2AdminRefreshCdmSmForBacktestWindow(rangeKeys.from, rangeKeys.to, {
         onlyPendingCdm: smRefreshOnlyPendingCdm ? undefined : false,
       }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ['bt2-admin-backtest-replay', rangeKeys.from, rangeKeys.to],
-      })
-    },
   })
 
   const error =
@@ -461,6 +562,18 @@ export default function BacktestReplayPage() {
           </div>
         ) : null}
 
+        {!error && !data && !isFetching ? (
+          <div
+            className="mt-5 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3 text-sm text-[#52616a]"
+            role="status"
+          >
+            <strong className="font-semibold text-[#26343d]">Replay no ejecutado en esta sesión.</strong>{' '}
+            Si ya guardaste un resultado antes, elegí el mismo rango para verlo desde el navegador; si no, pulsá{' '}
+            <span className="font-semibold text-[#6d28d9]">Ejecutar replay</span> cuando quieras llamar al API (no se
+            lanza al abrir la página).
+          </div>
+        ) : null}
+
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <MetricCard
             title="Hit rate"
@@ -678,7 +791,7 @@ export default function BacktestReplayPage() {
                 </tr>
               </thead>
               <tbody>
-                {isPending && !data ? (
+                {isFetching ? (
                   <tr>
                     <td colSpan={6} className="px-3 py-10 text-center text-sm text-[#52616a]">
                       Cargando replay…

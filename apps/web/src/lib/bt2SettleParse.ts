@@ -30,6 +30,12 @@ export function parseBt2SettleOut(raw: unknown): Bt2SettleOut | null {
     if (Number.isFinite(n)) dpBalanceAfter = n
   }
 
+  const settlementRaw = o.settlement_source ?? o.settlementSource
+  const settlementSource =
+    settlementRaw != null && settlementRaw !== ''
+      ? String(settlementRaw)
+      : undefined
+
   if (!Number.isFinite(pickId) || !Number.isFinite(pnl)) return null
   return {
     pick_id: pickId,
@@ -38,5 +44,6 @@ export function parseBt2SettleOut(raw: unknown): Bt2SettleOut | null {
     bankroll_after_units: bankrollAfter,
     earned_dp: earnedDp,
     dp_balance_after: dpBalanceAfter,
+    settlement_source: settlementSource,
   }
 }

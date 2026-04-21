@@ -15,6 +15,12 @@ def test_strip_include_root_removes_nested() -> None:
     assert bt2_sm_strip_include_root(s, "premiumOdds") == "odds;scores"
 
 
+def test_strip_include_root_case_insensitive_matches_sm_message() -> None:
+    """SM suele devolver 'inplayodds' en el mensaje 403 y el include es inplayOdds."""
+    s = "scores;inplayOdds;participants"
+    assert bt2_sm_strip_include_root(s, "inplayodds") == "scores;participants"
+
+
 def test_parse_forbidden_from_message() -> None:
     body = {"message": "You do not have access to the 'premiumOdds' include"}
     assert bt2_sm_parse_forbidden_include_from_sm_403(body) == "premiumOdds"

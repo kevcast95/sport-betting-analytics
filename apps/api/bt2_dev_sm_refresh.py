@@ -12,7 +12,7 @@ import json
 import logging
 import time
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, Literal
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -21,6 +21,7 @@ from apps.api.bt2_raw_sportmonks_store import upsert_raw_sportmonks_fixture_psyc
 from apps.api.bt2_sportmonks_include_resolve import bt2_sm_next_include_on_forbidden
 from apps.api.bt2_sportmonks_includes import (
     BT2_SM_FIXTURE_INCLUDES,
+    BT2_SM_FIXTURE_INCLUDES_CDM_REFRESH,
     BT2_SM_FIXTURE_INCLUDES_CORE,
 )
 from apps.api.bt2_value_pool import build_value_pool_for_snapshot, parse_priority_league_ids
@@ -46,9 +47,18 @@ def _user_day_window_utc(tz_name: str) -> tuple[datetime, datetime]:
     return day_start_utc, day_end_utc
 
 
-def _fetch_sm_fixture_dict(fixture_id: int, api_key: str) -> dict[str, Any] | None:
-    core = BT2_SM_FIXTURE_INCLUDES_CORE
-    effective_include = BT2_SM_FIXTURE_INCLUDES
+def _fetch_sm_fixture_dict(
+    fixture_id: int,
+    api_key: str,
+    *,
+    profile: Literal["full", "cdm_refresh"] = "full",
+) -> dict[str, Any] | None:
+    if profile == "cdm_refresh":
+        core = BT2_SM_FIXTURE_INCLUDES_CDM_REFRESH
+        effective_include = BT2_SM_FIXTURE_INCLUDES_CDM_REFRESH
+    else:
+        core = BT2_SM_FIXTURE_INCLUDES_CORE
+        effective_include = BT2_SM_FIXTURE_INCLUDES
 
     for _ in range(50):
         qs = urlencode({"api_token": api_key, "include": effective_include})
@@ -91,7 +101,16 @@ def _fetch_sm_fixture_dict(fixture_id: int, api_key: str) -> dict[str, Any] | No
                         fixture_id,
                     )
                     return None
-                logger.warning("[dev-sm-refresh] fixture %s HTTP %s", fixture_id, e.code)
+                try:
+                    err_snip = e.read().decode("utf-8", errors="replace")[:480]
+                except Exception:
+                    err_snip = ""
+                logger.warning(
+                    "[dev-sm-refresh] fixture %s HTTP %s body_snip=%s",
+                    fixture_id,
+                    e.code,
+                    err_snip.replace("\n", " "),
+                )
                 return None
             except (URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
                 logger.warning("[dev-sm-refresh] fixture %s error: %s", fixture_id, e)
@@ -101,14 +120,32 @@ def _fetch_sm_fixture_dict(fixture_id: int, api_key: str) -> dict[str, Any] | No
             d = parsed.get("data")
             if isinstance(d, dict):
                 return d
+            msg = parsed.get("message") if isinstance(parsed, dict) else None
+            subs = parsed.get("subscription") if isinstance(parsed, dict) else None
+            logger.warning(
+                "[dev-sm-refresh] fixture %s respuesta sin data útil msg=%s subscription=%s",
+                fixture_id,
+                msg,
+                subs,
+            )
             return None
 
     return None
 
 
-def fetch_sportmonks_fixture_dict(fixture_id: int, api_key: str) -> dict[str, Any] | None:
-    """GET fixture by id (v3) con includes BT2; mismo comportamiento que el refresco dev."""
-    return _fetch_sm_fixture_dict(fixture_id, api_key)
+def fetch_sportmonks_fixture_dict(
+    fixture_id: int,
+    api_key: str,
+    *,
+    profile: Literal["full", "cdm_refresh"] = "full",
+) -> dict[str, Any] | None:
+    """
+    GET fixture by id (v3).
+
+    - ``full``: includes amplios (pool valor / raw rico).
+    - ``cdm_refresh``: solo lo necesario para ``normalize_single_fixture_payload`` (monitor admin).
+    """
+    return _fetch_sm_fixture_dict(fixture_id, api_key, profile=profile)
 
 
 def refresh_raw_sportmonks_for_value_pool_today(
