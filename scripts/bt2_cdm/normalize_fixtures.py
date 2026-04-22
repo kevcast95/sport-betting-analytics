@@ -6,7 +6,8 @@ Lee raw_sportmonks_fixtures (JSONB) y hace upsert en las 4 tablas CDM:
 Estructura real del payload Sportmonks:
   - participants: lista con meta.location="home"/"away"
   - scores: lista con description (CURRENT, FT, 2ND_HALF, …); también se intenta cualquier par home/away
-  - state_id: 5=Finished → status finished aunque result_info venga vacío
+  - state_id: raíz o ``state.id``; 5=Finished; FT/FULLTIME en scores → finished;
+    ids en curso (p. ej. 2=1st, 22=2nd en payloads SM football) → live
   - result_info: texto (no None) = partido terminado
   - odds[]: market_id=1 (Match Winner), market_id=80 (Goals Over/Under)
              cada entry tiene: label, value (decimal), bookmaker_id, total
@@ -137,15 +138,61 @@ def _parse_kickoff(payload: dict) -> Optional[datetime]:
     return None
 
 
+def _effective_state_id(payload: dict) -> Optional[int]:
+    """SportMonks: ``state_id`` en raíz o ``state.id`` (objeto anidado)."""
+    raw = payload.get("state_id")
+    if raw is not None:
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            pass
+    st = payload.get("state")
+    if isinstance(st, dict) and st.get("id") is not None:
+        try:
+            return int(st["id"])
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+def _scores_indicate_fulltime_finished(payload: dict) -> bool:
+    """
+    True si en ``scores`` hay línea FT / FULL TIME / FULLTIME con par home/away completo.
+    Alineado con las descriptions que usa ``_parse_result`` para marcador final.
+    """
+    scores = payload.get("scores") or []
+    for target_desc in ("FT", "FULL TIME", "FULLTIME"):
+        td = target_desc.strip().upper()
+        home_goals = away_goals = None
+        for s in scores:
+            if not isinstance(s, dict):
+                continue
+            desc = str(s.get("description") or "").strip().upper()
+            if desc != td:
+                continue
+            score_data = s.get("score") or {}
+            if isinstance(score_data, dict):
+                participant = str(score_data.get("participant") or "").strip().lower()
+                goals = _goal_int(score_data.get("goals"))
+                if participant == "home":
+                    home_goals = goals
+                elif participant == "away":
+                    away_goals = goals
+        if home_goals is not None and away_goals is not None:
+            return True
+    return False
+
+
+# SportMonks football — estados no finales observados en fixtures reales (CDM vs raw audit).
+# Ampliar solo con evidencia de payloads (state.short_name / developer_name en raw).
+_INPLAY_FOOTBALL_STATE_IDS: frozenset[int] = frozenset({2, 22})
+
+
 def _parse_status(payload: dict) -> str:
     # result_info no nulo → partido terminado
     if payload.get("result_info"):
         return "finished"
-    sid = payload.get("state_id")
-    try:
-        sid_int = int(sid) if sid is not None else None
-    except (TypeError, ValueError):
-        sid_int = None
+    sid_int = _effective_state_id(payload)
     # Football SM: 5 = Finished (sin depender de result_info vacío ni scores ya parseados)
     if sid_int == 5:
         return "finished"
@@ -153,6 +200,13 @@ def _parse_status(payload: dict) -> str:
         return "cancelled"
     if sid_int in (7, 9):    # Cancelled / Abandoned
         return "cancelled"
+    # Marcador final explícito en scores aunque state_id aún no sea 5 (lag SM)
+    if _scores_indicate_fulltime_finished(payload):
+        return "finished"
+    # En curso (football SM): evidencia ventana BT2 2026-04 raw.state —
+    # id 2 + short "1st", id 22 + short "2nd" (no son NS ni FT; evitar scheduled+CURRENT).
+    if sid_int in _INPLAY_FOOTBALL_STATE_IDS:
+        return "live"
     return "scheduled"
 
 
