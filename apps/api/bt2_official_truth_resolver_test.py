@@ -123,6 +123,40 @@ class TestResolveOfficialEvaluation(unittest.TestCase):
         self.assertEqual(r.evaluation_status, "pending_result")
         self.assertIsNone(r.truth_source)
 
+    def test_pending_scheduled_with_scores_stale_cdm(self) -> None:
+        """CDM puede tener marcador (p. ej. CURRENT) con status aún no `finished`."""
+        r = resolve_official_evaluation_from_cdm_truth(
+            market_canonical="FT_1X2",
+            selection_canonical="home",
+            result_home=2,
+            result_away=1,
+            event_status="scheduled",
+        )
+        self.assertEqual(r.evaluation_status, "pending_result")
+        self.assertIsNone(r.truth_source)
+
+    def test_pending_live_with_scores(self) -> None:
+        r = resolve_official_evaluation_from_cdm_truth(
+            market_canonical="FT_1X2",
+            selection_canonical="home",
+            result_home=1,
+            result_away=0,
+            event_status="live",
+        )
+        self.assertEqual(r.evaluation_status, "pending_result")
+        self.assertIsNone(r.truth_source)
+
+    def test_void_postponed_with_scores(self) -> None:
+        r = resolve_official_evaluation_from_cdm_truth(
+            market_canonical="FT_1X2",
+            selection_canonical="home",
+            result_home=2,
+            result_away=1,
+            event_status="postponed",
+        )
+        self.assertEqual(r.evaluation_status, "void")
+        self.assertEqual(r.truth_source, TRUTH_SOURCE_BT2_EVENTS_CDM)
+
     def test_no_evaluable_finished_missing_scores(self) -> None:
         r = resolve_official_evaluation_from_cdm_truth(
             market_canonical="FT_1X2",

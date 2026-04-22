@@ -18,7 +18,7 @@ class BT2Settings(BaseSettings):
     bt2_dsr_enabled: bool = True
     deepseek_api_key: str = ""
     bt2_dsr_deepseek_base_url: str = "https://api.deepseek.com"
-    bt2_dsr_deepseek_model: str = "deepseek-chat"
+    bt2_dsr_deepseek_model: str = "deepseek-reasoner"
     bt2_dsr_timeout_sec: int = 120
     bt2_dsr_max_retries: int = 1
     # T-170 / D-06-019 — eventos por lote HTTP (v1-equivalente).
