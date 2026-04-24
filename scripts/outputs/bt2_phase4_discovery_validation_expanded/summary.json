@@ -1,0 +1,46 @@
+{
+  "total_rows_scored_with_odds": 99,
+  "unique_days": [
+    "2026-04-12",
+    "2026-04-13",
+    "2026-04-14",
+    "2026-04-15",
+    "2026-04-18",
+    "2026-04-19",
+    "2026-04-20"
+  ],
+  "discovery_days": [
+    "2026-04-12",
+    "2026-04-13",
+    "2026-04-14",
+    "2026-04-15"
+  ],
+  "validation_days": [
+    "2026-04-18",
+    "2026-04-19",
+    "2026-04-20"
+  ],
+  "global_discovery": {
+    "n": 53,
+    "hits": 27,
+    "misses": 26,
+    "hit_rate": 0.5094,
+    "avg_decimal_odds": 2.1513,
+    "avg_implied_break_even_rate": 0.4965,
+    "roi_flat_stake_1u": 0.0739
+  },
+  "global_validation": {
+    "n": 46,
+    "hits": 20,
+    "misses": 26,
+    "hit_rate": 0.4348,
+    "avg_decimal_odds": 1.9446,
+    "avg_implied_break_even_rate": 0.547,
+    "roi_flat_stake_1u": -0.2709
+  },
+  "verdict_counts": {
+    "prometedor": 0,
+    "neutro": 3,
+    "fragil": 19
+  }
+}

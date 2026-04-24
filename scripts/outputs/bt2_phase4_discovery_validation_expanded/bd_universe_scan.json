@@ -1,0 +1,29 @@
+{
+  "n_scored_with_usable_odds": 99,
+  "n_scored_any": 99,
+  "n_scored_null_odds": 0,
+  "n_scored_bad_odds": 0,
+  "day_min_usable": "2026-04-12",
+  "day_max_usable": "2026-04-20",
+  "n_daily_picks": 195,
+  "day_min_dp": "2026-04-06",
+  "day_max_dp": "2026-04-22",
+  "official_evaluation_by_status": [
+    {
+      "evaluation_status": "pending_result",
+      "n": 65
+    },
+    {
+      "evaluation_status": "evaluated_miss",
+      "n": 52
+    },
+    {
+      "evaluation_status": "evaluated_hit",
+      "n": 47
+    },
+    {
+      "evaluation_status": "no_evaluable",
+      "n": 20
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "version": "phase4_discovery_validation_v1",
+  "optional_day_filter": null,
+  "segment_dims": [
+    "confidence_band",
+    "league_tier",
+    "odds_band",
+    "market"
+  ],
+  "market_x_odds_min_n_discovery": 35,
+  "min_n_discovery": 20,
+  "min_n_validation": 12,
+  "min_hr_delta_vs_global_discovery": 0.05,
+  "min_roi_delta_vs_global_discovery": 0.025,
+  "max_hr_drop_disc_to_val_stable": 0.12,
+  "max_roi_drop_disc_to_val_stable": 0.15,
+  "fragile_hr_drop": 0.12,
+  "fragile_roi_drop": 0.2,
+  "split_rule_es": "Días únicos con datos (K=7): orden ASC; discovery = primeros ceil(K/2)=4 días ['2026-04-12', '2026-04-13', '2026-04-14', '2026-04-15']; validation = resto ['2026-04-18', '2026-04-19', '2026-04-20'].",
+  "anti_tuning_es": "No se redefinen cortes de odds_band (mismos umbres que edge audit Fase 4). No se añaden dimensiones nuevas post-hoc. No se promueve segmento con N_discovery < 20 ni N_validation < 12. market_x_odds solo entra en veredicto prometedor si N_discovery >= 35.",
+  "universe_note_es": "Universo = picks con evaluated_hit/miss y reference_decimal_odds > 1. Amplía con backfill fuera de este script si hace falta más historia."
+}
