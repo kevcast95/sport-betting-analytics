@@ -39,6 +39,7 @@ function mainModuleLabel(pathname: string): string | null {
   if (pathname.startsWith('/v2/daily-review')) return 'Cierre del día'
   if (pathname.startsWith('/v2/ledger')) return 'Libro mayor'
   if (pathname.startsWith('/v2/performance')) return 'Estrategia'
+  if (pathname.startsWith('/v2/admin/monitor-resultados')) return 'Monitor resultados'
   if (pathname.startsWith('/v2/profile')) return 'Perfil'
   if (pathname.startsWith('/v2/settings')) return 'Ajustes'
   if (pathname.startsWith('/v2/dashboard')) return 'Santuario'
@@ -350,7 +351,7 @@ export default function BunkerLayout() {
           Métricas
         </NavLink>
         <NavLink
-          to="/v2/admin/dsr-accuracy"
+          to="/v2/admin/backtest-replay"
           className={({ isActive }) =>
             [
               'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
@@ -360,10 +361,10 @@ export default function BunkerLayout() {
             ].join(' ')
           }
         >
-          Precisión DSR
+          Backtest / Replay
         </NavLink>
         <NavLink
-          to="/v2/admin/cdm-audit"
+          to="/v2/admin/monitor-resultados"
           className={({ isActive }) =>
             [
               'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
@@ -373,20 +374,7 @@ export default function BunkerLayout() {
             ].join(' ')
           }
         >
-          Auditoría CDM
-        </NavLink>
-        <NavLink
-          to="/v2/admin/fase1-operational"
-          className={({ isActive }) =>
-            [
-              'shrink-0 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide',
-              isActive
-                ? 'bg-white text-[#8B5CF6] shadow-sm'
-                : 'text-[#52616a]',
-            ].join(' ')
-          }
-        >
-          Fase 1 · verdad
+          Monitor
         </NavLink>
         <NavLink
           to="/v2/profile"
@@ -470,31 +458,22 @@ export default function BunkerLayout() {
               Estrategia
             </NavLink>
             <NavLink
-              to="/v2/admin/dsr-accuracy"
+              to="/v2/admin/backtest-replay"
               className={({ isActive }) => navItemClass(isActive)}
             >
               <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
                 <Bt2ShieldCheckIcon className="h-5 w-5" />
               </span>
-              Precisión DSR
+              Backtest / Replay
             </NavLink>
             <NavLink
-              to="/v2/admin/cdm-audit"
+              to="/v2/admin/monitor-resultados"
               className={({ isActive }) => navItemClass(isActive)}
             >
               <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
-                <Bt2ShieldCheckIcon className="h-5 w-5" />
+                <Bt2ChartBarsIcon className="h-5 w-5" />
               </span>
-              Auditoría CDM
-            </NavLink>
-            <NavLink
-              to="/v2/admin/fase1-operational"
-              className={({ isActive }) => navItemClass(isActive)}
-            >
-              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
-                <Bt2ShieldCheckIcon className="h-5 w-5" />
-              </span>
-              Fase 1 · verdad
+              Monitor resultados
             </NavLink>
             <NavLink
               to="/v2/profile"

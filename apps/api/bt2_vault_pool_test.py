@@ -11,6 +11,7 @@ from apps.api.bt2_vault_pool import (
     VAULT_VALUE_POOL_UNIVERSE_MAX,
     compose_vault_daily_picks,
     is_event_available_for_pick_strict,
+    is_event_unlockable_for_vault,
     kickoff_utc_to_time_band,
     time_band_from_local_time,
 )
@@ -84,13 +85,58 @@ class TestComposePool(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertLess(len(out), VAULT_POOL_TARGET)
 
-    def test_t178_empty_premium_set_forces_standard(self) -> None:
+    def test_compose_yields_event_band_pairs(self) -> None:
         tz = ZoneInfo("UTC")
         ko = datetime(2026, 4, 7, 15, 0, tzinfo=timezone.utc)
         rows = [(1, ko, 0.1), (2, ko + timedelta(hours=1), 0.1)]
         out = compose_vault_daily_picks(rows, tz, premium_eligible_event_ids=set())
-        for _eid, tier, _b in out:
-            self.assertEqual(tier, "standard")
+        for row in out:
+            self.assertEqual(len(row), 2)
+
+
+class TestVaultUnlockEligibility(unittest.TestCase):
+    def test_not_started_pre_kickoff_unlockable(self) -> None:
+        ko = datetime(2026, 4, 7, 15, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 4, 7, 14, 0, tzinfo=timezone.utc)
+        self.assertTrue(
+            is_event_unlockable_for_vault(
+                event_status="not_started",
+                kickoff_utc=ko,
+                now_utc=now,
+            )
+        )
+
+    def test_finished_not_unlockable(self) -> None:
+        now = datetime(2026, 4, 7, 18, 0, tzinfo=timezone.utc)
+        self.assertFalse(
+            is_event_unlockable_for_vault(
+                event_status="finished",
+                kickoff_utc=None,
+                now_utc=now,
+            )
+        )
+
+    def test_after_kickoff_not_unlockable(self) -> None:
+        ko = datetime(2026, 4, 7, 10, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 4, 7, 10, 1, tzinfo=timezone.utc)
+        self.assertFalse(
+            is_event_unlockable_for_vault(
+                event_status="live",
+                kickoff_utc=ko,
+                now_utc=now,
+            )
+        )
+
+    def test_postponed_pre_kickoff_unlockable(self) -> None:
+        ko = datetime(2026, 4, 7, 20, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 4, 7, 10, 0, tzinfo=timezone.utc)
+        self.assertTrue(
+            is_event_unlockable_for_vault(
+                event_status="postponed",
+                kickoff_utc=ko,
+                now_utc=now,
+            )
+        )
 
 
 class TestStrictKickoff(unittest.TestCase):

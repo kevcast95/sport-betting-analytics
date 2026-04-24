@@ -21,8 +21,8 @@ class TestNormalizeMarketActaAliases(unittest.TestCase):
         self.assertEqual(normalize_official_eval_market("TOTAL_GOALS_OU_2_5"), "OU_GOALS_2_5")
         self.assertEqual(normalize_official_eval_market("OU_GOALS_2_5"), "OU_GOALS_2_5")
 
-    def test_unsupported_v1(self) -> None:
-        self.assertIsNone(normalize_official_eval_market("BTTS"))
+    def test_btts_supported(self) -> None:
+        self.assertEqual(normalize_official_eval_market("BTTS"), "BTTS")
 
 
 class TestResolveOfficialEvaluation(unittest.TestCase):
@@ -71,16 +71,35 @@ class TestResolveOfficialEvaluation(unittest.TestCase):
         self.assertEqual(r.evaluation_status, "void")
         self.assertEqual(r.truth_payload_ref["void_catalog_code"], "VOID_OFFICIAL_EVENT")
 
-    def test_no_evaluable_unsupported_market(self) -> None:
+    def test_hit_btts_yes_both_scored(self) -> None:
         r = resolve_official_evaluation_from_cdm_truth(
             market_canonical="BTTS",
             selection_canonical="yes",
             result_home=1,
-            result_away=1,
+            result_away=2,
             event_status="finished",
         )
-        self.assertEqual(r.evaluation_status, "no_evaluable")
-        self.assertEqual(r.no_evaluable_reason, "OUTSIDE_SUPPORTED_MARKET_V1")
+        self.assertEqual(r.evaluation_status, "evaluated_hit")
+
+    def test_miss_btts_yes_not_both(self) -> None:
+        r = resolve_official_evaluation_from_cdm_truth(
+            market_canonical="BTTS",
+            selection_canonical="yes",
+            result_home=1,
+            result_away=0,
+            event_status="finished",
+        )
+        self.assertEqual(r.evaluation_status, "evaluated_miss")
+
+    def test_hit_btts_no_nil_nil(self) -> None:
+        r = resolve_official_evaluation_from_cdm_truth(
+            market_canonical="BTTS",
+            selection_canonical="no",
+            result_home=0,
+            result_away=0,
+            event_status="finished",
+        )
+        self.assertEqual(r.evaluation_status, "evaluated_hit")
 
     def test_no_evaluable_bad_selection(self) -> None:
         r = resolve_official_evaluation_from_cdm_truth(
@@ -104,6 +123,40 @@ class TestResolveOfficialEvaluation(unittest.TestCase):
         self.assertEqual(r.evaluation_status, "pending_result")
         self.assertIsNone(r.truth_source)
 
+    def test_pending_scheduled_with_scores_stale_cdm(self) -> None:
+        """CDM puede tener marcador (p. ej. CURRENT) con status aún no `finished`."""
+        r = resolve_official_evaluation_from_cdm_truth(
+            market_canonical="FT_1X2",
+            selection_canonical="home",
+            result_home=2,
+            result_away=1,
+            event_status="scheduled",
+        )
+        self.assertEqual(r.evaluation_status, "pending_result")
+        self.assertIsNone(r.truth_source)
+
+    def test_pending_live_with_scores(self) -> None:
+        r = resolve_official_evaluation_from_cdm_truth(
+            market_canonical="FT_1X2",
+            selection_canonical="home",
+            result_home=1,
+            result_away=0,
+            event_status="live",
+        )
+        self.assertEqual(r.evaluation_status, "pending_result")
+        self.assertIsNone(r.truth_source)
+
+    def test_void_postponed_with_scores(self) -> None:
+        r = resolve_official_evaluation_from_cdm_truth(
+            market_canonical="FT_1X2",
+            selection_canonical="home",
+            result_home=2,
+            result_away=1,
+            event_status="postponed",
+        )
+        self.assertEqual(r.evaluation_status, "void")
+        self.assertEqual(r.truth_source, TRUTH_SOURCE_BT2_EVENTS_CDM)
+
     def test_no_evaluable_finished_missing_scores(self) -> None:
         r = resolve_official_evaluation_from_cdm_truth(
             market_canonical="FT_1X2",
@@ -117,6 +170,11 @@ class TestResolveOfficialEvaluation(unittest.TestCase):
 
 
 class TestSelectionNormalization(unittest.TestCase):
+    def test_btts_yes_no(self) -> None:
+        self.assertEqual(normalize_official_eval_selection("BTTS", "yes"), "yes")
+        self.assertEqual(normalize_official_eval_selection("BTTS", "no"), "no")
+        self.assertIsNone(normalize_official_eval_selection("BTTS", "home"))
+
     def test_ou_aliases(self) -> None:
         self.assertEqual(
             normalize_official_eval_selection("OU_GOALS_2_5", "over_2_5"),

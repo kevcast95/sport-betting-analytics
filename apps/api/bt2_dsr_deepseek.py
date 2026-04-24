@@ -124,6 +124,10 @@ _SYSTEM_BATCH = (
     "Mencioná el número de cuota solo cuando aporte a la tesis (p. ej. desalineación entre "
     "favoritismo del mercado y bajas o contexto que encarecen el riesgo, o implícito que parece "
     "desproporcionado frente a los datos enviados). "
+    "Si el ítem incluye `diagnostics.prob_coherence`, tratá ese bloque como **chequeo numérico "
+    "del mismo `consensus`** (suma implícitas 1X2, dispersión entre casas, sobre-round O/U 2.5 si "
+    "hay piernas): usalo para detectar tensión entre mercados o cuotas inconsistentes; **no** es la "
+    "única razón para elegir pick y no sustituye `processed` ni el contexto deportivo. "
     "Respondé SOLO con JSON válido (sin markdown) según el esquema que pide el usuario."
 )
 
@@ -133,7 +137,8 @@ def _user_prompt_batch(*, operating_day_key: str, batch: dict[str, Any]) -> str:
         f"Día operativo (referencia): {operating_day_key}.\n"
         "Tarea: con el lote `batch` (campo `ds_input`), una lectura por evento; compará eventos "
         "del mismo lote como en pipeline v1. Fundamentá la elección de mercado y lado usando "
-        "**solo** `consensus` y los bloques `processed.*` con `available: true` de ese evento; "
+        "**solo** `consensus`, `diagnostics` (incl. `prob_coherence` cuando exista) y los bloques "
+        "`processed.*` con `available: true` de ese evento; "
         "si un bloque no está disponible, no lo cites como si existiera.\n\n"
         "Reglas de salida:\n"
         "- Devolvé SOLO un objeto JSON con esta forma:\n"

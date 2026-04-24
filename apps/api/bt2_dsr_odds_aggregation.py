@@ -289,3 +289,29 @@ def data_completeness_score(agg: AggregatedOdds) -> int:
     tot = len(agg.market_coverage)
     base = int(round(100.0 * ok / max(tot, 1)))
     return min(100, max(0, base))
+
+
+def consensus_decimal_for_canonical_pick(
+    consensus: dict[str, dict[str, float]],
+    market_canonical: str,
+    selection_canonical: str,
+) -> Optional[float]:
+    """
+    Mediana consenso (clave mercado canónico → selección en minúsculas) para una pierna.
+    Usar al persistir picks y en monitor/backfill cuando haya `consensus` agregado.
+    """
+    mc = (market_canonical or "").strip()
+    sc = (selection_canonical or "").strip().lower()
+    if not mc or not sc:
+        return None
+    sub = consensus.get(mc)
+    if not sub:
+        return None
+    v = sub.get(sc)
+    if v is None:
+        return None
+    try:
+        d = float(v)
+    except (TypeError, ValueError):
+        return None
+    return d if d > 1.0 else None

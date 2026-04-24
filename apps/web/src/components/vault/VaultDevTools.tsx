@@ -13,6 +13,8 @@ type DevResetOut = {
   serverSessionClosed?: boolean
   smFixturesRefreshed?: number
   smRefreshLog?: string[]
+  /** Resultado ingest SofaScore → bt2_provider_odds_snapshot (más mercados / fusión / prob_coherence). */
+  sfsAutoIngest?: Record<string, unknown> | null
   messageEs?: string
 }
 
@@ -51,9 +53,13 @@ export function VaultDevTools() {
         out.smRefreshLog && out.smRefreshLog.length > 0
           ? ` · SM: ${out.smRefreshLog.slice(0, 6).join(' | ')}`
           : ''
+      const sfsHint =
+        out.sfsAutoIngest && typeof out.sfsAutoIngest === 'object'
+          ? ` · SFS: snap=${String((out.sfsAutoIngest as { snapshots_upserted?: unknown }).snapshots_upserted ?? '—')} noJoin=${String((out.sfsAutoIngest as { skipped_no_join?: unknown }).skipped_no_join ?? '—')}`
+          : ''
       setLastMsg(
         out.messageEs ??
-          `Reset OK · día ${out.operatingDayKey ?? '—'} · raw SM ${out.smFixturesRefreshed ?? 0} · picks borrados: ${out.dailyPicksDeleted ?? '—'}${log}`,
+          `Reset OK · día ${out.operatingDayKey ?? '—'} · raw SM ${out.smFixturesRefreshed ?? 0} · picks borrados: ${out.dailyPicksDeleted ?? '—'}${log}${sfsHint}`,
       )
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -109,13 +115,18 @@ export function VaultDevTools() {
         Solo desarrollo
       </p>
       <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
-        <span className="font-mono">Reset día</span> hace el flujo completo de prueba: primero
-        vuelve a pedir a SportMonks cada fixture del pool valor del día (includes actuales) y
-        hace UPSERT en <span className="font-mono">raw_sportmonks_fixtures</span>; después borra
-        snapshot de bóveda, desbloqueos y metadata, y cierra la sesión operativa. Luego esta
-        pantalla vuelve a abrir sesión y cargar picks (nuevo <span className="font-mono">ds_input</span>{' '}
-        + DSR). Requiere <span className="font-mono">BT2_DEV_OPERATING_DAY_RESET=1</span> y clave SM
-        en el API. «Solo cerrar sesión» no refresca raw ni borra snapshot.
+        <span className="font-mono">Reset día</span>: refresca SM raw (UPSERT{' '}
+        <span className="font-mono">raw_sportmonks_fixtures</span>), intenta ingest SofaScore (
+        <span className="font-mono">bt2_provider_odds_snapshot</span> para fusión + coherencia en{' '}
+        <span className="font-mono">ds_input</span> si <span className="font-mono">BT2_SFS_AUTO_INGEST_ENABLED</span>
+        ), borra bóveda/metadata y cierra sesión en servidor. Al terminar este botón llama{' '}
+        <span className="font-mono">loadApiPicks</span> → <span className="font-mono">POST /bt2/session/open</span>{' '}
+        (materializa snapshot <span className="font-mono">ds_input</span> + lote DeepSeek si{' '}
+        <span className="font-mono">BT2_DSR_ENABLED</span> y clave) y luego{' '}
+        <span className="font-mono">GET /bt2/vault/picks</span>. Si el lote DSR falla o degrada, los
+        picks siguen creándose con <span className="font-mono">sql_stat_fallback</span> (UI parecida,
+        consumo API distinto). Requiere <span className="font-mono">BT2_DEV_OPERATING_DAY_RESET=1</span>{' '}
+        y clave SM. «Solo cerrar sesión» no refresca raw ni borra snapshot.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button

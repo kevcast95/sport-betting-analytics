@@ -123,6 +123,23 @@ def run_evaluate_pending_rows(
         lim_sql = "LIMIT %s"
         params.append(limit)
 
+    # BTTS pasó de “fuera de mercado v1” a soportado: reabrir para re-evaluar con marcador.
+    if not dry_run:
+        cur.execute(
+            """
+            UPDATE bt2_pick_official_evaluation
+            SET evaluation_status = 'pending_result',
+                no_evaluable_reason = NULL,
+                truth_source = NULL,
+                truth_payload_ref = NULL,
+                evaluated_at = NULL,
+                updated_at = NOW()
+            WHERE evaluation_status = 'no_evaluable'
+              AND no_evaluable_reason = 'OUTSIDE_SUPPORTED_MARKET_V1'
+              AND UPPER(TRIM(COALESCE(market_canonical, ''))) = 'BTTS'
+            """
+        )
+
     cur.execute(
         f"""
         SELECT e.id AS eval_id,

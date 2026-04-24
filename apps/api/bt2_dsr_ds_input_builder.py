@@ -7,11 +7,17 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Literal, Mapping, Optional
 
+from apps.api.bt2_fixture_prob_coherence import prob_coherence_dict_for_ds_input
 from apps.api.bt2_dsr_context_queries import (
     extract_lineups_summary_from_raw_payload,
     fetch_h2h_aggregate,
+    fetch_h2h_aggregate_fixed_orientation,
     fetch_odds_ingest_meta,
+    fetch_rest_days_before_kickoff,
+    fetch_scored_conceded_last_matches,
     fetch_team_form_string,
+    fetch_team_form_string_designated_role,
+    fetch_team_form_string_same_league,
     streaks_from_form,
 )
 from apps.api.bt2_dsr_contract import validate_ds_input_item_dict
@@ -21,6 +27,8 @@ from apps.api.bt2_dsr_sm_statistics import (
     sm_fixture_statistics_block,
 )
 from apps.api.bt2_dsr_odds_aggregation import AggregatedOdds, aggregate_odds_for_event
+from apps.api.bt2_settings import bt2_settings
+from apps.api.bt2_sfs_odds_bridge import synthetic_odds_tuples_for_bt2_event_psycopg
 
 SelectionTier = Literal["A", "B"]
 
@@ -50,6 +58,8 @@ def build_ds_input_item(
     home_team: str,
     away_team: str,
     agg: AggregatedOdds,
+    sfs_fusion_applied: Optional[bool] = None,
+    sfs_fusion_synthetic_rows: Optional[int] = None,
 ) -> dict[str, Any]:
     utc_iso = ""
     if kickoff_utc is not None:
@@ -105,8 +115,13 @@ def build_ds_input_item(
             "fetch_errors": [],
             "raw_fixture_missing": False,
             "team_season_stats_reason": None,
+            "prob_coherence": prob_coherence_dict_for_ds_input(agg.consensus),
         },
     }
+    if sfs_fusion_applied is not None:
+        item["diagnostics"]["sfs_fusion_applied"] = sfs_fusion_applied
+    if sfs_fusion_synthetic_rows is not None:
+        item["diagnostics"]["sfs_fusion_synthetic_rows"] = sfs_fusion_synthetic_rows
     if country is not None:
         item["event_context"]["country"] = country
     if league_tier is not None:
@@ -145,6 +160,20 @@ def apply_postgres_context_to_ds_item(
     if meta:
         item["processed"]["odds_featured"]["ingest_meta"] = meta
 
+    league_id: Optional[int] = None
+    season_label: Optional[str] = None
+    cur.execute(
+        "SELECT league_id, season FROM bt2_events WHERE id = %s",
+        (event_id,),
+    )
+    ev_meta = cur.fetchone()
+    if ev_meta:
+        if isinstance(ev_meta, Mapping):
+            league_id = ev_meta.get("league_id")
+            season_label = ev_meta.get("season")
+        else:
+            league_id, season_label = ev_meta[0], ev_meta[1]
+
     hf: Optional[str] = None
     af: Optional[str] = None
     if home_team_id is None or away_team_id is None:
@@ -161,6 +190,33 @@ def apply_postgres_context_to_ds_item(
             diag["h2h_ok"] = True
         else:
             fe.append("h2h:no_finished_rows_for_pair")
+
+        h2h_oriented = fetch_h2h_aggregate_fixed_orientation(
+            cur,
+            host_team_id=int(home_team_id),
+            guest_team_id=int(away_team_id),
+            before_kickoff=before,
+        )
+        if h2h_oriented:
+            ph = item["processed"]["h2h"]
+            if not isinstance(ph, dict):
+                ph = {}
+            if h2h:
+                item["processed"]["h2h"] = {
+                    **h2h,
+                    "same_fixture_orientation_history": h2h_oriented,
+                }
+            else:
+                item["processed"]["h2h"] = {
+                    "available": True,
+                    "meetings_in_sample": 0,
+                    "current_home_wins": 0,
+                    "draws": 0,
+                    "current_away_wins": 0,
+                    "note": "aggregate_h2h_empty_only_fixed_orientation_in_bt2_events",
+                    "same_fixture_orientation_history": h2h_oriented,
+                }
+            diag["h2h_ok"] = True
 
         hf = fetch_team_form_string(cur, team_id=int(home_team_id), before_kickoff=before)
         af = fetch_team_form_string(cur, team_id=int(away_team_id), before_kickoff=before)
@@ -188,6 +244,118 @@ def apply_postgres_context_to_ds_item(
                 ts["away_winless_run"] = aws["winless_run"]
                 ts["away_winning_run"] = aws["winning_run"]
             item["processed"]["team_streaks"] = ts
+
+        # D-06-028+ — contexto CDM explícito (ventanas fijas; reduce ambigüedad vs SM en vivo).
+        home_side: dict[str, Any] = {}
+        away_side: dict[str, Any] = {}
+        lid = int(league_id) if league_id is not None else None
+        if lid is not None:
+            slh = fetch_team_form_string_same_league(
+                cur,
+                team_id=int(home_team_id),
+                league_id=lid,
+                before_kickoff=before,
+            )
+            sla = fetch_team_form_string_same_league(
+                cur,
+                team_id=int(away_team_id),
+                league_id=lid,
+                before_kickoff=before,
+            )
+            if slh:
+                home_side["form_last5_same_league_window"] = slh
+            if sla:
+                away_side["form_last5_same_league_window"] = sla
+        fh_role = fetch_team_form_string_designated_role(
+            cur,
+            team_id=int(home_team_id),
+            before_kickoff=before,
+            only_as_home=True,
+            only_as_away=False,
+        )
+        fa_role = fetch_team_form_string_designated_role(
+            cur,
+            team_id=int(away_team_id),
+            before_kickoff=before,
+            only_as_home=False,
+            only_as_away=True,
+        )
+        if fh_role:
+            home_side["form_last5_only_when_team_was_home_in_bt2"] = fh_role
+        if fa_role:
+            away_side["form_last5_only_when_team_was_away_in_bt2"] = fa_role
+
+        rd_h = fetch_rest_days_before_kickoff(
+            cur, team_id=int(home_team_id), before_kickoff=before
+        )
+        rd_a = fetch_rest_days_before_kickoff(
+            cur, team_id=int(away_team_id), before_kickoff=before
+        )
+        if rd_h is not None:
+            home_side["rest_days_before_this_kickoff"] = rd_h
+        if rd_a is not None:
+            away_side["rest_days_before_this_kickoff"] = rd_a
+
+        for label, tid, bucket in (
+            ("home", int(home_team_id), home_side),
+            ("away", int(away_team_id), away_side),
+        ):
+            agg = fetch_scored_conceded_last_matches(
+                cur,
+                team_id=tid,
+                before_kickoff=before,
+                max_matches=5,
+                league_id=lid,
+                only_as_home=False,
+                only_as_away=False,
+            )
+            if agg:
+                used, sc, cc = agg
+                bucket["lastN_finished_matches_used_for_sums"] = used
+                bucket["aggregate_scored_lastN_same_window_as_form"] = sc
+                bucket["aggregate_conceded_lastN_same_window_as_form"] = cc
+            if lid is not None:
+                agg_ha = fetch_scored_conceded_last_matches(
+                    cur,
+                    team_id=tid,
+                    before_kickoff=before,
+                    max_matches=5,
+                    league_id=lid,
+                    only_as_home=(label == "home"),
+                    only_as_away=(label == "away"),
+                )
+                if agg_ha:
+                    used, sc, cc = agg_ha
+                    if label == "home":
+                        bucket["lastN_as_host_in_league_scored_sum"] = sc
+                        bucket["lastN_as_host_in_league_conceded_sum"] = cc
+                        bucket["lastN_as_host_in_league_matches_used"] = used
+                    else:
+                        bucket["lastN_as_guest_in_league_scored_sum"] = sc
+                        bucket["lastN_as_guest_in_league_conceded_sum"] = cc
+                        bucket["lastN_as_guest_in_league_matches_used"] = used
+
+        if home_side or away_side:
+            st_prev = item["processed"]["statistics"]
+            if not isinstance(st_prev, dict):
+                st_prev = {"available": False}
+            if not st_prev.get("available"):
+                st_prev["available"] = True
+            st_prev["cdm_from_bt2_events"] = {
+                "available": True,
+                "definitions": {
+                    "window_N": 5,
+                    "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                    "same_league_filter": bool(lid is not None),
+                    "season_field_on_row": season_label,
+                    "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                    "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante",
+                },
+                "home_side_context": home_side,
+                "away_side_context": away_side,
+            }
+            item["processed"]["statistics"] = st_prev
+            diag["statistics_ok"] = True
 
     item["processed"]["team_season_stats"] = {"available": False}
     fe.append("team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap")
@@ -244,26 +412,126 @@ def apply_postgres_context_to_ds_item(
     has_sm_metrics = bool(
         isinstance(sm_sub, dict) and any(k != "available" for k in sm_sub)
     )
+    cdm_ctx = st_final.get("cdm_from_bt2_events") if isinstance(st_final, dict) else None
+    has_cdm_context = bool(
+        isinstance(cdm_ctx, dict)
+        and (
+            bool(cdm_ctx.get("home_side_context"))
+            or bool(cdm_ctx.get("away_side_context"))
+        )
+    )
     diag["statistics_ok"] = bool(
-        (isinstance(st_final, dict) and (st_final.get("home_form_last5") or st_final.get("away_form_last5")))
+        (
+            isinstance(st_final, dict)
+            and (st_final.get("home_form_last5") or st_final.get("away_form_last5"))
+        )
         or has_sm_metrics
+        or has_cdm_context
     )
 
     diag["fetch_errors"] = fe
     validate_ds_input_item_dict(item)
 
 
-def fetch_event_odds_rows_for_aggregation(cur, event_id: int) -> list[tuple[Any, ...]]:
-    cur.execute(
-        """
-        SELECT bookmaker, market, selection, odds, fetched_at
-        FROM bt2_odds_snapshot
-        WHERE event_id = %s
-        ORDER BY fetched_at DESC
-        """,
-        (event_id,),
-    )
+def fetch_event_odds_rows_for_aggregation(
+    cur,
+    event_id: int,
+    *,
+    max_fetched_at: Optional[datetime] = None,
+) -> list[tuple[Any, ...]]:
+    """
+    Filas para `aggregate_odds_for_event`.
+    Si `max_fetched_at` está definido, solo incluye snapshots con `fetched_at` <= corte (replay histórico).
+    """
+    if max_fetched_at is None:
+        cur.execute(
+            """
+            SELECT bookmaker, market, selection, odds, fetched_at
+            FROM bt2_odds_snapshot
+            WHERE event_id = %s
+            ORDER BY fetched_at DESC
+            """,
+            (event_id,),
+        )
+    else:
+        mf = max_fetched_at
+        if mf.tzinfo is None:
+            mf = mf.replace(tzinfo=timezone.utc)
+        cur.execute(
+            """
+            SELECT bookmaker, market, selection, odds, fetched_at
+            FROM bt2_odds_snapshot
+            WHERE event_id = %s
+              AND (fetched_at <= %s OR fetched_at IS NULL)
+            ORDER BY fetched_at DESC
+            """,
+            (event_id, mf),
+        )
     return list(cur.fetchall())
+
+
+def _normalize_odds_rows_for_aggregate(rows: list[Any]) -> list[tuple[Any, ...]]:
+    """
+    psycopg2 puede devolver tuplas o mappings (RealDictCursor).
+    aggregate_odds_for_event exige tuplas (bookmaker, market, selection, odds, fetched_at).
+    """
+    out: list[tuple[Any, ...]] = []
+    for row in rows:
+        if isinstance(row, Mapping):
+            out.append(
+                (
+                    row["bookmaker"],
+                    row["market"],
+                    row["selection"],
+                    row["odds"],
+                    row["fetched_at"],
+                )
+            )
+            continue
+        if isinstance(row, (tuple, list)):
+            seq = tuple(row)
+            if len(seq) >= 5:
+                out.append(tuple(seq[:5]))
+            continue
+        raise TypeError(f"fila bt2_odds_snapshot inesperada: {type(row)!r}")
+    return out
+
+
+def aggregated_odds_for_event_psycopg(
+    cur,
+    event_id: int,
+    *,
+    min_decimal: float = 1.30,
+    odds_cutoff_utc: Optional[datetime] = None,
+    skip_sfs_fusion: bool = False,
+) -> tuple[AggregatedOdds, dict[str, Any]]:
+    """
+    Misma agregación que `build_ds_input_item_from_db` (incl. fusión SFS si está activa).
+    Reutilizable para GET bóveda y otras rutas que necesiten `consensus` alineado al DSR.
+
+    `odds_cutoff_utc`: solo filas de cuota con `fetched_at` <= corte (backtest / replay por día).
+    `skip_sfs_fusion`: en replay no mezclar filas sintéticas posteriores al contexto histórico.
+    """
+    odds_rows = fetch_event_odds_rows_for_aggregation(
+        cur, event_id, max_fetched_at=odds_cutoff_utc
+    )
+    rows_for_agg = _normalize_odds_rows_for_aggregate(odds_rows)
+    fusion_meta: dict[str, Any] = {"applied": False, "synthetic_rows": 0}
+    if (
+        not skip_sfs_fusion
+        and getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False)
+    ):
+        extras, fm = synthetic_odds_tuples_for_bt2_event_psycopg(
+            cur,
+            event_id,
+            provider=str(getattr(bt2_settings, "bt2_sfs_odds_provider_slug", "") or "sofascore_experimental"),
+        )
+        if extras:
+            rows_for_agg = rows_for_agg + extras
+            fusion_meta["applied"] = bool(fm.get("applied"))
+            fusion_meta["synthetic_rows"] = int(fm.get("synthetic_rows") or len(extras))
+    agg = aggregate_odds_for_event(rows_for_agg, min_decimal=min_decimal)
+    return agg, fusion_meta
 
 
 def build_ds_input_item_from_db(
@@ -327,11 +595,13 @@ def build_ds_input_item_from_db(
             away_team_id,
             sportmonks_fixture_id,
         ) = row
-    odds_rows = fetch_event_odds_rows_for_aggregation(cur, event_id)
-    agg = aggregate_odds_for_event(
-        [(b, m, s, o, f) for b, m, s, o, f in odds_rows],
-        min_decimal=min_decimal,
-    )
+    agg, fusion_meta = aggregated_odds_for_event_psycopg(cur, event_id, min_decimal=min_decimal)
+    fusion_applied = False
+    fusion_n = 0
+    if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False):
+        fusion_applied = bool(fusion_meta.get("applied"))
+        fusion_n = int(fusion_meta.get("synthetic_rows") or 0)
+
     item = build_ds_input_item(
         event_id=event_id,
         selection_tier=selection_tier,
@@ -343,6 +613,8 @@ def build_ds_input_item_from_db(
         home_team=home_team,
         away_team=away_team,
         agg=agg,
+        sfs_fusion_applied=fusion_applied if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False) else None,
+        sfs_fusion_synthetic_rows=fusion_n if getattr(bt2_settings, "bt2_sfs_markets_fusion_enabled", False) else None,
     )
     apply_postgres_context_to_ds_item(
         cur,

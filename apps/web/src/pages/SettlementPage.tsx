@@ -15,10 +15,13 @@ import { Bt2ShieldCheckIcon } from '@/components/icons/bt2Icons'
 import { VektorShortDisclaimer } from '@/components/vault/VektorShortDisclaimer'
 import { vaultMockPicks } from '@/data/vaultMockPicks'
 import { ensureBt2FontLinks } from '@/lib/bt2Fonts'
+import { modelPredictionResultEs } from '@/lib/bt2ProtocolLabels'
 import {
-  vektorModelConfidenceLineEs,
-  modelPredictionResultEs,
-} from '@/lib/bt2ProtocolLabels'
+  formatEstimatedHitPct,
+  labelActionTier,
+  labelEvidenceQuality,
+  labelPredictiveTier,
+} from '@/lib/pickSignalLabels'
 import { displayMarketLabelEs } from '@/lib/marketCanonicalDisplay'
 import { MODEL_WHY_TITLE_ES, modelWhyReading } from '@/lib/vaultModelReading'
 import { ledgerAggregateMetrics } from '@/lib/ledgerAnalytics'
@@ -31,6 +34,13 @@ import {
   SETTLEMENT_MODE_LABEL_ES,
   SETTLEMENT_VERIFICATION_MODE,
 } from '@/lib/bt2SettlementMode'
+import { bt2FetchJson } from '@/lib/api'
+import type {
+  Bt2PickOut,
+  Bt2PicksListOut,
+  Bt2TakenPickRecord,
+  Bt2VaultPickOut,
+} from '@/lib/bt2Types'
 import { computeUnitValue } from '@/lib/treasuryMath'
 import { useBankrollStore } from '@/store/useBankrollStore'
 import { selectStationLocked, useSessionStore } from '@/store/useSessionStore'
@@ -71,7 +81,12 @@ type AnyPick = {
   eventId?: number
   dsrNarrativeEs?: string
   dsrSource?: string
+  /** @deprecated Legacy; usar las 4 dimensiones de señal. */
   dsrConfidenceLabel?: string
+  estimatedHitProbability?: number | null
+  evidenceQuality?: string | null
+  predictiveTier?: string | null
+  actionTier?: string | null
   /** S6.1 — solo mostrar si existe en snapshot API. */
   dataCompletenessScore?: number | null
   pipelineVersion?: string
@@ -168,6 +183,64 @@ function formatCop(n: number) {
   }).format(n)
 }
 
+/**
+ * Si `takenApiPicks` se perdió en local pero el servidor tiene el POST /bt2/picks,
+ * empareja por evento+mercado+selección (o un único pick abierto en ese evento).
+ */
+function pickOpenMatchForVault(
+  picks: Bt2PickOut[],
+  api: Bt2VaultPickOut,
+): Bt2PickOut | undefined {
+  const open = picks.filter((p) => p.status === 'open')
+  const strict = open.find(
+    (p) =>
+      p.event_id === api.eventId &&
+      p.market === api.marketClass &&
+      p.selection === api.selectionSummaryEs,
+  )
+  if (strict) return strict
+  const sameEvent = open.filter((p) => p.event_id === api.eventId)
+  if (sameEvent.length === 1) return sameEvent[0]
+  return undefined
+}
+
+async function reconcileOpenPickToTakenRecord(
+  vaultPickId: string,
+  api: Bt2VaultPickOut,
+): Promise<Bt2TakenPickRecord | null> {
+  const snap = useVaultStore.getState()
+  const existing = snap.takenApiPicks.find((r) => r.vaultPickId === vaultPickId)
+  if (existing) return existing
+
+  try {
+    const data = await bt2FetchJson<Bt2PicksListOut>('/bt2/picks')
+    const hit = pickOpenMatchForVault(data.picks, api)
+    if (!hit) return null
+
+    const record: Bt2TakenPickRecord = {
+      vaultPickId,
+      bt2PickId: hit.pick_id,
+      eventId: api.eventId,
+      market: hit.market,
+      selection: hit.selection,
+      oddsAccepted: hit.odds_accepted,
+      stakeUnits: hit.stake_units,
+      openedAt: hit.opened_at,
+      eventLabel: api.eventLabel,
+      operatingDayKey: api.operatingDayKey,
+      accessTier: api.accessTier,
+    }
+
+    useVaultStore.setState((s) => {
+      if (s.takenApiPicks.some((r) => r.vaultPickId === vaultPickId)) return s
+      return { takenApiPicks: [...s.takenApiPicks, record] }
+    })
+    return record
+  } catch {
+    return null
+  }
+}
+
 /** T-145 / US-FE-036: ficha settlement cuando el pick ya no está en el snapshot del día. */
 function anyPickFromLedgerRow(row: LedgerRow, vaultPickId: string): AnyPick {
   const sug = row.suggestedDecimalOdds
@@ -237,6 +310,13 @@ export default function SettlementPage() {
     [takenApiPicks, pickId],
   )
 
+  const apiPickMatch = useMemo(
+    () => apiPicks.find((p) => p.id === pickId) ?? null,
+    [apiPicks, pickId],
+  )
+  const isDevMockPick =
+    import.meta.env.DEV && vaultMockPicks.some((x) => x.id === pickId)
+
   const stationLocked = useSessionStore(selectStationLocked)
   const unlocked = useMemo(() => {
     const apiPick = apiPicks.find((p) => p.id === pickId)
@@ -284,6 +364,14 @@ export default function SettlementPage() {
   const [settleError, setSettleError] = useState<string | null>(null)
   const [reviewTakeError, setReviewTakeError] = useState<string | null>(null)
   const [reviewTaking, setReviewTaking] = useState(false)
+  /** POST /bt2/picks existe en servidor pero `takenApiPicks` local se perdió — reconciliar vía GET /bt2/picks. */
+  const [serverOpenPickGate, setServerOpenPickGate] = useState<
+    'pending' | 'has_mapping' | 'no_open_pick'
+  >('pending')
+
+  useEffect(() => {
+    setServerOpenPickGate('pending')
+  }, [pickId])
 
   const hasSeenTour = useTourStore((s) => s.seenTourKeys.includes('settlement'))
   const markTourSeen = useTourStore((s) => s.markTourSeen)
@@ -302,6 +390,34 @@ export default function SettlementPage() {
     ensureBt2FontLinks()
   }, [])
 
+  useEffect(() => {
+    if (
+      !apiPickMatch ||
+      bt2PickRecord ||
+      settled ||
+      isDevMockPick ||
+      isReviewPhase
+    ) {
+      setServerOpenPickGate('has_mapping')
+      return
+    }
+    let cancelled = false
+    void reconcileOpenPickToTakenRecord(pickId, apiPickMatch).then((rec) => {
+      if (cancelled) return
+      setServerOpenPickGate(rec ? 'has_mapping' : 'no_open_pick')
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [
+    apiPickMatch,
+    bt2PickRecord,
+    settled,
+    isDevMockPick,
+    isReviewPhase,
+    pickId,
+  ])
+
   const isApiRouteBlocked = useMemo(() => {
     if (settled) return false
     const apiPick = apiPicks.find((p) => p.id === pickId)
@@ -311,15 +427,17 @@ export default function SettlementPage() {
     if (mockFallback) return false
     // D-05-010: revisión pre-toma sin POST /bt2/picks aún
     if (isReviewPhase) return false
-    return !bt2PickRecord
-  }, [apiPicks, pickId, bt2PickRecord, isReviewPhase, settled])
-
-  const apiPickMatch = useMemo(
-    () => apiPicks.find((p) => p.id === pickId) ?? null,
-    [apiPicks, pickId],
-  )
-  const isDevMockPick =
-    import.meta.env.DEV && vaultMockPicks.some((x) => x.id === pickId)
+    if (bt2PickRecord) return false
+    if (serverOpenPickGate === 'pending') return false
+    return serverOpenPickGate === 'no_open_pick'
+  }, [
+    apiPicks,
+    pickId,
+    bt2PickRecord,
+    isReviewPhase,
+    settled,
+    serverOpenPickGate,
+  ])
 
   const premiumReviewAllowed = useMemo(() => {
     if (!displayPick || displayPick.accessTier !== 'premium') return true
@@ -406,9 +524,21 @@ export default function SettlementPage() {
     })
   }, [apiPickMatch, displayPick])
 
-  const settlementDsrMetaLine = useMemo(() => {
-    if (!apiPickMatch || !displayPick) return ''
-    return vektorModelConfidenceLineEs(displayPick.dsrConfidenceLabel)
+  const settlementPickSignals = useMemo(() => {
+    if (!apiPickMatch || !displayPick) return null
+    const est = displayPick.estimatedHitProbability
+    const ev = displayPick.evidenceQuality
+    const pr = displayPick.predictiveTier
+    const ac = displayPick.actionTier
+    if (
+      est == null &&
+      !(ev && String(ev).trim()) &&
+      !(pr && String(pr).trim()) &&
+      !(ac && String(ac).trim())
+    ) {
+      return null
+    }
+    return { est, ev, pr, ac }
   }, [apiPickMatch, displayPick])
 
   // T-057: cuota capturada en casa
@@ -563,18 +693,23 @@ export default function SettlementPage() {
 
     let res: { ok: boolean; earnedDp?: number; reason?: string }
 
-    if (bt2PickRecord) {
+    let recordForApi = bt2PickRecord
+    if (!recordForApi && apiPickMatch && !isDevMockPick) {
+      recordForApi = await reconcileOpenPickToTakenRecord(pickId, apiPickMatch)
+    }
+
+    if (recordForApi) {
       // US-FE-028: flujo real con API
       res = await settleApiPick({
         vaultPickId: pickId,
-        bt2PickId: bt2PickRecord.bt2PickId,
+        bt2PickId: recordForApi.bt2PickId,
         outcome,
         reflection,
         stakeCop,
         decimalCuota: activeOdds,
         bookDecimalOdds: Number.isFinite(bookOdds) ? bookOdds : undefined,
-        market: bt2PickRecord.market,
-        selection: bt2PickRecord.selection,
+        market: recordForApi.market,
+        selection: recordForApi.selection,
       })
     } else {
       // Flujo local (mock picks)
@@ -591,7 +726,11 @@ export default function SettlementPage() {
     setSettling(false)
 
     if (!res.ok) {
-      if ('reason' in res && res.reason === 'api_error') {
+      if ('reason' in res && res.reason === 'already_settled') {
+        setSettleError(
+          'Este pick ya figura liquidado en el navegador. Si acabás de reabrirlo en el ledger, esperá un segundo y reintentá; si persiste, recargá la página.',
+        )
+      } else if ('reason' in res && res.reason === 'api_error') {
         setSettleError(
           'No se pudo registrar la liquidación en el servidor. Revisa la conexión. Si el API responde 422, el mercado o la selección pueden no admitir el resultado enviado (p. ej. void o mapeo no soportado — US-FE-039 / T-150).',
         )
@@ -761,10 +900,60 @@ export default function SettlementPage() {
                 </p>
               </div>
             ) : null}
-            {settlementDsrMetaLine ? (
-              <p className="px-1 font-mono text-xs leading-snug text-[#6e7d86]">
-                {settlementDsrMetaLine}
-              </p>
+            {settlementPickSignals ? (
+              <div className="rounded-xl border border-[#a4b4be]/25 bg-white/90 p-6 shadow-sm">
+                <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#52616a]">
+                  Señales del modelo
+                </h3>
+                <dl className="grid gap-4 text-sm text-[#26343d] sm:grid-cols-2">
+                  <div>
+                    <dt className="text-[11px] font-semibold text-[#52616a]">
+                      Probabilidad estimada
+                    </dt>
+                    <dd className="mt-1 font-mono text-lg" style={monoStyle}>
+                      {formatEstimatedHitPct(settlementPickSignals.est)}
+                    </dd>
+                    <p className="mt-2 text-xs leading-snug text-[#6e7d86]">
+                      Es una lectura orientativa del modelo sobre la opción; no garantiza el
+                      resultado del partido.
+                    </p>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold text-[#52616a]">
+                      Respaldo del análisis
+                    </dt>
+                    <dd className="mt-1 font-semibold text-[#26343d]">
+                      {labelEvidenceQuality(settlementPickSignals.ev)}
+                    </dd>
+                    <p className="mt-2 text-xs leading-snug text-[#6e7d86]">
+                      Indica qué tan completos y consistentes están los datos que sustentan
+                      esta lectura (incluye chequeos internos del consenso numérico).
+                    </p>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold text-[#52616a]">
+                      Fuerza del pick
+                    </dt>
+                    <dd className="mt-1 font-semibold text-[#26343d]">
+                      {labelPredictiveTier(settlementPickSignals.pr)}
+                    </dd>
+                    <p className="mt-2 text-xs leading-snug text-[#6e7d86]">
+                      Posición relativa frente al resto de señales del día en el ranking
+                      interno; no es un nivel de acceso del producto.
+                    </p>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold text-[#52616a]">Acceso</dt>
+                    <dd className="mt-1 font-semibold text-[#26343d]">
+                      {labelActionTier(settlementPickSignals.ac)}
+                    </dd>
+                    <p className="mt-2 text-xs leading-snug text-[#6e7d86]">
+                      Cómo se ofrece en la bóveda: lectura libre o desbloqueo premium con DP,
+                      según las reglas del día.
+                    </p>
+                  </div>
+                </dl>
+              </div>
             ) : null}
           </div>
 
@@ -964,7 +1153,7 @@ export default function SettlementPage() {
                   className="font-mono text-xs font-bold tracking-tight text-[#6d3bd7]"
                   style={monoStyle}
                 >
-                  Recompensa: +10 DP (gestión)
+                  Recompensa: +15 DP (liquidación con reflexión)
                 </span>
               </div>
             </div>
@@ -1210,7 +1399,7 @@ export default function SettlementPage() {
                   : '—'}
               </span>
               {bt2PickRecord
-                ? '. +10 DP por registrar la liquidación con reflexión (ganancia, pérdida o empate/anulado).'
+                ? '. +15 DP por registrar la liquidación con reflexión (ganancia, pérdida o empate/anulado). +10 DP se acreditan al tomar el pick en la bóveda.'
                 : '. DP según resultado.'}
             </p>
             {Number.isFinite(bookOdds) ? (

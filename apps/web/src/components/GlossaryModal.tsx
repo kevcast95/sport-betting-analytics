@@ -20,7 +20,7 @@ const GLOSSARY: GlossaryEntry[] = [
     term: 'Puntos de Disciplina',
     abbr: 'DP',
     definition:
-      'Moneda interna del búnker. Representan coherencia operativa, no capital real. El servidor acredita +10 DP por cada liquidación registrada con reflexión (recompensa de gestión, mismo valor para ganancia, pérdida o empate/anulado); onboarding +250 DP una vez. Las señales premium suelen costar −50 DP en un paso de desbloqueo en la bóveda, antes de registrar la posición. Otras reglas (cierre de estación) dependen del despliegue.',
+      'Moneda interna del búnker. Representan coherencia operativa, no capital real. El servidor acredita +10 DP al tomar un pick (registro en protocolo) y +15 DP al liquidar con reflexión. Tras la ventana de gracia, las reglas de disciplina pueden descontar saldo (p. ej. picks sin liquidar: −50 DP en el despliegue actual). Onboarding +250 DP una vez. Desbloqueo premium en bóveda: −50 DP. Otras reglas (cierre de estación) dependen del despliegue.',
     tag: 'Economía',
   },
   {

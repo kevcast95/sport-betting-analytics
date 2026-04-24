@@ -45,6 +45,66 @@ def market_canonical_label_es(code: Optional[str]) -> str:
     return _MARKET_LABEL_ES.get(code, _MARKET_LABEL_ES["UNKNOWN"])
 
 
+def selection_canonical_summary_es(
+    market_canonical: Optional[str],
+    selection_canonical: Optional[str],
+    *,
+    home_team: str,
+    away_team: str,
+) -> str:
+    """Texto corto ES para la línea del pick alineado a (mmc, msc) — bóveda / settlement."""
+    mmc = (market_canonical or "").strip().upper()
+    msc = (selection_canonical or "").strip().lower()
+    if not mmc or mmc == "UNKNOWN":
+        return ""
+    if msc in ("", "unknown_side"):
+        return ""
+
+    if mmc == "FT_1X2":
+        if msc == "home":
+            return f"Victoria {home_team}"
+        if msc == "away":
+            return f"Victoria {away_team}"
+        if msc == "draw":
+            return "Empate"
+        return ""
+
+    if mmc == "BTTS":
+        if msc == "yes":
+            return "Sí (ambos marcan)"
+        if msc == "no":
+            return "No (ambos marcan)"
+        return ""
+
+    if mmc == "OU_GOALS_2_5":
+        if msc == "over_2_5":
+            return "Más de 2.5 goles"
+        if msc == "under_2_5":
+            return "Menos de 2.5 goles"
+        return ""
+    if mmc == "OU_GOALS_1_5":
+        if msc == "over_1_5":
+            return "Más de 1.5 goles"
+        if msc == "under_1_5":
+            return "Menos de 1.5 goles"
+        return ""
+    if mmc == "OU_GOALS_3_5":
+        if msc == "over_3_5":
+            return "Más de 3.5 goles"
+        if msc == "under_3_5":
+            return "Menos de 3.5 goles"
+        return ""
+
+    if mmc == "DOUBLE_CHANCE_1X" and msc == "yes":
+        return f"Empate o {home_team}"
+    if mmc == "DOUBLE_CHANCE_X2" and msc == "yes":
+        return f"Empate o {away_team}"
+    if mmc == "DOUBLE_CHANCE_12" and msc == "yes":
+        return f"{home_team} o {away_team}"
+
+    return ""
+
+
 def normalized_pick_to_canonical(
     norm_market: str,
     norm_selection: str,
@@ -185,6 +245,15 @@ def determine_settlement_outcome(
             return "won" if total > threshold else "lost"
         if "UNDER" in s.upper():
             return "won" if total < threshold else "lost"
+        return "void"
+
+    if m == "BTTS":
+        su = s.upper().strip()
+        both_scored = result_home > 0 and result_away > 0
+        if su == "YES":
+            return "won" if both_scored else "lost"
+        if su == "NO":
+            return "won" if not both_scored else "lost"
         return "void"
 
     return "void"

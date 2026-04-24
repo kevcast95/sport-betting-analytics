@@ -1,7 +1,7 @@
 """
 T-229 — Resolver canónico pick sugerido → verdad oficial CDM (ACTA T-244).
 
-Mercados v1: `1X2` / `FT_1X2` y `TOTAL_GOALS_OU_2_5` / `OU_GOALS_2_5`.
+Mercados v1: `1X2` / `FT_1X2`, `TOTAL_GOALS_OU_2_5` / `OU_GOALS_2_5`, `BTTS` (ambos marcan).
 Sin mapeo reproducible → `no_evaluable` con código de catálogo.
 """
 
@@ -42,7 +42,7 @@ class OfficialEvaluationResolution:
 
 def normalize_official_eval_market(market_canonical: Optional[str]) -> Optional[str]:
     """
-    Acta §2 (`1X2`, `TOTAL_GOALS_OU_2_5`) + códigos ya usados en bóveda (`FT_1X2`, `OU_GOALS_2_5`).
+    Acta §2 (`1X2`, `TOTAL_GOALS_OU_2_5`, `BTTS`) + aliases de bóveda (`FT_1X2`, `OU_GOALS_2_5`).
     Retorna mercado interno único o None si fuera de soporte v1.
     """
     if not market_canonical:
@@ -52,11 +52,40 @@ def normalize_official_eval_market(market_canonical: Optional[str]) -> Optional[
         return "FT_1X2"
     if m in ("TOTAL_GOALS_OU_2_5", "OU_GOALS_2_5"):
         return "OU_GOALS_2_5"
+    if m == "BTTS":
+        return "BTTS"
     return None
 
 
 _FT_SEL = frozenset({"home", "draw", "away"})
 _OU_SEL = frozenset({"over_2_5", "under_2_5"})
+_BTT_SEL = frozenset({"yes", "no"})
+
+# Whitelist de estados CDM desde los que se permite liquidar hit/miss con marcador.
+# Conservador: cualquier otro valor (p. ej. scheduled con scores materializados) → pending_result.
+# Literales de cierre alineados con `FINISHEDISH_STATUSES` en
+# scripts/bt2_phase2_lineage_audit.py; el CDM suele persistir `finished`
+# (scripts/bt2_cdm/normalize_fixtures._parse_status).
+_OFFICIAL_TRUTH_SCORING_ALLOWED_STATUSES: frozenset[str] = frozenset(
+    {
+        "finished",
+        "ft",
+        "after penalties",
+        "aet",
+        "fulltime",
+        "full_time",
+    }
+)
+
+
+def normalize_event_status_for_official_truth(event_status: Optional[str]) -> str:
+    return (event_status or "").lower().strip()
+
+
+def is_event_status_open_for_official_evaluation(event_status: Optional[str]) -> bool:
+    """True si el evento no está en estado de cierre deportivo admitido para evaluación oficial."""
+    st = normalize_event_status_for_official_truth(event_status)
+    return st not in _OFFICIAL_TRUTH_SCORING_ALLOWED_STATUSES
 
 
 def normalize_official_eval_selection(
@@ -71,6 +100,8 @@ def normalize_official_eval_selection(
         return s if s in _FT_SEL else None
     if internal_market == "OU_GOALS_2_5":
         return s if s in _OU_SEL else None
+    if internal_market == "BTTS":
+        return s if s in _BTT_SEL else None
     return None
 
 
@@ -100,7 +131,9 @@ def resolve_official_evaluation_from_cdm_truth(
     - Evento anulado/aplazado oficialmente → `void` / VOID_OFFICIAL_EVENT.
     - Sin goles finales y evento aún no cerrado → `pending_result`.
     - Partido finished sin scores → MISSING_TRUTH_SOURCE.
-    - Con scores: hit / miss / void según `determine_settlement_outcome`.
+    - Marcador presente pero estado CDM distinto de cierre deportivo (`finished`/sinónimos) →
+      `pending_result` (no liquida aunque existan scores).
+    - Tras paso anterior: scores + estado cerrado → hit / miss / void según `determine_settlement_outcome`.
     """
     m = normalize_official_eval_market(market_canonical)
     if m is None:
@@ -123,7 +156,7 @@ def resolve_official_evaluation_from_cdm_truth(
             },
         )
 
-    st = (event_status or "").lower().strip()
+    st = normalize_event_status_for_official_truth(event_status)
     if st in ("cancelled", "canceled", "postponed", "abandoned"):
         return OfficialEvaluationResolution(
             "void",
@@ -153,6 +186,15 @@ def resolve_official_evaluation_from_cdm_truth(
             "MISSING_TRUTH_SOURCE",
             TRUTH_SOURCE_BT2_EVENTS_CDM,
             {"event_status": st},
+        )
+
+    # Marcador presente pero evento no cerrado en CDM → no liquidar oficialmente (integridad).
+    if is_event_status_open_for_official_evaluation(st):
+        return OfficialEvaluationResolution(
+            "pending_result",
+            None,
+            None,
+            {"event_status": st or "unknown"},
         )
 
     rh = int(result_home)

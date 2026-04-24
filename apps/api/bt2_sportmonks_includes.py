@@ -64,3 +64,13 @@ BT2_SM_FIXTURE_INCLUDES: str = bt2_sm_join_include_segments(
     BT2_SM_FIXTURE_INCLUDES_CORE,
     ";".join(BT2_SM_FIXTURE_INCLUDES_OPTIONAL),
 )
+
+# Refresco admin Monitor → CDM (marcador/estado/evento): sin odds extendidos ni inplayOdds.
+# Evita 403 por includes no contratados cuando solo hace falta actualizar resultado en bt2_events.
+BT2_SM_FIXTURE_INCLUDES_CDM_REFRESH: str = bt2_sm_join_include_segments(
+    "sport",
+    "league",
+    "season",
+    "participants",
+    "scores",
+)

@@ -22,19 +22,18 @@ import { useTourStore } from '@/store/useTourStore'
 import { useSessionStore } from '@/store/useSessionStore'
 import { useUserStore } from '@/store/useUserStore'
 import { useVaultStore } from '@/store/useVaultStore'
-import type { Bt2VaultPickOut } from '@/lib/bt2Types'
 import {
-  computeVaultQuota,
-  VAULT_DAILY_CAP_PREMIUM,
-  VAULT_DAILY_CAP_STANDARD,
-} from '@/lib/vaultQuota'
-import {
-  reorderVaultPicksForBandCycle,
-  selectVisibleFromOrderedPool,
-} from '@/lib/vaultTimeBand'
+  type Bt2VaultPickOut,
+  bt2VaultPickUnlockEligible,
+} from '@/lib/bt2Types'
+import { isKickoffUtcInPast } from '@/lib/vaultKickoff'
+import { reorderVaultPicksForBandCycle } from '@/lib/vaultTimeBand'
 import { useTradeStore } from '@/store/useTradeStore'
 
 const VAULT_TOUR = getTourScript('vault')!
+
+/** Vista lista: 5 tarjetas por página para evitar scroll largo. */
+const VAULT_PAGE_SIZE = 5
 
 function VaultEmptyState({
   headline,
@@ -113,20 +112,24 @@ export default function VaultPage() {
   const takenApiPicks = useVaultStore((s) => s.takenApiPicks)
   const unlockedPickIds = useVaultStore((s) => s.unlockedPickIds)
   const loadApiPicks = useVaultStore((s) => s.loadApiPicks)
-  const regenerateVaultSlate = useVaultStore((s) => s.regenerateVaultSlate)
   const invalidateVaultIfOperatingDayMismatch = useVaultStore(
     (s) => s.invalidateVaultIfOperatingDayMismatch,
   )
   const operatingDayKey = useSessionStore((s) => s.operatingDayKey)
   const takeApiPick = useVaultStore((s) => s.takeApiPick)
   const unlockPremiumVaultPick = useVaultStore((s) => s.unlockPremiumVaultPick)
+  const unlockStandardVaultPick = useVaultStore((s) => s.unlockStandardVaultPick)
+  const setVaultPickCommitment = useVaultStore((s) => s.setVaultPickCommitment)
   const tryUnlockPick = useVaultStore((s) => s.tryUnlockPick)
   const hydrateLedgerFromApi = useTradeStore((s) => s.hydrateLedgerFromApi)
-  const vaultPoolMeta = useVaultStore((s) => s.vaultPoolMeta)
   const vaultDaySnapshotMeta = useVaultStore((s) => s.vaultDaySnapshotMeta)
   const vaultLocalSlateCycle = useVaultStore((s) => s.vaultLocalSlateCycle)
 
   const [vaultToast, setVaultToast] = useState<string | null>(null)
+  const [vaultTab, setVaultTab] = useState<
+    'disponibles' | 'liberados' | 'cerrados'
+  >('disponibles')
+  const [vaultListPage, setVaultListPage] = useState(1)
 
   const userTimeZone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Bogota',
@@ -170,6 +173,11 @@ export default function VaultPage() {
     }
   }, [])
 
+  /** Al entrar en bóveda: alinear ledger/settledPickIds con GET /bt2/picks (p. ej. tras reopen en servidor). */
+  useEffect(() => {
+    void hydrateLedgerFromApi()
+  }, [hydrateLedgerFromApi])
+
   useEffect(() => {
     if (!hasSeenTour && onboardingPhaseAComplete) {
       const t = setTimeout(() => setTourOpen(true), 500)
@@ -204,41 +212,62 @@ export default function VaultPage() {
   )
   void isMockPickUnlocked // evitar lint unused
 
-  const visibleHardCap = vaultPoolMeta?.poolHardCap ?? 5
-
-  /** Orden según ciclo local (regenerar); sin esto la grilla ignora el barajado. */
+  /** Pool interno (hasta 20) ordenado por franja; liberación limitada por topes en servidor. */
   const orderedPoolPicks = useMemo(
     () => reorderVaultPicksForBandCycle(apiPicks, userTimeZone, vaultLocalSlateCycle),
     [apiPicks, userTimeZone, vaultLocalSlateCycle],
   )
 
-  /** Ventana de 5 sobre el pool ordenado; `vaultLocalSlateCycle` rota el inicio (circular). */
-  const displayedPicks = useMemo(
+  const disponiblesPicks = useMemo(
     () =>
-      selectVisibleFromOrderedPool(
-        orderedPoolPicks,
-        userTimeZone,
-        visibleHardCap,
-        undefined,
-        vaultLocalSlateCycle,
-      ),
-    [orderedPoolPicks, userTimeZone, visibleHardCap, vaultLocalSlateCycle],
+      orderedPoolPicks.filter((p) => {
+        const past = isKickoffUtcInPast(p.kickoffUtc)
+        return (
+          p.contentUnlocked !== true && bt2VaultPickUnlockEligible(p) && !past
+        )
+      }),
+    [orderedPoolPicks],
   )
 
-  // Conteo por tier (solo cartelera visible)
-  const standardCount = useMemo(
-    () => displayedPicks.filter((p) => p.accessTier === 'standard').length,
-    [displayedPicks],
-  )
-  const premiumCount = useMemo(
-    () => displayedPicks.filter((p) => p.accessTier === 'premium').length,
-    [displayedPicks],
+  const liberadosPicks = useMemo(
+    () => orderedPoolPicks.filter((p) => p.contentUnlocked === true),
+    [orderedPoolPicks],
   )
 
-  const quota = useMemo(
-    () => computeVaultQuota(takenApiPicks, operatingDayKey, apiPicks),
-    [takenApiPicks, operatingDayKey, apiPicks],
+  const cerradosPicks = useMemo(
+    () =>
+      orderedPoolPicks.filter((p) => {
+        const past = isKickoffUtcInPast(p.kickoffUtc)
+        return (
+          p.contentUnlocked !== true &&
+          (!bt2VaultPickUnlockEligible(p) || past)
+        )
+      }),
+    [orderedPoolPicks],
   )
+
+  const tabPicks =
+    vaultTab === 'disponibles'
+      ? disponiblesPicks
+      : vaultTab === 'liberados'
+        ? liberadosPicks
+        : cerradosPicks
+
+  useEffect(() => {
+    setVaultListPage(1)
+  }, [vaultTab])
+
+  const vaultTotalPages = Math.max(1, Math.ceil(tabPicks.length / VAULT_PAGE_SIZE))
+  const vaultSafePage = Math.min(vaultListPage, vaultTotalPages)
+
+  useEffect(() => {
+    setVaultListPage((p) => Math.min(p, vaultTotalPages))
+  }, [vaultTotalPages])
+
+  const pagedVaultPicks = useMemo(() => {
+    const start = (vaultSafePage - 1) * VAULT_PAGE_SIZE
+    return tabPicks.slice(start, start + VAULT_PAGE_SIZE)
+  }, [tabPicks, vaultSafePage])
 
   const emptyVaultCopy = useMemo(() => {
     const m = vaultDaySnapshotMeta
@@ -266,15 +295,6 @@ export default function VaultPage() {
     }
   }, [picksMessage, vaultDaySnapshotMeta])
 
-  const takeBlockedByQuota = useCallback(
-    (pick: Bt2VaultPickOut, taken: boolean) => {
-      if (taken) return false
-      if (pick.accessTier === 'standard') return quota.atStandardCap
-      return quota.atPremiumCap
-    },
-    [quota.atPremiumCap, quota.atStandardCap],
-  )
-
   const showVaultToast = useCallback((msg: string) => {
     setVaultToast(msg)
     if (toastTimer.current) clearTimeout(toastTimer.current)
@@ -291,6 +311,51 @@ export default function VaultPage() {
     showVaultToast(msg)
     window.history.replaceState({}, document.title)
   }, [location.state, showVaultToast])
+
+  const handleStandardUnlock = useCallback(
+    async (pickId: string) => {
+      const res = await unlockStandardVaultPick(pickId)
+      if (res.ok) {
+        showVaultToast('Contenido liberado. Podés marcar más tarde si apostaste.')
+        return
+      }
+      if (res.reason === 'station_locked') {
+        showVaultToast('Estación cerrada: no puedes liberar señales en este ciclo.')
+        return
+      }
+      if (res.reason === 'already_unlocked') return
+      if (res.reason === 'kickoff_elapsed') {
+        showVaultToast(
+          res.apiMessage ?? 'El partido ya inició; no puedes liberar esta señal.',
+        )
+        return
+      }
+      if (res.reason === 'pick_unavailable') {
+        showVaultToast(
+          res.apiMessage ??
+            'Este ítem no está disponible para liberación. Actualizá la bóveda o revisá la pestaña Cerrados.',
+        )
+        return
+      }
+      showVaultToast(
+        res.apiMessage?.slice(0, 220) ??
+          'No se pudo liberar la señal. Revisá cupos del día o conexión.',
+      )
+    },
+    [unlockStandardVaultPick, showVaultToast],
+  )
+
+  const handleCommitment = useCallback(
+    async (pickId: string, c: 'taken' | 'not_taken') => {
+      const r = await setVaultPickCommitment(pickId, c)
+      if (r.ok) {
+        showVaultToast(c === 'taken' ? 'Marcado como tomado.' : 'Marcado como no tomado.')
+        return
+      }
+      showVaultToast(r.message.slice(0, 220))
+    },
+    [setVaultPickCommitment, showVaultToast],
+  )
 
   const handlePremiumUnlock = useCallback(
     async (pickId: string) => {
@@ -314,6 +379,13 @@ export default function VaultPage() {
         showVaultToast(
           res.apiMessage ??
             'El partido ya inició; no puedes desbloquear esta señal.',
+        )
+        return
+      }
+      if (res.reason === 'pick_unavailable') {
+        showVaultToast(
+          res.apiMessage ??
+            'Este evento no admite desbloqueo en este momento. Revisá la pestaña Cerrados.',
         )
         return
       }
@@ -356,18 +428,6 @@ export default function VaultPage() {
           )
           return
         }
-        if (res.reason === 'quota_standard_exhausted') {
-          showVaultToast(
-            'Cupo diario de señales estándar agotado (3 por día operativo).',
-          )
-          return
-        }
-        if (res.reason === 'quota_premium_exhausted') {
-          showVaultToast(
-            'Cupo diario de señales premium agotado (2 por día operativo).',
-          )
-          return
-        }
         if (res.reason === 'insufficient_bankroll') {
           showVaultToast(
             res.apiMessage ??
@@ -398,25 +458,8 @@ export default function VaultPage() {
       ) : null}
       <BunkerViewHeader
         title="La Bóveda"
-        subtitle="Señales del día con criterio DSR: lectura prioritaria apoyada en datos e histórico del input y coherencia cuota–narrativa — no maximizar ganancia como eje único (D-06-027). Estándar sin DP; premium con desbloqueo en DP y registro aparte."
+        subtitle="Picks del día seleccionados con criterio, contexto y disciplina."
         onHelpClick={handleForceShowTour}
-        rightActions={
-          <div className="flex flex-wrap items-center gap-2">
-            {picksLoadStatus === 'loaded' ? (
-              <>
-                <p className="text-xs font-semibold uppercase tracking-widest text-[#52616a]">
-                  {displayedPicks.length}/{visibleHardCap} visibles · {apiPicks.length} en pool
-                </p>
-                <span className="rounded-full bg-[#d1fae5] px-2.5 py-0.5 text-[10px] font-bold text-[#065f46]">
-                  {standardCount} estándar
-                </span>
-                <span className="rounded-full bg-[#e9ddff] px-2.5 py-0.5 text-[10px] font-bold text-[#6d3bd7]">
-                  {premiumCount} premium
-                </span>
-              </>
-            ) : null}
-          </div>
-        }
       />
 
       <div className="rounded-xl border border-[#a4b4be]/20 bg-white/80 px-4 py-3">
@@ -440,85 +483,34 @@ export default function VaultPage() {
       ) : null}
 
       {picksLoadStatus === 'loaded' && apiPicks.length > 0 ? (
-        <div className="space-y-4 rounded-xl border border-[#a4b4be]/20 bg-white/70 p-4 shadow-sm">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
-            <div className="flex min-w-0 flex-col gap-2">
-              <button
-                type="button"
-                disabled={apiPicks.length === 0}
-                onClick={() => {
-                  const r = regenerateVaultSlate()
-                  if (!r.ok) {
-                    showVaultToast(r.message.slice(0, 220))
-                    return
-                  }
-                  showVaultToast(
-                    `Ciclo ${r.cycle}/4 · ${r.poolSize} picks en pool · orden de cartelera actualizado (solo cliente, sin otro request).`,
-                  )
-                }}
-                className="w-full max-w-xs rounded-lg border border-[#26343d]/20 bg-[#26343d] px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-[#1c2730] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                title="Rota el ciclo de franjas horarias sobre el pool ya traído en el GET (hasta 20); no vuelve a llamar al servidor."
-              >
-                Regenerar cartelera
-              </button>
-              <p className="text-[10px] leading-snug text-[#6e7d86]">
-                <span className="font-semibold text-[#26343d]">
-                  Total en pool (API):{' '}
-                  <span className="font-mono tabular-nums">{apiPicks.length}</span>
-                </span>
-                . Un solo GET al abrir la estación trae el pool del día; «Regenerar» solo baraja
-                el orden visible (ciclo 0–3 y franja local), hasta{' '}
-                <span className="font-mono">{visibleHardCap}</span> tarjetas.
-              </p>
-            </div>
-            <div
-              className="min-w-0 font-mono text-[11px] leading-relaxed text-[#52616a]"
-              role="status"
+        <div
+          role="tablist"
+          aria-label="Secciones de la bóveda"
+          className="flex flex-wrap gap-2 rounded-xl border border-[#a4b4be]/25 bg-[#f6fafe]/80 p-2"
+        >
+          {(
+            [
+              ['disponibles', 'Disponibles', disponiblesPicks.length],
+              ['liberados', 'Liberados', liberadosPicks.length],
+              ['cerrados', 'Cerrados', cerradosPicks.length],
+            ] as const
+          ).map(([key, label, count]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={vaultTab === key}
+              onClick={() => setVaultTab(key)}
+              className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
+                vaultTab === key
+                  ? 'bg-[#26343d] text-white'
+                  : 'bg-white/90 text-[#52616a] hover:bg-[#eef4fa]'
+              }`}
             >
-              <span className="font-sans font-semibold text-[#26343d]">
-                Cupo de tomas hoy:{' '}
-              </span>
-              estándar{' '}
-              <span className="tabular-nums text-[#065f46]">
-                {quota.standardRemaining}/{VAULT_DAILY_CAP_STANDARD}
-              </span>{' '}
-              restantes · premium{' '}
-              <span className="tabular-nums text-[#6d3bd7]">
-                {quota.premiumRemaining}/{VAULT_DAILY_CAP_PREMIUM}
-              </span>{' '}
-              restantes.
-              <span className="mt-1 block text-[10px] text-[#6e7d86]">
-                El desbloqueo premium (DP) no cuenta como toma hasta que pulses
-                «Tomar pick». Límite alineado a reglas del protocolo (3+2 por día
-                operativo).
-              </span>
-            </div>
-          </div>
-          {vaultPoolMeta ? (
-            <p className="text-[10px] leading-snug text-[#6e7d86]">
-              Pool en cliente:{' '}
-              <span className="font-mono tabular-nums">{vaultPoolMeta.poolItemCount}</span> ítems
-              (tope valor ≤{' '}
-              {vaultPoolMeta.valuePoolUniverseMax != null ? (
-                <span className="font-mono">{vaultPoolMeta.valuePoolUniverseMax}</span>
-              ) : (
-                '20'
-              )}
-              ). Grilla: hasta{' '}
-              <span className="font-mono">{vaultPoolMeta.poolHardCap}</span> visibles · ciclo
-              local{' '}
-              <span className="font-mono">{vaultLocalSlateCycle}</span>/4.
-              {vaultPoolMeta.poolBelowTarget
-                ? ' Por debajo del objetivo: el CDM aportó menos eventos válidos.'
-                : null}
-            </p>
-          ) : null}
-          {vaultDaySnapshotMeta?.limitedCoverage ? (
-            <p className="text-[10px] leading-snug text-[#92400e]">
-              Cobertura baja en la ventana del día (&lt; 5 eventos futuros): el criterio puede
-              depender de pocos partidos; no implica fallo de ingesta por sí sola (D-06-026 §4).
-            </p>
-          ) : null}
+              {label}{' '}
+              <span className="font-mono text-xs tabular-nums opacity-90">({count})</span>
+            </button>
+          ))}
         </div>
       ) : null}
 
@@ -534,24 +526,75 @@ export default function VaultPage() {
             technicalHint={emptyVaultCopy.technicalHint}
             onRefresh={() => void loadApiPicks()}
           />
+        ) : tabPicks.length === 0 ? (
+          <div className="col-span-full rounded-xl border border-[#a4b4be]/20 bg-[#f6fafe] px-6 py-12 text-center text-sm text-[#52616a]">
+            {vaultTab === 'disponibles'
+              ? 'No hay picks disponibles para liberar en este momento.'
+              : vaultTab === 'liberados'
+                ? 'Todavía no liberaste ningún pick hoy.'
+                : 'No hay picks cerrados por tiempo en esta vista.'}
+          </div>
         ) : (
-          displayedPicks.map((pick) => (
-            <PickCard
-              key={pick.id}
-              pick={pick}
-              pickTaken={isApiPickCommitted(pick)}
-              premiumUnlocked={
-                pick.accessTier === 'standard' ? true : pick.premiumUnlocked
-              }
-              disciplinePoints={disciplinePoints}
-              onPremiumUnlock={(id) => void handlePremiumUnlock(id)}
-              onTakePick={(id) => void handleTakePick(id)}
-              takeBlockedByDailyQuota={takeBlockedByQuota(
-                pick,
-                isApiPickCommitted(pick),
-              )}
-            />
-          ))
+          <>
+            {pagedVaultPicks.map((pick) => (
+              <PickCard
+                key={pick.id}
+                pick={pick}
+                vaultCardVariant={
+                  vaultTab === 'disponibles'
+                    ? 'disponible'
+                    : vaultTab === 'liberados'
+                      ? 'liberado'
+                      : 'cerrado'
+                }
+                pickTaken={isApiPickCommitted(pick)}
+                disciplinePoints={disciplinePoints}
+                onPremiumUnlock={(id) => void handlePremiumUnlock(id)}
+                onStandardUnlock={(id) => void handleStandardUnlock(id)}
+                onCommitment={(id, c) => void handleCommitment(id, c)}
+                onTakePick={(id) => void handleTakePick(id)}
+              />
+            ))}
+            <nav
+              className="col-span-full flex flex-col items-center gap-3 border-t border-[#a4b4be]/20 pt-6"
+              aria-label="Paginación de la lista de picks"
+            >
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  disabled={vaultSafePage <= 1}
+                  onClick={() => setVaultListPage((p) => Math.max(1, p - 1))}
+                  className="rounded-lg border border-[#26343d]/25 bg-white px-4 py-2 text-sm font-semibold text-[#26343d] transition-colors hover:bg-[#eef4fa] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  ← Anterior
+                </button>
+                <p className="text-sm text-[#52616a]">
+                  Página{' '}
+                  <span className="font-mono tabular-nums font-bold text-[#26343d]">
+                    {vaultSafePage}
+                  </span>{' '}
+                  de{' '}
+                  <span className="font-mono tabular-nums">{vaultTotalPages}</span>
+                  <span className="mx-2 text-[#a4b4be]">·</span>
+                  <span className="font-mono text-xs tabular-nums text-[#6e7d86]">
+                    {(vaultSafePage - 1) * VAULT_PAGE_SIZE + 1}–
+                    {Math.min(vaultSafePage * VAULT_PAGE_SIZE, tabPicks.length)} de{' '}
+                    {tabPicks.length}
+                  </span>
+                </p>
+                <button
+                  type="button"
+                  disabled={vaultSafePage >= vaultTotalPages}
+                  onClick={() =>
+                    setVaultListPage((p) => Math.min(vaultTotalPages, p + 1))
+                  }
+                  className="rounded-lg border border-[#26343d]/25 bg-white px-4 py-2 text-sm font-semibold text-[#26343d] transition-colors hover:bg-[#eef4fa] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Siguiente →
+                </button>
+              </div>
+            </nav>
+          </>
         )}
       </div>
 

@@ -5,8 +5,9 @@ Lee raw_sportmonks_fixtures (JSONB) y hace upsert en las 4 tablas CDM:
 
 Estructura real del payload Sportmonks:
   - participants: lista con meta.location="home"/"away"
-  - scores: lista con description="CURRENT"/"1ST_HALF"/"2ND_HALF"
-  - state_id: 5=Finished, 6=Postponed, 7=Cancelled
+  - scores: lista con description (CURRENT, FT, 2ND_HALF, …); también se intenta cualquier par home/away
+  - state_id: raíz o ``state.id``; 5=Finished; FT/FULLTIME en scores → finished;
+    ids en curso (p. ej. 2=1st, 22=2nd en payloads SM football) → live
   - result_info: texto (no None) = partido terminado
   - odds[]: market_id=1 (Match Winner), market_id=80 (Goals Over/Under)
              cada entry tiene: label, value (decimal), bookmaker_id, total
@@ -22,7 +23,8 @@ import logging
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+import re
+from typing import Optional, Tuple
 
 _repo_root = str(Path(__file__).resolve().parents[2])
 if _repo_root not in sys.path:
@@ -136,35 +138,173 @@ def _parse_kickoff(payload: dict) -> Optional[datetime]:
     return None
 
 
+def _effective_state_id(payload: dict) -> Optional[int]:
+    """SportMonks: ``state_id`` en raíz o ``state.id`` (objeto anidado)."""
+    raw = payload.get("state_id")
+    if raw is not None:
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            pass
+    st = payload.get("state")
+    if isinstance(st, dict) and st.get("id") is not None:
+        try:
+            return int(st["id"])
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+def _scores_indicate_fulltime_finished(payload: dict) -> bool:
+    """
+    True si en ``scores`` hay línea FT / FULL TIME / FULLTIME con par home/away completo.
+    Alineado con las descriptions que usa ``_parse_result`` para marcador final.
+    """
+    scores = payload.get("scores") or []
+    for target_desc in ("FT", "FULL TIME", "FULLTIME"):
+        td = target_desc.strip().upper()
+        home_goals = away_goals = None
+        for s in scores:
+            if not isinstance(s, dict):
+                continue
+            desc = str(s.get("description") or "").strip().upper()
+            if desc != td:
+                continue
+            score_data = s.get("score") or {}
+            if isinstance(score_data, dict):
+                participant = str(score_data.get("participant") or "").strip().lower()
+                goals = _goal_int(score_data.get("goals"))
+                if participant == "home":
+                    home_goals = goals
+                elif participant == "away":
+                    away_goals = goals
+        if home_goals is not None and away_goals is not None:
+            return True
+    return False
+
+
+# SportMonks football — estados no finales observados en fixtures reales (CDM vs raw audit).
+# Ampliar solo con evidencia de payloads (state.short_name / developer_name en raw).
+_INPLAY_FOOTBALL_STATE_IDS: frozenset[int] = frozenset({2, 22})
+
+
 def _parse_status(payload: dict) -> str:
     # result_info no nulo → partido terminado
     if payload.get("result_info"):
         return "finished"
-    state_id = payload.get("state_id")
-    if state_id in (6, 10):   # Postponed
+    sid_int = _effective_state_id(payload)
+    # Football SM: 5 = Finished (sin depender de result_info vacío ni scores ya parseados)
+    if sid_int == 5:
+        return "finished"
+    if sid_int in (6, 10):   # Postponed
         return "cancelled"
-    if state_id in (7, 9):    # Cancelled / Abandoned
+    if sid_int in (7, 9):    # Cancelled / Abandoned
         return "cancelled"
+    # Marcador final explícito en scores aunque state_id aún no sea 5 (lag SM)
+    if _scores_indicate_fulltime_finished(payload):
+        return "finished"
+    # En curso (football SM): evidencia ventana BT2 2026-04 raw.state —
+    # id 2 + short "1st", id 22 + short "2nd" (no son NS ni FT; evitar scheduled+CURRENT).
+    if sid_int in _INPLAY_FOOTBALL_STATE_IDS:
+        return "live"
     return "scheduled"
 
 
+def _goal_int(v) -> Optional[int]:
+    if v is None:
+        return None
+    try:
+        return int(float(str(v).strip()))
+    except (ValueError, TypeError):
+        return None
+
+
 def _parse_result(payload: dict) -> tuple:
-    """Extrae result_home, result_away del array scores description=CURRENT."""
+    """
+    Extrae result_home, result_away del payload SportMonks.
+
+    Orden: descriptions habituales (CURRENT, FT, …) → cualquier par home/away en scores
+    → texto ``result_info`` estilo ``2 - 1``.
+    """
     scores = payload.get("scores") or []
+    preferred_desc = (
+        "CURRENT",
+        "FULLTIME",
+        "FULL TIME",
+        "FT",
+        "2ND_HALF",
+        "SECOND_HALF",
+    )
+
+    def collect_for_description(target_desc: str) -> Tuple[Optional[int], Optional[int]]:
+        td = target_desc.strip().upper()
+        home_goals = away_goals = None
+        for s in scores:
+            if not isinstance(s, dict):
+                continue
+            desc = str(s.get("description") or "").strip().upper()
+            if desc != td:
+                continue
+            score_data = s.get("score") or {}
+            if isinstance(score_data, dict):
+                participant = str(score_data.get("participant") or "").strip().lower()
+                goals = _goal_int(score_data.get("goals"))
+                if participant == "home":
+                    home_goals = goals
+                elif participant == "away":
+                    away_goals = goals
+        return home_goals, away_goals
+
+    for d in preferred_desc:
+        rh, ra = collect_for_description(d)
+        if rh is not None and ra is not None:
+            return rh, ra
+
+    # Cualquier description: reunir primer par home/away con goles
     home_goals = away_goals = None
     for s in scores:
         if not isinstance(s, dict):
             continue
-        if s.get("description") != "CURRENT":
-            continue
         score_data = s.get("score") or {}
-        participant = score_data.get("participant", "")
-        goals = score_data.get("goals")
-        if participant == "home":
+        if not isinstance(score_data, dict):
+            continue
+        participant = str(score_data.get("participant") or "").strip().lower()
+        goals = _goal_int(score_data.get("goals"))
+        if participant == "home" and goals is not None:
             home_goals = goals
-        elif participant == "away":
+        elif participant == "away" and goals is not None:
             away_goals = goals
-    return home_goals, away_goals
+        if home_goals is not None and away_goals is not None:
+            return home_goals, away_goals
+
+    # result_info textual (p. ej. "2 - 1", "2:1")
+    ri = payload.get("result_info")
+    if isinstance(ri, str) and ri.strip():
+        m = re.search(r"(\d+)\s*[-–:]\s*(\d+)", ri.strip())
+        if m:
+            return _goal_int(m.group(1)), _goal_int(m.group(2))
+
+    return None, None
+
+
+def _results_for_bt2_persist(
+    payload: dict, status: str, result_home: Optional[int], result_away: Optional[int]
+) -> tuple[Optional[int], Optional[int]]:
+    """
+    SportMonks a veces deja ``state_id=1`` (NS) con filas ``scores`` en CURRENT / medios tiempos
+    en 0-0 (placeholders). ``_parse_result`` entonces devuelve (0, 0) aunque el partido no haya
+    empezado: no persistir ese marcador (PR C; evidencia fixture 19433738 y análogos).
+    """
+    if result_home is None and result_away is None:
+        return None, None
+    if (
+        _effective_state_id(payload) == 1
+        and status == "scheduled"
+        and result_home == 0
+        and result_away == 0
+    ):
+        return None, None
+    return result_home, result_away
 
 
 def _parse_season(payload: dict) -> Optional[str]:
@@ -282,8 +422,20 @@ def upsert_event(
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (sportmonks_fixture_id) DO UPDATE
             SET status      = EXCLUDED.status,
-                result_home = COALESCE(EXCLUDED.result_home, bt2_events.result_home),
-                result_away = COALESCE(EXCLUDED.result_away, bt2_events.result_away),
+                result_home = CASE
+                    WHEN EXCLUDED.result_home IS NOT NULL THEN EXCLUDED.result_home
+                    WHEN EXCLUDED.status = 'scheduled'
+                         AND bt2_events.result_home = 0 AND bt2_events.result_away = 0
+                    THEN NULL
+                    ELSE COALESCE(EXCLUDED.result_home, bt2_events.result_home)
+                END,
+                result_away = CASE
+                    WHEN EXCLUDED.result_away IS NOT NULL THEN EXCLUDED.result_away
+                    WHEN EXCLUDED.status = 'scheduled'
+                         AND bt2_events.result_home = 0 AND bt2_events.result_away = 0
+                    THEN NULL
+                    ELSE COALESCE(EXCLUDED.result_away, bt2_events.result_away)
+                END,
                 updated_at  = now()
         RETURNING id
     """, (fixture_id, league_internal_id, home_id, away_id,
@@ -392,6 +544,9 @@ def normalize_single_fixture_payload(
             upsert_team(cur, int(away_sm_id), away_name, league_internal_id) if away_sm_id else None
         )
 
+        st = _parse_status(payload)
+        rh, ra = _parse_result(payload)
+        rh, ra = _results_for_bt2_persist(payload, st, rh, ra)
         event_internal_id = upsert_event(
             cur,
             int(fixture_id),
@@ -399,8 +554,9 @@ def normalize_single_fixture_payload(
             home_internal_id,
             away_internal_id,
             _parse_kickoff(payload),
-            _parse_status(payload),
-            *_parse_result(payload),
+            st,
+            rh,
+            ra,
             _parse_season(payload),
         )
         base["event_internal_id"] = event_internal_id
@@ -525,12 +681,14 @@ def run_normalization(batch_size: int = 1000, dry_run: bool = False) -> dict:
                     stats["teams_upserted"] += 1
 
                 # 3) Upsert evento
+                st = _parse_status(payload)
+                rh, ra = _parse_result(payload)
+                rh, ra = _results_for_bt2_persist(payload, st, rh, ra)
                 event_internal_id = upsert_event(
                     cur, fixture_id, league_internal_id,
                     home_internal_id, away_internal_id,
                     _parse_kickoff(payload),
-                    _parse_status(payload),
-                    *_parse_result(payload),
+                    st, rh, ra,
                     _parse_season(payload),
                 )
                 if event_internal_id:

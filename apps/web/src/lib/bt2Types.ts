@@ -40,6 +40,11 @@ export interface Bt2VaultPickOut {
   unlockCostDp: number
   operatingDayKey: string
   isAvailable: boolean
+  /**
+   * Autoritativo para liberar en bóveda (POST /vault/*-unlock).
+   * `isAvailable` sigue siendo estricto (scheduled) para POST /picks.
+   */
+  unlockEligible?: boolean
   /** ISO 8601 UTC (…Z). Vacío si el CDM no tiene kickoff (D-05-011). */
   kickoffUtc: string
   /** Valor crudo `bt2_events.status` (scheduled, inplay, finished, …). */
@@ -47,6 +52,12 @@ export interface Bt2VaultPickOut {
   externalSearchUrl: string
   /** US-BE-029: desbloqueo premium ya pagado (o legado: pick abierto en el evento). */
   premiumUnlocked: boolean
+  /** Liberación explícita estándar (o legado con pick abierto). */
+  standardUnlocked?: boolean
+  /** Puede ver selección/cuota/racional completo. */
+  contentUnlocked?: boolean
+  /** Tras liberar: si el usuario marcó que apostó o no. */
+  userPickCommitment?: 'taken' | 'not_taken' | null
   /** US-BE-030: franja horaria local del kickoff (TZ usuario). */
   timeBand: Bt2VaultTimeBand
   /** Orden en snapshot del día (1 = cabeza tras compose/regenerar). */
@@ -54,7 +65,14 @@ export interface Bt2VaultPickOut {
   /** Sprint 06 — DSR / pipeline (US-BE-025, US-DX-002). */
   pipelineVersion?: string
   dsrNarrativeEs?: string
+  /** @deprecated en UI; usar evidence / predictive / action */
   dsrConfidenceLabel?: string
+  /** 0–1 estimación modelo */
+  estimatedHitProbability?: number | null
+  evidenceQuality?: 'low' | 'medium' | 'high' | null
+  predictiveTier?: 'low' | 'medium' | 'high' | null
+  /** Producto/bóveda — no confundir con predictive */
+  actionTier?: 'free' | 'premium' | null
   dsrSource?: string
   marketCanonical?: string
   marketCanonicalLabelEs?: string
@@ -65,6 +83,16 @@ export interface Bt2VaultPickOut {
    * Mostrar en UI solo si viene definido; no es probabilidad de acierto (D-06-024 / US-DX-003).
    */
   dataCompletenessScore?: number | null
+}
+
+/**
+ * Elegible para liberar en bóveda. Con `unlockEligible` del API; sin él, fallback a
+ * `isAvailable` (clientes viejos o persistencia).
+ */
+export function bt2VaultPickUnlockEligible(p: Bt2VaultPickOut): boolean {
+  if (p.unlockEligible === false) return false
+  if (p.unlockEligible === true) return true
+  return p.isAvailable !== false
 }
 
 /** POST /bt2/vault/premium-unlock (US-BE-029). */
@@ -114,6 +142,30 @@ export interface Bt2VaultPicksPageOut {
   fallbackDisclaimerEs?: string | null
   futureEventsInWindowCount?: number
   fallbackEligiblePoolCount?: number
+  freePicksUnlockedToday?: number
+  premiumPicksUnlockedToday?: number
+  totalPicksUnlockedToday?: number
+}
+
+/** POST /bt2/vault/standard-unlock */
+export interface Bt2VaultStandardUnlockBody {
+  vaultPickId: string
+}
+
+export interface Bt2VaultStandardUnlockOut {
+  vaultPickId: string
+  standardUnlocked: boolean
+}
+
+/** POST /bt2/vault/pick-commitment */
+export interface Bt2VaultPickCommitmentBody {
+  vaultPickId: string
+  commitment: 'taken' | 'not_taken'
+}
+
+export interface Bt2VaultPickCommitmentOut {
+  vaultPickId: string
+  commitment: 'taken' | 'not_taken'
 }
 
 // ─── Picks (bt2_picks) ────────────────────────────────────────────────────────
@@ -153,6 +205,12 @@ export interface Bt2PickOut {
   modelPredictionResult?: string | null
   /** POST /bt2/picks: bankroll tras descontar el stake. */
   bankrollAfterUnits?: number | null
+  /**
+   * Marca declarativa del operador (`pending`|`won`|`lost`|`void`).
+   * No sustituye la liquidación formal (`POST .../settle`).
+   */
+  userResultClaim?: string | null
+  user_result_claim?: string | null
 }
 
 export interface Bt2PicksListOut {
@@ -165,7 +223,10 @@ export interface Bt2SettleOut {
   pnl_units: number
   bankroll_after_units: number | null
   earned_dp: number
-  dp_balance_after: number
+  /** Null si el JSON no traía saldo (no confundir con saldo real 0). */
+  dp_balance_after: number | null
+  /** `cdm` | `user` | `user_claim` — ver apps.api SettleOut. */
+  settlement_source?: string
 }
 
 // ─── Session ──────────────────────────────────────────────────────────────────
@@ -357,6 +418,180 @@ export interface Bt2AdminFase1OperationalSummaryOut {
   poolEligibilityConfigNoteEs: string
 }
 
+/** GET /bt2/admin/analytics/monitor-resultados — evaluación oficial vs bóveda */
+export type Bt2MonitorOutcome = 'si' | 'no' | 'pendiente' | 'void' | 'ne'
+
+/** Stake fijo 1 u por pick; cuota = consenso CDM (mediana entre casas). */
+export interface Bt2AdminMonitorRoiFlatStakeOut {
+  netUnits: number
+  roiPct: number | null
+  picksCounted: number
+  picksMissingOdds: number
+}
+
+export interface Bt2AdminMonitorSummaryOut {
+  totalPicks: number
+  hits: number
+  misses: number
+  pending: number
+  voidCount: number
+  noEvaluable: number
+  evaluatedScored: number
+  hitRatePct: number | null
+  roiFlatStake: Bt2AdminMonitorRoiFlatStakeOut
+}
+
+export interface Bt2AdminMonitorTodayOut {
+  operatingDayKey: string
+  totalPicks: number
+  resolved: number
+  pending: number
+}
+
+export interface Bt2AdminMonitorRowOut {
+  dailyPickId: number
+  operatingDayKey: string
+  eventId: number
+  userId: string
+  eventLabel: string
+  marketLabelEs: string
+  selectionSummaryEs: string
+  scoreText: string
+  outcome: Bt2MonitorOutcome
+  iOperated: boolean
+  decimalOdds?: number | null
+  flatStakeReturnUnits?: number | null
+  /** Marca manual en bt2_picks (no altera pendiente oficial CDM). */
+  userResultClaim?: string | null
+  /** Narrativa DSR desde bóveda (`bt2_daily_picks.dsr_narrative_es`). */
+  dsrNarrativeEs?: string | null
+  dsrConfidenceLabel?: string | null
+  dsrSource?: string | null
+}
+
+export interface Bt2AdminMonitorSmSyncOut {
+  attempted: boolean
+  ok: boolean
+  messageEs: string
+  /** Solo fixtures con pick en pending_result en el rango (default true). */
+  pendingOnly?: boolean
+  fixturesTargeted: number
+  uniqueFixturesProcessed: number
+  closedPendingToFinal: number | null
+  /** Notas del backend (p. ej. `sm:fixture_…_fetch_fallo`, CDM skip). */
+  notes?: string[]
+}
+
+/** GET /bt2/admin/analytics/backtest-replay */
+export interface Bt2AdminBacktestReplaySummaryOut {
+  totalPicks: number
+  hits: number
+  misses: number
+  pending: number
+  voidCount: number
+  noEvaluable: number
+  evaluatedScored: number
+  hitRatePct: number | null
+  candidateEvents: number
+  eligibleEvents: number
+  usefulInputEvents: number
+  generatedDays: number
+}
+
+export interface Bt2AdminBacktestReplayDailyOut {
+  operatingDayKey: string
+  totalPicks: number
+  hits: number
+  misses: number
+  pending: number
+  voidCount: number
+  noEvaluable: number
+  evaluatedScored: number
+  hitRatePct: number | null
+  candidateEvents: number
+  eligibleEvents: number
+  usefulInputEvents: number
+  scoredPicks: number
+  byMarket: Record<string, number>
+  byActionTier: Record<string, number>
+}
+
+export interface Bt2AdminBacktestReplayDistributionRow {
+  market?: string | null
+  actionTier?: string | null
+  picks: number
+  hits: number
+  misses: number
+}
+
+/** POST refresh-cdm-sm-for-backtest-window — independiente del GET replay. */
+export interface Bt2AdminBacktestWindowSmRefreshOut {
+  ok: boolean
+  operatingDayKeyFrom: string
+  operatingDayKeyTo: string
+  messageEs: string
+  onlyPendingCdm: boolean
+  distinctEventIds: number
+  replayPoolEventCount: number
+  pendingCdmEventCount: number
+  fixturesTargeted: number
+  uniqueSportmonksFixturesProcessed: number
+  smFetchOk: number
+  rawUpsertOk: number
+  cdmNormalizedOk: number
+  cdmSkipped: number
+  cdmErrors: number
+  notes: string[]
+}
+
+export interface Bt2AdminBacktestReplayRowOut {
+  operatingDayKey: string
+  realKickoffDayKey: string
+  dailyPickId: number
+  eventId: number
+  eventLabel: string
+  leagueLabel?: string | null
+  marketLabelEs: string
+  selectionSummaryEs: string
+  actionTier: string
+  outcome: string
+  scoreText: string
+  inputCoverageScore: number
+}
+
+export interface Bt2AdminBacktestReplayOut {
+  timezoneLabel: string
+  summaryHumanEs: string
+  range: { from: string; to: string; preset: string }
+  summary: Bt2AdminBacktestReplaySummaryOut
+  daily: Bt2AdminBacktestReplayDailyOut[]
+  distribution: {
+    byMarket: Bt2AdminBacktestReplayDistributionRow[]
+    byActionTier: Bt2AdminBacktestReplayDistributionRow[]
+  }
+  rows: Bt2AdminBacktestReplayRowOut[]
+  replayMeta: Record<string, unknown>
+}
+
+export interface Bt2AdminMonitorResultadosOut {
+  operatingDayKeyFrom: string
+  operatingDayKeyTo: string
+  timezoneLabel: string
+  todayOperatingDayKey: string
+  /** Día del resumen lateral «Hoy» (alineado al rango si consultás un solo día). */
+  focusOperatingDayKey: string
+  system: Bt2AdminMonitorSummaryOut
+  yours: Bt2AdminMonitorSummaryOut | null
+  today: Bt2AdminMonitorTodayOut
+  rows: Bt2AdminMonitorRowOut[]
+  summaryHumanEs: string
+  smSync: Bt2AdminMonitorSmSyncOut
+  /** Total de filas que cumplen filtros (paginación servidor). */
+  rowsTotal?: number
+  rowsOffset?: number
+  rowsLimit?: number
+}
+
 /**
  * GET /bt2/admin/analytics/f2-pool-eligibility-metrics (T-263).
  * `metricsGlobal` y filas de liga vienen en snake_case desde el API (dict anidado).
@@ -396,6 +631,7 @@ export interface Bt2AdminRefreshCdmFromSmOut {
   ok: boolean
   operatingDayKey: string
   messageEs: string
+  onlyPendingOfficialEvaluation?: boolean
   fixturesTargeted: number
   uniqueSportmonksFixturesProcessed: number
   smFetchOk: number
@@ -410,7 +646,9 @@ export interface Bt2AdminRefreshCdmFromSmOut {
 // ─── US-DX-001 — Razones canónicas bt2_dp_ledger.reason (Sprint 05) ─────────
 
 export type Bt2DpLedgerReason =
+  | 'pick_taken'
   | 'pick_settle'
+  | 'pick_settle_reopen'
   | 'pick_premium_unlock'
   | 'session_close_discipline'
   | 'onboarding_welcome'

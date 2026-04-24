@@ -28,9 +28,6 @@ VAULT_VALUE_POOL_UNIVERSE_MAX: int = 20
 VAULT_POOL_TARGET: int = 5
 VAULT_POOL_HARD_CAP: int = 5
 _MAX_PER_BAND: int = 5
-_STD_SLOTS: int = 3
-_PREM_SLOTS: int = 2
-
 _BAND_ORDER: Tuple[VaultTimeBand, ...] = (
     "morning",
     "afternoon",
@@ -70,12 +67,6 @@ def kickoff_utc_to_time_band(
     return time_band_from_local_time(local.time())
 
 
-def _tier_for_slot_index(slot_in_band: int) -> Literal["standard", "premium"]:
-    if slot_in_band < _STD_SLOTS:
-        return "standard"
-    return "premium"
-
-
 def rotated_band_order(cycle_offset: int) -> Tuple[VaultTimeBand, ...]:
     """Rota el orden de barrido de franjas (0 = mañana primero, como D-06-032 base)."""
     bo = list(_BAND_ORDER)
@@ -87,18 +78,15 @@ def rotated_band_order(cycle_offset: int) -> Tuple[VaultTimeBand, ...]:
 def compose_vault_daily_picks(
     rows: List[Tuple[int, Optional[datetime], float]],
     user_tz: ZoneInfo,
-    premium_eligible_event_ids: Optional[set[int]] = None,
+    _premium_eligible_event_ids: Optional[set[int]] = None,
     *,
     band_cycle_offset: int = 0,
-) -> List[Tuple[int, Literal["standard", "premium"], VaultTimeBand]]:
+) -> List[Tuple[int, VaultTimeBand]]:
     """
     rows: lista (event_id, kickoff_utc, house_margin) ya ordenada por calidad
           (tier liga + house_margin como en SQL).
-    Devuelve hasta VAULT_VALUE_POOL_UNIVERSE_MAX filas (event_id, access_tier, time_band)
-    para persistir en DB; las primeras VAULT_POOL_HARD_CAP son la cartelera visible.
-
-    T-178: si `premium_eligible_event_ids` no es None, solo esos event_id pueden
-    recibir tier premium; el resto fuerza standard aunque el slot sea premium.
+    Devuelve hasta VAULT_VALUE_POOL_UNIVERSE_MAX filas (event_id, time_band).
+    standard/premium se asigna después por score + liga S/A (`assign_standard_premium_access`).
 
     `band_cycle_offset`: al regenerar slate, rota qué franja se prioriza primero
     (mismo universo ≤20; distinto orden 1..20 y distintos 5 visibles).
@@ -116,14 +104,8 @@ def compose_vault_daily_picks(
         band_by_eid[event_id] = band
         buckets[band].append(event_id)
 
-    chosen: List[Tuple[int, Literal["standard", "premium"], VaultTimeBand]] = []
+    chosen: List[Tuple[int, VaultTimeBand]] = []
     chosen_ids: set[int] = set()
-
-    def _effective_tier(eid: int, slot: int) -> Literal["standard", "premium"]:
-        t = _tier_for_slot_index(slot)
-        if premium_eligible_event_ids is not None and eid not in premium_eligible_event_ids:
-            return "standard"
-        return t
 
     def append_from_band(band: VaultTimeBand) -> None:
         nonlocal chosen
@@ -135,8 +117,7 @@ def compose_vault_daily_picks(
                 break
             if eid in chosen_ids:
                 continue
-            tier = _effective_tier(eid, slot)
-            chosen.append((eid, tier, band))
+            chosen.append((eid, band))
             chosen_ids.add(eid)
             slot += 1
 
@@ -153,17 +134,13 @@ def compose_vault_daily_picks(
                 out.append(event_id)
         return out
 
-    fill_idx = 0
     for eid in global_order_ids():
         if len(chosen) >= VAULT_VALUE_POOL_UNIVERSE_MAX:
             break
         if eid in chosen_ids:
             continue
         band = band_by_eid.get(eid, "overnight")
-        slot = fill_idx % 5
-        tier: Literal["standard", "premium"] = _effective_tier(eid, slot)
-        fill_idx += 1
-        chosen.append((eid, tier, band))
+        chosen.append((eid, band))
         chosen_ids.add(eid)
 
     return chosen
@@ -189,3 +166,40 @@ def is_event_available_for_pick_strict(
     now = now_utc if now_utc.tzinfo else now_utc.replace(tzinfo=timezone.utc)
     now = now.astimezone(timezone.utc)
     return now < ko
+
+
+def is_event_unlockable_for_vault(
+    *,
+    event_status: str,
+    kickoff_utc: Optional[datetime],
+    now_utc: datetime,
+) -> bool:
+    """
+    Liberar contenido en bóveda: no exige `status == scheduled` (el CDM puede traer
+    otros valores pre-partido). Solo bloquea estados terminales / ya jugados por tiempo.
+    Distinto de tomar pick con stake (`is_event_available_for_pick_strict`).
+    """
+    st = (event_status or "").strip().lower()
+    terminal = frozenset(
+        {
+            "finished",
+            "cancelled",
+            "canceled",
+            "abandoned",
+            "void",
+            "awarded",
+            "walkover",
+            "wo",
+        }
+    )
+    if st in terminal:
+        return False
+    if kickoff_utc is not None:
+        if kickoff_utc.tzinfo is None:
+            kickoff_utc = kickoff_utc.replace(tzinfo=timezone.utc)
+        ko = kickoff_utc.astimezone(timezone.utc)
+        now = now_utc if now_utc.tzinfo else now_utc.replace(tzinfo=timezone.utc)
+        now = now.astimezone(timezone.utc)
+        if now >= ko:
+            return False
+    return True
