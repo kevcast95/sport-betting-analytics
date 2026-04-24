@@ -1,0 +1,26 @@
+{
+  "window_operating_day_key": ["2026-04-13", "2026-04-20"],
+  "before_backfill": {
+    "scored_total": 79,
+    "with_reference_odds_gt_1": 26,
+    "missing_reference_odds": 53,
+    "pattern_note": "operating_day_key 2026-04-13..18: 0% with odds; 2026-04-19..20: 100% with odds (persisted at insert vs legacy null)"
+  },
+  "backfill": {
+    "script": "scripts/bt2_cdm/backfill_daily_pick_reference_odds.py",
+    "dry_run_examined": 53,
+    "commit_updated": 53
+  },
+  "after_backfill": {
+    "scored_total": 79,
+    "with_reference_odds_gt_1": 79,
+    "missing_reference_odds": 0,
+    "global_hit_rate": 0.4557,
+    "n_with_odds_for_roi": 79,
+    "avg_decimal_odds": 1.9875,
+    "avg_implied_break_even_rate": 0.5337,
+    "roi_flat_stake_1u": -0.1884,
+    "block_A_hit_rate_operating_day_lt_2026-04-19": 0.5094,
+    "block_B_hit_rate": 0.3462
+  }
+}
