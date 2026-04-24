@@ -1,0 +1,240 @@
+{
+  "window": {
+    "date_from": "2026-04-13",
+    "date_to": "2026-04-20"
+  },
+  "split_day": "2026-04-19",
+  "methodology_es": "Solo evaluated_hit / evaluated_miss. Hit rate = hits/(hits+misses). Odds = reference_decimal_odds en pick (ex-ante). Break-even implícito por pick = 1/odds (tasa mínima de acierto para EV=0 con stake 1 y pago decimal). ROI proxy = media de (odds-1) si hit, -1 si miss, solo filas con odds>1. Bloque A: operating_day_key < 2026-04-19; B: >= 2026-04-19. No se usan features del resultado del partido ni columnas posteriores al pick salvo evaluación ya materializada.",
+  "caution_flags": [
+    "N global scored = 79 — inferencia segmentada limitada.",
+    "Picks scored sin reference_decimal_odds usable: 53/79 — ROI/odds medios solo sobre subconjunto con cuota.",
+    "estimated_hit_probability / evidence_quality son ex-ante pero pueden estar calibrados débilmente; no usados en este primer corte salvo confianza explícita."
+  ],
+  "global": {
+    "n": 79,
+    "hits": 36,
+    "misses": 43,
+    "hit_rate": 0.4557,
+    "avg_decimal_odds": 2.0993,
+    "avg_implied_break_even_rate": 0.5109,
+    "roi_flat_stake_1u": -0.3985,
+    "n_with_odds_for_roi": 26,
+    "n_missing_reference_odds": 53,
+    "stability_note": "delta_hit_rate_moderado",
+    "block_A": {
+      "n": 53,
+      "hits": 27,
+      "misses": 26,
+      "hit_rate": 0.5094,
+      "avg_decimal_odds": null,
+      "avg_implied_break_even_rate": null,
+      "roi_flat_stake_1u": null,
+      "n_with_odds_for_roi": 0
+    },
+    "block_B": {
+      "n": 26,
+      "hits": 9,
+      "misses": 17,
+      "hit_rate": 0.3462,
+      "avg_decimal_odds": 2.0993,
+      "avg_implied_break_even_rate": 0.5109,
+      "roi_flat_stake_1u": -0.3985,
+      "n_with_odds_for_roi": 26
+    }
+  },
+  "best_candidates": [
+    {
+      "segment": "confidence_band:conf_medium",
+      "n": 50,
+      "hit_rate": 0.58,
+      "roi_flat_stake_1u": 0.2831,
+      "rationale": "mejor_hit_o_roi_vs_global_sin_delta_AB_extremo"
+    },
+    {
+      "segment": "league_tier:S",
+      "n": 30,
+      "hit_rate": 0.5333,
+      "roi_flat_stake_1u": -0.1001,
+      "rationale": "mejor_hit_o_roi_vs_global_sin_delta_AB_extremo"
+    },
+    {
+      "segment": "odds_band:dec_1.00_1.85",
+      "n": 13,
+      "hit_rate": 0.5385,
+      "roi_flat_stake_1u": -0.117,
+      "rationale": "mejor_hit_o_roi_vs_global_sin_delta_AB_extremo"
+    },
+    {
+      "segment": "completeness_band:dcs_50_74",
+      "n": 12,
+      "hit_rate": 0.6667,
+      "roi_flat_stake_1u": 0.233,
+      "rationale": "mejor_hit_o_roi_vs_global_sin_delta_AB_extremo"
+    },
+    {
+      "segment": "market_x_odds:FT_1X2|dec_1.00_1.85",
+      "n": 10,
+      "hit_rate": 0.5,
+      "roi_flat_stake_1u": -0.1855,
+      "rationale": "mejor_hit_o_roi_vs_global_sin_delta_AB_extremo"
+    }
+  ],
+  "small_or_fragile": [
+    {
+      "segment": "league_tier:A",
+      "reason": "delta_hit_rate_AB_alto",
+      "detail": {
+        "segment": "league_tier:A",
+        "n": 37,
+        "hit_rate": 0.4324,
+        "avg_decimal_odds": 2.369,
+        "avg_implied_break_even_rate": 0.4513,
+        "roi_flat_stake_1u": -0.6173,
+        "hit_rate_block_A": 0.5909,
+        "n_block_A": 22,
+        "hit_rate_block_B": 0.2,
+        "n_block_B": 15,
+        "hit_rate_delta_AB": 0.3909,
+        "flag_small_sample": false,
+        "flag_below_min_segment_n": false
+      }
+    },
+    {
+      "segment": "confidence_band:conf_high",
+      "reason": "delta_hit_rate_AB_alto",
+      "detail": {
+        "segment": "confidence_band:conf_high",
+        "n": 10,
+        "hit_rate": 0.6,
+        "avg_decimal_odds": 1.525,
+        "avg_implied_break_even_rate": 0.6557,
+        "roi_flat_stake_1u": 0.525,
+        "hit_rate_block_A": 0.5556,
+        "n_block_A": 9,
+        "hit_rate_block_B": 1.0,
+        "n_block_B": 1,
+        "hit_rate_delta_AB": 0.4444,
+        "flag_small_sample": false,
+        "flag_below_min_segment_n": false
+      }
+    },
+    {
+      "segment": "market_x_odds:FT_1X2|dec_2.20_2.80",
+      "reason": "n_lt_small_sample_threshold",
+      "n": 8
+    },
+    {
+      "segment": "odds_band:dec_2.20_2.80",
+      "reason": "n_lt_small_sample_threshold",
+      "n": 8
+    },
+    {
+      "segment": "confidence_band:conf_low",
+      "reason": "n_lt_small_sample_threshold",
+      "n": 5
+    },
+    {
+      "segment": "market:BTTS",
+      "reason": "n_lt_small_sample_threshold",
+      "n": 5
+    },
+    {
+      "segment": "market:BTTS",
+      "reason": "delta_hit_rate_AB_alto",
+      "detail": {
+        "segment": "market:BTTS",
+        "n": 5,
+        "hit_rate": 0.6,
+        "avg_decimal_odds": 1.667,
+        "avg_implied_break_even_rate": 0.5999,
+        "roi_flat_stake_1u": 0.667,
+        "hit_rate_block_A": 0.5,
+        "n_block_A": 4,
+        "hit_rate_block_B": 1.0,
+        "n_block_B": 1,
+        "hit_rate_delta_AB": 0.5,
+        "flag_small_sample": true,
+        "flag_below_min_segment_n": false
+      }
+    },
+    {
+      "segment": "market:OU_GOALS_2_5",
+      "reason": "n_lt_small_sample_threshold",
+      "n": 5
+    },
+    {
+      "segment": "market:OU_GOALS_2_5",
+      "reason": "delta_hit_rate_AB_alto",
+      "detail": {
+        "segment": "market:OU_GOALS_2_5",
+        "n": 5,
+        "hit_rate": 0.8,
+        "avg_decimal_odds": 1.667,
+        "avg_implied_break_even_rate": 0.5999,
+        "roi_flat_stake_1u": -0.1665,
+        "hit_rate_block_A": 1.0,
+        "n_block_A": 3,
+        "hit_rate_block_B": 0.5,
+        "n_block_B": 2,
+        "hit_rate_delta_AB": 0.5,
+        "flag_small_sample": true,
+        "flag_below_min_segment_n": false
+      }
+    },
+    {
+      "segment": "market_x_odds:BTTS|unknown_or_invalid_odds",
+      "reason": "n_lt_min_segment",
+      "n": 4
+    },
+    {
+      "segment": "completeness_band:dcs_ge_75",
+      "reason": "n_lt_min_segment",
+      "n": 3
+    },
+    {
+      "segment": "market_x_odds:FT_1X2|dec_1.85_2.20",
+      "reason": "n_lt_min_segment",
+      "n": 3
+    },
+    {
+      "segment": "market_x_odds:OU_GOALS_2_5|unknown_or_invalid_odds",
+      "reason": "n_lt_min_segment",
+      "n": 3
+    },
+    {
+      "segment": "odds_band:dec_1.85_2.20",
+      "reason": "n_lt_min_segment",
+      "n": 3
+    },
+    {
+      "segment": "market:DOUBLE_CHANCE_X2",
+      "reason": "n_lt_min_segment",
+      "n": 2
+    },
+    {
+      "segment": "market_x_odds:DOUBLE_CHANCE_X2|unknown_or_invalid_odds",
+      "reason": "n_lt_min_segment",
+      "n": 2
+    },
+    {
+      "segment": "market_x_odds:FT_1X2|dec_2.80_plus",
+      "reason": "n_lt_min_segment",
+      "n": 2
+    },
+    {
+      "segment": "market_x_odds:OU_GOALS_2_5|dec_1.00_1.85",
+      "reason": "n_lt_min_segment",
+      "n": 2
+    },
+    {
+      "segment": "odds_band:dec_2.80_plus",
+      "reason": "n_lt_min_segment",
+      "n": 2
+    },
+    {
+      "segment": "market_x_odds:BTTS|dec_1.00_1.85",
+      "reason": "n_lt_min_segment",
+      "n": 1
+    }
+  ]
+}
