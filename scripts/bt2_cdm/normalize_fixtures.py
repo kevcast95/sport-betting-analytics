@@ -287,6 +287,26 @@ def _parse_result(payload: dict) -> tuple:
     return None, None
 
 
+def _results_for_bt2_persist(
+    payload: dict, status: str, result_home: Optional[int], result_away: Optional[int]
+) -> tuple[Optional[int], Optional[int]]:
+    """
+    SportMonks a veces deja ``state_id=1`` (NS) con filas ``scores`` en CURRENT / medios tiempos
+    en 0-0 (placeholders). ``_parse_result`` entonces devuelve (0, 0) aunque el partido no haya
+    empezado: no persistir ese marcador (PR C; evidencia fixture 19433738 y análogos).
+    """
+    if result_home is None and result_away is None:
+        return None, None
+    if (
+        _effective_state_id(payload) == 1
+        and status == "scheduled"
+        and result_home == 0
+        and result_away == 0
+    ):
+        return None, None
+    return result_home, result_away
+
+
 def _parse_season(payload: dict) -> Optional[str]:
     """Calcula la temporada a partir de la fecha del partido (ej: 2023/24)."""
     starting_at = payload.get("starting_at")
@@ -402,8 +422,20 @@ def upsert_event(
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (sportmonks_fixture_id) DO UPDATE
             SET status      = EXCLUDED.status,
-                result_home = COALESCE(EXCLUDED.result_home, bt2_events.result_home),
-                result_away = COALESCE(EXCLUDED.result_away, bt2_events.result_away),
+                result_home = CASE
+                    WHEN EXCLUDED.result_home IS NOT NULL THEN EXCLUDED.result_home
+                    WHEN EXCLUDED.status = 'scheduled'
+                         AND bt2_events.result_home = 0 AND bt2_events.result_away = 0
+                    THEN NULL
+                    ELSE COALESCE(EXCLUDED.result_home, bt2_events.result_home)
+                END,
+                result_away = CASE
+                    WHEN EXCLUDED.result_away IS NOT NULL THEN EXCLUDED.result_away
+                    WHEN EXCLUDED.status = 'scheduled'
+                         AND bt2_events.result_home = 0 AND bt2_events.result_away = 0
+                    THEN NULL
+                    ELSE COALESCE(EXCLUDED.result_away, bt2_events.result_away)
+                END,
                 updated_at  = now()
         RETURNING id
     """, (fixture_id, league_internal_id, home_id, away_id,
@@ -512,6 +544,9 @@ def normalize_single_fixture_payload(
             upsert_team(cur, int(away_sm_id), away_name, league_internal_id) if away_sm_id else None
         )
 
+        st = _parse_status(payload)
+        rh, ra = _parse_result(payload)
+        rh, ra = _results_for_bt2_persist(payload, st, rh, ra)
         event_internal_id = upsert_event(
             cur,
             int(fixture_id),
@@ -519,8 +554,9 @@ def normalize_single_fixture_payload(
             home_internal_id,
             away_internal_id,
             _parse_kickoff(payload),
-            _parse_status(payload),
-            *_parse_result(payload),
+            st,
+            rh,
+            ra,
             _parse_season(payload),
         )
         base["event_internal_id"] = event_internal_id
@@ -645,12 +681,14 @@ def run_normalization(batch_size: int = 1000, dry_run: bool = False) -> dict:
                     stats["teams_upserted"] += 1
 
                 # 3) Upsert evento
+                st = _parse_status(payload)
+                rh, ra = _parse_result(payload)
+                rh, ra = _results_for_bt2_persist(payload, st, rh, ra)
                 event_internal_id = upsert_event(
                     cur, fixture_id, league_internal_id,
                     home_internal_id, away_internal_id,
                     _parse_kickoff(payload),
-                    _parse_status(payload),
-                    *_parse_result(payload),
+                    st, rh, ra,
                     _parse_season(payload),
                 )
                 if event_internal_id:
