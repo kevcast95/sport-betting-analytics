@@ -590,6 +590,23 @@ def build_backtest_replay_payload(
         },
         "rows": all_rows,
         "replay_meta": {
+            "replay_mode": "bounded_backtest",
+            "live_parity": False,
+            "candidate_events_semantics_es": (
+                "Conteo de partidos con kickoff en el día operativo America/Bogota, liga activa, "
+                "excluyendo solo estados terminalizados listados en SQL (no es el pool live de bóveda, "
+                "que filtra además por scheduled y otros límites)."
+            ),
+            "eligible_events_semantics_es": (
+                "Cantidad de eventos que entran al lote preparado para DSR en este replay: como máximo "
+                f"{int(max_events_per_day)} por día operativo, tras barrer como máximo "
+                f"max(1, {int(max_events_per_day)}×3) IDs en orden tier+kickoff, con cuotas sujetas al "
+                "corte temporal y pasando event_passes_value_pool. No significa 'todos los elegibles del día'."
+            ),
+            "scan_limit_formula_es": (
+                f"Por día: se consideran solo los primeros max(1, max_events_per_day×3) = "
+                f"max(1, {int(max_events_per_day)}×3) event_ids en orden SQL del replay."
+            ),
             "blind_operating_day_key": BLIND_LOT_OPERATING_DAY_KEY,
             "odds_cutoff_rule_es": (
                 "Para cada día D, solo se consideran filas de bt2_odds_snapshot con fetched_at "
