@@ -1,0 +1,820 @@
+{
+  "mode": "historical_sm_lbu",
+  "cutoff_mode": "T60",
+  "cutoff_instant": "line_ts <= kickoff_utc (bt2_events) - 1 hour; line_ts = latest_bookmaker_update or created_at",
+  "live_parity": false,
+  "exploratory_only": true,
+  "temporal_truth": "raw_sportmonks line timestamps only; NOT bt2_odds_snapshot.fetched_at",
+  "min_decimal": 1.3,
+  "markets_scope": "same 1X2+O/2.5 as normalize_fixtures (market_id 1, 80 total 2.5)",
+  "window_utc": {
+    "from": "2025-01-10T00:00:00+00:00",
+    "to": "2025-01-13T00:00:00+00:00",
+    "day_from": "2025-01-10",
+    "day_to": "2025-01-12"
+  },
+  "max_fixtures": 50,
+  "summary": {
+    "n_fixtures": 50,
+    "n_value_pool": 47,
+    "n_lines_total_before": 4630,
+    "n_lines_total_after_t60": 3495,
+    "tasa_sobrevivencia_lineas": 0.7549
+  },
+  "fixtures": [
+    {
+      "fixture_id": 19238367,
+      "event_id": 36638,
+      "kickoff_utc": "2025-01-10T03:35:00-05:00",
+      "n_lines_before_filter": 92,
+      "n_lines_t60": 69,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.75,
+      "ft1x2_draw": 4.05,
+      "ft1x2_away": 4.18,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19329320,
+      "event_id": 39067,
+      "kickoff_utc": "2025-01-10T08:05:00-05:00",
+      "n_lines_before_filter": 88,
+      "n_lines_t60": 62,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.7650000000000001,
+      "ft1x2_draw": 3.775,
+      "ft1x2_away": 3.62,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19329321,
+      "event_id": 39068,
+      "kickoff_utc": "2025-01-10T08:05:00-05:00",
+      "n_lines_before_filter": 90,
+      "n_lines_t60": 67,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.7,
+      "ft1x2_draw": 3.7,
+      "ft1x2_away": 4.0,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19161476,
+      "event_id": 33203,
+      "kickoff_utc": "2025-01-10T08:15:00-05:00",
+      "n_lines_before_filter": 90,
+      "n_lines_t60": 67,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 3.5,
+      "ft1x2_draw": 3.7,
+      "ft1x2_away": 1.87,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19322363,
+      "event_id": 38484,
+      "kickoff_utc": "2025-01-10T09:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.77,
+      "ft1x2_draw": 3.5,
+      "ft1x2_away": 3.9,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19322920,
+      "event_id": 38650,
+      "kickoff_utc": "2025-01-10T09:00:00-05:00",
+      "n_lines_before_filter": 85,
+      "n_lines_t60": 62,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.3,
+      "ft1x2_draw": 2.68,
+      "ft1x2_away": 3.2649999999999997,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19191878,
+      "event_id": 35907,
+      "kickoff_utc": "2025-01-10T09:40:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.15,
+      "ft1x2_draw": 3.1,
+      "ft1x2_away": 3.4,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19191882,
+      "event_id": 35911,
+      "kickoff_utc": "2025-01-10T10:05:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 4.22,
+      "ft1x2_draw": 3.54,
+      "ft1x2_away": 1.78,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19161415,
+      "event_id": 33142,
+      "kickoff_utc": "2025-01-10T10:30:00-05:00",
+      "n_lines_before_filter": 90,
+      "n_lines_t60": 67,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.05,
+      "ft1x2_draw": 3.5,
+      "ft1x2_away": 3.0,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19320188,
+      "event_id": 38305,
+      "kickoff_utc": "2025-01-10T10:45:00-05:00",
+      "n_lines_before_filter": 90,
+      "n_lines_t60": 67,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.23,
+      "ft1x2_draw": 3.7,
+      "ft1x2_away": 2.5,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19191875,
+      "event_id": 35904,
+      "kickoff_utc": "2025-01-10T12:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.6,
+      "ft1x2_draw": 4.0,
+      "ft1x2_away": 5.0,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19208795,
+      "event_id": 36295,
+      "kickoff_utc": "2025-01-10T12:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.3,
+      "ft1x2_draw": 3.2,
+      "ft1x2_away": 2.9,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19322922,
+      "event_id": 38652,
+      "kickoff_utc": "2025-01-10T12:00:00-05:00",
+      "n_lines_before_filter": 90,
+      "n_lines_t60": 64,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 4.55,
+      "ft1x2_draw": 2.9,
+      "ft1x2_away": 1.85,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19139797,
+      "event_id": 27063,
+      "kickoff_utc": "2025-01-10T13:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 3.8,
+      "ft1x2_draw": 3.38,
+      "ft1x2_away": 2.0,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19136333,
+      "event_id": 25575,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 90,
+      "n_lines_t60": 67,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.5,
+      "ft1x2_draw": 4.5,
+      "ft1x2_away": 5.3,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19136338,
+      "event_id": 25580,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.8,
+      "ft1x2_draw": 3.4,
+      "ft1x2_away": 2.3,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19136339,
+      "event_id": 25581,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 89,
+      "n_lines_t60": 69,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 3.56,
+      "ft1x2_draw": 3.8,
+      "ft1x2_away": 1.9,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19136669,
+      "event_id": 25911,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.95,
+      "ft1x2_draw": 3.35,
+      "ft1x2_away": 2.35,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19140309,
+      "event_id": 27378,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.4,
+      "ft1x2_draw": 3.28,
+      "ft1x2_away": 2.85,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19140311,
+      "event_id": 27380,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 74,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 4.92,
+      "ft1x2_draw": 3.675,
+      "ft1x2_away": 1.7,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19140314,
+      "event_id": 27383,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.5,
+      "ft1x2_draw": 3.15,
+      "ft1x2_away": 2.8,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19140315,
+      "event_id": 27384,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.55,
+      "ft1x2_draw": 3.25,
+      "ft1x2_away": 2.7,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19140316,
+      "event_id": 27385,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.12,
+      "ft1x2_draw": 3.25,
+      "ft1x2_away": 3.5,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19319967,
+      "event_id": 38241,
+      "kickoff_utc": "2025-01-10T14:00:00-05:00",
+      "n_lines_before_filter": 88,
+      "n_lines_t60": 62,
+      "n_lines_lbu_null": 0,
+      "value_pool": false,
+      "data_completeness_score": 0,
+      "ft1x2_home_consensus": null,
+      "ft1x2_draw": 4.65,
+      "ft1x2_away": 13.0,
+      "market_coverage_keys": []
+    },
+    {
+      "fixture_id": 19144895,
+      "event_id": 29642,
+      "kickoff_utc": "2025-01-10T14:30:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.96,
+      "ft1x2_draw": 3.1,
+      "ft1x2_away": 4.2,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19335088,
+      "event_id": 39329,
+      "kickoff_utc": "2025-01-10T14:45:00-05:00",
+      "n_lines_before_filter": 92,
+      "n_lines_t60": 66,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.1900000000000004,
+      "ft1x2_draw": 3.3499999999999996,
+      "ft1x2_away": 3.25,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19131440,
+      "event_id": 23842,
+      "kickoff_utc": "2025-01-10T14:45:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.15,
+      "ft1x2_draw": 3.2,
+      "ft1x2_away": 3.5,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19154681,
+      "event_id": 30924,
+      "kickoff_utc": "2025-01-10T14:45:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 3.6,
+      "ft1x2_draw": 3.75,
+      "ft1x2_away": 1.97,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19155260,
+      "event_id": 31503,
+      "kickoff_utc": "2025-01-10T14:45:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.02,
+      "ft1x2_draw": 3.4,
+      "ft1x2_away": 3.7,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19135438,
+      "event_id": 25050,
+      "kickoff_utc": "2025-01-10T15:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.85,
+      "ft1x2_draw": 3.1,
+      "ft1x2_away": 2.63,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19335068,
+      "event_id": 39309,
+      "kickoff_utc": "2025-01-10T15:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.65,
+      "ft1x2_draw": 4.33,
+      "ft1x2_away": 4.55,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19139798,
+      "event_id": 27064,
+      "kickoff_utc": "2025-01-10T15:05:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 4.75,
+      "ft1x2_draw": 3.6,
+      "ft1x2_away": 1.76,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19345880,
+      "event_id": 39460,
+      "kickoff_utc": "2025-01-10T20:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.05,
+      "ft1x2_draw": 3.52,
+      "ft1x2_away": 3.4,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19345882,
+      "event_id": 39462,
+      "kickoff_utc": "2025-01-10T22:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.85,
+      "ft1x2_draw": 3.7,
+      "ft1x2_away": 3.92,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19345881,
+      "event_id": 39461,
+      "kickoff_utc": "2025-01-10T22:05:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 74,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.6,
+      "ft1x2_draw": 3.475,
+      "ft1x2_away": 2.51,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19238368,
+      "event_id": 36639,
+      "kickoff_utc": "2025-01-10T23:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 3.65,
+      "ft1x2_draw": 3.7,
+      "ft1x2_away": 1.88,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19238369,
+      "event_id": 36640,
+      "kickoff_utc": "2025-01-11T01:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 74,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.5,
+      "ft1x2_draw": 4.3,
+      "ft1x2_away": 5.95,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19238370,
+      "event_id": 36641,
+      "kickoff_utc": "2025-01-11T03:35:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.62,
+      "ft1x2_draw": 4.1,
+      "ft1x2_away": 5.0,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19208792,
+      "event_id": 36292,
+      "kickoff_utc": "2025-01-11T05:30:00-05:00",
+      "n_lines_before_filter": 92,
+      "n_lines_t60": 66,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.25,
+      "ft1x2_draw": 3.2,
+      "ft1x2_away": 2.88,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19172175,
+      "event_id": 35022,
+      "kickoff_utc": "2025-01-11T05:30:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 3.23,
+      "ft1x2_draw": 3.4,
+      "ft1x2_away": 2.14,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19238371,
+      "event_id": 36642,
+      "kickoff_utc": "2025-01-11T05:45:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 6.7,
+      "ft1x2_draw": 4.65,
+      "ft1x2_away": 1.44,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19322364,
+      "event_id": 38485,
+      "kickoff_utc": "2025-01-11T06:30:00-05:00",
+      "n_lines_before_filter": 90,
+      "n_lines_t60": 67,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.45,
+      "ft1x2_draw": 4.0,
+      "ft1x2_away": 6.0,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19335073,
+      "event_id": 39314,
+      "kickoff_utc": "2025-01-11T07:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 74,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 3.1500000000000004,
+      "ft1x2_draw": 3.4,
+      "ft1x2_away": 2.215,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19335076,
+      "event_id": 39317,
+      "kickoff_utc": "2025-01-11T07:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 74,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.15,
+      "ft1x2_draw": 3.425,
+      "ft1x2_away": 3.3049999999999997,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19335089,
+      "event_id": 39330,
+      "kickoff_utc": "2025-01-11T07:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 71,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.85,
+      "ft1x2_draw": 3.45,
+      "ft1x2_away": 4.4,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19335072,
+      "event_id": 39313,
+      "kickoff_utc": "2025-01-11T07:15:00-05:00",
+      "n_lines_before_filter": 86,
+      "n_lines_t60": 63,
+      "n_lines_lbu_null": 0,
+      "value_pool": false,
+      "data_completeness_score": 0,
+      "ft1x2_home_consensus": null,
+      "ft1x2_draw": 20.0,
+      "ft1x2_away": 53.5,
+      "market_coverage_keys": []
+    },
+    {
+      "fixture_id": 19143299,
+      "event_id": 28357,
+      "kickoff_utc": "2025-01-11T07:30:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 74,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 2.7,
+      "ft1x2_draw": 3.25,
+      "ft1x2_away": 2.5,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19144065,
+      "event_id": 29082,
+      "kickoff_utc": "2025-01-11T07:30:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 74,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 1.4449999999999998,
+      "ft1x2_draw": 4.3149999999999995,
+      "ft1x2_away": 6.965,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    },
+    {
+      "fixture_id": 19146833,
+      "event_id": 30030,
+      "kickoff_utc": "2025-01-11T07:30:00-05:00",
+      "n_lines_before_filter": 92,
+      "n_lines_t60": 72,
+      "n_lines_lbu_null": 0,
+      "value_pool": false,
+      "data_completeness_score": 0,
+      "ft1x2_home_consensus": 13.0,
+      "ft1x2_draw": 6.55,
+      "ft1x2_away": null,
+      "market_coverage_keys": []
+    },
+    {
+      "fixture_id": 19135434,
+      "event_id": 25046,
+      "kickoff_utc": "2025-01-11T08:00:00-05:00",
+      "n_lines_before_filter": 94,
+      "n_lines_t60": 74,
+      "n_lines_lbu_null": 0,
+      "value_pool": true,
+      "data_completeness_score": 12,
+      "ft1x2_home_consensus": 3.1900000000000004,
+      "ft1x2_draw": 3.1,
+      "ft1x2_away": 2.435,
+      "market_coverage_keys": [
+        "FT_1X2"
+      ]
+    }
+  ]
+}
