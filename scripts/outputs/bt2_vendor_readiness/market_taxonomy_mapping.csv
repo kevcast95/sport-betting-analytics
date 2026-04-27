@@ -1,0 +1,4 @@
+bt2_market,the_odds_api_market_key,scope,notes
+FT_1X2,h2h,phase_1_required,Moneyline 1X2 ↔ h2h en TOA
+OVER_UNDER_2_5,totals,phase_2_optional,Requiere point=2.5 en outcomes TOA
+BTTS,h2h o market específico si TOA lo expone en liga,phase_2_optional,Confirmar disponibilidad por sport_key en doc mercados TOA

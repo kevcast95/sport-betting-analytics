@@ -1,0 +1,2 @@
+rule_id,rule_description,readiness_signal,risk_notes,cohort_A_n_fixtures,cohort_A_names_ok,cohort_A_kickoff_ok,cohort_A_sport_key_ok
+R1,Normalizar nombres local/visitante.,offline,Ejecutar con BT2_DATABASE_URL para medir cohorte A.,0,0,0,0

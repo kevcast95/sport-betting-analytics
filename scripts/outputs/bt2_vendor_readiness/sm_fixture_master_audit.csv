@@ -1,0 +1,2 @@
+check_name,severity,count,denominator,rate,notes
+database_unreachable,error,1,1,1.0,BT2_VENDOR_READINESS_OFFLINE=1
