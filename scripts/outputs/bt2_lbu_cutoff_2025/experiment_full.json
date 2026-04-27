@@ -1,0 +1,2100 @@
+{
+  "contract_cutoffs_frozen": [
+    {
+      "id": "T60",
+      "description_es": "kickoff_utc - 60 minutos; \u00faltima se\u00f1al SM admitida: latest_bookmaker_update <= cutoff (UTC alineada al kick almacenado en bt2_events)"
+    },
+    {
+      "id": "T180",
+      "description_es": "kickoff_utc - 180 minutos; mismo criterio de l\u00ednea que T60, ventana de cierre ~3h antes de KO"
+    },
+    {
+      "id": "Bog09_same_day",
+      "description_es": "09:00:00 (reloj) America/Bogot\u00e1 en la misma fecha calendario local (Bogot\u00e1) que el partido, y min(ese instante, kickoff_utc - 60s) \u2014 si el partido es por la ma\u00f1ana antes de las 09, el corte se acerca a pre-KO, no a la ma\u00f1ana siguiente"
+    }
+  ],
+  "n_fixtures": 50,
+  "muestra": "12 meses x 10 max; raw + INNER JOIN bt2_events.kickoff; 1X2+O/2,5; min_dec=1.3",
+  "T60": {
+    "n_value_pool": 47,
+    "n_value_pool_S1": 47,
+    "fixtures_que_perdieron_vp_teniendolo_en_S1": 0,
+    "tasa_sobrevivencia_lineas_media": 0.7333,
+    "ft1x2_completo": 47,
+    "ft1x2_completo_S1": 47,
+    "abs_delta_home_>_0.15 (vs S1)": 1,
+    "ratio_abs_delta_>_0.15": 0.02
+  },
+  "T180": {
+    "n_value_pool": 47,
+    "n_value_pool_S1": 47,
+    "fixtures_que_perdieron_vp_teniendolo_en_S1": 0,
+    "tasa_sobrevivencia_lineas_media": 0.7292,
+    "ft1x2_completo": 47,
+    "ft1x2_completo_S1": 47,
+    "abs_delta_home_>_0.15 (vs S1)": 1,
+    "ratio_abs_delta_>_0.15": 0.02
+  },
+  "Bog09_same_day": {
+    "n_value_pool": 46,
+    "n_value_pool_S1": 47,
+    "fixtures_que_perdieron_vp_teniendolo_en_S1": 1,
+    "tasa_sobrevivencia_lineas_media": 0.719,
+    "ft1x2_completo": 46,
+    "ft1x2_completo_S1": 47,
+    "abs_delta_home_>_0.15 (vs S1)": 2,
+    "ratio_abs_delta_>_0.15": 0.04
+  },
+  "tabla": [
+    {
+      "fixture_id": 19262691,
+      "kickoff_utc": "2025-01-11T08:30:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 90,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 67,
+        "T180": 67,
+        "Bog09_same_day": 90
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 3.325,
+        "T60": 3.4,
+        "T180": 3.4,
+        "Bog09_same_day": 3.325
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.07499999999999973,
+        "T180": 0.07499999999999973,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19155276,
+      "kickoff_utc": "2025-01-17T14:45:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 71,
+        "Bog09_same_day": 71
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.48,
+        "T60": 1.48,
+        "T180": 1.48,
+        "Bog09_same_day": 1.48
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19167878,
+      "kickoff_utc": "2025-01-26T09:00:00-05:00",
+      "league_tier": "B",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 71,
+        "Bog09_same_day": 94
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.46,
+        "T60": 2.46,
+        "T180": 2.46,
+        "Bog09_same_day": 2.46
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19139792,
+      "kickoff_utc": "2025-01-04T13:00:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 92,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 69,
+        "T180": 69,
+        "Bog09_same_day": 66
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.51,
+        "T60": 1.5,
+        "T180": 1.5,
+        "Bog09_same_day": 1.5
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.010000000000000009,
+        "T180": 0.010000000000000009,
+        "Bog09_same_day": 0.010000000000000009
+      }
+    },
+    {
+      "fixture_id": 19335082,
+      "kickoff_utc": "2025-01-11T10:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 74,
+        "T180": 71,
+        "Bog09_same_day": 74
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.5549999999999997,
+        "T60": 2.5549999999999997,
+        "T180": 2.56,
+        "Bog09_same_day": 2.5549999999999997
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0050000000000003375,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19131456,
+      "kickoff_utc": "2025-01-26T07:30:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 71,
+        "Bog09_same_day": 94
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.53,
+        "T60": 2.5,
+        "T180": 2.5,
+        "Bog09_same_day": 2.53
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.029999999999999805,
+        "T180": 0.029999999999999805,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19170759,
+      "kickoff_utc": "2025-01-25T10:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 88,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 62,
+        "T180": 62,
+        "Bog09_same_day": 62
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 4.425000000000001,
+        "T60": 4.45,
+        "T180": 4.45,
+        "Bog09_same_day": 4.45
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.024999999999999467,
+        "T180": 0.024999999999999467,
+        "Bog09_same_day": 0.024999999999999467
+      }
+    },
+    {
+      "fixture_id": 19155254,
+      "kickoff_utc": "2025-01-05T14:45:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 92,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 66,
+        "T180": 66,
+        "Bog09_same_day": 66
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.49,
+        "T60": 2.49,
+        "T180": 2.49,
+        "Bog09_same_day": 2.49
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19134619,
+      "kickoff_utc": "2025-01-19T09:00:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 73,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 68,
+        "T180": 68,
+        "Bog09_same_day": 73
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.3,
+        "T60": 2.3,
+        "T180": 2.3,
+        "Bog09_same_day": 2.3
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19143391,
+      "kickoff_utc": "2025-01-01T10:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 92,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 66,
+        "T180": 66,
+        "Bog09_same_day": 66
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.3449999999999998,
+        "T60": 2.35,
+        "T180": 2.35,
+        "Bog09_same_day": 2.35
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0050000000000003375,
+        "T180": 0.0050000000000003375,
+        "Bog09_same_day": 0.0050000000000003375
+      }
+    },
+    {
+      "fixture_id": 19139847,
+      "kickoff_utc": "2025-02-16T11:15:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 71,
+        "Bog09_same_day": 71
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.91,
+        "T60": 1.91,
+        "T180": 1.91,
+        "Bog09_same_day": 1.91
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19353724,
+      "kickoff_utc": "2025-02-07T15:45:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 92,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 69,
+        "T180": 69,
+        "Bog09_same_day": 69
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.375,
+        "T60": 2.38,
+        "T180": 2.38,
+        "Bog09_same_day": 2.38
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.004999999999999893,
+        "T180": 0.004999999999999893,
+        "Bog09_same_day": 0.004999999999999893
+      }
+    },
+    {
+      "fixture_id": 19135477,
+      "kickoff_utc": "2025-02-08T08:00:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 68,
+        "T180": 68,
+        "Bog09_same_day": 76
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.16,
+        "T60": 2.1550000000000002,
+        "T180": 2.1550000000000002,
+        "Bog09_same_day": 2.15
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.004999999999999893,
+        "T180": 0.004999999999999893,
+        "Bog09_same_day": 0.010000000000000231
+      }
+    },
+    {
+      "fixture_id": 19143034,
+      "kickoff_utc": "2025-02-12T14:45:00-05:00",
+      "league_tier": "B",
+      "n_lines_s1": 87,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 64,
+        "T180": 61,
+        "Bog09_same_day": 61
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.75,
+        "T60": 1.75,
+        "T180": 1.75,
+        "Bog09_same_day": 1.75
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19149729,
+      "kickoff_utc": "2025-02-09T10:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 71,
+        "Bog09_same_day": 71
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.31,
+        "T60": 1.31,
+        "T180": 1.31,
+        "Bog09_same_day": 1.31
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19238397,
+      "kickoff_utc": "2025-02-07T03:35:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 71,
+        "Bog09_same_day": 89
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.0149999999999997,
+        "T60": 2.01,
+        "T180": 2.01,
+        "Bog09_same_day": 2.02
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.004999999999999893,
+        "T180": 0.004999999999999893,
+        "Bog09_same_day": 0.0050000000000003375
+      }
+    },
+    {
+      "fixture_id": 19367781,
+      "kickoff_utc": "2025-02-23T00:00:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 68,
+        "Bog09_same_day": 94
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.35,
+        "T60": 2.35,
+        "T180": 2.33,
+        "Bog09_same_day": 2.35
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.020000000000000018,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19346842,
+      "kickoff_utc": "2025-02-02T18:00:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 71,
+        "Bog09_same_day": 13
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.6550000000000002,
+        "T60": 2.7,
+        "T180": 2.7,
+        "Bog09_same_day": 2.49
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.04499999999999993,
+        "T180": 0.04499999999999993,
+        "Bog09_same_day": 0.16500000000000004
+      }
+    },
+    {
+      "fixture_id": 19135480,
+      "kickoff_utc": "2025-02-15T12:30:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 94,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 71,
+        "T180": 71,
+        "Bog09_same_day": 71
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.4,
+        "T60": 1.4,
+        "T180": 1.4,
+        "Bog09_same_day": 1.4
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19143897,
+      "kickoff_utc": "2025-02-11T14:45:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 102,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 79,
+        "T180": 79,
+        "Bog09_same_day": 79
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.57,
+        "T60": 1.57,
+        "T180": 1.57,
+        "Bog09_same_day": 1.57
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19172243,
+      "kickoff_utc": "2025-03-02T12:30:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 89,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 66,
+        "T180": 66,
+        "Bog09_same_day": 66
+      },
+      "vp": {
+        "S1": false,
+        "T60": false,
+        "T180": false,
+        "Bog09_same_day": false
+      },
+      "dcs": {
+        "S1": 0,
+        "T60": 0,
+        "T180": 0,
+        "Bog09_same_day": 0
+      },
+      "f1x2": {
+        "S1": false,
+        "T60": false,
+        "T180": false,
+        "Bog09_same_day": false
+      },
+      "home": {
+        "S1": null,
+        "T60": null,
+        "T180": null,
+        "Bog09_same_day": null
+      },
+      "abs_dhome_vs_s1": {
+        "T60": null,
+        "T180": null,
+        "Bog09_same_day": null
+      }
+    },
+    {
+      "fixture_id": 19160725,
+      "kickoff_utc": "2025-03-08T10:30:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 81,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 58,
+        "T180": 58,
+        "Bog09_same_day": 58
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 3.2,
+        "T60": 3.2,
+        "T180": 3.2,
+        "Bog09_same_day": 3.2
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19144203,
+      "kickoff_utc": "2025-03-01T10:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 87,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 67,
+        "T180": 64,
+        "Bog09_same_day": 67
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.4,
+        "T60": 2.4,
+        "T180": 2.4,
+        "Bog09_same_day": 2.4
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19353791,
+      "kickoff_utc": "2025-03-01T19:30:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 91,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 68,
+        "T180": 68,
+        "Bog09_same_day": 20
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.76,
+        "T60": 1.755,
+        "T180": 1.755,
+        "Bog09_same_day": 1.7349999999999999
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0050000000000001155,
+        "T180": 0.0050000000000001155,
+        "Bog09_same_day": 0.025000000000000133
+      }
+    },
+    {
+      "fixture_id": 19149020,
+      "kickoff_utc": "2025-03-29T11:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 77,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 56,
+        "T180": 56,
+        "Bog09_same_day": 56
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 7.0,
+        "T60": 6.625,
+        "T180": 6.625,
+        "Bog09_same_day": 6.625
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.375,
+        "T180": 0.375,
+        "Bog09_same_day": 0.375
+      }
+    },
+    {
+      "fixture_id": 19373938,
+      "kickoff_utc": "2025-03-15T18:20:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 82,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 59,
+        "T180": 56,
+        "Bog09_same_day": 7
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.6,
+        "T60": 1.6,
+        "T180": 1.6,
+        "Bog09_same_day": 1.5
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.10000000000000009
+      }
+    },
+    {
+      "fixture_id": 19390603,
+      "kickoff_utc": "2025-03-04T09:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 84,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 58,
+        "T180": 58,
+        "Bog09_same_day": 84
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.8600000000000003,
+        "T60": 2.835,
+        "T180": 2.835,
+        "Bog09_same_day": 2.8600000000000003
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.025000000000000355,
+        "T180": 0.025000000000000355,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19155355,
+      "kickoff_utc": "2025-03-15T09:00:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 84,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 58,
+        "T180": 58,
+        "Bog09_same_day": 61
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.78,
+        "T60": 1.775,
+        "T180": 1.775,
+        "Bog09_same_day": 1.77
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0050000000000001155,
+        "T180": 0.0050000000000001155,
+        "Bog09_same_day": 0.010000000000000009
+      }
+    },
+    {
+      "fixture_id": 19160435,
+      "kickoff_utc": "2025-03-31T12:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 82,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 59,
+        "T180": 56,
+        "Bog09_same_day": 56
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.35,
+        "T60": 2.38,
+        "T180": 2.38,
+        "Bog09_same_day": 2.38
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.029999999999999805,
+        "T180": 0.029999999999999805,
+        "Bog09_same_day": 0.029999999999999805
+      }
+    },
+    {
+      "fixture_id": 19146865,
+      "kickoff_utc": "2025-03-02T10:00:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 91,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 68,
+        "T180": 68,
+        "Bog09_same_day": 68
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.06,
+        "T60": 2.085,
+        "T180": 2.085,
+        "Bog09_same_day": 2.085
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.02499999999999991,
+        "T180": 0.02499999999999991,
+        "Bog09_same_day": 0.02499999999999991
+      }
+    },
+    {
+      "fixture_id": 19401743,
+      "kickoff_utc": "2025-04-18T08:30:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 74,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 74,
+        "T180": 74,
+        "Bog09_same_day": 74
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.45,
+        "T60": 1.45,
+        "T180": 1.45,
+        "Bog09_same_day": 1.45
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19397992,
+      "kickoff_utc": "2025-04-28T12:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 75,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 49,
+        "T180": 49,
+        "Bog09_same_day": 49
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 3.3,
+        "T60": 3.3,
+        "T180": 3.3,
+        "Bog09_same_day": 3.3
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19402325,
+      "kickoff_utc": "2025-04-23T21:00:00-05:00",
+      "league_tier": "B",
+      "n_lines_s1": 82,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 56,
+        "T180": 56,
+        "Bog09_same_day": 7
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.3,
+        "T60": 2.29,
+        "T180": 2.29,
+        "Bog09_same_day": 2.2
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.009999999999999787,
+        "T180": 0.009999999999999787,
+        "Bog09_same_day": 0.09999999999999964
+      }
+    },
+    {
+      "fixture_id": 19140439,
+      "kickoff_utc": "2025-04-25T13:00:00-05:00",
+      "league_tier": "B",
+      "n_lines_s1": 81,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 58,
+        "T180": 58,
+        "Bog09_same_day": 58
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.43,
+        "T60": 1.44,
+        "T180": 1.44,
+        "Bog09_same_day": 1.44
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.010000000000000009,
+        "T180": 0.010000000000000009,
+        "Bog09_same_day": 0.010000000000000009
+      }
+    },
+    {
+      "fixture_id": 19377526,
+      "kickoff_utc": "2025-04-06T06:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 84,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 58,
+        "T180": 58,
+        "Bog09_same_day": 79
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.9,
+        "T60": 2.875,
+        "T180": 2.875,
+        "Bog09_same_day": 2.9
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.02499999999999991,
+        "T180": 0.02499999999999991,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19134989,
+      "kickoff_utc": "2025-04-19T11:30:00-05:00",
+      "league_tier": "S",
+      "n_lines_s1": 81,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 61,
+        "T180": 61,
+        "Bog09_same_day": 61
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.49,
+        "T60": 2.46,
+        "T180": 2.46,
+        "Bog09_same_day": 2.46
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.03000000000000025,
+        "T180": 0.03000000000000025,
+        "Bog09_same_day": 0.03000000000000025
+      }
+    },
+    {
+      "fixture_id": 19353850,
+      "kickoff_utc": "2025-04-04T20:00:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 79,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 59,
+        "T180": 59,
+        "Bog09_same_day": 0
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": false
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 0
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": false
+      },
+      "home": {
+        "S1": 3.2,
+        "T60": 3.2,
+        "T180": 3.2,
+        "Bog09_same_day": null
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": null
+      }
+    },
+    {
+      "fixture_id": 19144317,
+      "kickoff_utc": "2025-04-21T09:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 82,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 56,
+        "T180": 56,
+        "Bog09_same_day": 82
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.5,
+        "T60": 2.5,
+        "T180": 2.5,
+        "Bog09_same_day": 2.5
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19208932,
+      "kickoff_utc": "2025-04-10T09:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 84,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 58,
+        "T180": 58,
+        "Bog09_same_day": 84
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.68,
+        "T60": 1.6749999999999998,
+        "T180": 1.6749999999999998,
+        "Bog09_same_day": 1.68
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0050000000000001155,
+        "T180": 0.0050000000000001155,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19144059,
+      "kickoff_utc": "2025-04-12T09:00:00-05:00",
+      "league_tier": "B",
+      "n_lines_s1": 81,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 58,
+        "T180": 58,
+        "Bog09_same_day": 76
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.75,
+        "T60": 1.75,
+        "T180": 1.75,
+        "Bog09_same_day": 1.75
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19172325,
+      "kickoff_utc": "2025-05-18T11:00:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 71,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 66,
+        "T180": 66,
+        "Bog09_same_day": 66
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.88,
+        "T60": 1.895,
+        "T180": 1.895,
+        "Bog09_same_day": 1.895
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.015000000000000124,
+        "T180": 0.015000000000000124,
+        "Bog09_same_day": 0.015000000000000124
+      }
+    },
+    {
+      "fixture_id": 19386985,
+      "kickoff_utc": "2025-05-17T16:30:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 78,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 49,
+        "T180": 49,
+        "Bog09_same_day": 49
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.45,
+        "T60": 2.45,
+        "T180": 2.45,
+        "Bog09_same_day": 2.45
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19352837,
+      "kickoff_utc": "2025-05-14T18:30:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 85,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 56,
+        "T180": 56,
+        "Bog09_same_day": 15
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.67,
+        "T60": 1.67,
+        "T180": 1.67,
+        "Bog09_same_day": 1.55
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.11999999999999988
+      }
+    },
+    {
+      "fixture_id": 19370410,
+      "kickoff_utc": "2025-05-24T11:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 87,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 61,
+        "T180": 61,
+        "Bog09_same_day": 61
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 6.76,
+        "T60": 6.9,
+        "T180": 6.9,
+        "Bog09_same_day": 6.9
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.14000000000000057,
+        "T180": 0.14000000000000057,
+        "Bog09_same_day": 0.14000000000000057
+      }
+    },
+    {
+      "fixture_id": 19402397,
+      "kickoff_utc": "2025-05-03T09:00:00-05:00",
+      "league_tier": "A",
+      "n_lines_s1": 84,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 58,
+        "T180": 58,
+        "Bog09_same_day": 61
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.8,
+        "T60": 1.8,
+        "T180": 1.8,
+        "Bog09_same_day": 1.8
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.0,
+        "T180": 0.0,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19413979,
+      "kickoff_utc": "2025-05-11T09:30:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 80,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 51,
+        "T180": 51,
+        "Bog09_same_day": 51
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 1.495,
+        "T60": 1.5,
+        "T180": 1.5,
+        "Bog09_same_day": 1.5
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.004999999999999893,
+        "T180": 0.004999999999999893,
+        "Bog09_same_day": 0.004999999999999893
+      }
+    },
+    {
+      "fixture_id": 19379056,
+      "kickoff_utc": "2025-05-01T19:30:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 77,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 54,
+        "T180": 54,
+        "Bog09_same_day": 14
+      },
+      "vp": {
+        "S1": false,
+        "T60": false,
+        "T180": false,
+        "Bog09_same_day": false
+      },
+      "dcs": {
+        "S1": 0,
+        "T60": 0,
+        "T180": 0,
+        "Bog09_same_day": 0
+      },
+      "f1x2": {
+        "S1": false,
+        "T60": false,
+        "T180": false,
+        "Bog09_same_day": false
+      },
+      "home": {
+        "S1": null,
+        "T60": null,
+        "T180": null,
+        "Bog09_same_day": null
+      },
+      "abs_dhome_vs_s1": {
+        "T60": null,
+        "T180": null,
+        "Bog09_same_day": null
+      }
+    },
+    {
+      "fixture_id": 19399252,
+      "kickoff_utc": "2025-05-18T08:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 80,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 51,
+        "T180": 51,
+        "Bog09_same_day": 80
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 3.025,
+        "T60": 3.1,
+        "T180": 3.1,
+        "Bog09_same_day": 3.025
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.07500000000000018,
+        "T180": 0.07500000000000018,
+        "Bog09_same_day": 0.0
+      }
+    },
+    {
+      "fixture_id": 19208979,
+      "kickoff_utc": "2025-05-04T08:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 77,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 51,
+        "T180": 51,
+        "Bog09_same_day": 77
+      },
+      "vp": {
+        "S1": false,
+        "T60": false,
+        "T180": false,
+        "Bog09_same_day": false
+      },
+      "dcs": {
+        "S1": 0,
+        "T60": 0,
+        "T180": 0,
+        "Bog09_same_day": 0
+      },
+      "f1x2": {
+        "S1": false,
+        "T60": false,
+        "T180": false,
+        "Bog09_same_day": false
+      },
+      "home": {
+        "S1": null,
+        "T60": null,
+        "T180": null,
+        "Bog09_same_day": null
+      },
+      "abs_dhome_vs_s1": {
+        "T60": null,
+        "T180": null,
+        "Bog09_same_day": null
+      }
+    },
+    {
+      "fixture_id": 19413960,
+      "kickoff_utc": "2025-05-23T12:00:00-05:00",
+      "league_tier": "unknown",
+      "n_lines_s1": 82,
+      "n_lbu_missing": 0,
+      "n_pass": {
+        "T60": 56,
+        "T180": 56,
+        "Bog09_same_day": 56
+      },
+      "vp": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "dcs": {
+        "S1": 12,
+        "T60": 12,
+        "T180": 12,
+        "Bog09_same_day": 12
+      },
+      "f1x2": {
+        "S1": true,
+        "T60": true,
+        "T180": true,
+        "Bog09_same_day": true
+      },
+      "home": {
+        "S1": 2.08,
+        "T60": 2.065,
+        "T180": 2.065,
+        "Bog09_same_day": 2.065
+      },
+      "abs_dhome_vs_s1": {
+        "T60": 0.015000000000000124,
+        "T180": 0.015000000000000124,
+        "Bog09_same_day": 0.015000000000000124
+      }
+    }
+  ]
+}

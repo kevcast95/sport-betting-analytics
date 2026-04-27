@@ -1,0 +1,85 @@
+{
+  "mode": "historical_sm_lbu",
+  "cutoff_mode": "T60",
+  "cutoff_instant": "line_ts <= kickoff_utc (bt2_events) - 1 hour; line_ts = latest_bookmaker_update or created_at",
+  "live_parity": false,
+  "exploratory_only": true,
+  "temporal_truth": "raw_sportmonks line timestamps only; NOT bt2_odds_snapshot.fetched_at",
+  "min_decimal": 1.3,
+  "markets_scope": "same 1X2+O/2.5 as normalize_fixtures (market_id 1, 80 total 2.5)",
+  "window_utc": {
+    "from": "2024-12-01T00:00:00+00:00",
+    "to": "2025-01-01T00:00:00+00:00",
+    "day_from": "2024-12-01",
+    "day_to": "2024-12-31"
+  },
+  "max_fixtures": 1000000,
+  "summary": {
+    "n_fixtures": 1782,
+    "n_value_pool": 1653,
+    "n_not_usable": 129,
+    "n_lines_total_before": 154332,
+    "n_lines_total_after_t60": 102486,
+    "tasa_sobrevivencia_lineas": 0.6641,
+    "lineas_before_por_fixture_p50": 90.0,
+    "lineas_t60_por_fixture_p50": 61.0
+  },
+  "distribution": {
+    "by_month": [
+      {
+        "month": "2024-12",
+        "n_fixtures": 1782
+      }
+    ],
+    "by_week": [
+      {
+        "week": "2024-W48",
+        "n_fixtures": 169
+      },
+      {
+        "week": "2024-W49",
+        "n_fixtures": 571
+      },
+      {
+        "week": "2024-W50",
+        "n_fixtures": 400
+      },
+      {
+        "week": "2024-W51",
+        "n_fixtures": 375
+      },
+      {
+        "week": "2024-W52",
+        "n_fixtures": 241
+      },
+      {
+        "week": "2025-W01",
+        "n_fixtures": 26
+      }
+    ],
+    "data_completeness_score": [
+      {
+        "score": 0,
+        "n_fixtures": 129
+      },
+      {
+        "score": 12,
+        "n_fixtures": 1653
+      }
+    ],
+    "market_coverage_top": [
+      {
+        "market": "FT_1X2",
+        "fixtures_with_market_coverage": 1653
+      }
+    ]
+  },
+  "elapsed_sql_sec": 6.0666,
+  "elapsed_run_sec": 34.546,
+  "sql_inventory": {
+    "sql_n_join": 1782,
+    "sql_n_odds_array_nonempty": 1756,
+    "sql_n_sample_lbu0": 1756,
+    "sql_n_sample_created0": 1756
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "mode": "historical_sm_lbu",
+  "cutoff_mode": "T60",
+  "cutoff_instant": "line_ts <= kickoff_utc (bt2_events) - 1 hour; line_ts = latest_bookmaker_update or created_at",
+  "live_parity": false,
+  "exploratory_only": true,
+  "temporal_truth": "raw_sportmonks line timestamps only; NOT bt2_odds_snapshot.fetched_at",
+  "min_decimal": 1.3,
+  "markets_scope": "same 1X2+O/2.5 as normalize_fixtures (market_id 1, 80 total 2.5)",
+  "window_utc": {
+    "from": "2023-02-01T00:00:00+00:00",
+    "to": "2023-03-01T00:00:00+00:00",
+    "day_from": "2023-02-01",
+    "day_to": "2023-02-28"
+  },
+  "max_fixtures": 1000000,
+  "summary": {
+    "n_fixtures": 0,
+    "n_value_pool": 0,
+    "n_not_usable": 0,
+    "n_lines_total_before": 0,
+    "n_lines_total_after_t60": 0,
+    "tasa_sobrevivencia_lineas": null,
+    "lineas_before_por_fixture_p50": null,
+    "lineas_t60_por_fixture_p50": null
+  },
+  "distribution": {
+    "by_month": [],
+    "by_week": [],
+    "data_completeness_score": [],
+    "market_coverage_top": []
+  },
+  "elapsed_sql_sec": 0.0191,
+  "elapsed_run_sec": 0.02,
+  "sql_inventory": {
+    "sql_n_join": 0,
+    "sql_n_odds_array_nonempty": 0,
+    "sql_n_sample_lbu0": 0,
+    "sql_n_sample_created0": 0
+  }
+}

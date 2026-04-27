@@ -1,0 +1,81 @@
+{
+  "mode": "historical_sm_lbu",
+  "cutoff_mode": "T60",
+  "cutoff_instant": "line_ts <= kickoff_utc (bt2_events) - 1 hour; line_ts = latest_bookmaker_update or created_at",
+  "live_parity": false,
+  "exploratory_only": true,
+  "temporal_truth": "raw_sportmonks line timestamps only; NOT bt2_odds_snapshot.fetched_at",
+  "min_decimal": 1.3,
+  "markets_scope": "same 1X2+O/2.5 as normalize_fixtures (market_id 1, 80 total 2.5)",
+  "window_utc": {
+    "from": "2023-11-01T00:00:00+00:00",
+    "to": "2023-12-01T00:00:00+00:00",
+    "day_from": "2023-11-01",
+    "day_to": "2023-11-30"
+  },
+  "max_fixtures": 1000000,
+  "summary": {
+    "n_fixtures": 1766,
+    "n_value_pool": 1536,
+    "n_not_usable": 230,
+    "n_lines_total_before": 200737,
+    "n_lines_total_after_t60": 51360,
+    "tasa_sobrevivencia_lineas": 0.2559,
+    "lineas_before_por_fixture_p50": 125.0,
+    "lineas_t60_por_fixture_p50": 25.0
+  },
+  "distribution": {
+    "by_month": [
+      {
+        "month": "2023-11",
+        "n_fixtures": 1766
+      }
+    ],
+    "by_week": [
+      {
+        "week": "2023-W44",
+        "n_fixtures": 501
+      },
+      {
+        "week": "2023-W45",
+        "n_fixtures": 519
+      },
+      {
+        "week": "2023-W46",
+        "n_fixtures": 185
+      },
+      {
+        "week": "2023-W47",
+        "n_fixtures": 422
+      },
+      {
+        "week": "2023-W48",
+        "n_fixtures": 139
+      }
+    ],
+    "data_completeness_score": [
+      {
+        "score": 0,
+        "n_fixtures": 230
+      },
+      {
+        "score": 12,
+        "n_fixtures": 1536
+      }
+    ],
+    "market_coverage_top": [
+      {
+        "market": "FT_1X2",
+        "fixtures_with_market_coverage": 1536
+      }
+    ]
+  },
+  "elapsed_sql_sec": 7.0425,
+  "elapsed_run_sec": 49.341,
+  "sql_inventory": {
+    "sql_n_join": 1766,
+    "sql_n_odds_array_nonempty": 1696,
+    "sql_n_sample_lbu0": 1696,
+    "sql_n_sample_created0": 1696
+  }
+}

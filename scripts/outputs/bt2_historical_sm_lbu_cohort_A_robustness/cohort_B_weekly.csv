@@ -1,0 +1,15 @@
+block_id,cohort_key,n_fixtures,n_value_pool,n_not_usable,tasa_sobrevivencia_lineas,vp_over_n_fixtures,p50_lineas_before,p50_lineas_t60,dcs_0,dcs_12,dcs_json,market_top_1,market_top_1_n,market_coverage_top_json,day_from,day_to
+2024-W40,B_2024_q4_high_survival,612,571,41,0.5363,0.933,85.5,46.0,41,571,"{""0"": 41, ""12"": 571}",FT_1X2,571,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 571}]",2024-10-01,2024-10-06
+2024-W41,B_2024_q4_high_survival,146,128,18,0.6366,0.8767,96.5,62.0,18,128,"{""0"": 18, ""12"": 128}",FT_1X2,128,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 128}]",2024-10-07,2024-10-13
+2024-W42,B_2024_q4_high_survival,565,531,34,0.6426,0.9398,98,64,34,531,"{""0"": 34, ""12"": 531}",FT_1X2,531,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 531}]",2024-10-14,2024-10-20
+2024-W43,B_2024_q4_high_survival,677,645,32,0.6183,0.9527,89,56,32,645,"{""0"": 32, ""12"": 645}",FT_1X2,645,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 645}]",2024-10-21,2024-10-27
+2024-W44,B_2024_q4_high_survival,728,669,59,0.6513,0.919,98.0,64.0,59,669,"{""0"": 59, ""12"": 669}",FT_1X2,669,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 669}]",2024-10-28,2024-11-03
+2024-W45,B_2024_q4_high_survival,621,589,32,0.6575,0.9485,99,66,32,589,"{""0"": 32, ""12"": 589}",FT_1X2,589,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 589}]",2024-11-04,2024-11-10
+2024-W46,B_2024_q4_high_survival,220,132,88,0.6265,0.6,74.0,48.0,88,132,"{""0"": 88, ""12"": 132}",FT_1X2,132,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 132}]",2024-11-11,2024-11-17
+2024-W47,B_2024_q4_high_survival,466,441,25,0.6786,0.9464,99.0,67.0,25,441,"{""0"": 25, ""12"": 441}",FT_1X2,441,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 441}]",2024-11-18,2024-11-24
+2024-W48,B_2024_q4_high_survival,606,530,76,0.6462,0.8746,86.0,56.0,76,530,"{""0"": 76, ""12"": 530}",FT_1X2,530,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 530}]",2024-11-25,2024-12-01
+2024-W49,B_2024_q4_high_survival,571,535,36,0.6571,0.937,90,61,36,535,"{""0"": 36, ""12"": 535}",FT_1X2,535,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 535}]",2024-12-02,2024-12-08
+2024-W50,B_2024_q4_high_survival,400,378,22,0.6662,0.945,90.0,61.0,22,378,"{""0"": 22, ""12"": 378}",FT_1X2,378,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 378}]",2024-12-09,2024-12-15
+2024-W51,B_2024_q4_high_survival,375,339,36,0.6576,0.904,91,61,36,339,"{""0"": 36, ""12"": 339}",FT_1X2,339,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 339}]",2024-12-16,2024-12-22
+2024-W52,B_2024_q4_high_survival,241,229,12,0.6944,0.9502,93,66,12,229,"{""0"": 12, ""12"": 229}",FT_1X2,229,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 229}]",2024-12-23,2024-12-29
+2025-W01,B_2024_q4_high_survival,26,23,3,0.6788,0.8846,91.0,62.0,3,23,"{""0"": 3, ""12"": 23}",FT_1X2,23,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 23}]",2024-12-30,2024-12-31

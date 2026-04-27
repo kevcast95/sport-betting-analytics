@@ -1,0 +1,225 @@
+{
+  "generated_at_utc": "2026-04-25T16:19:35.657135Z",
+  "source": "scripts/outputs/bt2_historical_sm_lbu_year_scan/year_scan_consolidated.json",
+  "constraints": {
+    "mode": "historical_sm_lbu",
+    "cutoff_mode": "T60",
+    "no_bounded_replay_changes": true,
+    "no_phase4": true
+  },
+  "cohortes_propuestas": [
+    {
+      "cohort_key": "A_2025_stable_high_survival",
+      "cohort_label": "A — 2025 Ene-May (estable alta supervivencia)",
+      "rango": {
+        "from": "2025-01",
+        "to": "2025-05"
+      },
+      "objetivo": "cohorte_principal",
+      "metrics": {
+        "meses": [
+          "2025-01",
+          "2025-02",
+          "2025-03",
+          "2025-04",
+          "2025-05"
+        ],
+        "n_months": 5,
+        "n_months_with_data": 5,
+        "n_months_gap": 0,
+        "gap_ratio": 0.0,
+        "n_fixtures": 10613,
+        "n_value_pool": 10022,
+        "n_not_usable": 591,
+        "vp_over_fixtures": 0.9443,
+        "dcs12_over_fixtures": 0.9443,
+        "market_top1_over_fixtures": 0.9443,
+        "odds_usable_raw_over_join": 0.9908,
+        "survival_mean": 0.7159,
+        "survival_min": 0.6767,
+        "survival_max": 0.7464,
+        "survival_range": 0.0697,
+        "meses_gap": [],
+        "continuidad_temporal": "continua"
+      },
+      "calidad_esperada": "alta",
+      "uso_recomendado": "exploracion_historica_seria",
+      "caveats": [
+        "Cobertura parcial anual (solo ene-may 2025)."
+      ]
+    },
+    {
+      "cohort_key": "B_2024_q4_high_survival",
+      "cohort_label": "B — 2024 Oct-Dic (post-cambio regimen, alta supervivencia)",
+      "rango": {
+        "from": "2024-10",
+        "to": "2024-12"
+      },
+      "objetivo": "secundaria_contraste_metodologico",
+      "metrics": {
+        "meses": [
+          "2024-10",
+          "2024-11",
+          "2024-12"
+        ],
+        "n_months": 3,
+        "n_months_with_data": 3,
+        "n_months_gap": 0,
+        "gap_ratio": 0.0,
+        "n_fixtures": 6254,
+        "n_value_pool": 5740,
+        "n_not_usable": 514,
+        "vp_over_fixtures": 0.9178,
+        "dcs12_over_fixtures": 0.9178,
+        "market_top1_over_fixtures": 0.9178,
+        "odds_usable_raw_over_join": 0.9775,
+        "survival_mean": 0.6431,
+        "survival_min": 0.6087,
+        "survival_max": 0.6641,
+        "survival_range": 0.0554,
+        "meses_gap": [],
+        "continuidad_temporal": "continua"
+      },
+      "calidad_esperada": "media_alta",
+      "uso_recomendado": "contraste_metodologico",
+      "caveats": [
+        "Ventana corta (3 meses).",
+        "No extrapolar automaticamente a 2024 completo."
+      ]
+    },
+    {
+      "cohort_key": "C_2024_q1_q3_low_mid_survival",
+      "cohort_label": "C — 2024 Ene-Sep (pre-cambio regimen, baja-media supervivencia)",
+      "rango": {
+        "from": "2024-01",
+        "to": "2024-09"
+      },
+      "objetivo": "secundaria_contraste_regimen",
+      "metrics": {
+        "meses": [
+          "2024-01",
+          "2024-02",
+          "2024-03",
+          "2024-04",
+          "2024-05",
+          "2024-06",
+          "2024-07",
+          "2024-08",
+          "2024-09"
+        ],
+        "n_months": 9,
+        "n_months_with_data": 9,
+        "n_months_gap": 0,
+        "gap_ratio": 0.0,
+        "n_fixtures": 16914,
+        "n_value_pool": 14939,
+        "n_not_usable": 1975,
+        "vp_over_fixtures": 0.8832,
+        "dcs12_over_fixtures": 0.8832,
+        "market_top1_over_fixtures": 0.8832,
+        "odds_usable_raw_over_join": 0.9523,
+        "survival_mean": 0.1903,
+        "survival_min": 0.114,
+        "survival_max": 0.3022,
+        "survival_range": 0.1882,
+        "meses_gap": [],
+        "continuidad_temporal": "continua"
+      },
+      "calidad_esperada": "media",
+      "uso_recomendado": "contraste_metodologico",
+      "caveats": [
+        "Banda de supervivencia significativamente menor que A/B.",
+        "No mezclar con 2024 Q4 ni con 2025 ene-may para inferencia unica."
+      ]
+    },
+    {
+      "cohort_key": "D_2023_aug_dec_low_survival_partial",
+      "cohort_label": "D — 2023 Ago-Dic (parcial, banda baja supervivencia)",
+      "rango": {
+        "from": "2023-08",
+        "to": "2023-12"
+      },
+      "objetivo": "referencia_secundaria",
+      "metrics": {
+        "meses": [
+          "2023-08",
+          "2023-09",
+          "2023-10",
+          "2023-11",
+          "2023-12"
+        ],
+        "n_months": 5,
+        "n_months_with_data": 5,
+        "n_months_gap": 0,
+        "gap_ratio": 0.0,
+        "n_fixtures": 9716,
+        "n_value_pool": 8071,
+        "n_not_usable": 1645,
+        "vp_over_fixtures": 0.8307,
+        "dcs12_over_fixtures": 0.8307,
+        "market_top1_over_fixtures": 0.8307,
+        "odds_usable_raw_over_join": 0.9149,
+        "survival_mean": 0.222,
+        "survival_min": 0.188,
+        "survival_max": 0.2559,
+        "survival_range": 0.0679,
+        "meses_gap": [],
+        "continuidad_temporal": "continua"
+      },
+      "calidad_esperada": "media_baja",
+      "uso_recomendado": "solo_referencia_secundaria",
+      "caveats": [
+        "Año parcial (ago-dic) y con huecos fuertes en 2023 ene-jul.",
+        "Régimen distinto de supervivencia frente a 2025 ene-may."
+      ]
+    }
+  ],
+  "cohortes_no_usar_por_ahora": [
+    {
+      "cohort_key": "X_2023_jan_jul_gap",
+      "rango": {
+        "from": "2023-01",
+        "to": "2023-07"
+      },
+      "uso_recomendado": "no_usar_por_ahora",
+      "motivo": "0 fixtures en todos los meses (hueco de datos/join)."
+    },
+    {
+      "cohort_key": "Y_2025_jun_dec_gap",
+      "rango": {
+        "from": "2025-06",
+        "to": "2025-12"
+      },
+      "uso_recomendado": "no_usar_por_ahora",
+      "motivo": "0 fixtures en todos los meses (hueco de datos/join)."
+    }
+  ],
+  "cohortes_no_mezclar": [
+    {
+      "pair": [
+        "A_2025_stable_high_survival",
+        "C_2024_q1_q3_low_mid_survival"
+      ],
+      "motivo": "Banda de supervivencia y mediana de lineas T-60 en regimen distinto."
+    },
+    {
+      "pair": [
+        "B_2024_q4_high_survival",
+        "C_2024_q1_q3_low_mid_survival"
+      ],
+      "motivo": "Cambio de regimen intranual 2024 (salto fuerte desde oct-2024)."
+    },
+    {
+      "pair": [
+        "A_2025_stable_high_survival",
+        "D_2023_aug_dec_low_survival_partial"
+      ],
+      "motivo": "Diferencias de cobertura/supervivencia y continuidad temporal."
+    }
+  ],
+  "cohorte_principal_recomendada": {
+    "cohort_key": "A_2025_stable_high_survival",
+    "motivo": "Mayor estabilidad interna y mejor VP/fixtures en meses con datos.",
+    "scope_real": "2025-01..2025-05"
+  }
+}

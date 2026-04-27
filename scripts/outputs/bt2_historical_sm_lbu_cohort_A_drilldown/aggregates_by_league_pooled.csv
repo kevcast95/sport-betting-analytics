@@ -1,0 +1,87 @@
+league_id,league_name,league_tier,n_fixtures,n_not_usable,not_usable_share,lines_survival_proxy
+59979,Ligue 1,unknown,25,21,0.84,0.4895
+64522,Copa do Brasil,unknown,32,9,0.2812,0.655
+55588,FA Cup,unknown,29,9,0.3103,0.7624
+56800,Super Lig,A,43,8,0.186,0.7034
+56312,Pro League,unknown,44,6,0.1364,0.7001
+57502,Premier League,unknown,44,5,0.1136,0.7012
+50424,Eredivisie,A,39,5,0.1282,0.6855
+54935,Premier League,unknown,36,5,0.1389,0.6808
+57180,1. Lig,unknown,36,5,0.1389,0.7083
+51884,Ligue 1,S,36,5,0.1389,0.7019
+45514,First League,unknown,38,4,0.1053,0.6847
+48847,UAE Pro League,unknown,37,4,0.1081,0.6823
+64731,Super League,unknown,31,4,0.129,0.6887
+52570,Premiership,A,26,4,0.1538,0.6899
+62494,Liga BetPlay,A,52,3,0.0577,0.653
+53391,Serie A,S,50,3,0.06,0.7048
+48423,Pro League,A,34,3,0.0882,0.7081
+46453,Ligat ha'Al,unknown,33,3,0.0909,0.6822
+50044,Premier League,unknown,32,3,0.0938,0.7412
+46901,Chance Liga,unknown,30,3,0.1,0.6478
+54529,Liga Portugal,A,28,3,0.1071,0.6919
+62246,Eliteserien,unknown,25,3,0.12,0.6796
+49851,NB I,unknown,23,3,0.1304,0.6795
+56618,Super League,unknown,22,3,0.1364,0.6944
+58840,Botola Pro,unknown,16,3,0.1875,0.6963
+61667,Copa Sudamericana,B,16,3,0.1875,0.6321
+61637,Copa Libertadores,A,16,3,0.1875,0.6626
+48655,Challenger Pro League,unknown,13,3,0.2308,0.6777
+61244,Allsvenskan,A,42,2,0.0476,0.6865
+45751,Premier League,S,42,2,0.0476,0.6945
+59634,Premier League,unknown,39,2,0.0513,0.6394
+57742,FNL,unknown,35,2,0.0571,0.7176
+64587,Primera Division,unknown,35,2,0.0571,0.6618
+58625,Persian Gulf Pro League,unknown,24,2,0.0833,0.6673
+59906,V-League,unknown,22,2,0.0909,0.6324
+45314,1. HNL,unknown,22,2,0.0909,0.6917
+50268,Niké Liga,unknown,20,2,0.1,0.6877
+58483,Stars League,unknown,12,2,0.1667,0.7147
+48313,La Liga,S,56,1,0.0179,0.6935
+65348,Serie A,A,46,1,0.0217,0.6862
+63220,Primera Division,unknown,41,1,0.0244,0.6872
+53065,Bundesliga,S,36,1,0.0278,0.7063
+50730,Eerste Divisie,unknown,33,1,0.0303,0.7087
+58093,Super Liga,unknown,32,1,0.0312,0.6708
+45187,Liga MX,A,31,1,0.0323,0.6965
+47125,Championship,B,30,1,0.0333,0.7019
+55168,3. Liga,unknown,30,1,0.0333,0.6894
+51572,Superliga,unknown,29,1,0.0345,0.6824
+63710,Veikkausliiga,unknown,27,1,0.037,0.6962
+59003,A-League Men,unknown,26,1,0.0385,0.7118
+53671,Enterprise National League,unknown,21,1,0.0476,0.6748
+58325,CAF Champions League,unknown,11,1,0.0909,0.7054
+55548,Russian Cup,unknown,9,1,0.1111,0.7404
+58737,Taça De Portugal,unknown,4,1,0.25,0.727
+46755,AFC Champions League Two,unknown,3,1,0.3333,0.68
+59953,Copa Del Rey,unknown,2,1,0.5,0.7232
+60437,Coupe de France,unknown,1,1,1.0,0.642
+61753,Major League Soccer,A,74,0,0.0,0.643
+51110,La Liga 2,B,56,0,0.0,0.708
+62684,J1 League,A,53,0,0.0,0.6896
+62758,Liga Profesional de Fútbol,A,49,0,0.0,0.6913
+55932,Serie B,B,45,0,0.0,0.7162
+65838,Serie B,unknown,43,0,0.0,0.6875
+54223,Liga Portugal 2,unknown,36,0,0.0,0.7026
+45841,Ekstraklasa,A,33,0,0.0,0.6866
+47629,League One,unknown,32,0,0.0,0.696
+63436,Primera Division,A,30,0,0.0,0.7002
+52190,Ligue 2,B,29,0,0.0,0.7305
+47905,League Two,unknown,29,0,0.0,0.7033
+45484,Superliga,unknown,27,0,0.0,0.6858
+52768,2. Bundesliga,B,27,0,0.0,0.6765
+59387,Ligue 1,unknown,26,0,0.0,0.6827
+46635,First Division,unknown,26,0,0.0,0.6818
+46768,Super League,unknown,24,0,0.0,0.6564
+63238,K League 1,A,24,0,0.0,0.6867
+50298,Admiral Bundesliga,unknown,24,0,0.0,0.685
+61043,Premier Division,unknown,23,0,0.0,0.6966
+59564,Indian Super League,unknown,7,0,0.0,0.7327
+57486,Kings Cup,unknown,4,0,0.0,0.7263
+67402,Premiership Play-Offs,unknown,3,0,0.0,0.6599
+76770,Super Cup,unknown,3,0,0.0,0.7293
+46888,AFC Champions League Elite,unknown,3,0,0.0,0.6828
+49065,Carabao Cup,unknown,2,0,0.0,0.7111
+58401,Coppa Italia,unknown,1,0,0.0,0.7701
+67458,Ligue 1 Play-offs,unknown,1,0,0.0,0.7901
+46421,DFB Pokal,unknown,1,0,0.0,0.6829

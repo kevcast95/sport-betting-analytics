@@ -1,0 +1,98 @@
+{
+  "generated_at_utc": "2026-04-25T23:50:06.312067Z",
+  "constraints": {
+    "cutoff": "T60 unchanged",
+    "no_bounded_replay_changes": true,
+    "cohorts_not_merged": true
+  },
+  "cohorte_A": {
+    "key": "A_2025_stable_high_survival",
+    "rango": {
+      "from": "2025-01-01",
+      "to": "2025-05-31"
+    },
+    "monthly_stats": {
+      "n_blocks": 5,
+      "total_n_fixtures": 10613,
+      "tasa_sobrevivencia_lineas": {
+        "min": 0.6767,
+        "max": 0.7464,
+        "mean": 0.7159,
+        "range": 0.0697
+      },
+      "vp_over_n_fixtures": {
+        "min": 0.9376,
+        "max": 0.9534,
+        "mean": 0.9439,
+        "range": 0.0158
+      }
+    },
+    "weekly_stats": {
+      "n_blocks": 22,
+      "total_n_fixtures": 10613,
+      "tasa_sobrevivencia_lineas": {
+        "min": 0.6364,
+        "max": 0.7595,
+        "mean": 0.7137,
+        "range": 0.1231
+      },
+      "vp_over_n_fixtures": {
+        "min": 0.8977,
+        "max": 0.9649,
+        "mean": 0.9431,
+        "range": 0.0672
+      }
+    }
+  },
+  "cohorte_B": {
+    "key": "B_2024_q4_high_survival",
+    "rango": {
+      "from": "2024-10-01",
+      "to": "2024-12-31"
+    },
+    "monthly_stats": {
+      "n_blocks": 3,
+      "total_n_fixtures": 6254,
+      "tasa_sobrevivencia_lineas": {
+        "min": 0.6087,
+        "max": 0.6641,
+        "mean": 0.6431,
+        "range": 0.0554
+      },
+      "vp_over_n_fixtures": {
+        "min": 0.8949,
+        "max": 0.9327,
+        "mean": 0.9184,
+        "range": 0.0378
+      }
+    },
+    "weekly_stats": {
+      "n_blocks": 14,
+      "total_n_fixtures": 6254,
+      "tasa_sobrevivencia_lineas": {
+        "min": 0.5363,
+        "max": 0.6944,
+        "mean": 0.6463,
+        "range": 0.1581
+      },
+      "vp_over_n_fixtures": {
+        "min": 0.6,
+        "max": 0.9527,
+        "mean": 0.9008,
+        "range": 0.3527
+      }
+    }
+  },
+  "veredicto": {
+    "lectura_cohorte_A": "estable (mensual y semanal en banda estrecha)",
+    "lectura_benchmark_B": "benchmark util: mensual range=0.0554, semanal range=0.1581. Comparar solo lectura A vs B, sin pool conjunto.",
+    "A_confirmada_principal": true,
+    "B_confirmada_benchmark": true,
+    "comparacion_referencia": {
+      "survival_range_mensual_A_vs_B": "0.0697 vs 0.0554",
+      "survival_range_semanal_A_vs_B": "0.1231 vs 0.1581",
+      "nota": "A muestra menor variación mensual que B; la granularidad semanal muestra variación operativa normal."
+    }
+  },
+  "siguiente_paso": "Sobre A: auditar fixtures por semana con n_fixtures bajo (outliers de volumen) y repetir solo esas ventanas con export fixture-level (CSV) para ver si la deriva viene de competiciones/ligas concretas o de calidad de payload."
+}

@@ -1,0 +1,81 @@
+{
+  "mode": "historical_sm_lbu",
+  "cutoff_mode": "T60",
+  "cutoff_instant": "line_ts <= kickoff_utc (bt2_events) - 1 hour; line_ts = latest_bookmaker_update or created_at",
+  "live_parity": false,
+  "exploratory_only": true,
+  "temporal_truth": "raw_sportmonks line timestamps only; NOT bt2_odds_snapshot.fetched_at",
+  "min_decimal": 1.3,
+  "markets_scope": "same 1X2+O/2.5 as normalize_fixtures (market_id 1, 80 total 2.5)",
+  "window_utc": {
+    "from": "2024-05-01T00:00:00+00:00",
+    "to": "2024-06-01T00:00:00+00:00",
+    "day_from": "2024-05-01",
+    "day_to": "2024-05-31"
+  },
+  "max_fixtures": 1000000,
+  "summary": {
+    "n_fixtures": 2199,
+    "n_value_pool": 1984,
+    "n_not_usable": 215,
+    "n_lines_total_before": 228283,
+    "n_lines_total_after_t60": 33503,
+    "tasa_sobrevivencia_lineas": 0.1468,
+    "lineas_before_por_fixture_p50": 109,
+    "lineas_t60_por_fixture_p50": 13
+  },
+  "distribution": {
+    "by_month": [
+      {
+        "month": "2024-05",
+        "n_fixtures": 2199
+      }
+    ],
+    "by_week": [
+      {
+        "week": "2024-W18",
+        "n_fixtures": 469
+      },
+      {
+        "week": "2024-W19",
+        "n_fixtures": 591
+      },
+      {
+        "week": "2024-W20",
+        "n_fixtures": 561
+      },
+      {
+        "week": "2024-W21",
+        "n_fixtures": 443
+      },
+      {
+        "week": "2024-W22",
+        "n_fixtures": 135
+      }
+    ],
+    "data_completeness_score": [
+      {
+        "score": 0,
+        "n_fixtures": 215
+      },
+      {
+        "score": 12,
+        "n_fixtures": 1984
+      }
+    ],
+    "market_coverage_top": [
+      {
+        "market": "FT_1X2",
+        "fixtures_with_market_coverage": 1984
+      }
+    ]
+  },
+  "elapsed_sql_sec": 9.6492,
+  "elapsed_run_sec": 61.415,
+  "sql_inventory": {
+    "sql_n_join": 2199,
+    "sql_n_odds_array_nonempty": 2153,
+    "sql_n_sample_lbu0": 2153,
+    "sql_n_sample_created0": 2153
+  }
+}

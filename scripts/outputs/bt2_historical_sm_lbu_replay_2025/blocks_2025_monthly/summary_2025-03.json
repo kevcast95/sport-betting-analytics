@@ -1,0 +1,78 @@
+{
+  "mode": "historical_sm_lbu",
+  "cutoff_mode": "T60",
+  "cutoff_instant": "line_ts <= kickoff_utc (bt2_events) - 1 hour; line_ts = latest_bookmaker_update or created_at",
+  "live_parity": false,
+  "exploratory_only": true,
+  "temporal_truth": "raw_sportmonks line timestamps only; NOT bt2_odds_snapshot.fetched_at",
+  "min_decimal": 1.3,
+  "markets_scope": "same 1X2+O/2.5 as normalize_fixtures (market_id 1, 80 total 2.5)",
+  "window_utc": {
+    "from": "2025-03-01T00:00:00+00:00",
+    "to": "2025-04-01T00:00:00+00:00",
+    "day_from": "2025-03-01",
+    "day_to": "2025-03-31"
+  },
+  "max_fixtures": 1000000,
+  "summary": {
+    "n_fixtures": 2212,
+    "n_value_pool": 2109,
+    "n_not_usable": 103,
+    "n_lines_total_before": 174387,
+    "n_lines_total_after_t60": 124115,
+    "tasa_sobrevivencia_lineas": 0.7117,
+    "lineas_before_por_fixture_p50": 82.0,
+    "lineas_t60_por_fixture_p50": 58.0
+  },
+  "distribution": {
+    "by_month": [
+      {
+        "month": "2025-03",
+        "n_fixtures": 2212
+      }
+    ],
+    "by_week": [
+      {
+        "week": "2025-W09",
+        "n_fixtures": 360
+      },
+      {
+        "week": "2025-W10",
+        "n_fixtures": 611
+      },
+      {
+        "week": "2025-W11",
+        "n_fixtures": 598
+      },
+      {
+        "week": "2025-W12",
+        "n_fixtures": 113
+      },
+      {
+        "week": "2025-W13",
+        "n_fixtures": 502
+      },
+      {
+        "week": "2025-W14",
+        "n_fixtures": 28
+      }
+    ],
+    "data_completeness_score": [
+      {
+        "score": 0,
+        "n_fixtures": 103
+      },
+      {
+        "score": 12,
+        "n_fixtures": 2109
+      }
+    ],
+    "market_coverage_top": [
+      {
+        "market": "FT_1X2",
+        "fixtures_with_market_coverage": 2109
+      }
+    ]
+  },
+  "elapsed_sec": 57.61
+}

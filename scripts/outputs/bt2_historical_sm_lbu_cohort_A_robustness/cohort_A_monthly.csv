@@ -1,0 +1,6 @@
+block_id,cohort_key,n_fixtures,n_value_pool,n_not_usable,tasa_sobrevivencia_lineas,vp_over_n_fixtures,p50_lineas_before,p50_lineas_t60,dcs_0,dcs_12,dcs_json,market_top_1,market_top_1_n,market_coverage_top_json,day_from,day_to
+2025-01,A_2025_stable_high_survival,1415,1331,84,0.7464,0.9406,92,69,84,1331,"{""0"": 84, ""12"": 1331}",FT_1X2,1331,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 1331}]",2025-01-01,2025-01-31
+2025-02,A_2025_stable_high_survival,2193,2064,129,0.7443,0.9412,92,69,129,2064,"{""0"": 129, ""12"": 2064}",FT_1X2,2064,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 2064}]",2025-02-01,2025-02-28
+2025-03,A_2025_stable_high_survival,2212,2109,103,0.7117,0.9534,82.0,58.0,103,2109,"{""0"": 103, ""12"": 2109}",FT_1X2,2109,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 2109}]",2025-03-01,2025-03-31
+2025-04,A_2025_stable_high_survival,2582,2445,137,0.7006,0.9469,81.0,58.0,137,2445,"{""0"": 137, ""12"": 2445}",FT_1X2,2445,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 2445}]",2025-04-01,2025-04-30
+2025-05,A_2025_stable_high_survival,2211,2073,138,0.6767,0.9376,83,57,138,2073,"{""0"": 138, ""12"": 2073}",FT_1X2,2073,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 2073}]",2025-05-01,2025-05-31

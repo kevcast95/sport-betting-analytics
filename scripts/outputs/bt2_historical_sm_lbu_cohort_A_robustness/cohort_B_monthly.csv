@@ -1,0 +1,4 @@
+block_id,cohort_key,n_fixtures,n_value_pool,n_not_usable,tasa_sobrevivencia_lineas,vp_over_n_fixtures,p50_lineas_before,p50_lineas_t60,dcs_0,dcs_12,dcs_json,market_top_1,market_top_1_n,market_coverage_top_json,day_from,day_to
+2024-10,B_2024_q4_high_survival,2245,2094,151,0.6087,0.9327,91,56,151,2094,"{""0"": 151, ""12"": 2094}",FT_1X2,2094,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 2094}]",2024-10-01,2024-10-31
+2024-11,B_2024_q4_high_survival,2227,1993,234,0.6564,0.8949,97,64,234,1993,"{""0"": 234, ""12"": 1993}",FT_1X2,1993,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 1993}]",2024-11-01,2024-11-30
+2024-12,B_2024_q4_high_survival,1782,1653,129,0.6641,0.9276,90.0,61.0,129,1653,"{""0"": 129, ""12"": 1653}",FT_1X2,1653,"[{""market"": ""FT_1X2"", ""fixtures_with_market_coverage"": 1653}]",2024-12-01,2024-12-31
