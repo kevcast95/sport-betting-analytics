@@ -23,6 +23,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -58,13 +59,36 @@ SUBSET5 = frozenset({8, 82, 301, 384, 564})
 
 def _norm_team(s: str) -> str:
     t = (s or "").lower().strip()
+    t = unicodedata.normalize("NFKD", t).encode("ascii", "ignore").decode("ascii")
     t = re.sub(r"[\.\'\`´]", "", t)
     t = re.sub(r"[^a-z0-9\s]", " ", t)
     t = re.sub(r"\s+", " ", t).strip()
     for tok in (" fc", " cf", " sc", " afc", " fk", " ac"):
         if t.endswith(tok):
             t = t[: -len(tok)].strip()
+    t = re.sub(r"\b0+([1-9])\b", r"\1", t)  # e.g. 04 -> 4
     return t
+
+
+TEAM_ALIASES: dict[str, str] = {
+    "olympique marseille": "marseille",
+    "saint etienne": "st etienne",
+    "borussia dortmund": "dortmund",
+    "bayer 4 leverkusen": "bayer leverkusen",
+    "athletic club": "athletic bilbao",
+    "real valladolid": "valladolid",
+    "ipswich town": "ipswich",
+}
+
+
+def _canon_team(s: str) -> str:
+    n = _norm_team(s)
+    return TEAM_ALIASES.get(n, n)
+
+
+def _token_set(s: str) -> set[str]:
+    stop = {"fc", "cf", "sc", "club", "de", "la", "the", "cd", "ud"}
+    return {x for x in _canon_team(s).split() if x and x not in stop}
 
 
 def _dsn() -> str:
@@ -360,7 +384,10 @@ def _match_toa_event(
 ) -> tuple[Optional[str], str]:
     data = events_payload.get("data") if isinstance(events_payload.get("data"), list) else []
     nh, na = _norm_team(home), _norm_team(away)
+    ch, ca = _canon_team(home), _canon_team(away)
+    th, ta = _token_set(home), _token_set(away)
     best_id: Optional[str] = None
+    best_score = -1
     best_delta = 9e15
     best_reason = "sin candidatos"
     for ev in data:
@@ -369,16 +396,35 @@ def _match_toa_event(
         ct = _parse_any_dt(str(ev.get("commence_time") or ""))
         if not ct:
             continue
-        eh = _norm_team(str(ev.get("home_team") or ""))
-        ea = _norm_team(str(ev.get("away_team") or ""))
-        teams_ok = (eh == nh and ea == na) or (eh == na and ea == nh)
-        if not teams_ok:
+        eh_raw = str(ev.get("home_team") or "")
+        ea_raw = str(ev.get("away_team") or "")
+        eh, ea = _norm_team(eh_raw), _norm_team(ea_raw)
+        ceh, cea = _canon_team(eh_raw), _canon_team(ea_raw)
+        teh, tea = _token_set(eh_raw), _token_set(ea_raw)
+        direct_ok = (eh == nh and ea == na) or (eh == na and ea == nh)
+        canon_ok = (ceh == ch and cea == ca) or (ceh == ca and cea == ch)
+        tok_dir = len(th & teh) >= 1 and len(ta & tea) >= 1
+        tok_rev = len(th & tea) >= 1 and len(ta & teh) >= 1
+        token_ok = tok_dir or tok_rev
+        if not (direct_ok or canon_ok or token_ok):
             continue
         delta = abs((ct - kickoff).total_seconds())
-        if delta < best_delta:
+        # Matching conservador: exacto > alias > token overlap (con ventana de tiempo).
+        if direct_ok:
+            score = 100
+        elif canon_ok:
+            score = 90
+        elif token_ok and delta <= 3 * 3600:
+            score = 70
+        else:
+            score = 0
+        if score <= 0:
+            continue
+        if score > best_score or (score == best_score and delta < best_delta):
+            best_score = score
             best_delta = delta
             best_id = str(ev.get("id") or "")
-            best_reason = f"teams_match delta_s={int(delta)}"
+            best_reason = f"teams_match score={score} delta_s={int(delta)}"
     if best_id:
         return best_id, best_reason
     return None, "unmatched_team_or_time"
@@ -609,8 +655,12 @@ def cmd_all(args: argparse.Namespace) -> None:
         raise SystemExit("Falta THEODDSAPI_KEY / theoddsapi_key en .env")
 
     limit = max(10, min(args.limit, 28))
-    path_m = freeze_manifest(limit)
-    print(json.dumps({"frozen_manifest": str(path_m.relative_to(_repo)), "limit": limit}, indent=2))
+    path_m = OUT_DIR / "day1_lab_manifest.csv"
+    if args.reuse_manifest and path_m.is_file():
+        print(json.dumps({"reused_manifest": str(path_m.relative_to(_repo)), "limit": limit}, indent=2))
+    else:
+        path_m = freeze_manifest(limit)
+        print(json.dumps({"frozen_manifest": str(path_m.relative_to(_repo)), "limit": limit}, indent=2))
 
     with path_m.open(encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
@@ -726,6 +776,7 @@ def main() -> None:
     ap.add_argument("--all", action="store_true", help="Congela manifiesto y ejecuta SM + TOA + compare")
     ap.add_argument("--freeze-only", action="store_true")
     ap.add_argument("--limit", type=int, default=DEFAULT_DAY1_LIMIT)
+    ap.add_argument("--reuse-manifest", action="store_true", help="Reusar day1_lab_manifest.csv existente")
     args = ap.parse_args()
     if args.freeze_only:
         p = freeze_manifest(max(10, min(args.limit, 28)))
