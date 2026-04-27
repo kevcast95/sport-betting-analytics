@@ -1,215 +1,397 @@
 {
-  "estimated_total_cost_from_headers_sum": 165.0,
+  "estimated_total_cost_from_headers_sum": 308.0,
   "note": "Coste por llamada según headers x-requests-last cuando existan.",
   "calls": [
     {
       "step": "historical_events",
       "fixture": "19134546",
-      "x-requests-remaining": "99653",
-      "x-requests-used": "347",
+      "x-requests-remaining": "99268",
+      "x-requests-used": "732",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19134546",
-      "x-requests-remaining": "99643",
-      "x-requests-used": "357",
+      "x-requests-remaining": "99258",
+      "x-requests-used": "742",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19154681",
-      "x-requests-remaining": "99642",
-      "x-requests-used": "358",
+      "x-requests-remaining": "99257",
+      "x-requests-used": "743",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19154681",
-      "x-requests-remaining": "99632",
-      "x-requests-used": "368",
+      "x-requests-remaining": "99247",
+      "x-requests-used": "753",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19139842",
-      "x-requests-remaining": "99631",
-      "x-requests-used": "369",
+      "x-requests-remaining": "99246",
+      "x-requests-used": "754",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19139842",
-      "x-requests-remaining": "99621",
-      "x-requests-used": "379",
+      "x-requests-remaining": "99236",
+      "x-requests-used": "764",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19155249",
-      "x-requests-remaining": "99620",
-      "x-requests-used": "380",
+      "x-requests-remaining": "99235",
+      "x-requests-used": "765",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19155249",
-      "x-requests-remaining": "99610",
-      "x-requests-used": "390",
+      "x-requests-remaining": "99225",
+      "x-requests-used": "775",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19135481",
-      "x-requests-remaining": "99609",
-      "x-requests-used": "391",
+      "x-requests-remaining": "99224",
+      "x-requests-used": "776",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19135481",
-      "x-requests-remaining": "99599",
-      "x-requests-used": "401",
+      "x-requests-remaining": "99214",
+      "x-requests-used": "786",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19134553",
-      "x-requests-remaining": "99598",
-      "x-requests-used": "402",
+      "x-requests-remaining": "99213",
+      "x-requests-used": "787",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19134553",
-      "x-requests-remaining": "99588",
-      "x-requests-used": "412",
+      "x-requests-remaining": "99203",
+      "x-requests-used": "797",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19154682",
-      "x-requests-remaining": "99587",
-      "x-requests-used": "413",
+      "x-requests-remaining": "99202",
+      "x-requests-used": "798",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19154682",
-      "x-requests-remaining": "99577",
-      "x-requests-used": "423",
+      "x-requests-remaining": "99192",
+      "x-requests-used": "808",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19155256",
-      "x-requests-remaining": "99576",
-      "x-requests-used": "424",
+      "x-requests-remaining": "99191",
+      "x-requests-used": "809",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19155256",
-      "x-requests-remaining": "99566",
-      "x-requests-used": "434",
+      "x-requests-remaining": "99181",
+      "x-requests-used": "819",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19135490",
-      "x-requests-remaining": "99565",
-      "x-requests-used": "435",
+      "x-requests-remaining": "99180",
+      "x-requests-used": "820",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19135490",
-      "x-requests-remaining": "99555",
-      "x-requests-used": "445",
+      "x-requests-remaining": "99170",
+      "x-requests-used": "830",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19134554",
-      "x-requests-remaining": "99554",
-      "x-requests-used": "446",
+      "x-requests-remaining": "99169",
+      "x-requests-used": "831",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19134554",
-      "x-requests-remaining": "99544",
-      "x-requests-used": "456",
+      "x-requests-remaining": "99159",
+      "x-requests-used": "841",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19134555",
-      "x-requests-remaining": "99543",
-      "x-requests-used": "457",
+      "x-requests-remaining": "99158",
+      "x-requests-used": "842",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19134555",
-      "x-requests-remaining": "99533",
-      "x-requests-used": "467",
+      "x-requests-remaining": "99148",
+      "x-requests-used": "852",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19134556",
-      "x-requests-remaining": "99532",
-      "x-requests-used": "468",
+      "x-requests-remaining": "99147",
+      "x-requests-used": "853",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19134556",
-      "x-requests-remaining": "99522",
-      "x-requests-used": "478",
+      "x-requests-remaining": "99137",
+      "x-requests-used": "863",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19134557",
-      "x-requests-remaining": "99521",
-      "x-requests-used": "479",
+      "x-requests-remaining": "99136",
+      "x-requests-used": "864",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19134557",
-      "x-requests-remaining": "99511",
-      "x-requests-used": "489",
+      "x-requests-remaining": "99126",
+      "x-requests-used": "874",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19134558",
-      "x-requests-remaining": "99510",
-      "x-requests-used": "490",
+      "x-requests-remaining": "99125",
+      "x-requests-used": "875",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19134558",
-      "x-requests-remaining": "99500",
-      "x-requests-used": "500",
+      "x-requests-remaining": "99115",
+      "x-requests-used": "885",
       "x-requests-last": "10"
     },
     {
       "step": "historical_events",
       "fixture": "19134559",
-      "x-requests-remaining": "99499",
-      "x-requests-used": "501",
+      "x-requests-remaining": "99114",
+      "x-requests-used": "886",
       "x-requests-last": "1"
     },
     {
       "step": "historical_event_odds",
       "fixture": "19134559",
-      "x-requests-remaining": "99489",
-      "x-requests-used": "511",
+      "x-requests-remaining": "99104",
+      "x-requests-used": "896",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134560",
+      "x-requests-remaining": "99103",
+      "x-requests-used": "897",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134560",
+      "x-requests-remaining": "99093",
+      "x-requests-used": "907",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134561",
+      "x-requests-remaining": "99092",
+      "x-requests-used": "908",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134561",
+      "x-requests-remaining": "99082",
+      "x-requests-used": "918",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134562",
+      "x-requests-remaining": "99081",
+      "x-requests-used": "919",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134562",
+      "x-requests-remaining": "99071",
+      "x-requests-used": "929",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134563",
+      "x-requests-remaining": "99070",
+      "x-requests-used": "930",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134563",
+      "x-requests-remaining": "99060",
+      "x-requests-used": "940",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134564",
+      "x-requests-remaining": "99059",
+      "x-requests-used": "941",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134564",
+      "x-requests-remaining": "99049",
+      "x-requests-used": "951",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134565",
+      "x-requests-remaining": "99048",
+      "x-requests-used": "952",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134565",
+      "x-requests-remaining": "99038",
+      "x-requests-used": "962",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134566",
+      "x-requests-remaining": "99037",
+      "x-requests-used": "963",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134566",
+      "x-requests-remaining": "99027",
+      "x-requests-used": "973",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134567",
+      "x-requests-remaining": "99026",
+      "x-requests-used": "974",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134567",
+      "x-requests-remaining": "99016",
+      "x-requests-used": "984",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134568",
+      "x-requests-remaining": "99015",
+      "x-requests-used": "985",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134568",
+      "x-requests-remaining": "99005",
+      "x-requests-used": "995",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134569",
+      "x-requests-remaining": "99004",
+      "x-requests-used": "996",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134569",
+      "x-requests-remaining": "98994",
+      "x-requests-used": "1006",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134570",
+      "x-requests-remaining": "98993",
+      "x-requests-used": "1007",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134570",
+      "x-requests-remaining": "98983",
+      "x-requests-used": "1017",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134571",
+      "x-requests-remaining": "98982",
+      "x-requests-used": "1018",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134571",
+      "x-requests-remaining": "98972",
+      "x-requests-used": "1028",
+      "x-requests-last": "10"
+    },
+    {
+      "step": "historical_events",
+      "fixture": "19134578",
+      "x-requests-remaining": "98971",
+      "x-requests-used": "1029",
+      "x-requests-last": "1"
+    },
+    {
+      "step": "historical_event_odds",
+      "fixture": "19134578",
+      "x-requests-remaining": "98961",
+      "x-requests-used": "1039",
       "x-requests-last": "10"
     }
   ]
