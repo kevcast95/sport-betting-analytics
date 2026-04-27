@@ -1,9 +1,57 @@
 {
   "phase": "3D_vendor_readiness",
-  "generated_at_utc": "2026-04-27T00:43:20.187495+00:00",
-  "db_status": "offline_or_unreachable",
-  "error": "BT2_VENDOR_READINESS_OFFLINE=1",
-  "readiness_verdict": "no_listos",
-  "readiness_reason": "Sin conexión a PostgreSQL BT2 no se pudieron calcular auditorías reales.",
-  "day_one_minimal_validation": []
+  "generated_at_utc": "2026-04-27T01:25:18.123481+00:00",
+  "cohort_A_vp_compute": {
+    "max_fixtures_with_vp_parse": 6500,
+    "note": "VP/histórico SM solo sobre subconjunto acotado por coste CPU; auditorías SQL globales siguen siendo población completa donde aplica."
+  },
+  "constraints": {
+    "no_sm_odds": true,
+    "no_the_odds_api_http": true,
+    "no_bounded_replay_changes": true,
+    "no_phase_4": true
+  },
+  "sm_fixture_master": {
+    "fixture_master_viable": true,
+    "drift_status_mismatch_rate_in_sample": 0.000667,
+    "notes": "Muestra acotada 1500 eventos recientes con raw."
+  },
+  "the_odds_api_league_mapping": {
+    "n_leagues_cohort_A": 93,
+    "mapped_expected_count": 57,
+    "needs_work_count": 36,
+    "viable": true
+  },
+  "fixture_matching": {
+    "name_coverage": 1.0,
+    "pilot_tier_pilot_now_coverage": 0.434,
+    "viable": true
+  },
+  "pilot_league": {
+    "n_fixtures_pilot_tier_pilot_now": 2821,
+    "n_leagues_pilot_now_distinct_cohort": 35
+  },
+  "validation_sample": {
+    "n_rows": 82,
+    "pilot_tier_filter": "priority_pilot_now",
+    "min_target": 40,
+    "max_cap": 180,
+    "shortfall_note": "",
+    "viable": true
+  },
+  "credit_estimate": {
+    "strategy": "historical_event_odds_per_fixture_h2h_us",
+    "total_credits_est": 820,
+    "tier_reading": "<=15K: plan 20K suele alcanzar (validar contra uso real TOA)",
+    "viable": true
+  },
+  "readiness_verdict": "listos_con_caveats",
+  "readiness_reason": "SM sigue viable como fixture master si se monitorea drift status/score; mapping TOA requiere confirmación manual/API para ligas fuera del mapa cerrado; matching depende de nombres+kickoff+sport_key; muestra acotada; créditos bajo estrategia por-evento.",
+  "day_one_minimal_validation": [
+    "Elegir 10 filas de vendor_validation_sample.csv (todas `priority_pilot_now` en cohorte muestreada).",
+    "Para cada fila: resolver event_id TOA vía GET historical/sports/{sport}/events?date={T60} (1 crédito si hay eventos).",
+    "GET historical/sports/{sport}/events/{eventId}/odds?markets=h2h&regions=us&date={T60} (10 créditos típicos).",
+    "Comparar solo decimales h2h vs consenso BT2 FT_1X2 a modo sanity (no productivo).",
+    "Registrar provider_snapshot_time vs T60 en tabla de laboratorio."
+  ]
 }

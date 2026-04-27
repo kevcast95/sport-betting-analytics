@@ -1,24 +1,26 @@
 # BT2 — Vendor readiness (Fase 3D)
 
-## Regenerar (datos reales)
+Generado por `scripts/bt2_vendor_readiness_phase3d.py` (sin llamadas HTTP).
 
-Con `BT2_DATABASE_URL` válido y **sin** `BT2_VENDOR_READINESS_OFFLINE`:
+## Regenerar
 
 ```bash
 cd /Users/kevcast/Projects/scrapper
 python3 scripts/bt2_vendor_readiness_phase3d.py
 ```
 
-## Modo offline / CI
-
-Si no hay base de datos (o forzar stubs):
-
-```bash
-BT2_VENDOR_READINESS_OFFLINE=1 python3 scripts/bt2_vendor_readiness_phase3d.py
-```
-
-Los CSV de auditoría SM, mapping por cohorte A, muestra y créditos quedarán vacíos o stub; `readiness_summary.json` marcará `no_listos`.
-
 ## Salidas
 
-Ver lista en `scripts/bt2_vendor_readiness_phase3d.py` (comentario final) o en el README generado tras ejecución con DB.
+- `sm_fixture_master_audit.csv`
+- `the_odds_api_league_mapping_audit.csv`
+- `fixture_matching_readiness_audit.csv`
+- `market_taxonomy_mapping.csv`
+- `vendor_validation_sample.csv`
+- `the_odds_api_credit_estimator.csv`
+- `odds_timestamp_contract.md`
+- `readiness_summary.json`
+- `pilot_league_manifest.json`
+
+## Resumen
+
+Ver `readiness_summary.json` → `readiness_verdict` y `day_one_minimal_validation`.
