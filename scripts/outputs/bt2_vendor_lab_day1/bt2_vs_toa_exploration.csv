@@ -1,0 +1,16 @@
+sm_fixture_id,bt2_event_id,value_pool_from_vendor_sample_csv,value_pool_recomputed_sm_lbu_t60,recompute_error,diagnosis_hint
+19134546,24509,True,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19154681,30924,,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19139842,27108,False,False,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19155249,31492,,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19135481,25093,False,False,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19134553,24516,True,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19154682,30925,,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19155256,31499,,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19135490,25102,False,False,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19134554,24517,True,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19134555,24518,True,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19134556,24519,True,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19134557,24520,True,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19134558,24521,True,True,,comparar con toa_h2h_t60_results para matching/timestamp/market
+19134559,24522,True,True,,comparar con toa_h2h_t60_results para matching/timestamp/market

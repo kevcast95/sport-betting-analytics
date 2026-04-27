@@ -1,0 +1,16 @@
+{
+  "phase": "3f_vendor_paid_lab_day1_subset5",
+  "fixtures_run": 15,
+  "distinct_leagues": 5,
+  "sm_fixture_master_http_200_rate": 1.0,
+  "toa_events_matched": 10,
+  "toa_events_unmatched": 5,
+  "toa_match_rate": 0.6667,
+  "toa_h2h_with_odds_t60": 10,
+  "estimated_credit_sum_from_headers": 115.0,
+  "pilot_prep_estimated_credits_reference": "15 fixtures × ~11 créditos/último coste cabecera ≈ 165 vs real sum(headers)",
+  "verdict_sm_starter_fixture_master": "pasa",
+  "verdict_toa_initial": "pasa_con_caveats",
+  "matching_gap_note": "Si unmatched_team_or_time: revisar nombres TOA vs SM (acentos, FC), o snapshot date vs lista events.",
+  "next_steps_days_2_5": "Mejorar heurística matching y/o aliases equipos; repetir muestra; luego ampliar a 20–28 fixtures si match_rate sube."
+}
