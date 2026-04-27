@@ -2,25 +2,34 @@
 """
 Preparación día 1 — piloto The Odds API (subset 5 ligas), sin llamadas HTTP.
 
-- Congela manifiesto desde vendor_validation_sample.csv + pilot_league_manifest.json.
-- Solo filas priority_pilot_now, ligas subset5, mercado h2h, región us, T-60 del sample.
+- Base: vendor_validation_sample.csv (priority_pilot_now, subset5, h2h, us, T-60 del sample 3D).
+- Complemento: si faltan ligas del subset5 en el sample, añade hasta 2 fixtures/liga
+  desde bt2_events en cohorte A, mismo mapeo 3D + T-60 (lectura DB, sin HTTP).
 Genera artefactos bajo scripts/outputs/bt2_vendor_pilot_prep/ con --generate.
-Valida integridad y créditos estimados (modo por defecto).
+Valida integridad y créditos estimados (modo por defecto). BT2_PILOT_TOPUP_OFFLINE=1 desactiva top-up.
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
+import importlib.util
 import json
+import os
 import sys
 from collections import defaultdict
+from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
+
+import psycopg2
+import psycopg2.extras
 
 _repo = Path(__file__).resolve().parents[1]
 if str(_repo) not in sys.path:
     sys.path.insert(0, str(_repo))
+
+from apps.api.bt2_settings import bt2_settings
 
 VENDOR_SAMPLE = _repo / "scripts" / "outputs" / "bt2_vendor_readiness" / "vendor_validation_sample.csv"
 PILOT_LEAGUE_MANIFEST = _repo / "scripts" / "outputs" / "bt2_vendor_readiness" / "pilot_league_manifest.json"
@@ -42,6 +51,8 @@ BT2_MARKET = "FT_1X2"
 # Alineado a laboratorio 3D / doc TOA v4 event odds histórico (h2h × 1 región).
 CREDITS_PASO_A_PER_REQUEST_EST = 1
 CREDITS_PASO_B_PER_FIXTURE_EST = 10
+# Mínimo representativo extra si el vendor_validation_sample no trae liga 82/384 (u otra del subset5).
+DB_TOPUP_FIXTURES_PER_LEAGUE = 2
 
 PASO_A_ENDPOINT_TEMPLATE = (
     "GET https://api.the-odds-api.com/v4/historical/sports/{sport_key}/events"
@@ -85,14 +96,156 @@ def _validate_pilot_manifest_json() -> list[str]:
     return warnings
 
 
+def _import_vendor_readiness_phase3d() -> Any:
+    p = _repo / "scripts" / "bt2_vendor_readiness_phase3d.py"
+    spec = importlib.util.spec_from_file_location("bt2_vr3d", p)
+    mod = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _import_hist_proto() -> Any:
+    p = _repo / "scripts" / "bt2_historical_sm_lbu_replay_prototype.py"
+    spec = importlib.util.spec_from_file_location("bt2_hist_proto", p)
+    mod = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    sys.modules["bt2_hist_proto"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _db_dsn() -> str:
+    u = bt2_settings.bt2_database_url
+    return u.replace("postgresql+asyncpg://", "postgresql://", 1) if u.startswith(
+        "postgresql+asyncpg://"
+    ) else u
+
+
+def _db_topup_laboratorio_rows(
+    base_rows: list[dict[str, str]],
+) -> tuple[list[dict[str, str]], list[str], list[str]]:
+    """
+    Completa representatividad: cohorte A (mismas fechas que 3D), T-60 = cutoff_t60(kickoff),
+    solo priority_pilot_now + the_odds_api_sport_key_expected con mapping_status mapped_expected.
+    """
+    notes: list[str] = []
+    err: list[str] = []
+    if os.environ.get("BT2_PILOT_TOPUP_OFFLINE", "").strip().lower() in ("1", "true", "yes"):
+        notes.append("topup: omitido (BT2_PILOT_TOPUP_OFFLINE=1)")
+        return [], notes, err
+
+    present: set[int] = set()
+    seen_fixtures: set[str] = {str(r.get("fixture_id", "")) for r in base_rows}
+    for r in base_rows:
+        try:
+            present.add(int(r["sm_league_id"]))
+        except (TypeError, ValueError):
+            continue
+
+    missing: list[int] = [lid for lid in sorted(SUBSET5_SM_LEAGUE_IDS) if lid not in present]
+    if not missing:
+        return [], ["topup: no requerido (5 ligas ya en vendor sample)"], err
+
+    vr3d = _import_vendor_readiness_phase3d()
+    hist = _import_hist_proto()
+    cutoff = hist.cutoff_t60
+    start = datetime.combine(vr3d.COHORT_A0, time.min, tzinfo=timezone.utc)
+    end = datetime.combine(vr3d.COHORT_A1 + timedelta(days=1), time.min, tzinfo=timezone.utc)
+
+    try:
+        conn = psycopg2.connect(_db_dsn(), connect_timeout=12)
+    except Exception as e:
+        return [], [f"topup: conexion BT2 fallo ({e!r}); reintentar con BT2_DATABASE_URL"], [str(e)]
+
+    out: list[dict[str, str]] = []
+    try:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        for lid in missing:
+            n_need = DB_TOPUP_FIXTURES_PER_LEAGUE
+            n_added = 0
+            cur.execute(
+                """
+                SELECT e.id AS event_id, e.sportmonks_fixture_id AS fixture_id, e.kickoff_utc,
+                       l.sportmonks_id AS sm_league_id, l.name AS league_name, l.tier AS league_tier,
+                       l.country AS league_country
+                FROM bt2_events e
+                INNER JOIN bt2_leagues l ON l.id = e.league_id
+                WHERE l.sportmonks_id = %s
+                  AND e.kickoff_utc >= %s AND e.kickoff_utc < %s
+                ORDER BY e.kickoff_utc
+                """,
+                (lid, start, end),
+            )
+            scanned = 0
+            for row in cur:
+                if n_added >= n_need:
+                    break
+                scanned += 1
+                if str(int(row["fixture_id"])) in seen_fixtures:
+                    continue
+                ko: Optional[datetime] = row["kickoff_utc"]
+                if ko and ko.tzinfo is None:
+                    ko = ko.replace(tzinfo=timezone.utc)
+                t_cut: Optional[datetime] = cutoff(ko) if ko else None
+                t60 = t_cut.isoformat() if t_cut else ""
+                lm = vr3d.resolve_league_mapping(
+                    int(row["sm_league_id"]) if row.get("sm_league_id") is not None else None,
+                    str(row.get("league_name") or ""),
+                    str(row.get("league_country") or ""),
+                    str(row.get("league_tier") or ""),
+                )
+                if lm.get("pilot_tier") != "priority_pilot_now":
+                    continue
+                if lm.get("mapping_status") != "mapped_expected":
+                    continue
+                sk = (lm.get("the_odds_api_sport_key_expected") or "").strip()
+                if not sk:
+                    continue
+                n_added += 1
+                fid = str(int(row["fixture_id"]))
+                eid = str(int(row["event_id"]))
+                seen_fixtures.add(fid)
+                out.append(
+                    {
+                        "fixture_id": fid,
+                        "event_id": eid,
+                        "sm_league_id": str(lid),
+                        "league_name": str(row.get("league_name") or ""),
+                        "kickoff_utc": ko.isoformat() if ko else "",
+                        "the_odds_api_sport_key_expected": sk,
+                        "historical_query_timestamp_utc": t60,
+                    }
+                )
+            if n_added < n_need:
+                err.append(
+                    f"sm_league_id {lid} ({SUBSET5_NAMES.get(lid, '?')}): solo {n_added}/{n_need} "
+                    f"fixtures top-up mapeables priority_pilot_now+mapped_expected en cohorte A "
+                    f"(filas inspeccionadas: {scanned or '0'})"
+                )
+            else:
+                notes.append(
+                    f"topup: {n_added} fixtures sm_league_id {lid} desde BT2 cohorte {vr3d.COHORT_A0}..{vr3d.COHORT_A1}"
+                )
+        cur.close()
+    finally:
+        conn.close()
+    return out, notes, err
+
+
 def generate_artifacts() -> dict[str, Any]:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     manifest_warnings = _validate_pilot_manifest_json()
-    rows = _iter_vendor_subset5_pilot_now()
-    if not rows:
+    base_rows = _iter_vendor_subset5_pilot_now()
+    if not base_rows:
         raise SystemExit(
             "No hay filas que cumplan subset5 + priority_pilot_now + h2h + us en vendor_validation_sample.csv"
         )
+
+    topup_rows, topup_notes, topup_errors = _db_topup_laboratorio_rows(base_rows)
+    all_rows: list[dict[str, str]] = list(base_rows) + list(topup_rows)
+    n_vendor = len(base_rows)
+    n_topup = len(topup_rows)
 
     manifest_fn = OUT_DIR / "pilot_fixture_manifest.csv"
     fieldnames = [
@@ -111,12 +264,21 @@ def generate_artifacts() -> dict[str, Any]:
     league_counts: dict[int, int] = defaultdict(int)
     usable_sk = 0
     out_rows: list[dict[str, str]] = []
-    for row in rows:
+    topup_fixture_ids = {str(r.get("fixture_id", "")) for r in topup_rows}
+    for row in all_rows:
         lid = int(row["sm_league_id"])
         league_counts[lid] += 1
         sk = (row.get("the_odds_api_sport_key_expected") or "").strip()
         if sk:
             usable_sk += 1
+        is_top = str(row.get("fixture_id", "")) in topup_fixture_ids
+        if is_top:
+            reason = (
+                "db_topup_cohort_A_priority_pilot_now_mapped_expected_subset5_t60; "
+                "h2h/us fijos; vendor_validation_sample 3D no aporta fixtures para esta liga (sample estratificado 180 max)"
+            )
+        else:
+            reason = "frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60"
         out_rows.append(
             {
                 "sm_fixture_id": row["fixture_id"],
@@ -129,9 +291,7 @@ def generate_artifacts() -> dict[str, Any]:
                 "market": MARKET_FROZEN,
                 "region": REGION_FROZEN,
                 "snapshot_time_t60": row.get("historical_query_timestamp_utc") or "",
-                "pilot_inclusion_reason": (
-                    "frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60"
-                ),
+                "pilot_inclusion_reason": reason,
             }
         )
     with manifest_fn.open("w", encoding="utf-8", newline="") as f:
@@ -142,7 +302,7 @@ def generate_artifacts() -> dict[str, Any]:
 
     # Paso A: una fila por (sport_key, snapshot_time_t60) único (misma ventana T-60 que el laboratorio).
     paso_a_keys: dict[tuple[str, str], list[str]] = defaultdict(list)
-    for row in rows:
+    for row in all_rows:
         sk = (row.get("the_odds_api_sport_key_expected") or "").strip()
         t60 = (row.get("historical_query_timestamp_utc") or "").strip()
         paso_a_keys[(sk, t60)].append(row["fixture_id"])
@@ -170,7 +330,7 @@ def generate_artifacts() -> dict[str, Any]:
             }
         )
 
-    for row in rows:
+    for row in all_rows:
         sk = (row.get("the_odds_api_sport_key_expected") or "").strip()
         t60 = (row.get("historical_query_timestamp_utc") or "").strip()
         plan_rows.append(
@@ -222,11 +382,26 @@ def generate_artifacts() -> dict[str, Any]:
     missing_leagues = sorted(SUBSET5_SM_LEAGUE_IDS - set(leagues_present))
     coverage_subset5_complete = len(missing_leagues) == 0
 
-    execution_ready = usable_sk == len(rows) and len(rows) > 0
+    execution_ready = usable_sk == len(all_rows) and len(all_rows) > 0
+    all_warnings = list(manifest_warnings) + [f"topup: {e}" for e in topup_errors]
 
     summary = {
         "phase": "3e_the_odds_api_pilot_prep_subset5",
         "generated_at_note": "Regenerar con scripts/bt2_theoddsapi_pilot_day1_dryrun.py --generate",
+        "diagnostico_ausencia_82_384_en_sample_3d": {
+            "causa_principal": (
+                "Ninguna fila de `vendor_validation_sample.csv` con sm_league_id 82 o 384: el builder 3D "
+                "estratifica ~40-180 filas entre semanas/VP; no garantiza al menos un fixture por cada liga subset5."
+            ),
+            "no_es": [
+                "Mapeo TOA roto para 82/384 (están en mapa sm_league_id; pilot_tier pilot_now en manifiesto de ligas).",
+            ],
+        },
+        "complemento_db_topup": {
+            "activo": bool(topup_rows),
+            "notas": topup_notes,
+            "errores_o_corto": topup_errors,
+        },
         "constraints": {
             "no_the_odds_api_http": True,
             "no_sm_odds": True,
@@ -240,19 +415,25 @@ def generate_artifacts() -> dict[str, Any]:
             "market": MARKET_FROZEN,
             "bt2_market": BT2_MARKET,
             "region": REGION_FROZEN,
-            "snapshot_policy": "T-60 cut (historical_query_timestamp_utc del vendor_validation_sample)",
+            "snapshot_policy": (
+                "T-60: cutoff_t60(kickoff) (igual 3C/3D). Vendor sample: historical_query_timestamp_utc. "
+                "Top-up: mismo cálculo desde eventos en cohorte A (BT2)."
+            ),
             "sources": [
                 str(VENDOR_SAMPLE.relative_to(_repo)),
                 str(PILOT_LEAGUE_MANIFEST.relative_to(_repo)),
+                "bt2_events + bt2_leagues (top-up mínimo lectura, sin HTTP)",
             ],
         },
         "counts": {
-            "fixtures_in_manifest": len(rows),
+            "fixtures_in_manifest": len(all_rows),
+            "fixtures_from_vendor_sample_only": n_vendor,
+            "fixtures_from_db_topup": n_topup,
             "distinct_leagues_in_manifest": len(leagues_present),
             "rows_with_usable_sport_key": usable_sk,
             "fixtures_per_sm_league_id": {str(k): league_counts[k] for k in sorted(league_counts)},
-            "subset5_leagues_without_fixtures_in_sample": [str(x) for x in missing_leagues],
-            "coverage_subset5_all_five_leagues_in_sample": coverage_subset5_complete,
+            "subset5_leagues_without_fixtures_in_manifest": [str(x) for x in missing_leagues],
+            "coverage_subset5_all_five_leagues": coverage_subset5_complete,
         },
         "request_plan_estimates": {
             "paso_a_requests": n_paso_a,
@@ -266,23 +447,24 @@ def generate_artifacts() -> dict[str, Any]:
                 "Paso B: 10 créditos/fixture para odds histórico por evento (h2h × us), alineado a readiness_summary day_one."
             ),
         },
-        "pilot_ready_after_payment": execution_ready,
+        "pilot_ready_after_payment": execution_ready and coverage_subset5_complete,
         "pilot_ready_reason": (
-            (
-                "Manifiesto congelado con sport_key en todas las filas; plan de requests y créditos estimados listos para día 1 "
-                "tras activar cuenta TOA."
-            )
-            + (
-                ""
-                if coverage_subset5_complete
-                else (
-                    f" Cobertura: la muestra 3D no incluye fixtures para todas las ligas subset5 "
-                    f"(faltan sm_league_id {missing_leagues}). OK para piloto pequeño sobre la muestra; "
-                    "regenerar vendor_validation_sample o ampliar cohorte si se exige una fila por liga."
-                )
+            "Manifiesto y plan listos; cobertura 5 ligas; top-up no alcanzó n mínimo en alguna liga (ver complemento_db_topup)."
+            if (topup_errors and coverage_subset5_complete)
+            else (
+                "Manifiesto y plan listos; 5 ligas con al menos 1 fixture; T-60 + h2h + us; listo para laboratorio pago."
+                if (execution_ready and coverage_subset5_complete)
+                else "Revisar fixtures/cobertura: ver subset5_leagues_without_fixtures_in_manifest o complemento_db_topup."
             )
         ),
-        "manifest_generation_warnings": manifest_warnings,
+        "pilot_representative_subset5_verdict": (
+            "representativo_5_ligas"
+            if (coverage_subset5_complete and not topup_errors)
+            else (
+                "representativo_5_ligas_con_asterisco" if (coverage_subset5_complete and topup_errors) else "no_representativo"
+            )
+        ),
+        "manifest_generation_warnings": all_warnings,
     }
 
     (OUT_DIR / "pilot_prep_summary.json").write_text(
@@ -292,7 +474,8 @@ def generate_artifacts() -> dict[str, Any]:
 
     readme = f"""# BT2 — Preparación piloto The Odds API (subset 5)
 
-Congelado desde `vendor_validation_sample.csv` + `pilot_league_manifest.json`: solo `priority_pilot_now`, ligas subset5, `h2h`, `us`, T-60 del sample.
+- **Base:** `vendor_validation_sample.csv` + `pilot_league_manifest.json` — `priority_pilot_now`, subset5, `h2h`, `us`, T-60 (sample 3D).
+- **Complemento (representatividad 5 ligas):** si el sample no trae alguna liga del subset5, se añaden fixtures desde `bt2_events` (cohorte A, mismo criterio mapeo/T-60 que 3D). Sin top-up: `BT2_PILOT_TOPUP_OFFLINE=1`.
 
 ## Regenerar
 
@@ -310,7 +493,7 @@ python3 scripts/bt2_theoddsapi_pilot_day1_dryrun.py
 - `pilot_result_taxonomy.md`
 - `pilot_prep_summary.json`
 
-Ver `pilot_prep_summary.json` para conteos y créditos estimados.
+Ver `pilot_prep_summary.json` para conteos, `pilot_representative_subset5_verdict` y créditos estimados.
 """
     (OUT_DIR / "README.md").write_text(readme, encoding="utf-8")
 

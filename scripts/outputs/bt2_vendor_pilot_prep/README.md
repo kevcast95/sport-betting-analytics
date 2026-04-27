@@ -1,6 +1,7 @@
 # BT2 — Preparación piloto The Odds API (subset 5)
 
-Congelado desde `vendor_validation_sample.csv` + `pilot_league_manifest.json`: solo `priority_pilot_now`, ligas subset5, `h2h`, `us`, T-60 del sample.
+- **Base:** `vendor_validation_sample.csv` + `pilot_league_manifest.json` — `priority_pilot_now`, subset5, `h2h`, `us`, T-60 (sample 3D).
+- **Complemento (representatividad 5 ligas):** si el sample no trae alguna liga del subset5, se añaden fixtures desde `bt2_events` (cohorte A, mismo criterio mapeo/T-60 que 3D). Sin top-up: `BT2_PILOT_TOPUP_OFFLINE=1`.
 
 ## Regenerar
 
@@ -18,4 +19,4 @@ python3 scripts/bt2_theoddsapi_pilot_day1_dryrun.py
 - `pilot_result_taxonomy.md`
 - `pilot_prep_summary.json`
 
-Ver `pilot_prep_summary.json` para conteos y créditos estimados.
+Ver `pilot_prep_summary.json` para conteos, `pilot_representative_subset5_verdict` y créditos estimados.
