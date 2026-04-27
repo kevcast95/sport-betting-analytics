@@ -1,0 +1,56 @@
+{
+  "phase": "3e_the_odds_api_pilot_prep_subset5",
+  "generated_at_note": "Regenerar con scripts/bt2_theoddsapi_pilot_day1_dryrun.py --generate",
+  "constraints": {
+    "no_the_odds_api_http": true,
+    "no_sm_odds": true,
+    "no_phase_4": true,
+    "no_bounded_replay_changes": true,
+    "no_productive_integration": true,
+    "no_mass_backfill": true
+  },
+  "frozen_universe": {
+    "subset5_sm_league_ids": [
+      8,
+      82,
+      301,
+      384,
+      564
+    ],
+    "market": "h2h",
+    "bt2_market": "FT_1X2",
+    "region": "us",
+    "snapshot_policy": "T-60 cut (historical_query_timestamp_utc del vendor_validation_sample)",
+    "sources": [
+      "scripts/outputs/bt2_vendor_readiness/vendor_validation_sample.csv",
+      "scripts/outputs/bt2_vendor_readiness/pilot_league_manifest.json"
+    ]
+  },
+  "counts": {
+    "fixtures_in_manifest": 24,
+    "distinct_leagues_in_manifest": 3,
+    "rows_with_usable_sport_key": 24,
+    "fixtures_per_sm_league_id": {
+      "8": 21,
+      "301": 1,
+      "564": 2
+    },
+    "subset5_leagues_without_fixtures_in_sample": [
+      "82",
+      "384"
+    ],
+    "coverage_subset5_all_five_leagues_in_sample": false
+  },
+  "request_plan_estimates": {
+    "paso_a_requests": 16,
+    "paso_b_requests": 24,
+    "total_requests": 40,
+    "credits_paso_a_est": 16,
+    "credits_paso_b_est": 240,
+    "total_credits_est": 256,
+    "credit_assumptions": "Paso A: 1 crédito/request (listado histórico por deporte/fecha snapshot según práctica 3D). Paso B: 10 créditos/fixture para odds histórico por evento (h2h × us), alineado a readiness_summary day_one."
+  },
+  "pilot_ready_after_payment": true,
+  "pilot_ready_reason": "Manifiesto congelado con sport_key en todas las filas; plan de requests y créditos estimados listos para día 1 tras activar cuenta TOA. Cobertura: la muestra 3D no incluye fixtures para todas las ligas subset5 (faltan sm_league_id [82, 384]). OK para piloto pequeño sobre la muestra; regenerar vendor_validation_sample o ampliar cohorte si se exige una fila por liga.",
+  "manifest_generation_warnings": []
+}

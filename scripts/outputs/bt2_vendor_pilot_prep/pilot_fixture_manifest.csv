@@ -1,0 +1,25 @@
+sm_fixture_id,bt2_event_id,sm_league_id,league_name,kickoff_utc,the_odds_api_sport_key_expected,bt2_market,market,region,snapshot_time_t60,pilot_inclusion_reason
+19134578,24541,8,Premier League,2025-02-16T09:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-16T08:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19139842,27108,301,Ligue 1,2025-02-15T11:00:00-05:00,soccer_france_ligue_one,FT_1X2,h2h,us,2025-02-15T10:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19135481,25093,564,La Liga,2025-02-17T15:00:00-05:00,soccer_spain_la_liga,FT_1X2,h2h,us,2025-02-17T14:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19135490,25102,564,La Liga,2025-02-23T08:00:00-05:00,soccer_spain_la_liga,FT_1X2,h2h,us,2025-02-23T07:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134546,24509,8,Premier League,2025-02-12T14:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-12T13:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134553,24516,8,Premier League,2025-01-15T15:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-15T14:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134554,24517,8,Premier League,2025-01-14T14:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-14T13:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134555,24518,8,Premier League,2025-01-15T14:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-15T13:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134556,24519,8,Premier League,2025-01-16T14:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-16T13:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134557,24520,8,Premier League,2025-01-15T14:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-15T13:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134558,24521,8,Premier League,2025-01-14T15:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-14T14:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134559,24522,8,Premier League,2025-01-14T14:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-14T13:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134560,24523,8,Premier League,2025-01-14T14:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-14T13:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134561,24524,8,Premier League,2025-01-15T14:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-15T13:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134562,24525,8,Premier League,2025-01-16T15:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-01-16T14:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134563,24526,8,Premier League,2025-02-01T10:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-01T09:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134564,24527,8,Premier League,2025-02-02T11:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-02T10:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134565,24528,8,Premier League,2025-02-02T09:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-02T08:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134566,24529,8,Premier League,2025-02-03T15:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-03T14:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134567,24530,8,Premier League,2025-02-01T10:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-01T09:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134568,24531,8,Premier League,2025-02-01T10:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-01T09:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134569,24532,8,Premier League,2025-02-02T09:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-02T08:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134570,24533,8,Premier League,2025-02-01T10:00:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-01T09:00:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
+19134571,24534,8,Premier League,2025-02-01T07:30:00-05:00,soccer_epl,FT_1X2,h2h,us,2025-02-01T06:30:00-05:00,frozen_vendor_validation_sample_cohort_A_priority_pilot_now_subset5_h2h_us_t60
