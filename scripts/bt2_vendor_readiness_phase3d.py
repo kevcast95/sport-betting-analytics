@@ -35,58 +35,340 @@ REGION_LAB = "us"
 MARKET_LAB = "h2h"
 # Límite de fixtures con parse SM + VP (costoso). La cohorte A completa ~10k+;
 # para readiness basta una muestra representativa + metadatos agregados por SQL aparte.
-MAX_COHORT_VP_COMPUTE = 900
+MAX_COHORT_VP_COMPUTE = 6500
 DRIFT_SAMPLE_LIMIT = 1500
+SAMPLE_MAX_ROWS = 180
+SAMPLE_MIN_TARGET = 40
 
-# SportMonks league_id -> The Odds API sport_key (soccer). Fuente: convención TOA + TIER_MAP 3C.
+# Claves oficiales documentadas (The Odds API — sports list). Solo fútbol usado en piloto lógico.
+# https://the-odds-api.com/sports-odds-data/sports-apis.html
+OFFICIAL_TOA_SOCCER_KEYS: frozenset[str] = frozenset(
+    {
+        "soccer_africa_cup_of_nations",
+        "soccer_argentina_primera_division",
+        "soccer_australia_aleague",
+        "soccer_austria_bundesliga",
+        "soccer_belgium_first_div",
+        "soccer_brazil_campeonato",
+        "soccer_brazil_serie_b",
+        "soccer_chile_campeonato",
+        "soccer_china_superleague",
+        "soccer_conmebol_copa_america",
+        "soccer_conmebol_copa_libertadores",
+        "soccer_conmebol_copa_sudamericana",
+        "soccer_denmark_superliga",
+        "soccer_efl_champ",
+        "soccer_england_efl_cup",
+        "soccer_england_league1",
+        "soccer_england_league2",
+        "soccer_epl",
+        "soccer_fa_cup",
+        "soccer_fifa_club_world_cup",
+        "soccer_fifa_world_cup",
+        "soccer_fifa_world_cup_qualifiers_europe",
+        "soccer_fifa_world_cup_qualifiers_south_america",
+        "soccer_finland_veikkausliiga",
+        "soccer_france_coupe_de_france",
+        "soccer_france_ligue_one",
+        "soccer_france_ligue_two",
+        "soccer_germany_bundesliga",
+        "soccer_germany_bundesliga2",
+        "soccer_germany_dfb_pokal",
+        "soccer_germany_liga3",
+        "soccer_greece_super_league",
+        "soccer_italy_coppa_italia",
+        "soccer_italy_serie_a",
+        "soccer_italy_serie_b",
+        "soccer_japan_j_league",
+        "soccer_korea_kleague1",
+        "soccer_league_of_ireland",
+        "soccer_mexico_ligamx",
+        "soccer_netherlands_eredivisie",
+        "soccer_norway_eliteserien",
+        "soccer_poland_ekstraklasa",
+        "soccer_portugal_primeira_liga",
+        "soccer_russia_premier_league",
+        "soccer_saudi_arabia_pro_league",
+        "soccer_spain_copa_del_rey",
+        "soccer_spain_la_liga",
+        "soccer_spain_segunda_division",
+        "soccer_spl",
+        "soccer_sweden_allsvenskan",
+        "soccer_sweden_superettan",
+        "soccer_switzerland_superleague",
+        "soccer_turkey_super_league",
+        "soccer_uefa_champs_league",
+        "soccer_uefa_europa_conference_league",
+        "soccer_uefa_europa_league",
+        "soccer_uefa_european_championship",
+        "soccer_uefa_nations_league",
+        "soccer_usa_mls",
+        "soccer_colombia_primera_a",
+    }
+)
+
+# SportMonks league_id -> sport_key (mapa cerrado; ampliado con cohorte A real).
 SM_LEAGUE_TO_ODDS_SPORT_KEY: dict[int, str] = {
     8: "soccer_epl",
-    564: "soccer_spain_la_liga",
-    82: "soccer_germany_bundesliga",
-    384: "soccer_italy_serie_a",
-    301: "soccer_france_ligue_one",
+    9: "soccer_efl_champ",
+    12: "soccer_england_league1",
+    14: "soccer_england_league2",
+    24: "soccer_fa_cup",
+    27: "soccer_england_efl_cup",
     72: "soccer_netherlands_eredivisie",
+    82: "soccer_germany_bundesliga",
+    85: "soccer_germany_bundesliga2",
+    88: "soccer_germany_liga3",
+    109: "soccer_germany_dfb_pokal",
+    181: "soccer_austria_bundesliga",
     208: "soccer_belgium_first_div",
+    271: "soccer_denmark_superliga",
+    292: "soccer_finland_veikkausliiga",
+    301: "soccer_france_ligue_one",
+    304: "soccer_france_ligue_two",
+    307: "soccer_france_coupe_de_france",
+    325: "soccer_greece_super_league",
+    360: "soccer_league_of_ireland",
+    384: "soccer_italy_serie_a",
+    387: "soccer_italy_serie_b",
+    390: "soccer_italy_coppa_italia",
+    444: "soccer_norway_eliteserien",
+    453: "soccer_poland_ekstraklasa",
     462: "soccer_portugal_primeira_liga",
     501: "soccer_spl",
-    600: "soccer_turkey_super_league",
-    779: "soccer_usa_mls",
-    743: "soccer_mexico_ligamx",
-    1122: "soccer_conmebol_libertadores",
-    1116: "soccer_conmebol_sudamericana",
-    9: "soccer_efl_champ",
-    85: "soccer_germany_bundesliga2",
-    304: "soccer_france_ligue_two",
-    387: "soccer_italy_serie_b",
+    513: "soccer_spl",
+    564: "soccer_spain_la_liga",
     567: "soccer_spain_segunda_division",
-    636: "soccer_argentina_primera_division",
-    648: "soccer_brazil_serie_a",
-    672: "soccer_colombia_primera_a",
-    968: "soccer_japan_j_league",
-    1034: "soccer_korea_kleague1",
+    570: "soccer_spain_copa_del_rey",
     573: "soccer_sweden_allsvenskan",
-    453: "soccer_poland_ekstraklasa",
+    591: "soccer_sweden_superettan",
+    600: "soccer_turkey_super_league",
+    636: "soccer_argentina_primera_division",
+    648: "soccer_brazil_campeonato",
+    651: "soccer_brazil_serie_b",
+    663: "soccer_chile_campeonato",
+    672: "soccer_colombia_primera_a",
+    743: "soccer_mexico_ligamx",
+    779: "soccer_usa_mls",
+    968: "soccer_japan_j_league",
+    1007: "soccer_australia_aleague",
+    1034: "soccer_korea_kleague1",
+    1116: "soccer_conmebol_copa_sudamericana",
+    1122: "soccer_conmebol_copa_libertadores",
+    1356: "soccer_australia_aleague",
+    1673: "soccer_france_ligue_one",
+    1691: "soccer_epl",
+    1798: "soccer_brazil_campeonato",
+    1989: "soccer_saudi_arabia_pro_league",
+    489: "soccer_russia_premier_league",
+    492: "soccer_russia_premier_league",
 }
 
-# Nombres típicos (fallback)
+# Copas / competiciones TOA con key oficial (pueden entrar a piloto si mapa cerrado).
+PILOT_ELIGIBLE_CUP_KEYS: frozenset[str] = frozenset(
+    {
+        "soccer_fa_cup",
+        "soccer_england_efl_cup",
+        "soccer_france_coupe_de_france",
+        "soccer_italy_coppa_italia",
+        "soccer_spain_copa_del_rey",
+        "soccer_germany_dfb_pokal",
+        "soccer_conmebol_copa_libertadores",
+        "soccer_conmebol_copa_sudamericana",
+    }
+)
+
+# Nombres típicos (fallback) — claves alineadas a la doc TOA.
 NAME_HINTS: list[tuple[tuple[str, ...], str]] = [
     (("premier league",), "soccer_epl"),
     (("la liga", "laliga"), "soccer_spain_la_liga"),
-    (("bundesliga",), "soccer_germany_bundesliga"),
-    (("serie a",), "soccer_italy_serie_a"),
-    (("ligue 1", "ligue 2"), "soccer_france_ligue_one"),
+    (("bundesliga - germany", "bundesliga"), "soccer_germany_bundesliga"),
+    (("serie a - italy", "serie a"), "soccer_italy_serie_a"),
+    (("ligue 1 - france",), "soccer_france_ligue_one"),
     (("eredivisie",), "soccer_netherlands_eredivisie"),
     (("primeira liga", "liga portugal"), "soccer_portugal_primeira_liga"),
-    (("mls",), "soccer_usa_mls"),
-    (("champions league", "uefa champions"), "soccer_uefa_champs_league"),
-    (("europa league",), "soccer_uefa_europa_league"),
-    (("fa cup",), "soccer_fa_cup"),
-    (("copa del rey",), "soccer_spain_copa_del_rey"),
-    (("copa libertadores",), "soccer_conmebol_libertadores"),
-    (("copa sudamericana",), "soccer_conmebol_sudamericana"),
-    (("brasileirão", "brasileirao", "serie a brazil"), "soccer_brazil_serie_a"),
-    (("super lig", "super lig turkey"), "soccer_turkey_super_league"),
+    (("mls", "major league soccer"), "soccer_usa_mls"),
+    (("uefa champions", "champions league"), "soccer_uefa_champs_league"),
+    (("europa league", "uefa europa"), "soccer_uefa_europa_league"),
+    (("conference league",), "soccer_uefa_europa_conference_league"),
+    (("fa cup", "the fa cup"), "soccer_fa_cup"),
+    (("copa del rey", "copa rey"), "soccer_spain_copa_del_rey"),
+    (("coppa italia",), "soccer_italy_coppa_italia"),
+    (("coupe de france",), "soccer_france_coupe_de_france"),
+    (("carabao", "efl cup", "league cup"), "soccer_england_efl_cup"),
+    (("brasileir", "série a", "serie a brazil"), "soccer_brazil_campeonato"),
+    (("super lig - turkey", "super league - turkey", "1. lig"), "soccer_turkey_super_league"),
+    (("eliteserien",), "soccer_norway_eliteserien"),
+    (("a-league", "a league"), "soccer_australia_aleague"),
+    (("ligue 2 - france", "ligue 2"), "soccer_france_ligue_two"),
 ]
+
+
+def _pilot_name_excludes(league_name: str) -> bool:
+    n = (league_name or "").lower()
+    toks = (
+        "women",
+        "womens",
+        "femen",
+        "femenin",
+        "u17",
+        "u18",
+        "u19",
+        "u20",
+        "u21",
+        "u22",
+        "u23",
+        "youth",
+        "reserve",
+        "friendly",
+        "amistoso",
+    )
+    return any(t in n for t in toks)
+
+
+def _classify_pilot_tier(
+    *,
+    sport_key: str,
+    mapping_status: str,
+    mapping_source: str,
+    league_name: str,
+    league_tier: str,
+) -> str:
+    """
+    Valores: priority_pilot_now | priority_needs_manual_mapping | priority_out_of_scope_for_pilot
+    Piloto pagado: preferimos mapa cerrado sm_league_id; hints genéricos quedan fuera.
+    """
+    if _pilot_name_excludes(league_name) or not sport_key or mapping_status == "not_available_expected":
+        return "priority_out_of_scope_for_pilot"
+    if sport_key not in OFFICIAL_TOA_SOCCER_KEYS:
+        return "priority_needs_manual_mapping"
+    if mapping_status in ("needs_manual_review", "needs_api_confirmation"):
+        return "priority_needs_manual_mapping"
+    if mapping_source in ("name_hint", "name_ambiguous_premier"):
+        return "priority_needs_manual_mapping"
+    if mapping_source not in (
+        "sm_league_id",
+        "name_country_premier_russia",
+        "name_country_hint",
+    ):
+        return "priority_needs_manual_mapping"
+    t = (league_tier or "").strip().upper()
+    cup_ok = sport_key in PILOT_ELIGIBLE_CUP_KEYS
+    if mapping_source == "name_country_premier_russia":
+        return "priority_pilot_now"
+    if mapping_source == "name_country_hint" and sport_key == "soccer_spl":
+        return "priority_pilot_now"
+    if mapping_source != "sm_league_id":
+        return "priority_needs_manual_mapping"
+    if cup_ok:
+        return "priority_pilot_now"
+    if t in ("S", "A", "B"):
+        return "priority_pilot_now"
+    if t in ("UNKNOWN", "") and sport_key in (
+        "soccer_epl",
+        "soccer_spain_la_liga",
+        "soccer_germany_bundesliga",
+        "soccer_italy_serie_a",
+        "soccer_france_ligue_one",
+    ):
+        return "priority_pilot_now"
+    return "priority_needs_manual_mapping"
+
+
+def resolve_league_mapping(
+    sm_league_id: Optional[int], league_name: str, country: str, league_tier: str
+) -> dict[str, Any]:
+    """
+    Mapea liga SM → sport_key TOA (sin API). Devuelve columnas listas para CSV.
+    """
+    name = (league_name or "").strip()
+    nlow = name.lower()
+    c = (country or "").strip()
+    clow = c.lower()
+    lid = int(sm_league_id) if sm_league_id is not None else None
+
+    src = "none"
+    sport_key = ""
+    status = "needs_manual_review"
+    conf = "low"
+
+    if not nlow or nlow in ("(sin_liga)", "(sin_nombre_liga)"):
+        return {
+            "the_odds_api_sport_key_expected": "",
+            "mapping_status": "needs_manual_review",
+            "mapping_confidence": "low",
+            "mapping_source": "none",
+            "heuristic_sort_priority": 9,
+            "pilot_tier": "priority_out_of_scope_for_pilot",
+        }
+
+    if _pilot_name_excludes(name):
+        return {
+            "the_odds_api_sport_key_expected": "",
+            "mapping_status": "not_available_expected",
+            "mapping_confidence": "low",
+            "mapping_source": "name_exclusion",
+            "heuristic_sort_priority": 8,
+            "pilot_tier": "priority_out_of_scope_for_pilot",
+        }
+
+    # 1) Mapa cerrado por league_id SM (prioridad sobre nombre).
+    if lid is not None and lid in SM_LEAGUE_TO_ODDS_SPORT_KEY:
+        sport_key = SM_LEAGUE_TO_ODDS_SPORT_KEY[lid]
+        status, conf, src = "mapped_expected", "high", "sm_league_id"
+
+    # 2) Premier League con país (solo si no hay id mapeado).
+    if not sport_key and "premier league" in nlow:
+        if "russia" in clow or "росс" in c:
+            sport_key, status, conf, src = "soccer_russia_premier_league", "mapped_expected", "high", "name_country_premier_russia"
+        elif "scotland" in clow or "scottish" in nlow or "scot" in clow:
+            sport_key, status, conf, src = "soccer_spl", "mapped_expected", "high", "name_country_hint"
+        elif lid in (8, 1691) or c in ("", "england", "ENG") or "england" in clow or not c:
+            sport_key, status, conf, src = "soccer_epl", "mapped_expected", "high", "name_country_hint"
+        elif lid in (486, 609, 806, 830, 827, 809):
+            sport_key, status, conf, src = "soccer_epl", "needs_api_confirmation", "medium", "name_ambiguous_premier"
+        else:
+            sport_key, status, conf, src = "soccer_epl", "needs_api_confirmation", "medium", "name_hint"
+
+    if not sport_key:
+        for hints, key in NAME_HINTS:
+            if any(h in nlow for h in hints):
+                sport_key = key
+                status, conf, src = "needs_api_confirmation", "medium", "name_hint"
+                break
+
+    if not sport_key:
+        return {
+            "the_odds_api_sport_key_expected": "",
+            "mapping_status": "needs_manual_review",
+            "mapping_confidence": "low",
+            "mapping_source": src,
+            "heuristic_sort_priority": 5,
+            "pilot_tier": "priority_out_of_scope_for_pilot",
+        }
+
+    if sport_key and sport_key not in OFFICIAL_TOA_SOCCER_KEYS and status == "mapped_expected":
+        status, conf = "needs_api_confirmation", "medium"
+
+    hp = 1 if status == "mapped_expected" else 3
+    if conf == "low":
+        hp = 5
+    p_tier = _classify_pilot_tier(
+        sport_key=sport_key,
+        mapping_status=status,
+        mapping_source=src,
+        league_name=name,
+        league_tier=league_tier,
+    )
+
+    return {
+        "the_odds_api_sport_key_expected": sport_key,
+        "mapping_status": status,
+        "mapping_confidence": conf,
+        "mapping_source": src,
+        "heuristic_sort_priority": hp,
+        "pilot_tier": p_tier,
+    }
 
 
 def _dsn() -> str:
@@ -128,26 +410,6 @@ def _norm_team(s: str) -> str:
         if t.endswith(tok):
             t = t[: -len(tok)].strip()
     return t
-
-
-def _expected_sport_key(
-    sm_league_id: Optional[int], league_name: str, country: str
-) -> tuple[str, str, str, int]:
-    """
-    Returns: sport_key_expected, mapping_status, mapping_confidence, priority
-    """
-    lid = int(sm_league_id) if sm_league_id is not None else None
-    if lid is not None and lid in SM_LEAGUE_TO_ODDS_SPORT_KEY:
-        return SM_LEAGUE_TO_ODDS_SPORT_KEY[lid], "mapped_expected", "high", 1
-    name = (league_name or "").lower()
-    for hints, key in NAME_HINTS:
-        if any(h in name for h in hints):
-            return key, "needs_api_confirmation", "medium", 3
-    if not name or name in ("(sin_liga)", "(sin_nombre_liga)"):
-        return "", "needs_manual_review", "low", 9
-    if "women" in name or "u21" in name or "youth" in name or "friendly" in name:
-        return "", "not_available_expected", "low", 8
-    return "", "needs_manual_review", "low", 5
 
 
 def _tier_priority(tier: str) -> int:
@@ -356,7 +618,12 @@ def fetch_cohort_a_fixtures(conn, hist: Any, nf_mod: Any) -> list[dict[str, Any]
         t60 = [t for t in before if t[4] is not None and t_cut and t[4] <= t_cut]
         agg = agg_fn(to_t(t60), min_decimal=min_dec)
         vp = bool(vp_fn(agg, min_decimal=min_dec))
-        sk, st, conf, pr = _expected_sport_key(row.get("sm_league_id"), row.get("league_name") or "", row.get("league_country") or "")
+        lm = resolve_league_mapping(
+            row.get("sm_league_id"),
+            str(row.get("league_name") or ""),
+            str(row.get("league_country") or ""),
+            str(row.get("league_tier") or ""),
+        )
         t60_iso = t_cut.isoformat() if t_cut else ""
         bucket = _floor_to_5min(t_cut).isoformat() if t_cut else ""
         out.append(
@@ -365,8 +632,10 @@ def fetch_cohort_a_fixtures(conn, hist: Any, nf_mod: Any) -> list[dict[str, Any]
                 "value_pool_sm_lbu_t60": vp,
                 "t60_cutoff_utc": t60_iso,
                 "snapshot_bucket_5m_utc": bucket,
-                "the_odds_api_sport_key_expected": sk,
-                "mapping_status": st,
+                "the_odds_api_sport_key_expected": lm["the_odds_api_sport_key_expected"],
+                "mapping_status": lm["mapping_status"],
+                "mapping_source": lm["mapping_source"],
+                "pilot_tier": lm["pilot_tier"],
                 "home_normalized": _norm_team(str(row.get("home_name") or "")),
                 "away_normalized": _norm_team(str(row.get("away_name") or "")),
             }
@@ -419,48 +688,61 @@ def week_block_id(ko: Optional[datetime]) -> str:
     return f"{y}-W{w:02d}"
 
 
-def build_validation_sample(fixtures: list[dict[str, Any]], week_q: dict[str, str]) -> list[dict[str, Any]]:
-    """Muestra acotada estratificada."""
-    by_w = defaultdict(list)
-    for fx in fixtures:
-        bid = week_block_id(fx.get("kickoff_utc"))
-        by_w[bid].append(fx)
+def build_validation_sample(
+    fixtures: list[dict[str, Any]], week_q: dict[str, str]
+) -> tuple[list[dict[str, Any]], str]:
+    """
+    40–SAMPLE_MAX filas, solo `priority_pilot_now`; estratifica semana buena/mala y VP.
+    """
+    pilot = [f for f in fixtures if f.get("pilot_tier") == "priority_pilot_now"]
+    if not pilot:
+        return [], "no_pilot_tier_pilot_now_in_cohort"
+
+    by_w: defaultdict[str, list] = defaultdict(list)
+    for fx in pilot:
+        by_w[week_block_id(fx.get("kickoff_utc"))].append(fx)
 
     def pick(pool: list[dict[str, Any]], want_vp: Optional[bool], n: int) -> list[dict[str, Any]]:
-        sub = [x for x in pool if want_vp is None or x["value_pool_sm_lbu_t60"] is want_vp]
-        sub.sort(key=lambda x: (-_tier_priority(str(x.get("league_tier") or "")), x["fixture_id"]))
+        sub: list[dict[str, Any]] = []
+        for x in pool:
+            vp = int(bool(x.get("value_pool_sm_lbu_t60")))
+            if want_vp is None or vp == (1 if want_vp else 0):
+                sub.append(x)
+        sub.sort(
+            key=lambda x: (
+                -_tier_priority(str(x.get("league_tier") or "")),
+                int(x.get("fixture_id") or 0),
+            )
+        )
         return sub[:n]
 
-    sample: list[dict[str, Any]] = []
-    weak_weeks = [bid for bid, q in week_q.items() if q == "weak_week"]
-    good_weeks = [bid for bid, q in week_q.items() if q == "good_week"]
+    weak_weeks = [b for b, q in week_q.items() if q == "weak_week"]
+    good_weeks = [b for b, q in week_q.items() if q == "good_week"]
+    all_b = sorted([k for k in by_w if k], key=lambda s: s)
+    if not good_weeks and all_b:
+        good_weeks = all_b[: min(5, len(all_b))]
+    if not weak_weeks and all_b:
+        weak_weeks = all_b[-min(5, len(all_b)) :]
 
-    for bid in good_weeks[:3]:
+    sample: list[dict[str, Any]] = []
+    for bid in good_weeks[:4]:
+        pool = by_w.get(bid, [])
+        sample.extend(pick(pool, True, 8))
+        sample.extend(pick(pool, False, 5))
+    for bid in weak_weeks[:4]:
         pool = by_w.get(bid, [])
         sample.extend(pick(pool, True, 6))
-        sample.extend(pick(pool, False, 3))
-    for bid in weak_weeks[:3]:
-        pool = by_w.get(bid, [])
-        sample.extend(pick(pool, True, 5))
         sample.extend(pick(pool, False, 5))
+    s_pool = [x for x in pilot if str(x.get("league_tier") or "").upper() == "S"]
+    sample.extend(pick(s_pool, None, 20))
 
-    # Tier S extra
-    s_pool = [x for x in fixtures if str(x.get("league_tier") or "").upper() == "S"]
-    sample.extend(pick(s_pool, None, 10))
-
-    # dedupe by fixture_id
-    seen: set[int] = set()
-    out: list[dict[str, Any]] = []
-    for x in sample:
-        fid = int(x["fixture_id"])
-        if fid in seen:
-            continue
-        seen.add(fid)
-        bid = week_block_id(x.get("kickoff_utc"))
-        x2 = {
-            "fixture_id": fid,
+    def row_dict(x: dict[str, Any]) -> dict[str, Any]:
+        ko = x.get("kickoff_utc")
+        bid = week_block_id(ko if isinstance(ko, datetime) else None)
+        return {
+            "fixture_id": int(x["fixture_id"]),
             "event_id": x["event_id"],
-            "kickoff_utc": x["kickoff_utc"].isoformat() if x.get("kickoff_utc") else "",
+            "kickoff_utc": ko.isoformat() if isinstance(ko, datetime) and ko else (str(ko) if ko else ""),
             "sm_league_id": x.get("sm_league_id"),
             "league_name": x.get("league_name"),
             "league_tier": x.get("league_tier"),
@@ -469,17 +751,104 @@ def build_validation_sample(fixtures: list[dict[str, Any]], week_q: dict[str, st
             "home_normalized": x.get("home_normalized"),
             "away_normalized": x.get("away_normalized"),
             "week_block_id": bid,
-            "week_quality_label": week_q.get(bid, "unknown"),
+            "week_quality_label": week_q.get(bid, "unknown" if not week_q else "mid"),
             "value_pool_sm_lbu_t60": x["value_pool_sm_lbu_t60"],
             "the_odds_api_sport_key_expected": x.get("the_odds_api_sport_key_expected"),
+            "mapping_status": x.get("mapping_status"),
+            "mapping_source": x.get("mapping_source"),
+            "pilot_tier": x.get("pilot_tier"),
             "the_odds_api_market": MARKET_LAB,
             "the_odds_api_region": REGION_LAB,
             "historical_query_timestamp_utc": x.get("t60_cutoff_utc"),
             "snapshot_bucket_5m_utc": x.get("snapshot_bucket_5m_utc"),
-            "sample_reason": "stratified_cohort_A",
+            "sample_reason": "stratified_cohort_A_pilot_tier_pilot_now",
         }
-        out.append(x2)
-    return out[:120]
+
+    seen: set[int] = set()
+    out: list[dict[str, Any]] = []
+    for x in sample:
+        fid = int(x["fixture_id"])
+        if fid in seen:
+            continue
+        seen.add(fid)
+        out.append(row_dict(x))
+
+    rest = sorted(
+        pilot,
+        key=lambda z: (
+            str(z.get("kickoff_utc") or ""),
+            int(z.get("fixture_id") or 0),
+        ),
+    )
+    for x in rest:
+        if len(out) >= min(SAMPLE_MAX_ROWS, max(SAMPLE_MIN_TARGET, 40)):
+            break
+        fid = int(x["fixture_id"])
+        if fid in seen:
+            continue
+        seen.add(fid)
+        out.append(row_dict(x))
+
+    reason = ""
+    h2h_nvp = [f for f in pilot if not f.get("value_pool_sm_lbu_t60")]
+    h2h_vp = [f for f in pilot if f.get("value_pool_sm_lbu_t60")]
+    if not h2h_nvp and h2h_vp:
+        reason = "no_h2h_no_vp_in_pilot_subset"
+    if len(out) < SAMPLE_MIN_TARGET:
+        reason = (reason + " " if reason else "") + f"only_{len(out)}_rows_target_was_{SAMPLE_MIN_TARGET}"
+    return out[:SAMPLE_MAX_ROWS], reason.strip()
+
+
+def build_pilot_league_manifest(
+    league_rows: list[dict[str, Any]],
+    fixtures: list[dict[str, Any]],
+    n_cohort_fixtures: int,
+) -> dict[str, Any]:
+    by_l: defaultdict[int, int] = defaultdict(int)
+    for f in fixtures:
+        if f.get("pilot_tier") != "priority_pilot_now":
+            continue
+        lid = f.get("sm_league_id")
+        if lid is not None:
+            by_l[int(lid)] += 1
+    n_pilot_fix = sum(by_l.values())
+    in_l = [r for r in league_rows if r.get("pilot_tier") == "priority_pilot_now"]
+    out_l = [r for r in league_rows if r.get("pilot_tier") != "priority_pilot_now"]
+    return {
+        "cohort_A_range": {"start": str(COHORT_A0), "end": str(COHORT_A1)},
+        "cohort_vp_compute_subset": {
+            "n_fixtures": n_cohort_fixtures,
+            "n_pilot_tier_pilot_now_fixtures": n_pilot_fix,
+        },
+        "league_cardinality_cohort_A": len(league_rows),
+        "leagues_pilot_now_count": len(in_l),
+        "fixtures_by_sm_league_id_pilot_only": {str(k): v for k, v in sorted(by_l.items())},
+        "leagues_operative_pilot_in": [
+            {
+                "sm_league_id": r["sm_league_id"],
+                "name": r.get("sm_league_name"),
+                "the_odds_api_sport_key_expected": r.get("the_odds_api_sport_key_expected"),
+                "mapping_source": r.get("mapping_source"),
+                "n_fixtures_in_cohort_subset": by_l.get(int(r["sm_league_id"]), 0),
+            }
+            for r in sorted(
+                in_l,
+                key=lambda x: (-by_l.get(int(x["sm_league_id"]), 0), int(x["sm_league_id"] or 0)),
+            )
+        ],
+        "leagues_not_in_pilot_operative": [
+            {
+                "sm_league_id": r.get("sm_league_id"),
+                "name": r.get("sm_league_name"),
+                "pilot_tier": r.get("pilot_tier"),
+                "the_odds_api_sport_key_expected": r.get("the_odds_api_sport_key_expected"),
+            }
+            for r in sorted(
+                out_l,
+                key=lambda x: (str(x.get("pilot_tier")), int(x.get("sm_league_id") or 0)),
+            )
+        ],
+    }
 
 
 def write_offline_bundle(error: str) -> None:
@@ -531,17 +900,26 @@ def write_offline_bundle(error: str) -> None:
             w.writerow(r)
 
     league_rows = []
-    for lid, sk in sorted(SM_LEAGUE_TO_ODDS_SPORT_KEY.items()):
+    for lid, _sk in sorted(SM_LEAGUE_TO_ODDS_SPORT_KEY.items()):
+        tier = "S" if lid in (8, 82, 301, 384, 564) else "A"
+        lm = resolve_league_mapping(
+            lid,
+            f"(static_map_league_{lid})",
+            "",
+            tier,
+        )
         league_rows.append(
             {
                 "sm_league_id": lid,
                 "sm_league_name": f"(static_map_league_{lid})",
-                "bt2_league_tier": "S" if lid in (8, 82, 301, 384, 564) else "A",
+                "bt2_league_tier": tier,
                 "country": "",
-                "the_odds_api_sport_key_expected": sk,
-                "mapping_status": "mapped_expected",
-                "mapping_confidence": "high",
-                "priority": 1,
+                "the_odds_api_sport_key_expected": lm["the_odds_api_sport_key_expected"],
+                "mapping_status": lm["mapping_status"],
+                "mapping_confidence": lm["mapping_confidence"],
+                "mapping_source": lm["mapping_source"],
+                "pilot_tier": lm["pilot_tier"],
+                "heuristic_sort_priority": lm["heuristic_sort_priority"],
             }
         )
     fn = [
@@ -552,7 +930,9 @@ def write_offline_bundle(error: str) -> None:
         "the_odds_api_sport_key_expected",
         "mapping_status",
         "mapping_confidence",
-        "priority",
+        "mapping_source",
+        "pilot_tier",
+        "heuristic_sort_priority",
     ]
     with (OUT_DIR / "the_odds_api_league_mapping_audit.csv").open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fn)
@@ -593,6 +973,9 @@ def write_offline_bundle(error: str) -> None:
         "week_quality_label",
         "value_pool_sm_lbu_t60",
         "the_odds_api_sport_key_expected",
+        "mapping_status",
+        "mapping_source",
+        "pilot_tier",
         "the_odds_api_market",
         "the_odds_api_region",
         "historical_query_timestamp_utc",
@@ -629,6 +1012,18 @@ def write_offline_bundle(error: str) -> None:
     }
     (OUT_DIR / "readiness_summary.json").write_text(
         json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    (OUT_DIR / "pilot_league_manifest.json").write_text(
+        json.dumps(
+            {
+                "mode": "offline",
+                "note": "Ejecutar con BT2_DATABASE_URL para conteos reales y pilot_league_manifest completo.",
+                "cohort_A_range": {"start": str(COHORT_A0), "end": str(COHORT_A1)},
+            },
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
     )
     (OUT_DIR / "README.md").write_text(
         f"""# BT2 — Vendor readiness (Fase 3D)
@@ -721,17 +1116,24 @@ def main() -> None:
     )
     league_rows = []
     for r in cur:
-        sk, st, conf, pr = _expected_sport_key(r["sm_league_id"], r["sm_league_name"], r["country"])
+        lm = resolve_league_mapping(
+            r["sm_league_id"],
+            r["sm_league_name"] or "",
+            r["country"] or "",
+            r["bt2_league_tier"] or "",
+        )
         league_rows.append(
             {
                 "sm_league_id": r["sm_league_id"],
                 "sm_league_name": r["sm_league_name"],
                 "bt2_league_tier": r["bt2_league_tier"],
                 "country": r["country"],
-                "the_odds_api_sport_key_expected": sk,
-                "mapping_status": st,
-                "mapping_confidence": conf,
-                "priority": pr,
+                "the_odds_api_sport_key_expected": lm["the_odds_api_sport_key_expected"],
+                "mapping_status": lm["mapping_status"],
+                "mapping_confidence": lm["mapping_confidence"],
+                "mapping_source": lm["mapping_source"],
+                "pilot_tier": lm["pilot_tier"],
+                "heuristic_sort_priority": lm["heuristic_sort_priority"],
             }
         )
     cur.close()
@@ -744,7 +1146,9 @@ def main() -> None:
             "the_odds_api_sport_key_expected",
             "mapping_status",
             "mapping_confidence",
-            "priority",
+            "mapping_source",
+            "pilot_tier",
+            "heuristic_sort_priority",
         ]
         w = csv.DictWriter(f, fieldnames=fn)
         w.writeheader()
@@ -756,7 +1160,8 @@ def main() -> None:
     nfx = len(fixtures)
     ok_names = sum(1 for x in fixtures if x.get("home_normalized") and x.get("away_normalized"))
     ok_ko = sum(1 for x in fixtures if x.get("kickoff_utc"))
-    ok_sk = sum(1 for x in fixtures if x.get("the_odds_api_sport_key_expected"))
+    n_pilot_now = sum(1 for x in fixtures if x.get("pilot_tier") == "priority_pilot_now")
+    ok_sk = n_pilot_now
 
     match_rules = [
         {
@@ -773,9 +1178,9 @@ def main() -> None:
         },
         {
             "rule_id": "R3",
-            "rule_description": "sport_key coherente con liga SM (mapping audit).",
-            "readiness_signal": f"{ok_sk}/{nfx} fixtures con sport_key esperado no vacío",
-            "risk_notes": "Ligas secundarias quedan en needs_manual_review.",
+            "rule_description": "sport_key TOA cubierto para piloto (pilot_tier = priority_pilot_now).",
+            "readiness_signal": f"{ok_sk}/{nfx} fixtures en cohorte VP con mapping piloto-now",
+            "risk_notes": "Fuera: priority_needs_manual_mapping o priority_out_of_scope_for_pilot según mapa/ tier.",
         },
         {
             "rule_id": "R4",
@@ -839,7 +1244,7 @@ def main() -> None:
 
     # --- FASE E ---
     wq = load_week_quality()
-    sample = build_validation_sample(fixtures, wq)
+    sample, sample_shortfall = build_validation_sample(fixtures, wq)
     with (OUT_DIR / "vendor_validation_sample.csv").open("w", encoding="utf-8", newline="") as f:
         if sample:
             w = csv.DictWriter(f, fieldnames=list(sample[0].keys()))
@@ -860,9 +1265,17 @@ def main() -> None:
                 {
                     "fixture_id": "",
                     "event_id": "",
-                    "note": "empty_sample: revisar cohort_A_weekly.csv o ampliar MAX_COHORT_VP_COMPUTE",
+                    "note": (
+                        "empty_sample: "
+                        + (sample_shortfall or "revisar cohort_A_weekly.csv o ampliar MAX_COHORT_VP_COMPUTE")
+                    ),
                 }
             )
+
+    plm = build_pilot_league_manifest(league_rows, fixtures, nfx)
+    (OUT_DIR / "pilot_league_manifest.json").write_text(
+        json.dumps(plm, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
     # --- FASE F ---
     # Por evento: 1 crédit histórico /events opcional + 10 por h2h x1 región (doc TOA event odds)
@@ -961,13 +1374,20 @@ def main() -> None:
         },
         "fixture_matching": {
             "name_coverage": round(ok_names / nfx, 6) if nfx else 0,
-            "sport_key_coverage": round(ok_sk / nfx, 6) if nfx else 0,
-            "viable": (ok_names / nfx if nfx else 0) > 0.95 and (ok_sk / nfx if nfx else 0) > 0.35,
+            "pilot_tier_pilot_now_coverage": round(ok_sk / nfx, 6) if nfx else 0,
+            "viable": (ok_names / nfx if nfx else 0) > 0.95 and (n_pilot_now / nfx if nfx else 0) > 0.25,
+        },
+        "pilot_league": {
+            "n_fixtures_pilot_tier_pilot_now": n_pilot_now,
+            "n_leagues_pilot_now_distinct_cohort": plm.get("leagues_pilot_now_count", 0),
         },
         "validation_sample": {
             "n_rows": len(sample),
-            "capped": True,
-            "viable": 40 <= len(sample) <= 200,
+            "pilot_tier_filter": "priority_pilot_now",
+            "min_target": SAMPLE_MIN_TARGET,
+            "max_cap": SAMPLE_MAX_ROWS,
+            "shortfall_note": sample_shortfall,
+            "viable": SAMPLE_MIN_TARGET <= len(sample) <= SAMPLE_MAX_ROWS and len(sample) > 0,
         },
         "credit_estimate": {
             "strategy": "historical_event_odds_per_fixture_h2h_us",
@@ -982,7 +1402,7 @@ def main() -> None:
             "matching depende de nombres+kickoff+sport_key; muestra acotada; créditos bajo estrategia por-evento."
         ),
         "day_one_minimal_validation": [
-            "Elegir 10 filas de vendor_validation_sample.csv con sport_key mapped_expected.",
+            "Elegir 10 filas de vendor_validation_sample.csv (todas `priority_pilot_now` en cohorte muestreada).",
             "Para cada fila: resolver event_id TOA vía GET historical/sports/{sport}/events?date={T60} (1 crédito si hay eventos).",
             "GET historical/sports/{sport}/events/{eventId}/odds?markets=h2h&regions=us&date={T60} (10 créditos típicos).",
             "Comparar solo decimales h2h vs consenso BT2 FT_1X2 a modo sanity (no productivo).",
@@ -1014,6 +1434,7 @@ python3 scripts/bt2_vendor_readiness_phase3d.py
 - `the_odds_api_credit_estimator.csv`
 - `odds_timestamp_contract.md`
 - `readiness_summary.json`
+- `pilot_league_manifest.json`
 
 ## Resumen
 

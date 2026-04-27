@@ -1,2 +1,5 @@
 rule_id,rule_description,readiness_signal,risk_notes,cohort_A_n_fixtures,cohort_A_names_ok,cohort_A_kickoff_ok,cohort_A_sport_key_ok
-R1,Normalizar nombres local/visitante.,offline,Ejecutar con BT2_DATABASE_URL para medir cohorte A.,0,0,0,0
+R1,"Normalizar nombres local/visitante (minúsculas, sin sufijos FC, sin puntuación fuerte).",6500/6500 fixtures con nombres no vacíos tras normalizar,Colisiones homónimas entre ligas distintas.,6500,6500,6500,2821
+R2,Ventana kickoff ±15–120 min respecto a commence_time TOA.,Requiere datos TOA reales día 1,Diferencias de reloj o reprogramaciones.,6500,6500,6500,2821
+R3,sport_key TOA cubierto para piloto (pilot_tier = priority_pilot_now).,2821/6500 fixtures en cohorte VP con mapping piloto-now,Fuera: priority_needs_manual_mapping o priority_out_of_scope_for_pilot según mapa/ tier.,6500,6500,6500,2821
+R4,Desempate por liga+orden alfabético si múltiples candidatos TOA.,manual_review_queue,Copas y nombres duplicados.,6500,6500,6500,2821

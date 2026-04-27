@@ -1,27 +1,94 @@
-sm_league_id,sm_league_name,bt2_league_tier,country,the_odds_api_sport_key_expected,mapping_status,mapping_confidence,priority
-8,(static_map_league_8),S,,soccer_epl,mapped_expected,high,1
-9,(static_map_league_9),A,,soccer_efl_champ,mapped_expected,high,1
-72,(static_map_league_72),A,,soccer_netherlands_eredivisie,mapped_expected,high,1
-82,(static_map_league_82),S,,soccer_germany_bundesliga,mapped_expected,high,1
-85,(static_map_league_85),A,,soccer_germany_bundesliga2,mapped_expected,high,1
-208,(static_map_league_208),A,,soccer_belgium_first_div,mapped_expected,high,1
-301,(static_map_league_301),S,,soccer_france_ligue_one,mapped_expected,high,1
-304,(static_map_league_304),A,,soccer_france_ligue_two,mapped_expected,high,1
-384,(static_map_league_384),S,,soccer_italy_serie_a,mapped_expected,high,1
-387,(static_map_league_387),A,,soccer_italy_serie_b,mapped_expected,high,1
-453,(static_map_league_453),A,,soccer_poland_ekstraklasa,mapped_expected,high,1
-462,(static_map_league_462),A,,soccer_portugal_primeira_liga,mapped_expected,high,1
-501,(static_map_league_501),A,,soccer_spl,mapped_expected,high,1
-564,(static_map_league_564),S,,soccer_spain_la_liga,mapped_expected,high,1
-567,(static_map_league_567),A,,soccer_spain_segunda_division,mapped_expected,high,1
-573,(static_map_league_573),A,,soccer_sweden_allsvenskan,mapped_expected,high,1
-600,(static_map_league_600),A,,soccer_turkey_super_league,mapped_expected,high,1
-636,(static_map_league_636),A,,soccer_argentina_primera_division,mapped_expected,high,1
-648,(static_map_league_648),A,,soccer_brazil_serie_a,mapped_expected,high,1
-672,(static_map_league_672),A,,soccer_colombia_primera_a,mapped_expected,high,1
-743,(static_map_league_743),A,,soccer_mexico_ligamx,mapped_expected,high,1
-779,(static_map_league_779),A,,soccer_usa_mls,mapped_expected,high,1
-968,(static_map_league_968),A,,soccer_japan_j_league,mapped_expected,high,1
-1034,(static_map_league_1034),A,,soccer_korea_kleague1,mapped_expected,high,1
-1116,(static_map_league_1116),A,,soccer_conmebol_sudamericana,mapped_expected,high,1
-1122,(static_map_league_1122),A,,soccer_conmebol_libertadores,mapped_expected,high,1
+sm_league_id,sm_league_name,bt2_league_tier,country,the_odds_api_sport_key_expected,mapping_status,mapping_confidence,mapping_source,pilot_tier,heuristic_sort_priority
+8,Premier League,S,,soccer_epl,mapped_expected,high,sm_league_id,priority_pilot_now,1
+9,Championship,B,,soccer_efl_champ,mapped_expected,high,sm_league_id,priority_pilot_now,1
+12,League One,unknown,,soccer_england_league1,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+14,League Two,unknown,,soccer_england_league2,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+17,Enterprise National League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+24,FA Cup,unknown,,soccer_fa_cup,mapped_expected,high,sm_league_id,priority_pilot_now,1
+27,Carabao Cup,unknown,,soccer_england_efl_cup,mapped_expected,high,sm_league_id,priority_pilot_now,1
+72,Eredivisie,A,,soccer_netherlands_eredivisie,mapped_expected,high,sm_league_id,priority_pilot_now,1
+74,Eerste Divisie,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+78,KNVB Beker,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+82,Bundesliga,S,,soccer_germany_bundesliga,mapped_expected,high,sm_league_id,priority_pilot_now,1
+85,2. Bundesliga,B,,soccer_germany_bundesliga2,mapped_expected,high,sm_league_id,priority_pilot_now,1
+88,3. Liga,unknown,,soccer_germany_liga3,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+109,DFB Pokal,unknown,,soccer_germany_dfb_pokal,mapped_expected,high,sm_league_id,priority_pilot_now,1
+181,Admiral Bundesliga,unknown,,soccer_austria_bundesliga,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+208,Pro League,A,,soccer_belgium_first_div,mapped_expected,high,sm_league_id,priority_pilot_now,1
+211,Challenger Pro League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+229,First League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+244,1. HNL,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+262,Chance Liga,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+271,Superliga,unknown,,soccer_denmark_superliga,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+274,First Division,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+292,Veikkausliiga,unknown,,soccer_finland_veikkausliiga,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+301,Ligue 1,S,,soccer_france_ligue_one,mapped_expected,high,sm_league_id,priority_pilot_now,1
+304,Ligue 2,B,,soccer_france_ligue_two,mapped_expected,high,sm_league_id,priority_pilot_now,1
+307,Coupe de France,unknown,,soccer_france_coupe_de_france,mapped_expected,high,sm_league_id,priority_pilot_now,1
+325,Super League,unknown,,soccer_greece_super_league,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+334,NB I,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+360,Premier Division,unknown,,soccer_league_of_ireland,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+372,Ligat ha'Al,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+384,Serie A,S,,soccer_italy_serie_a,mapped_expected,high,sm_league_id,priority_pilot_now,1
+387,Serie B,B,,soccer_italy_serie_b,mapped_expected,high,sm_league_id,priority_pilot_now,1
+390,Coppa Italia,unknown,,soccer_italy_coppa_italia,mapped_expected,high,sm_league_id,priority_pilot_now,1
+444,Eliteserien,unknown,,soccer_norway_eliteserien,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+453,Ekstraklasa,A,,soccer_poland_ekstraklasa,mapped_expected,high,sm_league_id,priority_pilot_now,1
+462,Liga Portugal,A,,soccer_portugal_primeira_liga,mapped_expected,high,sm_league_id,priority_pilot_now,1
+465,Liga Portugal 2,unknown,,soccer_portugal_primeira_liga,needs_api_confirmation,medium,name_hint,priority_needs_manual_mapping,3
+468,Taça De Portugal,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+474,Superliga,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+486,Premier League,unknown,,soccer_epl,mapped_expected,high,name_country_hint,priority_needs_manual_mapping,1
+489,FNL,unknown,,soccer_russia_premier_league,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+492,Russian Cup,unknown,,soccer_russia_premier_league,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+501,Premiership,A,,soccer_spl,mapped_expected,high,sm_league_id,priority_pilot_now,1
+513,Premiership Play-Offs,unknown,,soccer_spl,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+531,Super Liga,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+540,Niké Liga,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+564,La Liga,S,,soccer_spain_la_liga,mapped_expected,high,sm_league_id,priority_pilot_now,1
+567,La Liga 2,B,,soccer_spain_segunda_division,mapped_expected,high,sm_league_id,priority_pilot_now,1
+570,Copa Del Rey,unknown,,soccer_spain_copa_del_rey,mapped_expected,high,sm_league_id,priority_pilot_now,1
+573,Allsvenskan,A,,soccer_sweden_allsvenskan,mapped_expected,high,sm_league_id,priority_pilot_now,1
+591,Super League,unknown,,soccer_sweden_superettan,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+600,Super Lig,A,,soccer_turkey_super_league,mapped_expected,high,sm_league_id,priority_pilot_now,1
+603,1. Lig,unknown,,soccer_turkey_super_league,needs_api_confirmation,medium,name_hint,priority_needs_manual_mapping,3
+609,Premier League,unknown,,soccer_epl,mapped_expected,high,name_country_hint,priority_needs_manual_mapping,1
+636,Liga Profesional de Fútbol,A,,soccer_argentina_primera_division,mapped_expected,high,sm_league_id,priority_pilot_now,1
+648,Serie A,A,,soccer_brazil_campeonato,mapped_expected,high,sm_league_id,priority_pilot_now,1
+651,Serie B,unknown,,soccer_brazil_serie_b,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+654,Copa do Brasil,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+663,Primera Division,A,,soccer_chile_campeonato,mapped_expected,high,sm_league_id,priority_pilot_now,1
+672,Liga BetPlay,A,,soccer_colombia_primera_a,mapped_expected,high,sm_league_id,priority_pilot_now,1
+743,Liga MX,A,,soccer_mexico_ligamx,mapped_expected,high,sm_league_id,priority_pilot_now,1
+764,Primera Division,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+770,Primera Division,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+779,Major League Soccer,A,,soccer_usa_mls,mapped_expected,high,sm_league_id,priority_pilot_now,1
+806,Premier League,unknown,,soccer_epl,mapped_expected,high,name_country_hint,priority_needs_manual_mapping,1
+809,Ligue 1,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+827,Ligue 1,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+830,Premier League,unknown,,soccer_epl,mapped_expected,high,name_country_hint,priority_needs_manual_mapping,1
+860,Botola Pro,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+902,Persian Gulf Pro League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+938,Stars League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+944,Pro League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+950,Kings Cup,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+959,UAE Pro League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+968,J1 League,A,,soccer_japan_j_league,mapped_expected,high,sm_league_id,priority_pilot_now,1
+989,Super League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+1007,Indian Super League,unknown,,soccer_australia_aleague,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+1034,K League 1,A,,soccer_korea_kleague1,mapped_expected,high,sm_league_id,priority_pilot_now,1
+1073,V-League,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+1085,AFC Champions League Elite,unknown,,soccer_uefa_champs_league,needs_api_confirmation,medium,name_hint,priority_needs_manual_mapping,3
+1088,AFC Champions League Two,unknown,,soccer_uefa_champs_league,needs_api_confirmation,medium,name_hint,priority_needs_manual_mapping,3
+1107,CAF Champions League,unknown,,soccer_uefa_champs_league,needs_api_confirmation,medium,name_hint,priority_needs_manual_mapping,3
+1116,Copa Sudamericana,B,,soccer_conmebol_copa_sudamericana,mapped_expected,high,sm_league_id,priority_pilot_now,1
+1122,Copa Libertadores,A,,soccer_conmebol_copa_libertadores,mapped_expected,high,sm_league_id,priority_pilot_now,1
+1123,OFC Champions League,unknown,,soccer_uefa_champs_league,needs_api_confirmation,medium,name_hint,priority_needs_manual_mapping,3
+1251,Super Cup,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+1356,A-League Men,unknown,,soccer_australia_aleague,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+1673,Ligue 1 Play-offs,unknown,,soccer_france_ligue_one,mapped_expected,high,sm_league_id,priority_pilot_now,1
+1681,Super League Play-offs,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+1682,Parva Liga - Play-offs,unknown,,,needs_manual_review,low,none,priority_out_of_scope_for_pilot,5
+1691,Premier League - Playoffs,unknown,,soccer_epl,mapped_expected,high,sm_league_id,priority_pilot_now,1
+1798,Supercopa do Brasil,unknown,,soccer_brazil_campeonato,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1
+1989,Qatar Prince Cup,unknown,,soccer_saudi_arabia_pro_league,mapped_expected,high,sm_league_id,priority_needs_manual_mapping,1

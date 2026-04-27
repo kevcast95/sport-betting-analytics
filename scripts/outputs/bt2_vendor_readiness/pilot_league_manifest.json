@@ -1,0 +1,644 @@
+{
+  "cohort_A_range": {
+    "start": "2025-01-01",
+    "end": "2025-05-31"
+  },
+  "cohort_vp_compute_subset": {
+    "n_fixtures": 6500,
+    "n_pilot_tier_pilot_now_fixtures": 2821
+  },
+  "league_cardinality_cohort_A": 93,
+  "leagues_pilot_now_count": 35,
+  "fixtures_by_sm_league_id_pilot_only": {
+    "8": 121,
+    "9": 196,
+    "24": 60,
+    "27": 5,
+    "72": 100,
+    "82": 117,
+    "85": 99,
+    "109": 6,
+    "208": 96,
+    "301": 116,
+    "304": 117,
+    "307": 31,
+    "384": 132,
+    "387": 120,
+    "390": 6,
+    "453": 81,
+    "462": 108,
+    "501": 76,
+    "564": 118,
+    "567": 145,
+    "570": 32,
+    "573": 16,
+    "600": 117,
+    "636": 180,
+    "648": 20,
+    "663": 46,
+    "672": 121,
+    "743": 126,
+    "779": 104,
+    "968": 88,
+    "1034": 43,
+    "1116": 32,
+    "1122": 46
+  },
+  "leagues_operative_pilot_in": [
+    {
+      "sm_league_id": 9,
+      "name": "Championship",
+      "the_odds_api_sport_key_expected": "soccer_efl_champ",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 196
+    },
+    {
+      "sm_league_id": 636,
+      "name": "Liga Profesional de Fútbol",
+      "the_odds_api_sport_key_expected": "soccer_argentina_primera_division",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 180
+    },
+    {
+      "sm_league_id": 567,
+      "name": "La Liga 2",
+      "the_odds_api_sport_key_expected": "soccer_spain_segunda_division",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 145
+    },
+    {
+      "sm_league_id": 384,
+      "name": "Serie A",
+      "the_odds_api_sport_key_expected": "soccer_italy_serie_a",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 132
+    },
+    {
+      "sm_league_id": 743,
+      "name": "Liga MX",
+      "the_odds_api_sport_key_expected": "soccer_mexico_ligamx",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 126
+    },
+    {
+      "sm_league_id": 8,
+      "name": "Premier League",
+      "the_odds_api_sport_key_expected": "soccer_epl",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 121
+    },
+    {
+      "sm_league_id": 672,
+      "name": "Liga BetPlay",
+      "the_odds_api_sport_key_expected": "soccer_colombia_primera_a",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 121
+    },
+    {
+      "sm_league_id": 387,
+      "name": "Serie B",
+      "the_odds_api_sport_key_expected": "soccer_italy_serie_b",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 120
+    },
+    {
+      "sm_league_id": 564,
+      "name": "La Liga",
+      "the_odds_api_sport_key_expected": "soccer_spain_la_liga",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 118
+    },
+    {
+      "sm_league_id": 82,
+      "name": "Bundesliga",
+      "the_odds_api_sport_key_expected": "soccer_germany_bundesliga",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 117
+    },
+    {
+      "sm_league_id": 304,
+      "name": "Ligue 2",
+      "the_odds_api_sport_key_expected": "soccer_france_ligue_two",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 117
+    },
+    {
+      "sm_league_id": 600,
+      "name": "Super Lig",
+      "the_odds_api_sport_key_expected": "soccer_turkey_super_league",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 117
+    },
+    {
+      "sm_league_id": 301,
+      "name": "Ligue 1",
+      "the_odds_api_sport_key_expected": "soccer_france_ligue_one",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 116
+    },
+    {
+      "sm_league_id": 462,
+      "name": "Liga Portugal",
+      "the_odds_api_sport_key_expected": "soccer_portugal_primeira_liga",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 108
+    },
+    {
+      "sm_league_id": 779,
+      "name": "Major League Soccer",
+      "the_odds_api_sport_key_expected": "soccer_usa_mls",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 104
+    },
+    {
+      "sm_league_id": 72,
+      "name": "Eredivisie",
+      "the_odds_api_sport_key_expected": "soccer_netherlands_eredivisie",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 100
+    },
+    {
+      "sm_league_id": 85,
+      "name": "2. Bundesliga",
+      "the_odds_api_sport_key_expected": "soccer_germany_bundesliga2",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 99
+    },
+    {
+      "sm_league_id": 208,
+      "name": "Pro League",
+      "the_odds_api_sport_key_expected": "soccer_belgium_first_div",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 96
+    },
+    {
+      "sm_league_id": 968,
+      "name": "J1 League",
+      "the_odds_api_sport_key_expected": "soccer_japan_j_league",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 88
+    },
+    {
+      "sm_league_id": 453,
+      "name": "Ekstraklasa",
+      "the_odds_api_sport_key_expected": "soccer_poland_ekstraklasa",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 81
+    },
+    {
+      "sm_league_id": 501,
+      "name": "Premiership",
+      "the_odds_api_sport_key_expected": "soccer_spl",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 76
+    },
+    {
+      "sm_league_id": 24,
+      "name": "FA Cup",
+      "the_odds_api_sport_key_expected": "soccer_fa_cup",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 60
+    },
+    {
+      "sm_league_id": 663,
+      "name": "Primera Division",
+      "the_odds_api_sport_key_expected": "soccer_chile_campeonato",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 46
+    },
+    {
+      "sm_league_id": 1122,
+      "name": "Copa Libertadores",
+      "the_odds_api_sport_key_expected": "soccer_conmebol_copa_libertadores",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 46
+    },
+    {
+      "sm_league_id": 1034,
+      "name": "K League 1",
+      "the_odds_api_sport_key_expected": "soccer_korea_kleague1",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 43
+    },
+    {
+      "sm_league_id": 570,
+      "name": "Copa Del Rey",
+      "the_odds_api_sport_key_expected": "soccer_spain_copa_del_rey",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 32
+    },
+    {
+      "sm_league_id": 1116,
+      "name": "Copa Sudamericana",
+      "the_odds_api_sport_key_expected": "soccer_conmebol_copa_sudamericana",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 32
+    },
+    {
+      "sm_league_id": 307,
+      "name": "Coupe de France",
+      "the_odds_api_sport_key_expected": "soccer_france_coupe_de_france",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 31
+    },
+    {
+      "sm_league_id": 648,
+      "name": "Serie A",
+      "the_odds_api_sport_key_expected": "soccer_brazil_campeonato",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 20
+    },
+    {
+      "sm_league_id": 573,
+      "name": "Allsvenskan",
+      "the_odds_api_sport_key_expected": "soccer_sweden_allsvenskan",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 16
+    },
+    {
+      "sm_league_id": 109,
+      "name": "DFB Pokal",
+      "the_odds_api_sport_key_expected": "soccer_germany_dfb_pokal",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 6
+    },
+    {
+      "sm_league_id": 390,
+      "name": "Coppa Italia",
+      "the_odds_api_sport_key_expected": "soccer_italy_coppa_italia",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 6
+    },
+    {
+      "sm_league_id": 27,
+      "name": "Carabao Cup",
+      "the_odds_api_sport_key_expected": "soccer_england_efl_cup",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 5
+    },
+    {
+      "sm_league_id": 1673,
+      "name": "Ligue 1 Play-offs",
+      "the_odds_api_sport_key_expected": "soccer_france_ligue_one",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 0
+    },
+    {
+      "sm_league_id": 1691,
+      "name": "Premier League - Playoffs",
+      "the_odds_api_sport_key_expected": "soccer_epl",
+      "mapping_source": "sm_league_id",
+      "n_fixtures_in_cohort_subset": 0
+    }
+  ],
+  "leagues_not_in_pilot_operative": [
+    {
+      "sm_league_id": 12,
+      "name": "League One",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_england_league1"
+    },
+    {
+      "sm_league_id": 14,
+      "name": "League Two",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_england_league2"
+    },
+    {
+      "sm_league_id": 88,
+      "name": "3. Liga",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_germany_liga3"
+    },
+    {
+      "sm_league_id": 181,
+      "name": "Admiral Bundesliga",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_austria_bundesliga"
+    },
+    {
+      "sm_league_id": 271,
+      "name": "Superliga",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_denmark_superliga"
+    },
+    {
+      "sm_league_id": 292,
+      "name": "Veikkausliiga",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_finland_veikkausliiga"
+    },
+    {
+      "sm_league_id": 325,
+      "name": "Super League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_greece_super_league"
+    },
+    {
+      "sm_league_id": 360,
+      "name": "Premier Division",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_league_of_ireland"
+    },
+    {
+      "sm_league_id": 444,
+      "name": "Eliteserien",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_norway_eliteserien"
+    },
+    {
+      "sm_league_id": 465,
+      "name": "Liga Portugal 2",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_portugal_primeira_liga"
+    },
+    {
+      "sm_league_id": 486,
+      "name": "Premier League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_epl"
+    },
+    {
+      "sm_league_id": 489,
+      "name": "FNL",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_russia_premier_league"
+    },
+    {
+      "sm_league_id": 492,
+      "name": "Russian Cup",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_russia_premier_league"
+    },
+    {
+      "sm_league_id": 513,
+      "name": "Premiership Play-Offs",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_spl"
+    },
+    {
+      "sm_league_id": 591,
+      "name": "Super League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_sweden_superettan"
+    },
+    {
+      "sm_league_id": 603,
+      "name": "1. Lig",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_turkey_super_league"
+    },
+    {
+      "sm_league_id": 609,
+      "name": "Premier League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_epl"
+    },
+    {
+      "sm_league_id": 651,
+      "name": "Serie B",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_brazil_serie_b"
+    },
+    {
+      "sm_league_id": 806,
+      "name": "Premier League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_epl"
+    },
+    {
+      "sm_league_id": 830,
+      "name": "Premier League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_epl"
+    },
+    {
+      "sm_league_id": 1007,
+      "name": "Indian Super League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_australia_aleague"
+    },
+    {
+      "sm_league_id": 1085,
+      "name": "AFC Champions League Elite",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_uefa_champs_league"
+    },
+    {
+      "sm_league_id": 1088,
+      "name": "AFC Champions League Two",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_uefa_champs_league"
+    },
+    {
+      "sm_league_id": 1107,
+      "name": "CAF Champions League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_uefa_champs_league"
+    },
+    {
+      "sm_league_id": 1123,
+      "name": "OFC Champions League",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_uefa_champs_league"
+    },
+    {
+      "sm_league_id": 1356,
+      "name": "A-League Men",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_australia_aleague"
+    },
+    {
+      "sm_league_id": 1798,
+      "name": "Supercopa do Brasil",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_brazil_campeonato"
+    },
+    {
+      "sm_league_id": 1989,
+      "name": "Qatar Prince Cup",
+      "pilot_tier": "priority_needs_manual_mapping",
+      "the_odds_api_sport_key_expected": "soccer_saudi_arabia_pro_league"
+    },
+    {
+      "sm_league_id": 17,
+      "name": "Enterprise National League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 74,
+      "name": "Eerste Divisie",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 78,
+      "name": "KNVB Beker",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 211,
+      "name": "Challenger Pro League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 229,
+      "name": "First League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 244,
+      "name": "1. HNL",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 262,
+      "name": "Chance Liga",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 274,
+      "name": "First Division",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 334,
+      "name": "NB I",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 372,
+      "name": "Ligat ha'Al",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 468,
+      "name": "Taça De Portugal",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 474,
+      "name": "Superliga",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 531,
+      "name": "Super Liga",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 540,
+      "name": "Niké Liga",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 654,
+      "name": "Copa do Brasil",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 764,
+      "name": "Primera Division",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 770,
+      "name": "Primera Division",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 809,
+      "name": "Ligue 1",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 827,
+      "name": "Ligue 1",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 860,
+      "name": "Botola Pro",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 902,
+      "name": "Persian Gulf Pro League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 938,
+      "name": "Stars League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 944,
+      "name": "Pro League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 950,
+      "name": "Kings Cup",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 959,
+      "name": "UAE Pro League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 989,
+      "name": "Super League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 1073,
+      "name": "V-League",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 1251,
+      "name": "Super Cup",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 1681,
+      "name": "Super League Play-offs",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    },
+    {
+      "sm_league_id": 1682,
+      "name": "Parva Liga - Play-offs",
+      "pilot_tier": "priority_out_of_scope_for_pilot",
+      "the_odds_api_sport_key_expected": ""
+    }
+  ]
+}

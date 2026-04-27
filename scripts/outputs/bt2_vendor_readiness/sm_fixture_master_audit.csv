@@ -1,2 +1,11 @@
 check_name,severity,count,denominator,rate,notes
-database_unreachable,error,1,1,1.0,BT2_VENDOR_READINESS_OFFLINE=1
+duplicate_sportmonks_fixture_id_bt2,error,0,44225,0.0,Unique constraint debería impedir >0
+duplicate_fixture_id_raw,error,0,55541,0.0,Filas raw duplicadas por fixture_id
+kickoff_utc_null,warn,0,44225,0.0,
+home_or_away_team_null,warn,0,44225,0.0,
+league_missing_or_tier_unknown,info,26990,44225,0.610288,
+finished_without_score,warn,135,44225,0.003053,
+scheduled_with_numeric_score,warn,44,44225,0.000995,Puede incluir 0-0 placeholder; revisar raw
+drift_raw_vs_bt2_status_mismatch,warn,1,1500,0.000667,event=102686 fx=19645464 raw=live bt2=scheduled
+drift_kickoff_sm_vs_bt2,warn,0,1500,0.0,
+drift_score_sm_vs_bt2_finished,info,0,1500,0.0,
