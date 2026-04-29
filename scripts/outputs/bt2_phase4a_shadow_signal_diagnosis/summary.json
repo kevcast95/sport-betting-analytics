@@ -1,0 +1,142 @@
+{
+  "generated_at_utc": "2026-04-27T17:27:24.668000+00:00",
+  "phase": "4A.1",
+  "universe": {
+    "constraint_lane": "shadow_only",
+    "subset": "subset5",
+    "market": "h2h",
+    "region": "us",
+    "snapshot_policy": "T-60",
+    "runs_included": [
+      "shadow-subset5-backfill-2025-01-05",
+      "shadow-subset5-recovery-2025-07-12",
+      "shadow-subset5-backfill-2026-01",
+      "shadow-subset5-backfill-2026-02",
+      "shadow-subset5-backfill-2026-03",
+      "shadow-subset5-backfill-2026-04",
+      "shadow-daily-2026-04-27",
+      "shadow-daily-2026-04-20",
+      "shadow-daily-2026-04-21",
+      "shadow-daily-2026-04-22"
+    ],
+    "picks_total": 297,
+    "scored": 275,
+    "metrics_on_scored": {
+      "hit_rate_on_scored": 0.378182,
+      "roi_flat_stake_pct": -8.52,
+      "roi_flat_stake_units": -23.43
+    },
+    "pending_result": 14,
+    "no_evaluable": 8
+  },
+  "methodology": {
+    "mode": "descriptive_only",
+    "no_production_touch": true,
+    "no_tuning": true,
+    "scored_definition": "eval_status in (hit, miss); ROI from bt2_shadow_pick_eval.roi_flat_stake_units",
+    "stratifications": [
+      "source_path",
+      "run_key",
+      "run_group",
+      "league_name",
+      "selection_side",
+      "odds_band_decimal",
+      "time_window"
+    ],
+    "n_thresholds_scored_4a1": {
+      "A_inadequate": "scored < 20",
+      "B_weak_exploratory": "20 <= scored < 50",
+      "C_adequate_descriptive": "scored >= 50",
+      "justification": "<20: varianza muestral binomial extrema para proporciones. 20–49: heurística de exploración (cercano a regla informal n≥30 para CLT aproximado de p̂). ≥50: estrato con masa suficiente para descriptivos agregados; no implica edge.",
+      "signal_reading_banned_4a1": "true si scored < 50 (no formular 'señal' por estrato)."
+    },
+    "odds_bands_decimal": [
+      "unknown_odds",
+      "dec_lt_2",
+      "dec_2_to_2_5",
+      "dec_2_5_to_3",
+      "dec_3_to_4",
+      "dec_4_to_6",
+      "dec_ge_6"
+    ],
+    "selection_side_rules_4a1": "Orden de fuente de equipos: bt2_teams (vía bt2_events), columnas home_team/away de raw_sportmonks_fixtures, luego pick_inputs.payload_json.manifest_row (home_team_sm, away_team_sm) — misma ventana de matching que el backfill. Misma canon/alias que h2h backfill. Draw si draw/empate/x. unknown si no hay selection o el nombre no mapea.",
+    "what_this_does_not_prove": [
+      "No es test estadístico de edge ni CI.",
+      "Estratos tier B aún bajo signal_reading_ban para lenguaje de 'señal'.",
+      "Múltiples comparaciones sin corrección — exploratorio.",
+      "Caveats baseline pre-Fase 4 siguen vigentes (mezcla source_path, VP, pendientes)."
+    ]
+  },
+  "selection_side_audit_4a1": {
+    "distribution": {
+      "home": 137,
+      "away": 125,
+      "unknown": 19,
+      "unknown_resolved_teams": 16
+    },
+    "unknown_count_with_manifest_4a1": 19,
+    "unknown_count_legacy_join_only": 218,
+    "unknown_reduced_by": 199,
+    "note": "COALESCE con manifest_row (pick_inputs) tras bt2_teams y raw_sportmonks columnas."
+  },
+  "caveat_selection_side_residual": "Puede quedar unknown si no hay fila pick_inputs, selection vacía, o rótulo de equipo aún no alineable.",
+  "diagnosis_notes": {
+    "roi_contribution_by_source_path_scored_picks": [
+      {
+        "source_path": "sportmonks_between_subset5_fallback",
+        "roi_flat_stake_units_on_scored": -16.69,
+        "pct_of_total_scored_roi": 71.2335
+      },
+      {
+        "source_path": "daily_shadow_sm_toa",
+        "roi_flat_stake_units_on_scored": -4.88,
+        "pct_of_total_scored_roi": 20.828
+      },
+      {
+        "source_path": "cdm_shadow",
+        "roi_flat_stake_units_on_scored": -1.86,
+        "pct_of_total_scored_roi": 7.9385
+      }
+    ],
+    "leagues_sorted_by_roi_units": [
+      {
+        "league_name": "Serie A",
+        "roi_flat_stake_units": -20.18
+      },
+      {
+        "league_name": "Bundesliga",
+        "roi_flat_stake_units": -9.18
+      },
+      {
+        "league_name": "Premier League",
+        "roi_flat_stake_units": -6.69
+      },
+      {
+        "league_name": "La Liga",
+        "roi_flat_stake_units": -6.13
+      },
+      {
+        "league_name": "Ligue 1",
+        "roi_flat_stake_units": 18.75
+      }
+    ]
+  },
+  "verdict": {
+    "primary_negative_driver_source_path": {
+      "source_path": "sportmonks_between_subset5_fallback",
+      "roi_flat_stake_units_on_scored": -16.69,
+      "pct_of_total_scored_roi": 71.2335
+    },
+    "leagues_positive_roi_units_on_scored_sample": [
+      {
+        "league_name": "Ligue 1",
+        "roi_flat_stake_units": 18.75,
+        "scored_approx_note": "ver by_league"
+      }
+    ],
+    "phase_4b_selective_release": "No recomendado solo con este diagnóstico; requiere reglas pre-registradas y validación temporal adicional."
+  },
+  "artifacts_4a1": {
+    "preregister_phase4b": "preregister_phase4b.md"
+  }
+}

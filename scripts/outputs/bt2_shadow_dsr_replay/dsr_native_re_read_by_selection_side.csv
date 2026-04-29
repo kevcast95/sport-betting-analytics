@@ -1,0 +1,4 @@
+selection_side,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct
+away,88,88,47,41,0,0,0,0.534091,1.57,1.784091
+draw,1,1,1,0,0,0,0,1.0,1.8,180.0
+home,170,170,86,84,0,0,0,0.505882,-10.71,-6.3

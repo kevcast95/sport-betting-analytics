@@ -1,0 +1,8 @@
+time_window,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct,interpretation_tier,signal_reading_banned_4a1,small_sample_warning
+2026_month_01,60,59,16,43,0,0,1,0.271186,-10.63,-18.016949,C_adequate_descriptive,False,False
+2026_month_02,60,58,25,33,0,0,2,0.431034,-0.55,-0.948276,C_adequate_descriptive,False,False
+2026_month_03,60,59,21,38,0,0,1,0.355932,-5.51,-9.338983,C_adequate_descriptive,False,False
+2026_month_04,60,47,19,28,0,11,2,0.404255,-3.83,-8.148936,B_weak_exploratory,True,False
+2025_Jan_subset5_window,20,19,10,9,0,0,1,0.526316,2.49,13.105263,A_inadequate,True,True
+2025_Jul_subset5_recovery,20,19,9,10,0,0,1,0.473684,-0.52,-2.736842,A_inadequate,True,True
+daily_shadow,17,14,4,10,0,3,0,0.285714,-4.88,-34.857143,A_inadequate,True,True

@@ -1,0 +1,4 @@
+source_path,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct,interpretation_tier,signal_reading_banned_4a1,small_sample_warning
+sportmonks_between_subset5_fallback,180,176,62,114,0,0,4,0.352273,-16.69,-9.482955,C_adequate_descriptive,False,False
+cdm_shadow,100,85,38,47,0,11,4,0.447059,-1.86,-2.188235,C_adequate_descriptive,False,False
+daily_shadow_sm_toa,17,14,4,10,0,3,0,0.285714,-4.88,-34.857143,A_inadequate,True,True

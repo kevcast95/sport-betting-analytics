@@ -1,0 +1,4 @@
+run_group,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct,interpretation_tier,signal_reading_banned_4a1,small_sample_warning
+subset5_2026_monthly,240,223,81,142,0,11,6,0.363229,-20.52,-9.201794,C_adequate_descriptive,False,False
+subset5_2025_backfill_or_recovery,40,38,19,19,0,0,2,0.5,1.97,5.184211,B_weak_exploratory,True,False
+daily_shadow,17,14,4,10,0,3,0,0.285714,-4.88,-34.857143,A_inadequate,True,True

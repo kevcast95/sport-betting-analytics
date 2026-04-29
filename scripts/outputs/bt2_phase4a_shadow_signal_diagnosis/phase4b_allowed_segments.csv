@@ -1,0 +1,30 @@
+dimension,segment_id,primary_analysis_4b,use_in_validation,notes
+source_path,cdm_shadow,YES,YES,Univariado; comparar disc vs val
+source_path,sportmonks_between_subset5_fallback,YES,YES,Univariado; comparar disc vs val
+source_path,daily_shadow_sm_toa,NO,OBSERVACION,Excluido criterio *promising*; n~17 total — solo anexo/robustez
+league,Premier League,YES,YES,sm_league_id 8 o nombre fijo en DB
+league,La Liga,YES,YES,sm_league_id 564
+league,Serie A,YES,YES,sm_league_id 384
+league,Ligue 1,YES,YES,sm_league_id 301
+league,Bundesliga,YES,YES,sm_league_id 82
+league,Unknown,BY_CASE,NO_INTERPRET,No declarar *promising*
+odds_band,dec_lt_2,YES,YES,Definicion fija 4A
+odds_band,dec_2_to_2_5,YES,YES,Definicion fija 4A
+odds_band,dec_2_5_to_3,YES,YES,Definicion fija 4A
+odds_band,dec_3_to_4,YES,YES,Definicion fija 4A
+odds_band,dec_4_to_6,YES,YES,Definicion fija 4A
+odds_band,dec_ge_6,YES,YES,Definicion fija 4A
+odds_band,unknown_odds,NO,NO,Excluido *promising* (sin scored util)
+selection_side,home,YES,YES,Con manifest+canon 4A.1
+selection_side,away,YES,YES,Con manifest+canon 4A.1
+selection_side,draw,BY_CASE,BY_CASE,Solo si scored>=20 en AMBAS particiones; si no, no *promising*
+selection_side,unknown,NO,NO,No *promising*
+selection_side,unknown_resolved_teams,NO,NO,No *promising* primario
+time_window,2025_Jan_subset5_window,DESCRIPTIVO,BY_RULE,Comparar solo bajo otra dimensión; no 2D con otras
+time_window,2025_Jul_subset5_recovery,DESCRIPTIVO,BY_RULE,Idem
+time_window,2026_month_01,DISCOVERY_ONLY,IMPLICITO,Incluido en discovery runs; no re-etiquetar *promising* “solo por mes” si ya aplica a path/liga
+time_window,2026_month_02,DISCOVERY_ONLY,IMPLICITO,Idem
+time_window,2026_month_03,DISCOVERY_ONLY,IMPLICITO,Idem
+time_window,2026_month_04,VALIDATION_ONLY,IMPLICITO,Incluido en validation runs
+time_window,daily_shadow,VALIDATION_ONLY+ANNEX,OBSERVACION,Runs daily solo en val; n bajo; no *promising* por path
+cross_combination,any_2d,NO,NO,Prohibido criterio *promising*; tablas anexo con celda n>=50 opcionales

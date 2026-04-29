@@ -1,0 +1,260 @@
+source_shadow_pick_id,home_team,away_team,consensus_FT_1X2_json,favorite_side_by_market,dsr_selection_side_canonical,favorite_benchmark_selection,same_pick_yes_no,evaluation_status_dsr,evaluation_status_baseline_non_dsr,evaluation_status_favorite,roi_dsr,roi_baseline_non_dsr,roi_favorite
+149,Brentford,Arsenal,"{""away"": 1.5, ""home"": 6.0, ""draw"": 4.5}",away,away,away,yes,hit,hit,hit,0.5,0.51,0.5
+157,Nice,Rennes,"{""home"": 2.325, ""away"": 3.125, ""draw"": 3.2649999999999997}",home,home,home,yes,hit,hit,hit,1.3250000000000002,1.25,1.3250000000000002
+165,Valencia,Real Madrid,"{""away"": 1.3849999999999998, ""home"": 7.7, ""draw"": 4.875}",away,away,away,yes,hit,hit,hit,0.385,0.3400000000000001,0.3849999999999998
+150,Tottenham Hotspur,Newcastle United,"{""away"": 1.77, ""home"": 3.85, ""draw"": 4.5}",away,away,away,yes,hit,hit,hit,0.77,0.77,0.77
+151,AFC Bournemouth,Everton,"{""home"": 1.69, ""away"": 5.025, ""draw"": 3.87}",home,home,home,yes,hit,hit,hit,0.69,0.69,0.69
+152,Aston Villa,Leicester City,"{""home"": 1.32, ""away"": 8.5, ""draw"": 5.7}",home,home,home,yes,hit,hit,hit,0.32000000000000006,0.33000000000000007,0.32000000000000006
+158,Saint-Étienne,Reims,"{""home"": 3.65, ""away"": 2.04, ""draw"": 3.44}",away,away,away,yes,miss,hit,miss,-1.0,2.7,-1.0
+159,LOSC Lille,Nantes,"{""home"": 1.5350000000000001, ""away"": 6.5, ""draw"": 4.17}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+161,Venezia,Empoli,"{""away"": 3.0, ""home"": 2.6, ""draw"": 3.0300000000000002}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+162,Fiorentina,Napoli,"{""home"": 3.05, ""away"": 2.5, ""draw"": 3.1}",away,away,away,yes,hit,miss,hit,1.5,-1.0,1.5
+163,Hellas Verona,Udinese,"{""home"": 3.15, ""away"": 2.46, ""draw"": 3.0}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+164,Monza,Cagliari,"{""away"": 3.025, ""home"": 2.45, ""draw"": 3.15}",home,home,home,yes,miss,hit,miss,-1.0,2.1,-1.0
+153,Borussia Dortmund,Bayer 04 Leverkusen,"{""away"": 1.94, ""home"": 3.575, ""draw"": 3.6500000000000004}",away,away,away,yes,hit,hit,hit,0.94,0.95,0.94
+166,Rayo Vallecano,Celta de Vigo,"{""away"": 2.74, ""home"": 2.74, ""draw"": 3.1}",home,home,home,yes,hit,miss,hit,1.7400000000000002,-1.0,1.7400000000000002
+154,TSG Hoffenheim,VfL Wolfsburg,"{""home"": 2.3600000000000003, ""away"": 2.955, ""draw"": 3.5}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+155,Heidenheim,FC Union Berlin,"{""home"": 2.85, ""away"": 2.55, ""draw"": 3.2649999999999997}",away,away,away,yes,miss,hit,miss,-1.0,1.85,-1.0
+156,SC Freiburg,Holstein Kiel,"{""away"": 6.725, ""home"": 1.435, ""draw"": 4.8}",home,home,home,yes,hit,miss,hit,0.43500000000000005,-1.0,0.43500000000000005
+167,Deportivo Alavés,Girona,"{""home"": 3.2, ""away"": 2.4, ""draw"": 3.075}",away,away,away,yes,hit,miss,hit,1.4,-1.0,1.4
+168,Real Valladolid,Real Betis,"{""away"": 1.68, ""home"": 5.525, ""draw"": 3.625}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+169,Liverpool,AFC Bournemouth,"{""away"": 9.0, ""home"": 1.3, ""draw"": 6.25}",home,home,home,yes,hit,miss,hit,0.30000000000000004,-1.0,0.30000000000000004
+177,Rennes,Olympique Marseille,"{""away"": 1.95, ""home"": 3.8, ""draw"": 3.6}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+185,Girona,Rayo Vallecano,"{""home"": 2.27, ""away"": 3.3, ""draw"": 3.225}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+186,Villarreal,Real Oviedo,"{""away"": 8.5, ""home"": 1.39, ""draw"": 4.725}",home,home,home,yes,hit,miss,hit,0.3899999999999999,-1.0,0.3899999999999999
+170,Aston Villa,Newcastle United,"{""home"": 2.33, ""away"": 2.95, ""draw"": 3.54}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+171,Brighton & Hove Albion,Fulham,"{""home"": 1.875, ""away"": 4.1, ""draw"": 3.7}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+172,Sunderland,West Ham United,"{""home"": 3.45, ""away"": 2.29, ""draw"": 3.16}",away,away,away,yes,miss,hit,miss,-1.0,2.55,-1.0
+180,Nice,Toulouse,"{""home"": 2.12, ""away"": 3.6, ""draw"": 3.3099999999999996}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+187,Mallorca,FC Barcelona,"{""away"": 1.355, ""home"": 8.225, ""draw"": 5.425000000000001}",away,away,away,yes,hit,hit,hit,0.355,0.3400000000000001,0.355
+188,Deportivo Alavés,Levante,"{""home"": 2.13, ""away"": 3.8499999999999996, ""draw"": 3.1100000000000003}",home,home,home,yes,hit,hit,hit,1.13,1.15,1.13
+174,Eintracht Frankfurt,Werder Bremen,"{""home"": 1.665, ""away"": 4.75, ""draw"": 4.3}",home,home,home,yes,hit,hit,hit,0.665,0.69,0.665
+175,Heidenheim,VfL Wolfsburg,"{""home"": 2.775, ""away"": 2.51, ""draw"": 3.3899999999999997}",away,away,away,yes,hit,miss,hit,1.5099999999999998,-1.0,1.5099999999999998
+176,FC Union Berlin,VfB Stuttgart,"{""home"": 3.8, ""away"": 1.935, ""draw"": 3.75}",away,away,away,yes,miss,hit,miss,-1.0,2.6,-1.0
+181,Genoa,Lecce,"{""home"": 1.71, ""away"": 5.67, ""draw"": 3.45}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+182,Sassuolo,Napoli,"{""away"": 1.635, ""home"": 5.865, ""draw"": 3.775}",away,away,away,yes,hit,hit,hit,0.635,0.6000000000000001,0.635
+183,AC Milan,Cremonese,"{""home"": 1.39, ""away"": 8.025, ""draw"": 4.824999999999999}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+184,Roma,Bologna,"{""home"": 2.1, ""away"": 3.76, ""draw"": 3.2}",home,home,home,yes,hit,hit,hit,1.1,1.1,1.1
+266,Crystal Palace,Fulham,"{""home"": 2.2, ""away"": 3.5, ""draw"": 3.25}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+267,Liverpool,Leeds United,"{""away"": 6.0, ""home"": 1.53, ""draw"": 4.33}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+268,Brentford,Tottenham Hotspur,"{""home"": 2.3, ""away"": 3.0, ""draw"": 3.55}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+269,Sunderland,Manchester City,"{""away"": 1.41, ""home"": 7.5, ""draw"": 4.9}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+290,Toulouse,Lens,"{""away"": 2.9, ""home"": 2.49, ""draw"": 3.3}",home,home,home,yes,miss,hit,miss,-1.0,1.9,-1.0
+302,Cagliari,AC Milan,"{""away"": 1.6, ""home"": 5.875, ""draw"": 3.8}",away,away,away,yes,hit,hit,hit,0.6000000000000001,0.5900000000000001,0.6000000000000001
+314,Rayo Vallecano,Getafe,"{""away"": 4.65, ""home"": 2.05, ""draw"": 2.88}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+270,Aston Villa,Nottingham Forest,"{""home"": 1.87, ""away"": 4.2, ""draw"": 3.57}",home,home,home,yes,hit,hit,hit,0.8700000000000001,0.8700000000000001,0.8700000000000001
+271,Brighton & Hove Albion,Burnley,"{""home"": 1.48, ""away"": 7.0, ""draw"": 4.5}",home,home,home,yes,hit,hit,hit,0.48,0.51,0.48
+272,Wolverhampton Wanderers,West Ham United,"{""away"": 2.75, ""home"": 2.65, ""draw"": 3.3}",home,home,home,yes,hit,miss,hit,1.65,-1.0,1.65
+273,AFC Bournemouth,Arsenal,"{""away"": 1.5, ""home"": 6.15, ""draw"": 4.5}",away,away,away,yes,hit,hit,hit,0.5,0.44999999999999996,0.5
+292,Nice,Strasbourg,"{""home"": 3.2, ""away"": 2.2, ""draw"": 3.525}",away,unknown,away,no,no_evaluable,miss,miss,,-1.0,-1.0
+293,LOSC Lille,Rennes,"{""home"": 1.69, ""away"": 4.8, ""draw"": 3.95}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+303,Como,Udinese,"{""home"": 1.755, ""away"": 5.0, ""draw"": 3.5599999999999996}",home,home,home,yes,hit,hit,hit,0.7549999999999999,0.77,0.7549999999999999
+304,Genoa,Pisa,"{""home"": 1.95, ""away"": 4.85, ""draw"": 3.0}",home,unknown,home,no,no_evaluable,miss,miss,,-1.0,-1.0
+305,Sassuolo,Parma,"{""away"": 4.199999999999999, ""home"": 2.0, ""draw"": 3.2}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+307,Atalanta,Roma,"{""away"": 3.4, ""home"": 2.3, ""draw"": 3.0}",home,unknown,home,no,no_evaluable,miss,hit,,-1.0,1.2999999999999998
+315,Celta de Vigo,Valencia,"{""home"": 1.99, ""away"": 4.1, ""draw"": 3.25}",home,home,home,yes,hit,hit,hit,0.99,0.95,0.99
+316,Osasuna,Athletic Club,"{""away"": 2.55, ""home"": 3.12, ""draw"": 2.95}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+317,Elche,Villarreal,"{""home"": 3.4, ""away"": 2.15, ""draw"": 3.5}",away,away,away,yes,hit,miss,hit,1.15,-1.0,1.15
+318,Espanyol,FC Barcelona,"{""away"": 1.49, ""home"": 6.0, ""draw"": 4.75}",away,away,away,yes,hit,hit,hit,0.49,0.48,0.49
+274,Leeds United,Manchester United,"{""home"": 2.65, ""away"": 2.65, ""draw"": 3.35}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+275,Everton,Brentford,"{""away"": 3.0, ""home"": 2.45, ""draw"": 3.15}",home,unknown,home,no,no_evaluable,hit,miss,,2.06,-1.0
+276,Newcastle United,Crystal Palace,"{""away"": 5.0, ""home"": 1.67, ""draw"": 3.95}",home,home,home,yes,hit,miss,hit,0.6699999999999999,-1.0,0.6699999999999999
+277,Tottenham Hotspur,Sunderland,"{""away"": 4.2, ""home"": 1.91, ""draw"": 3.4}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+295,Le Havre,Angers SCO,"{""away"": 3.5, ""home"": 2.15, ""draw"": 3.3}",home,home,home,yes,hit,miss,hit,1.15,-1.0,1.15
+296,Lorient,Metz,"{""home"": 1.83, ""away"": 4.3, ""draw"": 3.6}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+297,Brest,Auxerre,"{""away"": 4.34, ""home"": 1.8849999999999998, ""draw"": 3.4}",home,home,home,yes,hit,miss,hit,0.885,-1.0,0.8849999999999998
+308,Lazio,Napoli,"{""home"": 3.7, ""away"": 2.24, ""draw"": 2.975}",away,away,away,yes,hit,miss,hit,1.2400000000000002,-1.0,1.2400000000000002
+309,Fiorentina,Cremonese,"{""away"": 4.875, ""home"": 1.74, ""draw"": 3.675}",home,home,home,yes,hit,miss,hit,0.74,-1.0,0.74
+310,Hellas Verona,Torino,"{""home"": 2.75, ""away"": 2.9, ""draw"": 2.85}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+311,Inter,Bologna,"{""away"": 7.5, ""home"": 1.4, ""draw"": 4.775}",home,home,home,yes,hit,miss,hit,0.3999999999999999,-1.0,0.3999999999999999
+319,Sevilla,Levante,"{""away"": 4.8, ""home"": 1.74, ""draw"": 3.6}",home,home,home,yes,miss,hit,miss,-1.0,4.2,-1.0
+320,Real Madrid,Real Betis,"{""away"": 5.85, ""home"": 1.51, ""draw"": 4.6}",home,home,home,yes,hit,miss,hit,0.51,-1.0,0.51
+321,Deportivo Alavés,Real Oviedo,"{""home"": 1.87, ""away"": 5.25, ""draw"": 3.065}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+322,Mallorca,Girona,"{""away"": 3.5, ""home"": 2.2, ""draw"": 3.15}",home,home,home,yes,miss,hit,miss,-1.0,2.6,-1.0
+323,Real Sociedad,Atlético Madrid,"{""away"": 1.91, ""home"": 4.0, ""draw"": 3.6}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+312,Pisa,Como,"{""away"": 1.76, ""home"": 5.275, ""draw"": 3.4}",away,away,away,yes,hit,hit,hit,0.76,0.74,0.76
+313,Lecce,Roma,"{""away"": 1.77, ""home"": 5.25, ""draw"": 3.325}",away,away,away,yes,hit,hit,hit,0.77,0.77,0.77
+278,Eintracht Frankfurt,Borussia Dortmund,"{""away"": 2.04, ""home"": 3.4, ""draw"": 3.7}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+324,Getafe,Real Sociedad,"{""home"": 3.55, ""away"": 2.35, ""draw"": 2.85}",away,away,away,yes,hit,miss,hit,1.35,-1.0,1.35
+279,Heidenheim,FC Köln,"{""home"": 2.745, ""away"": 2.505, ""draw"": 3.45}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+280,FC Union Berlin,FSV Mainz 05,"{""away"": 3.675, ""home"": 2.15, ""draw"": 3.125}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+281,SC Freiburg,Hamburger SV,"{""away"": 4.95, ""home"": 1.745, ""draw"": 3.6}",home,home,home,yes,hit,miss,hit,0.7450000000000001,-1.0,0.7450000000000001
+282,Bayer 04 Leverkusen,VfB Stuttgart,"{""home"": 2.15, ""away"": 3.1, ""draw"": 3.8}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+325,Real Oviedo,Real Betis,"{""home"": 4.0, ""away"": 2.03, ""draw"": 3.3}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+283,Borussia Mönchengladbach,FC Augsburg,"{""away"": 4.0, ""home"": 1.91, ""draw"": 3.625}",home,home,home,yes,hit,miss,hit,0.9099999999999999,-1.0,0.9099999999999999
+285,VfB Stuttgart,Eintracht Frankfurt,"{""away"": 4.75, ""home"": 1.625, ""draw"": 4.3}",home,home,home,yes,hit,miss,hit,0.625,-1.0,0.625
+286,FSV Mainz 05,Heidenheim,"{""away"": 4.55, ""home"": 1.77, ""draw"": 3.75}",home,home,home,yes,hit,miss,hit,0.77,-1.0,0.77
+287,Borussia Dortmund,Werder Bremen,"{""home"": 1.3650000000000002, ""away"": 7.5, ""draw"": 5.225}",home,home,home,yes,hit,hit,hit,0.365,0.3700000000000001,0.3650000000000002
+288,VfL Wolfsburg,St. Pauli,"{""away"": 4.3, ""home"": 1.835, ""draw"": 3.6}",home,home,home,yes,hit,miss,hit,0.835,-1.0,0.835
+299,Monaco,Lorient,"{""home"": 1.66, ""away"": 4.8, ""draw"": 4.2}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+300,Paris Saint Germain,LOSC Lille,"{""away"": 9.05, ""draw"": 6.0, ""home"": 1.3}",home,home,home,yes,hit,miss,hit,0.30000000000000004,-1.0,0.30000000000000004
+301,Lens,Auxerre,"{""away"": 7.5, ""home"": 1.435, ""draw"": 4.52}",home,home,home,yes,hit,miss,hit,0.43500000000000005,-1.0,0.43500000000000005
+326,Aston Villa,Brentford,"{""home"": 2.2, ""away"": 3.3, ""draw"": 3.4}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+327,Manchester United,Fulham,"{""away"": 5.4, ""home"": 1.57, ""draw"": 4.5}",home,home,home,yes,hit,miss,hit,0.5700000000000001,-1.0,0.5700000000000001
+328,Nottingham Forest,Crystal Palace,"{""away"": 3.8, ""home"": 2.07, ""draw"": 3.3}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+329,Tottenham Hotspur,Manchester City,"{""away"": 1.68, ""home"": 4.9, ""draw"": 4.05}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+338,VfB Stuttgart,SC Freiburg,"{""away"": 5.0, ""home"": 1.63, ""draw"": 4.15}",home,home,home,yes,hit,miss,hit,0.6299999999999999,-1.0,0.6299999999999999
+351,Nice,Brest,"{""away"": 3.3, ""home"": 2.25, ""draw"": 3.375}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+352,Toulouse,Auxerre,"{""away"": 5.0, ""home"": 1.77, ""draw"": 3.49}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+353,Angers SCO,Metz,"{""home"": 2.25, ""away"": 3.375, ""draw"": 3.25}",home,home,home,yes,hit,hit,hit,1.25,1.25,1.25
+354,Strasbourg,Paris Saint Germain,"{""away"": 1.585, ""home"": 5.25, ""draw"": 4.4}",away,away,away,yes,hit,hit,hit,0.585,0.5700000000000001,0.585
+362,Torino,Lecce,"{""away"": 3.965, ""home"": 2.2, ""draw"": 2.85}",home,home,home,yes,hit,miss,hit,1.2000000000000002,-1.0,1.2000000000000002
+363,Como,Atalanta,"{""away"": 3.425, ""home"": 2.1950000000000003, ""draw"": 3.275}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+364,Cremonese,Inter,"{""home"": 11.0, ""draw"": 6.0, ""away"": 1.31}",away,away,away,yes,hit,miss,hit,0.31000000000000005,-1.0,0.31000000000000005
+365,Parma,Juventus,"{""away"": 1.36, ""home"": 9.125, ""draw"": 4.725}",away,away,away,yes,hit,hit,hit,0.3600000000000001,0.3600000000000001,0.3600000000000001
+375,Real Betis,Valencia,"{""home"": 1.87, ""away"": 4.4, ""draw"": 3.55}",home,home,home,yes,hit,hit,hit,0.8700000000000001,0.8300000000000001,0.8700000000000001
+376,Getafe,Celta de Vigo,"{""away"": 2.8, ""home"": 2.95, ""draw"": 2.8}",draw,draw,draw,yes,hit,miss,hit,1.7999999999999998,-1.0,1.7999999999999998
+377,Athletic Club,Real Sociedad,"{""home"": 2.2, ""away"": 3.8, ""draw"": 3.08}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+330,Sunderland,Burnley,"{""away"": 4.75, ""home"": 1.83, ""draw"": 3.4}",home,home,home,yes,hit,miss,hit,0.8300000000000001,-1.0,0.8300000000000001
+366,Udinese,Roma,"{""away"": 1.98, ""home"": 4.35, ""draw"": 3.1}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+378,Mallorca,Sevilla,"{""home"": 2.7, ""away"": 2.9, ""draw"": 3.0}",home,draw,home,no,miss,hit,hit,-1.0,1.7000000000000002,1.7000000000000002
+367,Bologna,AC Milan,"{""away"": 2.5, ""home"": 3.0, ""draw"": 3.1}",away,away,away,yes,hit,hit,hit,1.5,1.5,1.5
+331,Leeds United,Nottingham Forest,"{""home"": 2.18, ""away"": 3.42, ""draw"": 3.34}",home,home,home,yes,hit,hit,hit,1.1800000000000002,1.19,1.1800000000000002
+340,FC Union Berlin,Eintracht Frankfurt,"{""away"": 3.425, ""home"": 2.1, ""draw"": 3.5}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+355,Metz,LOSC Lille,"{""away"": 1.5350000000000001, ""home"": 6.0, ""draw"": 4.3}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+368,Hellas Verona,Pisa,"{""home"": 2.575, ""away"": 3.0, ""draw"": 3.0}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+379,Celta de Vigo,Osasuna,"{""away"": 4.15, ""home"": 1.95, ""draw"": 3.35}",home,home,home,yes,miss,hit,miss,-1.0,3.2,-1.0
+332,Manchester United,Tottenham Hotspur,"{""home"": 1.61, ""away"": 5.0, ""draw"": 4.38}",home,home,home,yes,hit,hit,hit,0.6100000000000001,0.6299999999999999,0.6100000000000001
+333,Arsenal,Sunderland,"{""away"": 11.0, ""draw"": 5.7, ""home"": 1.31}",home,home,home,yes,hit,hit,hit,0.31000000000000005,0.28,0.31000000000000005
+334,AFC Bournemouth,Aston Villa,"{""away"": 2.35, ""home"": 2.85, ""draw"": 3.55}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+335,Burnley,West Ham United,"{""home"": 3.15, ""away"": 2.25, ""draw"": 3.5}",away,away,away,yes,hit,miss,hit,1.25,-1.0,1.25
+336,Fulham,Everton,"{""away"": 3.4, ""home"": 2.2, ""draw"": 3.3}",home,home,home,yes,miss,hit,miss,-1.0,2.32,-1.0
+337,Wolverhampton Wanderers,Chelsea,"{""away"": 1.6, ""home"": 5.48, ""draw"": 4.15}",away,away,away,yes,hit,hit,hit,0.6000000000000001,0.6000000000000001,0.6000000000000001
+341,Heidenheim,Hamburger SV,"{""home"": 2.8899999999999997, ""away"": 2.4, ""draw"": 3.4}",away,away,away,yes,hit,miss,hit,1.4,-1.0,1.4
+342,FSV Mainz 05,FC Augsburg,"{""away"": 3.7, ""home"": 2.0, ""draw"": 3.5}",home,home,home,yes,hit,miss,hit,1.0,-1.0,1.0
+343,St. Pauli,VfB Stuttgart,"{""home"": 4.75, ""away"": 1.74, ""draw"": 3.6500000000000004}",away,away,away,yes,miss,hit,miss,-1.0,4.0,-1.0
+344,SC Freiburg,Werder Bremen,"{""home"": 2.0, ""away"": 3.605, ""draw"": 3.55}",home,home,home,yes,hit,hit,hit,1.0,1.0,1.0
+345,VfL Wolfsburg,Borussia Dortmund,"{""away"": 1.69, ""home"": 4.53, ""draw"": 4.1}",away,away,away,yes,hit,hit,hit,0.69,0.6699999999999999,0.69
+346,Borussia Mönchengladbach,Bayer 04 Leverkusen,"{""away"": 2.0, ""home"": 3.65, ""draw"": 3.6}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+356,Lens,Rennes,"{""home"": 1.56, ""away"": 5.75, ""draw"": 4.3}",home,home,home,yes,hit,hit,hit,0.56,0.56,0.56
+357,Brest,Lorient,"{""home"": 2.3, ""away"": 3.275, ""draw"": 3.16}",home,home,home,yes,hit,hit,hit,1.2999999999999998,1.35,1.2999999999999998
+369,Genoa,Napoli,"{""home"": 4.5, ""away"": 2.0, ""draw"": 3.0}",away,away,away,yes,hit,miss,hit,1.0,-1.0,1.0
+370,Fiorentina,Torino,"{""home"": 1.67, ""away"": 5.3, ""draw"": 3.775}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+381,Real Sociedad,Elche,"{""away"": 5.2, ""home"": 1.65, ""draw"": 4.0}",home,home,home,yes,hit,miss,hit,0.6499999999999999,-1.0,0.6499999999999999
+347,FC Köln,RB Leipzig,"{""home"": 3.55, ""away"": 1.95, ""draw"": 3.925}",away,away,away,yes,hit,miss,hit,0.95,-1.0,0.95
+348,FC Bayern München,TSG Hoffenheim,"{""away"": 8.525, ""draw"": 6.5, ""home"": 1.31}",home,home,home,yes,hit,hit,hit,0.31000000000000005,0.27,0.31000000000000005
+359,Nice,Monaco,"{""away"": 2.1, ""home"": 3.2, ""draw"": 3.825}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+360,Angers SCO,Toulouse,"{""home"": 4.0, ""away"": 2.05, ""draw"": 3.2}",away,away,away,yes,miss,hit,miss,-1.0,3.0,-1.0
+361,Le Havre,Strasbourg,"{""home"": 4.2, ""away"": 1.87, ""draw"": 3.625}",away,away,away,yes,miss,hit,miss,-1.0,3.3,-1.0
+371,Bologna,Parma,"{""home"": 1.67, ""away"": 5.35, ""draw"": 3.76}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+372,Lecce,Udinese,"{""home"": 3.08, ""away"": 2.6550000000000002, ""draw"": 2.8049999999999997}",away,away,away,yes,miss,hit,miss,-1.0,2.1,-1.0
+373,Sassuolo,Inter,"{""away"": 1.43, ""home"": 7.5, ""draw"": 4.55}",away,away,away,yes,hit,hit,hit,0.42999999999999994,0.41999999999999993,0.42999999999999994
+382,Deportivo Alavés,Getafe,"{""home"": 2.35, ""away"": 4.05, ""draw"": 2.7}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+383,Athletic Club,Levante,"{""home"": 1.61, ""away"": 5.8, ""draw"": 3.87}",home,home,home,yes,hit,hit,hit,0.6100000000000001,0.6100000000000001,0.6100000000000001
+384,Sevilla,Girona,"{""away"": 3.65, ""home"": 2.07, ""draw"": 3.4}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+385,Atlético Madrid,Real Betis,"{""home"": 1.47, ""away"": 6.55, ""draw"": 4.7}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+349,Borussia Dortmund,FSV Mainz 05,"{""home"": 1.61, ""away"": 5.175000000000001, ""draw"": 4.25}",home,home,home,yes,hit,hit,hit,0.6100000000000001,0.6100000000000001,0.6100000000000001
+386,Brighton & Hove Albion,Nottingham Forest,"{""home"": 2.17, ""away"": 3.4, ""draw"": 3.4}",home,unknown,home,no,no_evaluable,hit,hit,,1.19,1.17
+387,Fulham,Tottenham Hotspur,"{""home"": 2.0, ""away"": 3.6, ""draw"": 3.65}",home,unknown,home,no,no_evaluable,hit,hit,,1.0,1.0
+388,Manchester United,Crystal Palace,"{""away"": 6.0, ""home"": 1.52, ""draw"": 4.5}",home,home,home,yes,hit,miss,hit,0.52,-1.0,0.52
+389,Arsenal,Chelsea,"{""home"": 1.56, ""away"": 5.75, ""draw"": 4.3}",home,home,home,yes,hit,hit,hit,0.56,0.5700000000000001,0.56
+398,VfB Stuttgart,VfL Wolfsburg,"{""home"": 1.36, ""away"": 7.25, ""draw"": 5.5}",home,home,home,yes,hit,hit,hit,0.3600000000000001,0.3400000000000001,0.3600000000000001
+399,Eintracht Frankfurt,SC Freiburg,"{""home"": 2.105, ""away"": 3.4, ""draw"": 3.5}",home,home,home,yes,hit,hit,hit,1.105,1.1,1.105
+400,Hamburger SV,RB Leipzig,"{""home"": 3.8, ""away"": 1.89, ""draw"": 3.775}",away,away,away,yes,hit,miss,hit,0.8899999999999999,-1.0,0.8899999999999999
+410,Paris,Nice,"{""away"": 2.85, ""home"": 2.5, ""draw"": 3.3}",home,home,home,yes,hit,miss,hit,1.5,-1.0,1.5
+411,LOSC Lille,Nantes,"{""home"": 1.55, ""away"": 6.0, ""draw"": 4.15}",home,home,home,yes,hit,hit,hit,0.55,0.54,0.55
+412,Lorient,Auxerre,"{""away"": 3.6, ""home"": 2.15, ""draw"": 3.2}",home,unknown,home,no,no_evaluable,miss,miss,,-1.0,-1.0
+413,Metz,Brest,"{""away"": 2.15, ""home"": 3.4, ""draw"": 3.325}",away,away,away,yes,hit,hit,hit,1.15,1.2000000000000002,1.15
+422,Cremonese,AC Milan,"{""away"": 1.38, ""home"": 8.5, ""draw"": 4.6}",away,away,away,yes,hit,hit,hit,0.3799999999999999,0.3799999999999999,0.3799999999999999
+423,Sassuolo,Atalanta,"{""away"": 2.1, ""home"": 3.575, ""draw"": 3.325}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+424,Torino,Lazio,"{""away"": 2.85, ""home"": 2.79, ""draw"": 2.85}",home,home,home,yes,hit,miss,hit,1.79,-1.0,1.79
+425,Roma,Juventus,"{""home"": 2.6, ""away"": 2.975, ""draw"": 3.01}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+434,Elche,Espanyol,"{""home"": 2.47, ""away"": 3.0, ""draw"": 3.2}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+435,Valencia,Osasuna,"{""away"": 3.15, ""home"": 2.45, ""draw"": 3.1}",home,home,home,yes,hit,miss,hit,1.4500000000000002,-1.0,1.4500000000000002
+436,Real Betis,Sevilla,"{""home"": 1.7, ""away"": 5.0, ""draw"": 3.8}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+437,Girona,Celta de Vigo,"{""away"": 3.0, ""home"": 2.4, ""draw"": 3.31}",home,home,home,yes,miss,hit,miss,-1.0,2.0,-1.0
+426,Pisa,Bologna,"{""away"": 1.92, ""home"": 4.275, ""draw"": 3.3}",away,away,away,yes,hit,hit,hit,0.9199999999999999,0.95,0.9199999999999999
+427,Udinese,Fiorentina,"{""away"": 2.385, ""home"": 3.2, ""draw"": 3.075}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+438,Real Madrid,Getafe,"{""away"": 9.5, ""home"": 1.36, ""draw"": 4.7}",home,home,home,yes,miss,hit,miss,-1.0,8.0,-1.0
+390,AFC Bournemouth,Brentford,"{""home"": 2.55, ""away"": 2.65, ""draw"": 3.55}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+391,Everton,Burnley,"{""away"": 5.75, ""home"": 1.62, ""draw"": 3.85}",home,home,home,yes,hit,miss,hit,0.6200000000000001,-1.0,0.6200000000000001
+392,Leeds United,Sunderland,"{""home"": 1.82, ""away"": 4.67, ""draw"": 3.5}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+393,Wolverhampton Wanderers,Liverpool,"{""away"": 1.44, ""home"": 6.5, ""draw"": 4.75}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+394,Aston Villa,Chelsea,"{""home"": 2.7, ""away"": 2.55, ""draw"": 3.5}",away,away,away,yes,hit,miss,hit,1.5499999999999998,-1.0,1.5499999999999998
+395,Brighton & Hove Albion,Arsenal,"{""away"": 1.69, ""home"": 5.2, ""draw"": 3.85}",away,away,away,yes,hit,hit,hit,0.69,0.69,0.69
+396,Fulham,West Ham United,"{""home"": 2.3, ""away"": 3.1, ""draw"": 3.5}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+397,Manchester City,Nottingham Forest,"{""home"": 1.4, ""away"": 7.5, ""draw"": 4.9}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+401,Hamburger SV,Bayer 04 Leverkusen,"{""away"": 1.95, ""home"": 3.75, ""draw"": 3.625}",away,away,away,yes,hit,hit,hit,0.95,1.0,0.95
+439,Rayo Vallecano,Real Oviedo,"{""away"": 5.2, ""home"": 1.71, ""draw"": 3.65}",home,home,home,yes,hit,miss,hit,0.71,-1.0,0.71
+415,Paris Saint Germain,Monaco,"{""away"": 7.375, ""home"": 1.355, ""draw"": 5.75}",home,home,home,yes,miss,hit,miss,-1.0,6.5,-1.0
+428,Napoli,Torino,"{""home"": 1.56, ""away"": 6.625, ""draw"": 3.8}",home,home,home,yes,hit,hit,hit,0.56,0.56,0.56
+440,Celta de Vigo,Real Madrid,"{""home"": 3.1, ""away"": 2.4, ""draw"": 3.3}",away,away,away,yes,hit,miss,hit,1.4,-1.0,1.4
+403,Heidenheim,TSG Hoffenheim,"{""home"": 5.725, ""away"": 1.505, ""draw"": 4.6}",away,away,away,yes,hit,miss,hit,0.5049999999999999,-1.0,0.5049999999999999
+404,FSV Mainz 05,VfB Stuttgart,"{""home"": 3.7, ""away"": 1.94, ""draw"": 3.775}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+405,RB Leipzig,FC Augsburg,"{""away"": 7.0, ""home"": 1.375, ""draw"": 5.3}",home,home,home,yes,hit,miss,hit,0.375,-1.0,0.375
+406,SC Freiburg,Bayer 04 Leverkusen,"{""away"": 2.38, ""home"": 3.0, ""draw"": 3.375}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+407,VfL Wolfsburg,Hamburger SV,"{""away"": 2.755, ""home"": 2.48, ""draw"": 3.4}",home,home,home,yes,miss,hit,miss,-1.0,1.7999999999999998,-1.0
+408,FC Köln,Borussia Dortmund,"{""home"": 4.05, ""away"": 1.83, ""draw"": 3.8}",away,away,away,yes,hit,miss,hit,0.8300000000000001,-1.0,0.8300000000000001
+416,Nantes,Angers SCO,"{""away"": 3.525, ""home"": 2.25, ""draw"": 3.0}",home,home,home,yes,miss,hit,miss,-1.0,2.6,-1.0
+417,Auxerre,Strasbourg,"{""home"": 4.4, ""away"": 1.87, ""draw"": 3.5}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+418,Toulouse,Olympique Marseille,"{""away"": 2.15, ""home"": 3.3, ""draw"": 3.55}",away,away,away,yes,hit,hit,hit,1.15,1.1,1.15
+429,Cagliari,Como,"{""home"": 6.5, ""away"": 1.53, ""draw"": 4.0}",away,away,away,yes,hit,miss,hit,0.53,-1.0,0.53
+430,Atalanta,Udinese,"{""home"": 1.71, ""away"": 5.3, ""draw"": 3.6}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+441,Osasuna,Mallorca,"{""home"": 1.875, ""away"": 4.4, ""draw"": 3.4}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+442,Levante,Girona,"{""away"": 2.55, ""home"": 2.8, ""draw"": 3.4}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+443,Atlético Madrid,Real Sociedad,"{""home"": 1.59, ""away"": 5.5, ""draw"": 4.1}",home,home,home,yes,hit,hit,hit,0.5900000000000001,0.5700000000000001,0.5900000000000001
+444,Athletic Club,FC Barcelona,"{""home"": 4.7, ""away"": 1.65, ""draw"": 4.35}",away,away,away,yes,hit,miss,hit,0.6499999999999999,-1.0,0.6499999999999999
+409,St. Pauli,Eintracht Frankfurt,"{""away"": 2.615, ""home"": 2.6950000000000003, ""draw"": 3.3}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+420,LOSC Lille,Lorient,"{""home"": 1.5, ""away"": 6.5, ""draw"": 4.25}",home,unknown,home,no,no_evaluable,miss,miss,,-1.0,-1.0
+421,Nice,Rennes,"{""home"": 2.65, ""away"": 2.545, ""draw"": 3.5}",away,away,away,yes,hit,miss,hit,1.545,-1.0,1.545
+432,Lecce,Cremonese,"{""away"": 3.6, ""home"": 2.3, ""draw"": 2.9}",home,home,home,yes,hit,miss,hit,1.2999999999999998,-1.0,1.2999999999999998
+433,Bologna,Hellas Verona,"{""home"": 1.67, ""away"": 5.725, ""draw"": 3.625}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+445,Villarreal,Elche,"{""away"": 6.5, ""home"": 1.49, ""draw"": 4.7}",home,home,home,yes,hit,miss,hit,0.49,-1.0,0.49
+206,West Ham United,Wolverhampton Wanderers,"{""home"": 1.77, ""away"": 4.5, ""draw"": 3.8}",home,unknown,home,no,no_evaluable,hit,hit,,0.74,0.77
+230,Paris,Monaco,"{""away"": 1.9049999999999998, ""home"": 3.825, ""draw"": 3.75}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+242,Roma,Pisa,"{""home"": 1.335, ""away"": 9.0, ""draw"": 5.1}",home,home,home,yes,hit,hit,hit,0.33499999999999996,0.32000000000000006,0.33499999999999996
+254,Real Madrid,Girona,"{""away"": 7.7, ""home"": 1.34, ""draw"": 5.9}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+207,Arsenal,AFC Bournemouth,"{""home"": 1.455, ""away"": 6.85, ""draw"": 4.6}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+208,Burnley,Brighton & Hove Albion,"{""away"": 1.62, ""home"": 5.05, ""draw"": 4.2}",away,away,away,yes,hit,hit,hit,0.6200000000000001,0.6100000000000001,0.6200000000000001
+209,Brentford,Everton,"{""home"": 2.25, ""away"": 3.3, ""draw"": 3.3}",home,unknown,home,no,no_evaluable,miss,miss,,-1.0,-1.0
+210,Liverpool,Fulham,"{""away"": 4.67, ""home"": 1.67, ""draw"": 4.15}",home,home,home,yes,hit,miss,hit,0.6699999999999999,-1.0,0.6699999999999999
+232,Auxerre,Nantes,"{""home"": 1.91, ""away"": 4.3, ""draw"": 3.35}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+233,Rennes,Angers SCO,"{""away"": 9.45, ""home"": 1.32, ""draw"": 5.32}",home,home,home,yes,hit,miss,hit,0.32000000000000006,-1.0,0.32000000000000006
+243,Cagliari,Cremonese,"{""home"": 2.1, ""away"": 4.0, ""draw"": 3.1}",home,home,home,yes,hit,hit,hit,1.1,1.0499999999999998,1.1
+244,Torino,Hellas Verona,"{""away"": 4.4, ""home"": 1.95, ""draw"": 3.2}",home,home,home,yes,hit,miss,hit,0.95,-1.0,0.95
+245,AC Milan,Udinese,"{""home"": 1.4, ""away"": 8.25, ""draw"": 4.5}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+246,Atalanta,Juventus,"{""home"": 3.15, ""away"": 2.29, ""draw"": 3.4}",away,away,away,yes,hit,miss,hit,1.29,-1.0,1.29
+255,Real Sociedad,Deportivo Alavés,"{""away"": 4.5, ""home"": 1.8, ""draw"": 3.73}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+256,Elche,Valencia,"{""home"": 2.55, ""away"": 2.8, ""draw"": 3.34}",home,home,home,yes,hit,hit,hit,1.5499999999999998,1.5499999999999998,1.5499999999999998
+257,FC Barcelona,Espanyol,"{""away"": 8.225, ""draw"": 5.75, ""home"": 1.33}",home,home,home,yes,hit,hit,hit,0.33000000000000007,0.29000000000000004,0.33000000000000007
+258,Sevilla,Atlético Madrid,"{""away"": 3.2, ""home"": 2.25, ""draw"": 3.42}",home,home,home,yes,hit,miss,hit,1.25,-1.0,1.25
+211,Crystal Palace,Newcastle United,"{""home"": 2.9, ""away"": 2.4, ""draw"": 3.4}",away,away,away,yes,miss,hit,miss,-1.0,1.9,-1.0
+212,Nottingham Forest,Aston Villa,"{""away"": 2.7, ""home"": 2.65, ""draw"": 3.3}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+213,Sunderland,Tottenham Hotspur,"{""home"": 2.67, ""away"": 2.65, ""draw"": 3.35}",away,away,away,yes,miss,hit,miss,-1.0,1.7000000000000002,-1.0
+214,Chelsea,Manchester City,"{""home"": 3.575, ""away"": 1.94, ""draw"": 3.9}",away,away,away,yes,hit,miss,hit,0.94,-1.0,0.94
+234,Nice,Le Havre,"{""away"": 4.35, ""home"": 1.95, ""draw"": 3.3}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+235,Toulouse,LOSC Lille,"{""away"": 2.25, ""home"": 3.39, ""draw"": 3.2}",away,away,away,yes,hit,hit,hit,1.25,1.2000000000000002,1.25
+247,Genoa,Sassuolo,"{""home"": 2.15, ""away"": 3.55, ""draw"": 3.25}",home,home,home,yes,hit,hit,hit,1.15,1.15,1.15
+248,Parma,Napoli,"{""away"": 1.56, ""home"": 6.5, ""draw"": 3.8}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+249,Bologna,Lecce,"{""home"": 1.83, ""away"": 5.1, ""draw"": 3.2}",home,home,home,yes,hit,hit,hit,0.8300000000000001,0.8300000000000001,0.8300000000000001
+250,Como,Inter,"{""home"": 3.075, ""away"": 2.4, ""draw"": 3.175}",away,away,away,yes,hit,miss,hit,1.4,-1.0,1.4
+259,Osasuna,Real Betis,"{""home"": 2.25, ""away"": 3.225, ""draw"": 3.45}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+260,Mallorca,Rayo Vallecano,"{""home"": 2.35, ""away"": 3.2, ""draw"": 3.2}",home,home,home,yes,hit,hit,hit,1.35,1.35,1.35
+261,Celta de Vigo,Real Oviedo,"{""home"": 1.74, ""away"": 5.3, ""draw"": 3.5}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+262,Athletic Club,Villarreal,"{""home"": 2.05, ""away"": 3.66, ""draw"": 3.49}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+215,Manchester United,Leeds United,"{""away"": 5.325, ""home"": 1.61, ""draw"": 4.2}",home,home,home,yes,miss,hit,miss,-1.0,4.2,-1.0
+251,Fiorentina,Lazio,"{""home"": 2.35, ""away"": 3.25, ""draw"": 3.1}",home,home,home,yes,hit,hit,hit,1.35,1.35,1.35
+263,Levante,Getafe,"{""away"": 3.0, ""home"": 2.7, ""draw"": 2.9}",home,home,home,yes,hit,miss,hit,1.7000000000000002,-1.0,1.7000000000000002
+237,Lens,Toulouse,"{""home"": 1.4, ""away"": 7.5, ""draw"": 4.85}",home,home,home,yes,hit,hit,hit,0.3999999999999999,0.3999999999999999,0.3999999999999999
+252,Sassuolo,Como,"{""away"": 1.53, ""home"": 6.0, ""draw"": 4.275}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+216,Brentford,Fulham,"{""home"": 2.05, ""away"": 3.48, ""draw"": 3.7}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+217,Leeds United,Wolverhampton Wanderers,"{""home"": 1.57, ""away"": 6.0, ""draw"": 4.1}",home,home,home,yes,hit,hit,hit,0.5700000000000001,0.5800000000000001,0.5700000000000001
+238,Lorient,Olympique Marseille,"{""home"": 4.775, ""away"": 1.62, ""draw"": 4.3}",away,away,away,yes,miss,hit,miss,-1.0,3.9000000000000004,-1.0
+239,Angers SCO,Le Havre,"{""home"": 3.35, ""away"": 2.35, ""draw"": 3.0}",away,unknown,away,no,no_evaluable,miss,miss,,-1.0,-1.0
+240,LOSC Lille,Nice,"{""home"": 1.5, ""away"": 6.0, ""draw"": 4.4}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+241,Monaco,Auxerre,"{""home"": 1.56, ""away"": 5.5, ""draw"": 4.35}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+193,Crystal Palace,West Ham United,"{""home"": 2.55, ""away"": 2.8, ""draw"": 3.34}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+194,Lecce,Fiorentina,"{""away"": 2.15, ""home"": 3.5, ""draw"": 3.225}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+195,Brighton & Hove Albion,Chelsea,"{""home"": 2.37, ""away"": 2.85, ""draw"": 3.5}",home,home,home,yes,hit,hit,hit,1.37,1.37,1.37
+196,Athletic Club,Osasuna,"{""home"": 1.83, ""away"": 4.65, ""draw"": 3.5}",home,home,home,yes,hit,hit,hit,0.8300000000000001,0.8300000000000001,0.8300000000000001
+197,Mallorca,Valencia,"{""home"": 2.55, ""away"": 2.9, ""draw"": 3.15}",home,unknown,home,no,no_evaluable,miss,miss,,-1.0,-1.0
+198,Girona,Real Betis,"{""home"": 2.42, ""away"": 2.95, ""draw"": 3.4}",home,unknown,home,no,no_evaluable,miss,miss,,-1.0,-1.0
+264,Athletic Club,Osasuna,"{""home"": 1.83, ""away"": 4.65, ""draw"": 3.5}",home,home,home,yes,hit,hit,hit,0.8300000000000001,0.8300000000000001,0.8300000000000001
+265,Mallorca,Valencia,"{""home"": 2.55, ""away"": 2.9, ""draw"": 3.15}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+201,AFC Bournemouth,Leeds United,"{""home"": 1.95, ""away"": 3.8, ""draw"": 3.65}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+203,Elche,Atlético Madrid,"{""away"": 2.8, ""home"": 2.365, ""draw"": 3.65}",home,home,home,yes,hit,miss,hit,1.3650000000000002,-1.0,1.3650000000000002
+204,Real Sociedad,Getafe,"{""away"": 3.7, ""home"": 2.2, ""draw"": 3.05}",home,home,home,yes,miss,hit,miss,-1.0,2.7,-1.0
+189,Manchester United,Brentford,"{""away"": 3.7, ""home"": 1.95, ""draw"": 3.75}",home,home,home,yes,hit,miss,hit,0.95,-1.0,0.95
+190,Cagliari,Atalanta,"{""away"": 1.74, ""home"": 4.725, ""draw"": 3.7}",away,away,away,yes,miss,miss,miss,-1.0,-1.0,-1.0
+191,Lazio,Udinese,"{""home"": 2.15, ""away"": 3.775, ""draw"": 3.1}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0
+192,Espanyol,Levante,"{""home"": 2.12, ""away"": 3.7, ""draw"": 3.2}",home,home,home,yes,miss,miss,miss,-1.0,-1.0,-1.0

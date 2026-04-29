@@ -1,0 +1,2 @@
+run_key,selection_source,model,contract_version,universe_rows_matched_taxonomy,eligible_after_t60_value_pool,universe_executed_with_dsr,prompts_built,dsr_failed,ok_total,evaluable,usage_prompt_tokens_sum,usage_completion_tokens_sum,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct
+shadow-dsr-replay-full-20260428-200602,dsr_api_only,deepseek-v4-pro,bt2-dx-001-s6.2r3,278,41,41,41,0,41,41,71528,8123,41,20,8,12,0,21,0,0.4,-1.67,-8.35

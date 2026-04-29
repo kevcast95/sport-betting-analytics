@@ -1,0 +1,6 @@
+league_name,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct
+Bundesliga,39,39,25,14,0,0,0,0.641026,5.405,13.858974
+La Liga,60,60,30,30,0,0,0,0.5,0.015,0.025
+Ligue 1,44,44,17,27,0,0,0,0.386364,-11.345,-25.784091
+Premier League,60,60,31,29,0,0,0,0.516667,-4.9,-8.166667
+Serie A,56,56,31,25,0,0,0,0.553571,3.485,6.223214

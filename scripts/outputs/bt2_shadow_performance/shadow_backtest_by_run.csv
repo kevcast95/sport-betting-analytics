@@ -1,0 +1,7 @@
+run_key,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct
+shadow-subset5-backfill-2025-01-05,20,19,10,9,0,0,1,0.526316,2.49,13.105263
+shadow-subset5-recovery-2025-07-12,20,19,9,10,0,0,1,0.473684,-0.52,-2.736842
+shadow-daily-2026-04-27,4,1,0,1,0,3,0,0.0,-1.0,-100.0
+shadow-daily-2026-04-20,2,2,0,2,0,0,0,0.0,-2.0,-100.0
+shadow-daily-2026-04-21,5,5,2,3,0,0,0,0.4,-0.8,-16.0
+shadow-daily-2026-04-22,6,6,2,4,0,0,0,0.333333,-1.08,-18.0

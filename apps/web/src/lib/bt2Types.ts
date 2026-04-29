@@ -592,6 +592,87 @@ export interface Bt2AdminMonitorResultadosOut {
   rowsLimit?: number
 }
 
+export interface Bt2AdminShadowKpisOut {
+  fixturesSeen: number
+  fixturesMatched: number
+  matchRate: number
+  fixturesWithH2hT60: number
+  valuePoolPassRate: number
+  shadowPicksGenerated: number
+  matchedWithOddsT60: number
+  matchedWithoutOddsT60: number
+  unmatchedEvent: number
+  creditsUsed: number
+  avgCreditsPerFixture: number
+  scoredPicks: number
+  evaluatedHit: number
+  evaluatedMiss: number
+  voidCount: number
+  pendingResult: number
+  noEvaluable: number
+  hitRateOnScored: number
+  roiFlatStakeUnits: number
+  roiFlatStakePct: number
+}
+
+export interface Bt2AdminMonitorShadowRowOut {
+  runKey: string
+  selectionSource?: string | null
+  operatingDayKey: string
+  bt2EventId: number
+  smFixtureId: number
+  fixtureEventLabel: string
+  leagueName: string
+  market: string
+  selection?: string | null
+  statusShadow: string
+  classificationTaxonomy: string
+  decimalOdds?: number | null
+  dsrModel?: string | null
+  dsrPromptVersion?: string | null
+  dsrParseStatus?: string | null
+  dsrFailureReason?: string | null
+  dsrNoPickReason?: string | null
+  dsrMarketCanonical?: string | null
+  dsrSelectionCanonical?: string | null
+  dsrSelectedTeam?: string | null
+  dsrResponseExcerpt?: string | null
+  dsrConfidenceLabel?: string | null
+  providerSource: string
+  providerSnapshotTime?: string | null
+  providerLastUpdate?: string | null
+  ingestedAt?: string | null
+  region: string
+  snapshotTimeT60?: string | null
+  dsrSource?: string | null
+  valuePoolPass?: string | null
+  toaEventId?: string | null
+  matchNotes?: string | null
+  rawPayloadSummary?: string | null
+  evaluationStatus?: string | null
+  evaluationReason?: string | null
+  settlementStage?: string | null
+  resultScoreText?: string | null
+}
+
+export interface Bt2AdminMonitorShadowOut {
+  mode: 'shadow'
+  providerStack: string
+  timezoneLabel: string
+  operatingDayKeyFrom: string
+  operatingDayKeyTo: string
+  todayOperatingDayKey: string
+  summaryHumanEs: string
+  kpis: Bt2AdminShadowKpisOut
+  rowsTotal: number
+  rowsOffset: number
+  rowsLimit: number
+  rows: Bt2AdminMonitorShadowRowOut[]
+  runGroups: Array<{ runKey: string; runKind: string; picksCount: number; dayFrom: string; dayTo: string }>
+  selectedRunKind?: string | null
+  selectedRunKey?: string | null
+}
+
 /**
  * GET /bt2/admin/analytics/f2-pool-eligibility-metrics (T-263).
  * `metricsGlobal` y filas de liga vienen en snake_case desde el API (dict anidado).

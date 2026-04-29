@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "audit_source": "/Users/kevcast/Projects/scrapper/scripts/outputs/bt2_shadow_dsr_replay/dsr_native_full_replay_v6_sample_audit.json",
+    "dry_run": true,
+    "model": "deepseek-v4-pro",
+    "cases_run": 10
+  },
+  "cases": [
+    {
+      "event_id": 149,
+      "source_shadow_pick_id": 149,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 157,
+      "source_shadow_pick_id": 157,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 165,
+      "source_shadow_pick_id": 165,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 150,
+      "source_shadow_pick_id": 150,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 378,
+      "source_shadow_pick_id": 378,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 211,
+      "source_shadow_pick_id": 211,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 212,
+      "source_shadow_pick_id": 212,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 213,
+      "source_shadow_pick_id": 213,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 214,
+      "source_shadow_pick_id": 214,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    },
+    {
+      "event_id": 234,
+      "source_shadow_pick_id": 234,
+      "parse_status": "skipped_dry_run",
+      "user_prompt_has_batch_json_substring": true
+    }
+  ]
+}

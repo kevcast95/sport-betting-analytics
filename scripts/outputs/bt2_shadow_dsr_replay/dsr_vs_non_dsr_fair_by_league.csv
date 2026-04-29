@@ -1,0 +1,6 @@
+league_name,picks_total,dsr_hit_rate_on_scored,non_dsr_hit_rate_on_scored,hit_rate_diff,dsr_roi_flat_stake_pct,non_dsr_roi_flat_stake_pct,roi_flat_stake_pct_diff
+Bundesliga,39,0.641026,0.358974,0.282052,13.858974,-19.871795,33.730769
+La Liga,60,0.5,0.333333,0.166667,0.025,-9.133333,9.158333
+Ligue 1,44,0.386364,0.386364,0.0,-25.784091,14.363636,-40.147727
+Premier League,60,0.516667,0.416667,0.1,-8.166667,-11.15,2.983333
+Serie A,56,0.553571,0.339286,0.214285,6.223214,-34.571429,40.794643

@@ -1,0 +1,67 @@
+{
+  "selection_source": "dsr_api_only",
+  "run_family": "shadow_dsr_replay",
+  "frozen_run_keys": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12",
+    "shadow-subset5-backfill-2026-01",
+    "shadow-subset5-backfill-2026-02",
+    "shadow-subset5-backfill-2026-03",
+    "shadow-subset5-backfill-2026-04"
+  ],
+  "subset5_sportmonks_ids": [
+    8,
+    82,
+    301,
+    384,
+    564
+  ],
+  "universe_rows_matched_taxonomy": 278,
+  "eligible_after_t60_value_pool": 41,
+  "pilot_sample_size_requested": 32,
+  "pilot_sample_size_actual": 32,
+  "dsr_prompt_version_contract": "bt2-dx-001-s6.2r3",
+  "operating_day_key_batch": "2099-06-15",
+  "run_dsr_requested": true,
+  "model_requested": "deepseek-v4-pro",
+  "dsr_batch_size_effective": 1,
+  "fixed_sample_csv": "scripts/outputs/bt2_shadow_dsr_replay/dsr_pilot_sample.csv",
+  "metrics": {
+    "prompts_built_ok": 32,
+    "events_parseable_canonical": 4,
+    "evaluable_ft_1x2_after_postprocess": 4,
+    "truth_pending_or_non_ft": 2,
+    "truth_hit_preliminary": 1,
+    "truth_miss_preliminary": 1,
+    "usage_prompt_tokens_sum": 68051,
+    "usage_completion_tokens_sum": 27912,
+    "parse_status_counts": {
+      "dsr_failed": 6,
+      "dsr_empty_signal": 22,
+      "dsr_postprocess_reject": 0,
+      "dsr_non_h2h_canonical": 0,
+      "ok": 4
+    },
+    "batch_traces_sample": {
+      "response_id": "80ebc31f-28e7-4442-be55-a36a80e0df7e",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1879,
+        "completion_tokens": 967,
+        "total_tokens": 2846,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 894
+        },
+        "prompt_cache_hit_tokens": 256,
+        "prompt_cache_miss_tokens": 1623
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 102337,\n      \"market_canonical\": \"UNKNOWN\",\n      \"selection_canonical\": \"unknown_side\",\n      \"selected_team\": \"\",\n      \"no_pick_reason\": \"insufficient data and high book spread\"\n    }\n  ]\n}"
+    }
+  }
+}

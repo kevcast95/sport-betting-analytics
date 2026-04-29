@@ -1,0 +1,5 @@
+run_key,window,fixtures_seen,fixtures_matched,match_rate,fixtures_with_h2h_t60,matched_with_odds_t60,matched_without_odds_t60,unmatched_event,credits_used,shadow_picks_generated,value_pool_pass_rate,distinct_leagues,rows_persisted_bt2_shadow_runs,rows_persisted_snapshots,rows_persisted_daily_picks,rows_persisted_inputs,rows_persisted_evals
+shadow-subset5-backfill-2026-01,2026-01..01,60,59,0.983333,59,59,0,1,650.0,59,0.0,5,1,60,60,60,60
+shadow-subset5-backfill-2026-02,2026-02..02,60,58,0.966667,58,58,0,2,640.0,58,0.0,5,1,60,60,60,60
+shadow-subset5-backfill-2026-03,2026-03..03,60,59,0.983333,59,59,0,1,650.0,59,0.0,5,1,60,60,60,60
+shadow-subset5-backfill-2026-04,2026-04..04,60,47,0.783333,47,47,0,13,530.0,47,0.965517,5,1,60,60,60,60

@@ -662,3 +662,142 @@ class Bt2DsrDsInputShadow(Base):
     )
 
     __table_args__ = (Index("ix_bt2_ds_input_shadow_run_event", "run_id", "bt2_event_id"),)
+
+
+class Bt2ShadowRun(Base):
+    __tablename__ = "bt2_shadow_runs"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    run_key: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    operating_day_key_from: Mapped[str] = mapped_column(String(10), nullable=False)
+    operating_day_key_to: Mapped[str] = mapped_column(String(10), nullable=False)
+    mode: Mapped[str] = mapped_column(String(16), nullable=False, server_default="shadow")
+    provider_stack: Mapped[str] = mapped_column(String(120), nullable=False)
+    is_shadow: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+    run_family: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    selection_source: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_bt2_shadow_runs_day_range", "operating_day_key_from", "operating_day_key_to"),
+        Index("ix_bt2_shadow_runs_run_family", "run_family"),
+        Index("ix_bt2_shadow_runs_selection_source", "selection_source"),
+    )
+
+
+class Bt2ShadowProviderSnapshot(Base):
+    __tablename__ = "bt2_shadow_provider_snapshots"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    run_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("bt2_shadow_runs.id", ondelete="CASCADE"), nullable=False
+    )
+    bt2_event_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("bt2_events.id", ondelete="SET NULL"), nullable=True
+    )
+    sm_fixture_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    provider_source: Mapped[str] = mapped_column(String(64), nullable=False)
+    sport_key: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    market: Mapped[str] = mapped_column(String(32), nullable=False, server_default="h2h")
+    region: Mapped[str] = mapped_column(String(16), nullable=False, server_default="us")
+    provider_snapshot_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    provider_last_update: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    credits_used: Mapped[Optional[Any]] = mapped_column(Numeric(12, 4), nullable=True)
+    raw_payload: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)
+
+    __table_args__ = (
+        Index("ix_bt2_shadow_provider_snapshots_run", "run_id"),
+        Index("ix_bt2_shadow_provider_snapshots_event", "bt2_event_id", "provider_snapshot_time"),
+    )
+
+
+class Bt2ShadowDailyPick(Base):
+    __tablename__ = "bt2_shadow_daily_picks"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    run_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("bt2_shadow_runs.id", ondelete="CASCADE"), nullable=False
+    )
+    operating_day_key: Mapped[str] = mapped_column(String(10), nullable=False)
+    bt2_event_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("bt2_events.id", ondelete="SET NULL"), nullable=True
+    )
+    sm_fixture_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    league_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("bt2_leagues.id", ondelete="SET NULL"), nullable=True
+    )
+    market: Mapped[str] = mapped_column(String(32), nullable=False)
+    selection: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    status_shadow: Mapped[str] = mapped_column(String(32), nullable=False)
+    classification_taxonomy: Mapped[str] = mapped_column(String(64), nullable=False)
+    decimal_odds: Mapped[Optional[Any]] = mapped_column(Numeric(10, 4), nullable=True)
+    dsr_source: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    dsr_parse_status: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    dsr_failure_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    dsr_model: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    dsr_prompt_version: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    dsr_response_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    dsr_usage_json: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)
+    dsr_raw_summary_json: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)
+    selected_side_canonical: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    provider_snapshot_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger, ForeignKey("bt2_shadow_provider_snapshots.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_bt2_shadow_daily_picks_run_day", "run_id", "operating_day_key"),
+        Index("ix_bt2_shadow_daily_picks_class", "classification_taxonomy"),
+    )
+
+
+class Bt2ShadowPickInput(Base):
+    __tablename__ = "bt2_shadow_pick_inputs"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    shadow_daily_pick_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("bt2_shadow_daily_picks.id", ondelete="CASCADE"), nullable=False
+    )
+    input_source: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload_json: Mapped[Any] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (Index("ix_bt2_shadow_pick_inputs_pick", "shadow_daily_pick_id"),)
+
+
+class Bt2ShadowPickEval(Base):
+    __tablename__ = "bt2_shadow_pick_eval"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    shadow_daily_pick_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("bt2_shadow_daily_picks.id", ondelete="CASCADE"), nullable=False
+    )
+    eval_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    classification_taxonomy: Mapped[str] = mapped_column(String(64), nullable=False)
+    eval_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    evaluation_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    evaluated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    truth_source: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    result_home: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    result_away: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    event_status: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    decimal_odds: Mapped[Optional[Any]] = mapped_column(Numeric(10, 4), nullable=True)
+    roi_flat_stake_units: Mapped[Optional[Any]] = mapped_column(Numeric(10, 4), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("shadow_daily_pick_id", name="uq_bt2_shadow_pick_eval_pick"),
+        Index("ix_bt2_shadow_pick_eval_class", "classification_taxonomy"),
+    )

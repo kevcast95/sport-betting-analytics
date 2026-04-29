@@ -1,0 +1,192 @@
+{
+  "generated_at_utc": "2026-04-27T16:33:46.720353+00:00",
+  "constraints": {
+    "subset": "subset5",
+    "market": "h2h",
+    "region": "us",
+    "snapshot_policy": "T-60",
+    "lane": "shadow"
+  },
+  "runs_included": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12",
+    "shadow-daily-2026-04-27",
+    "shadow-daily-2026-04-20",
+    "shadow-daily-2026-04-21",
+    "shadow-daily-2026-04-22"
+  ],
+  "runs_base": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12"
+  ],
+  "runs_daily_shadow": [
+    "shadow-daily-2026-04-27",
+    "shadow-daily-2026-04-20",
+    "shadow-daily-2026-04-21",
+    "shadow-daily-2026-04-22"
+  ],
+  "total": {
+    "picks_total": 57,
+    "scored": 52,
+    "hit": 23,
+    "miss": 29,
+    "void": 0,
+    "pending_result": 3,
+    "no_evaluable": 2,
+    "roi_flat_stake_units": -2.91,
+    "hit_rate_on_scored": 0.442308,
+    "roi_flat_stake_pct": -5.596154
+  },
+  "by_run": [
+    {
+      "run_key": "shadow-subset5-backfill-2025-01-05",
+      "picks_total": 20,
+      "scored": 19,
+      "hit": 10,
+      "miss": 9,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 1,
+      "roi_flat_stake_units": 2.49,
+      "hit_rate_on_scored": 0.526316,
+      "roi_flat_stake_pct": 13.105263
+    },
+    {
+      "run_key": "shadow-subset5-recovery-2025-07-12",
+      "picks_total": 20,
+      "scored": 19,
+      "hit": 9,
+      "miss": 10,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 1,
+      "roi_flat_stake_units": -0.52,
+      "hit_rate_on_scored": 0.473684,
+      "roi_flat_stake_pct": -2.736842
+    },
+    {
+      "run_key": "shadow-daily-2026-04-27",
+      "picks_total": 4,
+      "scored": 1,
+      "hit": 0,
+      "miss": 1,
+      "void": 0,
+      "pending_result": 3,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -1.0,
+      "hit_rate_on_scored": 0.0,
+      "roi_flat_stake_pct": -100.0
+    },
+    {
+      "run_key": "shadow-daily-2026-04-20",
+      "picks_total": 2,
+      "scored": 2,
+      "hit": 0,
+      "miss": 2,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -2.0,
+      "hit_rate_on_scored": 0.0,
+      "roi_flat_stake_pct": -100.0
+    },
+    {
+      "run_key": "shadow-daily-2026-04-21",
+      "picks_total": 5,
+      "scored": 5,
+      "hit": 2,
+      "miss": 3,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -0.8,
+      "hit_rate_on_scored": 0.4,
+      "roi_flat_stake_pct": -16.0
+    },
+    {
+      "run_key": "shadow-daily-2026-04-22",
+      "picks_total": 6,
+      "scored": 6,
+      "hit": 2,
+      "miss": 4,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -1.08,
+      "hit_rate_on_scored": 0.333333,
+      "roi_flat_stake_pct": -18.0
+    }
+  ],
+  "by_league": [
+    {
+      "sm_league_id": 8,
+      "league_name": "Premier League",
+      "picks_total": 13,
+      "scored": 12,
+      "hit": 6,
+      "miss": 6,
+      "void": 0,
+      "pending_result": 1,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": 0.22,
+      "hit_rate_on_scored": 0.5,
+      "roi_flat_stake_pct": 1.833333
+    },
+    {
+      "sm_league_id": 82,
+      "league_name": "Bundesliga",
+      "picks_total": 8,
+      "scored": 8,
+      "hit": 5,
+      "miss": 3,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": 3.33,
+      "hit_rate_on_scored": 0.625,
+      "roi_flat_stake_pct": 41.625
+    },
+    {
+      "sm_league_id": 301,
+      "league_name": "Ligue 1",
+      "picks_total": 9,
+      "scored": 7,
+      "hit": 3,
+      "miss": 4,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 2,
+      "roi_flat_stake_units": 0.16,
+      "hit_rate_on_scored": 0.428571,
+      "roi_flat_stake_pct": 2.285714
+    },
+    {
+      "sm_league_id": 384,
+      "league_name": "Serie A",
+      "picks_total": 11,
+      "scored": 10,
+      "hit": 3,
+      "miss": 7,
+      "void": 0,
+      "pending_result": 1,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -3.2,
+      "hit_rate_on_scored": 0.3,
+      "roi_flat_stake_pct": -32.0
+    },
+    {
+      "sm_league_id": 564,
+      "league_name": "La Liga",
+      "picks_total": 16,
+      "scored": 15,
+      "hit": 6,
+      "miss": 9,
+      "void": 0,
+      "pending_result": 1,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -3.42,
+      "hit_rate_on_scored": 0.4,
+      "roi_flat_stake_pct": -22.8
+    }
+  ]
+}

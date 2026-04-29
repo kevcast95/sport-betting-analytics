@@ -11,7 +11,7 @@ import logging
 import re
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 from urllib.parse import urljoin
 
@@ -54,9 +54,6 @@ def _extract_content_from_chat_response(resp: dict[str, Any]) -> str:
                 parts.append(c["text"])
         if parts:
             return "\n".join(parts).strip()
-    rc = msg.get("reasoning_content")
-    if isinstance(rc, str) and rc.strip():
-        return rc.strip()
     raise ValueError("deepseek_no_content")
 
 
@@ -69,13 +66,6 @@ def _parse_json_object(text: str) -> Optional[dict[str, Any]]:
         obj = json.loads(t)
         return obj if isinstance(obj, dict) else None
     except json.JSONDecodeError:
-        m = re.search(r"\{[\s\S]*\}\s*$", t)
-        if m:
-            try:
-                obj = json.loads(m.group(0))
-                return obj if isinstance(obj, dict) else None
-            except json.JSONDecodeError:
-                return None
         return None
 
 
@@ -102,76 +92,48 @@ class DsrBatchCandidate:
 
 
 _SYSTEM_BATCH = (
-    "Eres analista de apuestas deportivas (fútbol, solo pre-partido). "
-    "Recibes un lote con varios eventos (`ds_input`): forma whitelist con "
-    "`processed.odds_featured` (consensus y, si viene, `ingest_meta` de frescura de cuotas), "
-    "bloques opcionales `h2h`, `statistics` (forma reciente codificada), `team_streaks`, `lineups`, "
-    "y enriquecimiento SportMonks cuando venga: `fixture_conditions` (sede/clima/estado), "
-    "`match_officials` (árbitro/entrenadores), `squad_availability` (bajas), `tactical_shape`, "
-    "`prediction_signals`, `broadcast_notes`, `fixture_advanced_sm` — todos bajo `processed` "
-    "con `available: true` si hay datos, y `event_context`. No conoces resultados del partido objetivo. "
-    "Entre mercados presentes en `consensus`, elegí el que tenga **mejor soporte en los datos "
-    "del propio lote** (histórico/forma/rachas/alineaciones resumidas y coherencia con las cuotas "
-    "mostradas). **No** uses como regla principal “buscar la cuota más alta” ni maximizar payout; "
-    "la lectura debe poder defenderse con lo enviado. Si varios mercados tienen soporte similar "
-    "en los datos de ese evento, **no** elijas siempre 1X2 por costumbre: considerá O/U goles, BTTS "
-    "o doble oportunidad cuando el input los respalde. **No inventes** estadísticas ni histórico: "
-    "solo usa lo explícito en cada ítem. "
-    "Redactá `razon` en español claro para quien no apuesta profesionalmente: no uses códigos "
-    "de forma (W/D/L ni cadenas tipo WWLWD); en su lugar conteos explícitos (p. ej. en los últimos "
-    "5 partidos oficiales, 3 victorias, 1 empate y 1 derrota). No digas que la cuota genera u "
-    "otorga confianza; si el mercado marca favorito, formulá el mercado cotiza como favorito a …. "
-    "Mencioná el número de cuota solo cuando aporte a la tesis (p. ej. desalineación entre "
-    "favoritismo del mercado y bajas o contexto que encarecen el riesgo, o implícito que parece "
-    "desproporcionado frente a los datos enviados). "
-    "Si el ítem incluye `diagnostics.prob_coherence`, tratá ese bloque como **chequeo numérico "
-    "del mismo `consensus`** (suma implícitas 1X2, dispersión entre casas, sobre-round O/U 2.5 si "
-    "hay piernas): usalo para detectar tensión entre mercados o cuotas inconsistentes; **no** es la "
-    "única razón para elegir pick y no sustituye `processed` ni el contexto deportivo. "
-    "Respondé SOLO con JSON válido (sin markdown) según el esquema que pide el usuario."
+    "Responde SOLO con un objeto JSON válido. "
+    "No escribas texto libre, no markdown, no prefacios, no explicaciones. "
+    "Devuelve exactamente 1 objeto por cada event_id de ds_input en picks_by_event. "
+    "Campos obligatorios por evento: event_id, market_canonical, selection_canonical, "
+    "selected_team, no_pick_reason. "
+    "Mercado permitido: FT_1X2 o UNKNOWN. "
+    "Selección permitida: home, draw, away o unknown_side. "
+    "Si no hay pick: market_canonical=UNKNOWN, selection_canonical=unknown_side y no_pick_reason no vacío. "
+    "Política de abstención: con FT_1X2 disponible, por defecto debes elegir home/draw/away. "
+    "Usa UNKNOWN solo en abstención legítima (datos críticos faltantes o contradicción fuerte que impide preferencia razonable). "
+    "No uses UNKNOWN por duda normal o por falta de certeza perfecta (eso es abstención excesiva). "
+    "No uses datos fuera de ds_input."
 )
 
 
 def _user_prompt_batch(*, operating_day_key: str, batch: dict[str, Any]) -> str:
     return (
-        f"Día operativo (referencia): {operating_day_key}.\n"
-        "Tarea: con el lote `batch` (campo `ds_input`), una lectura por evento; compará eventos "
-        "del mismo lote como en pipeline v1. Fundamentá la elección de mercado y lado usando "
-        "**solo** `consensus`, `diagnostics` (incl. `prob_coherence` cuando exista) y los bloques "
-        "`processed.*` con `available: true` de ese evento; "
-        "si un bloque no está disponible, no lo cites como si existiera.\n\n"
-        "Reglas de salida:\n"
-        "- Devolvé SOLO un objeto JSON con esta forma:\n"
+        f"operating_day_key={operating_day_key}\n"
+        "OUTPUT: SOLO JSON.\n"
+        "SCHEMA OBLIGATORIO:\n"
         "{\n"
         '  "picks_by_event": [\n'
         "    {\n"
         '      "event_id": <int>,\n'
-        '      "motivo_sin_pick": "<string en español; vacío si hay picks>",\n'
-        '      "picks": [\n'
-        "        {\n"
-        '          "market": "OU_GOALS_2_5"|"BTTS"|"FT_1X2",\n'
-        '          "selection": "over_2_5"|"yes"|"home",\n'
-        '          "odds": <number>,\n'
-        '          "edge_pct": <number>,\n'
-        '          "confianza": "Baja"|"Media"|"Media-Alta"|"Alta",\n'
-        '          "razon": "<1–3 oraciones en español claro; sin siglas de forma; sin decir que la cuota da confianza; ver reglas del sistema>"\n'
-        "        }\n"
-        "      ]\n"
+        '      "market_canonical": "FT_1X2" | "UNKNOWN",\n'
+        '      "selection_canonical": "home" | "draw" | "away" | "unknown_side",\n'
+        '      "selected_team": "<string o vacío>",\n'
+        '      "no_pick_reason": "<vacío si hay pick; obligatorio si UNKNOWN>"\n'
         "    }\n"
         "  ]\n"
         "}\n"
-        "- Debe haber exactamente un elemento en picks_by_event por cada evento de ds_input "
-        "(mismo event_id).\n"
-        "- Máximo 2 picks por evento; si no hay valor, picks=[] y motivo_sin_pick obligatorio.\n"
-        "- `market`: texto o código canónico (FT_1X2, OU_GOALS_2_5, BTTS, DOUBLE_CHANCE_1X, …).\n"
-        "- `selection`: para FT_1X2 usá home|draw|away (o 1|X|2); O/U over_2_5|under_2_5; BTTS yes|no; "
-        "doble oportunidad yes.\n"
-        "- No inventes cuotas: el campo `odds` debe coincidir con consensus del evento.\n"
-        "- `razon`: como en salida v1 para Telegram: 1–3 frases solo sobre el partido y los datos "
-        "enviados (ej. “Las rachas recientes muestran…”), sin metadatos de pipeline ni mencionar "
-        "CDM/protocolo. Sin siglas de forma (WWLWD); sin afirmar que la cuota da confianza; "
-        "mencionar cuota solo si explica tensión con favoritismo del mercado o riesgo contextual.\n\n"
-        "Datos del lote (JSON):\n"
+        "REGLAS:\n"
+        "- Debe haber exactamente 1 objeto por cada event_id de ds_input.\n"
+        "- Sin texto fuera del JSON.\n"
+        "- Solo mercado objetivo FT_1X2 (o UNKNOWN sin pick).\n"
+        "- Política de abstención explícita:\n"
+        "  * Abstención legítima: falta de datos críticos (p.ej. market coverage insuficiente) o contradicción severa que impide preferencia razonable.\n"
+        "  * Abstención excesiva: incertidumbre normal, señal débil pero direccional, o falta de edge perfecto.\n"
+        "- Si FT_1X2 está disponible y no hay abstención legítima, DEBES elegir home/draw/away.\n"
+        "- UNKNOWN/unknown_side solo con no_pick_reason concreto y verificable en el lote.\n"
+        "- No devuelvas claves extra.\n\n"
+        "BATCH:\n"
         f"{json.dumps(batch, ensure_ascii=False)}\n"
     )
 
@@ -204,36 +166,62 @@ def _parse_picks_by_event(
         if not row:
             out[eid] = None
             continue
-        picks = row.get("picks")
-        motivo = str(row.get("motivo_sin_pick") or "").strip()
-        if not isinstance(picks, list):
+        motivo = str(
+            row.get("no_pick_reason")
+            or row.get("motivo_sin_pick")
+            or row.get("no_pick")
+            or ""
+        ).strip()
+        # v2 preferido: campos canónicos por evento.
+        mmc_raw = str(
+            row.get("market_canonical")
+            or row.get("market")
+            or row.get("marketCode")
+            or ""
+        ).strip()
+        msc_raw = str(
+            row.get("selection_canonical")
+            or row.get("selection")
+            or row.get("side")
+            or row.get("pick")
+            or ""
+        ).strip()
+        if not mmc_raw and not msc_raw:
             out[eid] = None
             continue
-        if len(picks) == 0:
-            narr = motivo or "Sin pick explícito para este evento."
-            out[eid] = (narr[:4000], "low", "UNKNOWN", "unknown_side", None)
-            continue
-        pick = picks[0]
-        if not isinstance(pick, dict):
-            out[eid] = None
-            continue
-        market = str(pick.get("market") or "")
-        selection = str(pick.get("selection") or "")
-        mmc, msc = normalized_pick_to_canonical(market, selection)
-        razon = str(pick.get("razon") or "").strip()
-        conf = _confianza_to_label(str(pick.get("confianza") or ""))
-        narr = razon or motivo or "Señal modelo."
+        mmc, msc = normalized_pick_to_canonical(mmc_raw, msc_raw)
+        selected_team = str(row.get("selected_team") or row.get("team") or "").strip()
+        # Marcadores explícitos para autopsia/normalización mínima en carril shadow.
+        narr = (
+            f"[selected_team]{selected_team}[/selected_team]"
+            f"[no_pick_reason]{motivo}[/no_pick_reason]"
+        )
+        conf = "low"
         mod_o: Optional[float] = None
         try:
-            if pick.get("odds") is not None:
-                mod_o = float(pick.get("odds"))
+            if row.get("odds") is not None:
+                mod_o = float(row.get("odds"))
         except (TypeError, ValueError):
             mod_o = None
         out[eid] = (narr[:4000], conf, mmc, msc, mod_o)
     return out
 
 
-def deepseek_suggest_batch(
+@dataclass
+class DeepseekBatchTrace:
+    """Metadatos de una llamada batch a DeepSeek (DSR API)."""
+
+    response_id: Optional[str] = None
+    model: Optional[str] = None
+    usage: dict[str, Any] = field(default_factory=dict)
+    last_error: str = ""
+    parse_success: bool = False
+    attempts_used: int = 0
+    raw_content_excerpt: str = ""
+    raw_content_full: str = ""
+
+
+def deepseek_suggest_batch_with_trace(
     ds_input_items: list[dict[str, Any]],
     *,
     operating_day_key: str,
@@ -242,13 +230,13 @@ def deepseek_suggest_batch(
     model: str,
     timeout_sec: int,
     max_retries: int,
-) -> dict[int, Optional[tuple[str, str, str, str, Optional[float]]]]:
+) -> tuple[dict[int, Optional[tuple[str, str, str, str, Optional[float]]]], DeepseekBatchTrace]:
     """
-    Una llamada HTTP para todo el lote. `ds_input_items` ya validados (whitelist T-171).
-    Retorna mapa event_id → tupla (incl. odds declaradas modelo) o None (degradar a reglas).
+    Igual que `deepseek_suggest_batch`, pero devuelve traza (id respuesta, usage, errores).
     """
+    trace = DeepseekBatchTrace(model=model)
     if not ds_input_items:
-        return {}
+        return {}, trace
 
     expected_ids = [int(x["event_id"]) for x in ds_input_items]
     batch_obj: dict[str, Any] = {
@@ -284,23 +272,38 @@ def deepseek_suggest_batch(
     poster = _http_post or _default_http_post
     attempts = max(0, int(max_retries)) + 1
     last_err = ""
+
     for attempt in range(attempts):
+        trace.attempts_used = attempt + 1
         try:
             raw = poster(url, headers, raw_body, float(timeout_sec))
             resp = json.loads(raw.decode("utf-8"))
+            if isinstance(resp.get("id"), str):
+                trace.response_id = resp["id"]
+            mu = resp.get("usage")
+            if isinstance(mu, dict):
+                trace.usage = mu
+            if isinstance(resp.get("model"), str):
+                trace.model = resp["model"]
             content = _extract_content_from_chat_response(resp)
+            trace.raw_content_excerpt = content[:1200]
             parsed = _parse_json_object(content)
             if not parsed:
                 last_err = "parse_json"
+                trace.last_error = last_err
                 logger.warning(
                     "bt2_dsr_batch_bad_json batch_size=%s attempt=%s",
                     len(ds_input_items),
                     attempt,
                 )
                 continue
-            return _parse_picks_by_event(parsed, expected_ids)
+            trace.parse_success = True
+            trace.last_error = ""
+            out = _parse_picks_by_event(parsed, expected_ids)
+            return out, trace
         except urllib.error.HTTPError as e:
             last_err = f"http_{e.code}"
+            trace.last_error = last_err
             logger.warning(
                 "bt2_dsr_batch_http code=%s batch_size=%s attempt=%s",
                 getattr(e, "code", "?"),
@@ -311,6 +314,7 @@ def deepseek_suggest_batch(
                 break
         except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError, ValueError) as e:
             last_err = type(e).__name__
+            trace.last_error = last_err
             logger.warning(
                 "bt2_dsr_batch_error err=%s batch_size=%s attempt=%s",
                 last_err,
@@ -318,10 +322,38 @@ def deepseek_suggest_batch(
                 attempt,
             )
 
+    degraded = {eid: None for eid in expected_ids}
+    trace.last_error = last_err or trace.last_error or "unknown"
     logger.warning(
         "bt2_dsr_batch_degraded batch_size=%s last_err=%s",
         len(ds_input_items),
-        last_err or "unknown",
+        trace.last_error,
     )
-    return {eid: None for eid in expected_ids}
+    return degraded, trace
+
+
+def deepseek_suggest_batch(
+    ds_input_items: list[dict[str, Any]],
+    *,
+    operating_day_key: str,
+    api_key: str,
+    base_url: str,
+    model: str,
+    timeout_sec: int,
+    max_retries: int,
+) -> dict[int, Optional[tuple[str, str, str, str, Optional[float]]]]:
+    """
+    Una llamada HTTP para todo el lote. `ds_input_items` ya validados (whitelist T-171).
+    Retorna mapa event_id → tupla (incl. odds declaradas modelo) o None (degradar a reglas).
+    """
+    out, _trace = deepseek_suggest_batch_with_trace(
+        ds_input_items,
+        operating_day_key=operating_day_key,
+        api_key=api_key,
+        base_url=base_url,
+        model=model,
+        timeout_sec=timeout_sec,
+        max_retries=max_retries,
+    )
+    return out
 

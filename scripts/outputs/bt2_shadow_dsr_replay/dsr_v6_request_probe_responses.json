@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "audit_source": "/Users/kevcast/Projects/scrapper/scripts/outputs/bt2_shadow_dsr_replay/dsr_native_full_replay_v6_sample_audit.json",
+    "dry_run": true,
+    "model": "deepseek-v4-pro",
+    "cases_run": 10
+  },
+  "cases": [
+    {
+      "event_id": 149,
+      "bt2_event_id": 24657,
+      "source_shadow_pick_id": 149,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 157,
+      "bt2_event_id": 27061,
+      "source_shadow_pick_id": 157,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 165,
+      "bt2_event_id": 24979,
+      "source_shadow_pick_id": 165,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 150,
+      "bt2_event_id": 24674,
+      "source_shadow_pick_id": 150,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 378,
+      "bt2_event_id": null,
+      "source_shadow_pick_id": 378,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 211,
+      "bt2_event_id": 102349,
+      "source_shadow_pick_id": 211,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 212,
+      "bt2_event_id": 102350,
+      "source_shadow_pick_id": 212,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 213,
+      "bt2_event_id": 102351,
+      "source_shadow_pick_id": 213,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 214,
+      "bt2_event_id": 102352,
+      "source_shadow_pick_id": 214,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    },
+    {
+      "event_id": 234,
+      "bt2_event_id": 102341,
+      "source_shadow_pick_id": 234,
+      "raw_response_full": null,
+      "extracted_content": null,
+      "parsed_json": null,
+      "parsed_row": null,
+      "parse_status": "skipped_dry_run",
+      "parse_pipeline_tuple": null,
+      "final_pick_fields": {},
+      "failure_detail": null
+    }
+  ]
+}

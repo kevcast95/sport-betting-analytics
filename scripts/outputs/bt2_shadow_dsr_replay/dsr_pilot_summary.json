@@ -1,0 +1,56 @@
+{
+  "selection_source": "dsr_api_only",
+  "run_family": "shadow_dsr_replay",
+  "frozen_run_keys": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12",
+    "shadow-subset5-backfill-2026-01",
+    "shadow-subset5-backfill-2026-02",
+    "shadow-subset5-backfill-2026-03",
+    "shadow-subset5-backfill-2026-04"
+  ],
+  "subset5_sportmonks_ids": [
+    8,
+    82,
+    301,
+    384,
+    564
+  ],
+  "universe_rows_matched_taxonomy": 278,
+  "eligible_after_t60_value_pool": 41,
+  "pilot_sample_size_requested": 32,
+  "pilot_sample_size_actual": 32,
+  "dsr_prompt_version_contract": "bt2-dx-001-s6.2r3",
+  "operating_day_key_batch": "2099-06-15",
+  "run_dsr_requested": true,
+  "metrics": {
+    "prompts_built_ok": 32,
+    "events_parseable_canonical": 0,
+    "evaluable_ft_1x2_after_postprocess": 0,
+    "truth_pending_or_non_ft": 0,
+    "truth_hit_preliminary": 0,
+    "truth_miss_preliminary": 0,
+    "usage_prompt_tokens_sum": 58568,
+    "usage_completion_tokens_sum": 8424,
+    "batch_traces_sample": {
+      "response_id": "60d4885e-80dd-4ecf-8439-f3d86eca74eb",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 4340,
+        "completion_tokens": 1340,
+        "total_tokens": 5680,
+        "prompt_tokens_details": {
+          "cached_tokens": 4224
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1207
+        },
+        "prompt_cache_hit_tokens": 4224,
+        "prompt_cache_miss_tokens": 116
+      },
+      "last_error": "parse_json",
+      "parse_success": false,
+      "attempts_used": 2
+    }
+  }
+}

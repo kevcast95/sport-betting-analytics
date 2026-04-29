@@ -1,0 +1,23 @@
+bt2_event_id,run_key,v3_status,v4_status,v4_empty_bucket,v4_raw_model_market,v4_raw_model_selection,v4_raw_selected_team,v4_raw_no_pick_reason
+102355,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,"Insufficient predictive signals: missing team stats, prediction signals, and odd rest days; H2H shows no historical home wins; odds skew but lack confirmation."
+102352,shadow-subset5-backfill-2026-04,dsr_empty_signal,ok,,FT_1X2,away,Manchester City,
+102606,shadow-daily-2026-04-22,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,"Insufficient reliable data: no recent team statistics, no lineups, no head-to-head advantage, market coherence warning, and match far in future."
+102342,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,Insufficient data and coherence warning
+102354,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,"Insufficient conviction due to missing lineups, team stats, and recent form data; odds show moderate home favoritism but no strong signal."
+102611,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,Insufficient statistical edge; odds imply balanced matchup; H2H limited; squad and tactical data not conclusive.
+102353,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,insufficient_data
+102351,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,Insufficient data to make a confident pick
+102333,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,"Insufficient edge: high book spread ratio (1.56), overround, and lack of reliable recent form or historical advantage."
+102543,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,"Coherence warning on FT_1X2 odds, multiple key player absences on both sides, insufficient trustworthy signals."
+102350,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,"Insufficient signal: close odds, inconclusive H2H, unreliable statistics"
+102330,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,odds_margin_too_high_and_insufficient_data
+102357,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,Insufficient recent data and coherence warning
+102631,shadow-daily-2026-04-22,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,"Incomplete data: team season stats missing, h2h unavailable, lineups unavailable"
+102331,shadow-subset5-backfill-2026-04,dsr_empty_signal,ok,,FT_1X2,home,FC Barcelona,
+102339,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,High book spread ratio and insufficient statistical support for a confident pick.
+102361,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,No confident pick possible with provided data.
+102620,shadow-subset5-backfill-2026-04,dsr_empty_signal,ok,,FT_1X2,home,Leeds United,
+102329,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_empty_signal,explicit_model_abstention,UNKNOWN,unknown_side,,Coherence warning and insufficient team data
+102613,shadow-subset5-backfill-2026-04,dsr_empty_signal,dsr_failed,,,,,
+102356,shadow-subset5-backfill-2026-04,dsr_empty_signal,ok,,FT_1X2,home,AC Milan,
+102337,shadow-subset5-backfill-2026-04,dsr_empty_signal,ok,,FT_1X2,away,Monaco,

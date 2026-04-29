@@ -1,0 +1,17 @@
+{
+  "run_key": "shadow-dsr-native-full-20260428-214014",
+  "total_rows": 259,
+  "odds_rank_counts": {
+    "favorite": 259
+  },
+  "notes": {
+    "favorite": 259,
+    "mid": 0,
+    "longest": 0
+  },
+  "odds_band_distribution": {
+    "1.5-2": 105,
+    "2-3": 119,
+    "<1.5": 35
+  }
+}

@@ -1,0 +1,3 @@
+slice,variant,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct
+same_shadow_native_eligible,dsr_replay_native,259,43,20,23,0,203,13,0.465116,-2.455,-5.709302
+same_shadow_native_eligible,baseline_non_dsr_source_picks,259,36,16,20,0,215,8,0.444444,3.46,9.611111

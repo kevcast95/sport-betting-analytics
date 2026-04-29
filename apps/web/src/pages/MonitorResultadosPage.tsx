@@ -1,6 +1,10 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { fetchBt2AdminMonitorResultados } from '@/lib/api'
-import type { Bt2AdminMonitorResultadosOut, Bt2MonitorOutcome } from '@/lib/bt2Types'
+import { fetchBt2AdminMonitorResultados, fetchBt2AdminMonitorResultadosShadow } from '@/lib/api'
+import type {
+  Bt2AdminMonitorResultadosOut,
+  Bt2AdminMonitorShadowOut,
+  Bt2MonitorOutcome,
+} from '@/lib/bt2Types'
 import { useUserStore } from '@/store/useUserStore'
 
 /** Periodo de consulta (UI). */
@@ -9,6 +13,8 @@ type MonitorPeriodPreset = 'today' | '7d' | '30d' | 'range'
 const MONITOR_PAGE_SIZE = 25
 
 type MonitorOutcomeFilter = 'all' | 'si' | 'no' | 'pendiente' | 'void' | 'ne'
+type MonitorMode = 'prod' | 'shadow'
+type ShadowViewKind = 'daily_shadow' | 'historico'
 
 type OutcomeBadge = Bt2MonitorOutcome
 
@@ -258,8 +264,208 @@ function formatAdminMonitorError(msg: string): string {
   return msg.length > 260 ? `${msg.slice(0, 260)}…` : msg
 }
 
+function pct01(v: number | null | undefined): string {
+  if (v == null || Number.isNaN(v)) return '—'
+  return `${(v * 100).toFixed(1)}%`
+}
+
+function dsrStatusTone(parseStatus: string | null | undefined): string {
+  const s = (parseStatus ?? '').trim()
+  if (s === 'ok') return 'border-emerald-200 bg-emerald-50 text-emerald-900'
+  if (s === 'dsr_empty_signal') return 'border-amber-200 bg-amber-50 text-amber-900'
+  if (s === 'dsr_failed') return 'border-red-200 bg-red-50 text-red-900'
+  return 'border-[#a4b4be]/35 bg-[#f8fafc] text-[#52616a]'
+}
+
+function settlementLabel(stage: string | null | undefined): string {
+  const s = (stage ?? '').trim()
+  if (s === 'cierre_oficial') return 'Cierre oficial'
+  if (s === 'resultado_visible_no_oficial') return 'Visible no oficial'
+  if (s === 'pending_recheck') return 'Pending recheck'
+  if (s === 'cierre_manual_auditado') return 'Manual auditado'
+  return '—'
+}
+
+function ShadowMonitorPanel(props: {
+  data: Bt2AdminMonitorShadowOut | null
+  loading: boolean
+  page: number
+  totalPages: number
+  onPrev: () => void
+  onNext: () => void
+}) {
+  const k = props.data?.kpis
+  const rows = props.data?.rows ?? []
+  return (
+    <section className="mt-10 space-y-6 border-t border-[#a4b4be]/15 pt-8">
+      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-[#a4b4be]/15 bg-[#a4b4be]/15 md:grid-cols-2 xl:grid-cols-4">
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Fixtures seen</p>
+          <p className="font-mono text-3xl text-[#26343d]">{k?.fixturesSeen ?? '—'}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Match rate</p>
+          <p className="font-mono text-3xl text-[#26343d]">{pct01(k?.matchRate)}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">h2h T-60</p>
+          <p className="font-mono text-3xl text-[#26343d]">{k?.fixturesWithH2hT60 ?? '—'}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Value pool pass</p>
+          <p className="font-mono text-3xl text-[#26343d]">{pct01(k?.valuePoolPassRate)}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Shadow picks</p>
+          <p className="font-mono text-3xl text-[#26343d]">{k?.shadowPicksGenerated ?? '—'}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Matched w/odds</p>
+          <p className="font-mono text-3xl text-[#26343d]">{k?.matchedWithOddsT60 ?? '—'}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Unmatched event</p>
+          <p className="font-mono text-3xl text-[#26343d]">{k?.unmatchedEvent ?? '—'}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Credits avg/fixture</p>
+          <p className="font-mono text-3xl text-[#26343d]">
+            {k?.avgCreditsPerFixture != null ? k.avgCreditsPerFixture.toFixed(2) : '—'}
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-[#a4b4be]/15 bg-[#a4b4be]/15 md:grid-cols-2 xl:grid-cols-4">
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Scored picks</p>
+          <p className="font-mono text-3xl text-[#26343d]">{k?.scoredPicks ?? '—'}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Hit / Miss / Void</p>
+          <p className="font-mono text-xl text-[#26343d]">
+            {k?.evaluatedHit ?? 0} / {k?.evaluatedMiss ?? 0} / {k?.voidCount ?? 0}
+          </p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Hit rate (scored)</p>
+          <p className="font-mono text-3xl text-[#26343d]">{pct01(k?.hitRateOnScored)}</p>
+        </div>
+        <div className="bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">Pending / N.E.</p>
+          <p className="font-mono text-xl text-[#26343d]">
+            {k?.pendingResult ?? 0} / {k?.noEvaluable ?? 0}
+          </p>
+        </div>
+        <div className="bg-white p-4 md:col-span-2 xl:col-span-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#52616a]">ROI flat stake (1u)</p>
+          <p className="font-mono text-3xl text-[#26343d]">
+            {k?.roiFlatStakePct != null ? `${k.roiFlatStakePct.toFixed(2)}%` : '—'}
+          </p>
+          <p className="text-xs text-[#52616a]">
+            Net: {k?.roiFlatStakeUnits != null ? k.roiFlatStakeUnits.toFixed(2) : '—'}u
+          </p>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-[#a4b4be]/15 bg-white">
+        <table className="w-full border-separate border-spacing-0 text-left">
+          <thead>
+            <tr className="bg-[#eef4fa]">
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Run</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Día</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Fixture / Event</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Liga</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Market</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Selección</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">DSR</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Taxonomía</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-right text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Odds</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Visibilidad DSR</th>
+              <th className="border-b border-[#a4b4be]/20 p-3 text-[10px] uppercase tracking-[0.2em] text-[#52616a]">Settlement</th>
+            </tr>
+          </thead>
+          <tbody className="font-mono text-sm text-[#26343d]">
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={12} className="p-8 text-center text-[#52616a]">
+                  {props.loading ? 'Cargando…' : 'Sin filas shadow para el rango/filtros actuales.'}
+                </td>
+              </tr>
+            ) : (
+              rows.map((r) => (
+                <tr key={`${r.smFixtureId}-${r.operatingDayKey}`} className="hover:bg-[#f6fafe]">
+                  <td className="border-b border-[#e5eff7] p-3 text-xs">
+                    <span className="block">{r.runKey}</span>
+                    <span className="block text-[#52616a]">{r.selectionSource ?? '—'}</span>
+                  </td>
+                  <td className="border-b border-[#e5eff7] p-3">{r.operatingDayKey}</td>
+                  <td className="border-b border-[#e5eff7] p-3">{r.fixtureEventLabel}</td>
+                  <td className="border-b border-[#e5eff7] p-3">{r.leagueName}</td>
+                  <td className="border-b border-[#e5eff7] p-3">{r.market}</td>
+                  <td className="border-b border-[#e5eff7] p-3">{r.selection ?? '—'}</td>
+                  <td className="border-b border-[#e5eff7] p-3 text-xs">
+                    <span className={`inline-block rounded border px-2 py-0.5 ${dsrStatusTone(r.dsrParseStatus)}`}>
+                      {r.dsrParseStatus ?? '—'}
+                    </span>
+                    <span className="mt-1 block text-[#52616a]">{r.statusShadow}</span>
+                  </td>
+                  <td className="border-b border-[#e5eff7] p-3">{r.classificationTaxonomy}</td>
+                  <td className="border-b border-[#e5eff7] p-3 text-right">
+                    {r.decimalOdds != null ? r.decimalOdds.toFixed(2) : '—'}
+                  </td>
+                  <td className="border-b border-[#e5eff7] p-3 text-xs">
+                    <span className="block">src={r.dsrSource ?? '—'} · model={r.dsrModel ?? '—'}</span>
+                    <span className="block">contract={r.dsrPromptVersion ?? '—'}</span>
+                    <span className="block">
+                      canon={r.dsrMarketCanonical ?? '—'} / {r.dsrSelectionCanonical ?? '—'}
+                    </span>
+                    <span className="block">selected={r.dsrSelectedTeam ?? '—'}</span>
+                    <span className="block text-[#52616a]">{r.dsrNoPickReason ?? r.dsrFailureReason ?? '—'}</span>
+                    <span className="block text-[#52616a]">
+                      {(r.dsrResponseExcerpt ?? '').slice(0, 120) || '—'}
+                    </span>
+                  </td>
+                  <td className="border-b border-[#e5eff7] p-3 text-xs">
+                    <span className="block">{settlementLabel(r.settlementStage)}</span>
+                    <span className="block">{r.evaluationStatus ?? '—'}</span>
+                    <span className="block text-[#52616a]">{r.resultScoreText ?? r.evaluationReason ?? '—'}</span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+        <div className="flex items-center justify-between border-t border-[#e5eff7] px-3 py-3 text-xs text-[#52616a]">
+          <span>
+            Página <span className="font-mono text-[#26343d]">{props.page}</span> /{' '}
+            <span className="font-mono text-[#26343d]">{props.totalPages}</span>
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={props.onPrev}
+              disabled={props.page <= 1 || props.loading}
+              className="rounded-lg border border-[#a4b4be]/35 bg-white px-3 py-1.5 disabled:opacity-40"
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              onClick={props.onNext}
+              disabled={props.page >= props.totalPages || props.loading}
+              className="rounded-lg border border-[#a4b4be]/35 bg-white px-3 py-1.5 disabled:opacity-40"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function MonitorResultadosPage() {
   const userId = useUserStore((s) => s.userId)
+  const [mode, setMode] = useState<MonitorMode>('prod')
   const [preset, setPreset] = useState<MonitorPeriodPreset>('7d')
   const t0 = todayIsoBogota()
   const [rangeFrom, setRangeFrom] = useState(() => addDaysIso(t0, -6))
@@ -268,6 +474,9 @@ export default function MonitorResultadosPage() {
   const [onlyScored, setOnlyScored] = useState(false)
   const [defsOpen, setDefsOpen] = useState(false)
   const [data, setData] = useState<Bt2AdminMonitorResultadosOut | null>(null)
+  const [shadowData, setShadowData] = useState<Bt2AdminMonitorShadowOut | null>(null)
+  const [shadowViewKind, setShadowViewKind] = useState<ShadowViewKind>('historico')
+  const [shadowRunKey, setShadowRunKey] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   /** Trae marcadores desde SportMonks, actualiza CDM y re-evalúa pendientes (más lento, cuota API). */
@@ -291,20 +500,35 @@ export default function MonitorResultadosPage() {
     setError(null)
     try {
       const offset = (monitorPage - 1) * MONITOR_PAGE_SIZE
-      const out = await fetchBt2AdminMonitorResultados(rangeKeys.from, rangeKeys.to, {
-        monitorUserId: userId ?? undefined,
-        syncFromSportmonks,
-        smSyncPendingOnly: smSyncPendingOnly ? undefined : false,
-        rowsOffset: offset,
-        rowsLimit: MONITOR_PAGE_SIZE,
-        outcomeFilter: outcomeFilter === 'all' ? undefined : outcomeFilter,
-        marketSubstring: marketFilter.trim() || undefined,
-        search: tableSearch.trim() || undefined,
-      })
-      setData(out)
+      if (mode === 'prod') {
+        const out = await fetchBt2AdminMonitorResultados(rangeKeys.from, rangeKeys.to, {
+          monitorUserId: userId ?? undefined,
+          syncFromSportmonks,
+          smSyncPendingOnly: smSyncPendingOnly ? undefined : false,
+          rowsOffset: offset,
+          rowsLimit: MONITOR_PAGE_SIZE,
+          outcomeFilter: outcomeFilter === 'all' ? undefined : outcomeFilter,
+          marketSubstring: marketFilter.trim() || undefined,
+          search: tableSearch.trim() || undefined,
+        })
+        setData(out)
+      } else {
+        const out = await fetchBt2AdminMonitorResultadosShadow(rangeKeys.from, rangeKeys.to, {
+          rowsOffset: offset,
+          rowsLimit: MONITOR_PAGE_SIZE,
+          classificationFilter: outcomeFilter === 'all' ? undefined : outcomeFilter,
+          marketSubstring: marketFilter.trim() || undefined,
+          search: tableSearch.trim() || undefined,
+          runKind: shadowViewKind === 'historico' ? 'backfill_window' : 'daily_shadow',
+          runKey: shadowRunKey.trim() || undefined,
+          groupByRun: true,
+        })
+        setShadowData(out)
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
       setData(null)
+      setShadowData(null)
       setError(formatAdminMonitorError(msg))
     } finally {
       setLoading(false)
@@ -319,6 +543,9 @@ export default function MonitorResultadosPage() {
     outcomeFilter,
     marketFilter,
     tableSearch,
+    mode,
+    shadowViewKind,
+    shadowRunKey,
   ])
 
   useEffect(() => {
@@ -328,6 +555,9 @@ export default function MonitorResultadosPage() {
   useEffect(() => {
     setMonitorPage(1)
   }, [
+    mode,
+    shadowViewKind,
+    shadowRunKey,
     preset,
     rangeFrom,
     rangeTo,
@@ -341,6 +571,7 @@ export default function MonitorResultadosPage() {
   useEffect(() => {
     setDsrExpandedPickId(null)
   }, [
+    mode,
     monitorPage,
     preset,
     rangeFrom,
@@ -380,9 +611,14 @@ export default function MonitorResultadosPage() {
     }))
 
   const rowsTotalFromApi = data?.rowsTotal
+  const shadowRowsTotal = shadowData?.rowsTotal
   const monitorTotalPages =
     rowsTotalFromApi != null && rowsTotalFromApi > 0
       ? Math.max(1, Math.ceil(rowsTotalFromApi / MONITOR_PAGE_SIZE))
+      : 1
+  const shadowTotalPages =
+    shadowRowsTotal != null && shadowRowsTotal > 0
+      ? Math.max(1, Math.ceil(shadowRowsTotal / MONITOR_PAGE_SIZE))
       : 1
 
   const filteredRows = useMemo(() => {
@@ -471,12 +707,82 @@ export default function MonitorResultadosPage() {
               Monitor de resultados
             </h1>
             <p className="mt-2 text-sm font-medium tracking-wide text-[#52616a]">
-              Picks del sistema vs picks que operaste{' '}
+              {mode === 'prod'
+                ? 'Picks del sistema vs picks que operaste'
+                : 'Carril shadow subset5 (SM fixture master + TOA h2h T-60)'}{' '}
               <span className="mx-2 text-[#a4b4be]">|</span>{' '}
               <span className="font-mono text-xs text-[#8B5CF6]">
-                TZ: {data?.timezoneLabel ?? 'America/Bogota'}
+                TZ: {data?.timezoneLabel ?? shadowData?.timezoneLabel ?? 'America/Bogota'}
               </span>
             </p>
+            <div className="mt-4 inline-flex rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] p-1">
+              {(
+                [
+                  ['prod', 'Prod'],
+                  ['shadow', 'Shadow'],
+                ] as const
+              ).map(([k, label]) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setMode(k)}
+                  className={[
+                    'rounded-md px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
+                    mode === k ? 'bg-white text-[#8B5CF6] shadow-sm' : 'text-[#52616a] hover:text-[#26343d]',
+                  ].join(' ')}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {mode === 'shadow' ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="inline-flex rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] p-1">
+                  {(
+                    [
+                      ['daily_shadow', 'Diario'],
+                      ['historico', 'Histórico'],
+                    ] as const
+                  ).map(([k, label]) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => {
+                        setShadowViewKind(k)
+                        setShadowRunKey('')
+                      }}
+                      className={[
+                        'rounded-md px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
+                        shadowViewKind === k
+                          ? 'bg-white text-[#8B5CF6] shadow-sm'
+                          : 'text-[#52616a] hover:text-[#26343d]',
+                      ].join(' ')}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {shadowViewKind === 'historico' ? (
+                  <label className="flex min-w-[280px] flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                    Run histórico
+                    <select
+                      value={shadowRunKey}
+                      onChange={(e) => setShadowRunKey(e.target.value)}
+                      className="rounded-lg border border-[#a4b4be]/35 bg-white px-2 py-2 text-sm text-[#26343d]"
+                    >
+                      <option value="">Todos (backfill_window)</option>
+                      {(shadowData?.runGroups ?? [])
+                        .filter((g) => g.runKind === 'backfill_window' || g.runKind === 'day1_lab')
+                        .map((g) => (
+                          <option key={g.runKey} value={g.runKey}>
+                            {g.runKey} · {g.dayFrom}..{g.dayTo} · {g.picksCount} picks
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <div className="flex rounded-lg border border-[#a4b4be]/25 bg-[#eef4fa] p-1">
@@ -525,16 +831,18 @@ export default function MonitorResultadosPage() {
                 </label>
               </div>
             ) : null}
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#a4b4be]/30 bg-white/80 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
-              <input
-                type="checkbox"
-                checked={syncFromSportmonks}
-                onChange={(e) => setSyncFromSportmonks(e.target.checked)}
-                className="rounded border-[#a4b4be]/50 text-[#8B5CF6] focus:ring-[#8B5CF6]/40"
-              />
-              Sync SM
-            </label>
-            {syncFromSportmonks ? (
+            {mode === 'prod' ? (
+              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#a4b4be]/30 bg-white/80 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
+                <input
+                  type="checkbox"
+                  checked={syncFromSportmonks}
+                  onChange={(e) => setSyncFromSportmonks(e.target.checked)}
+                  className="rounded border-[#a4b4be]/50 text-[#8B5CF6] focus:ring-[#8B5CF6]/40"
+                />
+                Sync SM
+              </label>
+            ) : null}
+            {mode === 'prod' && syncFromSportmonks ? (
               <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#a4b4be]/30 bg-white/80 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52616a]">
                 <input
                   type="checkbox"
@@ -554,7 +862,11 @@ export default function MonitorResultadosPage() {
               <span className="font-mono text-[#8B5CF6]" aria-hidden>
                 ↻
               </span>
-              {loading ? 'Cargando…' : syncFromSportmonks ? 'Actualizar + SM' : 'Actualizar'}
+              {loading
+                ? 'Cargando…'
+                : mode === 'prod' && syncFromSportmonks
+                  ? 'Actualizar + SM'
+                  : 'Actualizar'}
             </button>
           </div>
         </div>
@@ -562,18 +874,41 @@ export default function MonitorResultadosPage() {
         <p className="mt-4 font-mono text-[10px] text-[#6e7d86]">
           Rango API: {rangeKeys.from} … {rangeKeys.to}
           {preset === 'range' ? ' (rango manual)' : ` · preset ${preset}`}
-          {data?.summaryHumanEs ? (
+          {mode === 'prod' && data?.summaryHumanEs ? (
             <span className="mt-1 block font-sans text-[11px] leading-relaxed text-[#52616a]">
               {data.summaryHumanEs}
             </span>
           ) : null}
+          {mode === 'shadow' && shadowData?.summaryHumanEs ? (
+            <span className="mt-1 block font-sans text-[11px] leading-relaxed text-[#52616a]">
+              {shadowData.summaryHumanEs}
+            </span>
+          ) : null}
         </p>
+        {mode === 'shadow' && shadowViewKind === 'daily_shadow' && !loading && (shadowData?.rowsTotal ?? 0) === 0 ? (
+          <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50/95 px-4 py-3 text-sm text-amber-950">
+            No hay corridas <span className="font-mono">daily_shadow</span> todavía.
+          </div>
+        ) : null}
 
         {loading && !data ? (
           <p className="mt-8 text-sm text-[#52616a]">Cargando métricas…</p>
         ) : null}
 
-        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-8">
+        {mode === 'shadow' ? (
+          <ShadowMonitorPanel
+            data={shadowData}
+            loading={loading}
+            page={monitorPage}
+            totalPages={shadowTotalPages}
+            onPrev={() => setMonitorPage((p) => Math.max(1, p - 1))}
+            onNext={() => setMonitorPage((p) => Math.min(shadowTotalPages, p + 1))}
+          />
+        ) : null}
+
+        {mode === 'prod' ? (
+          <>
+            <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-8">
           <div className="space-y-10 lg:col-span-8">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1144,7 +1479,9 @@ export default function MonitorResultadosPage() {
               </div>
             </div>
           </div>
-        </section>
+            </section>
+          </>
+        ) : null}
 
         <footer className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-[#a4b4be]/15 pt-10 pb-4 text-[10px] text-[#52616a] md:flex-row">
           <div className="flex items-center gap-2">

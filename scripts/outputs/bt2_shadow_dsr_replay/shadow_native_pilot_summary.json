@@ -1,0 +1,102 @@
+{
+  "generated_at_utc": "2026-04-28T21:27:20.792397+00:00",
+  "universe_rows_matched_taxonomy": 278,
+  "legacy_eligible_count": 41,
+  "shadow_native_eligible_count": 259,
+  "frozen_run_keys": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12",
+    "shadow-subset5-backfill-2026-01",
+    "shadow-subset5-backfill-2026-02",
+    "shadow-subset5-backfill-2026-03",
+    "shadow-subset5-backfill-2026-04"
+  ],
+  "subset5_sportmonks_ids": [
+    8,
+    82,
+    301,
+    384,
+    564
+  ],
+  "legacy_by_exclusion": [
+    {
+      "cause": "missing_bt2_event_id",
+      "count": 199
+    },
+    {
+      "cause": "eligible_legacy_local",
+      "count": 41
+    },
+    {
+      "cause": "no_local_snapshot_before_t60",
+      "count": 29
+    },
+    {
+      "cause": "value_pool_failed_no_complete_market_family",
+      "count": 9
+    }
+  ],
+  "shadow_native_by_exclusion": [
+    {
+      "cause": "eligible_shadow_native",
+      "count": 259
+    },
+    {
+      "cause": "shadow_native_value_pool_failed",
+      "count": 19
+    }
+  ],
+  "pilot_sample": {
+    "fixed_sample_csv": "scripts/outputs/bt2_shadow_dsr_replay/dsr_pilot_sample.csv",
+    "sample_pick_ids": [
+      244,
+      214,
+      203,
+      235,
+      243,
+      193,
+      262,
+      239,
+      242,
+      213,
+      259,
+      233,
+      251,
+      212,
+      256,
+      238,
+      246,
+      201,
+      257,
+      232,
+      250,
+      217,
+      255,
+      240,
+      247,
+      211,
+      260,
+      241,
+      245,
+      208,
+      254,
+      230
+    ],
+    "sample_rows_found": 32,
+    "legacy_eligible_in_sample": 32,
+    "shadow_native_eligible_in_sample": 32,
+    "sample_missing_toa_payload_rows": 0
+  },
+  "deepseek_probe": {
+    "called": false,
+    "batch_event_count": 0,
+    "ft_1x2_postprocess_ok": 0,
+    "model": null,
+    "contract_version": null
+  },
+  "artifacts": {
+    "gap_comparison_csv": "scripts/outputs/bt2_shadow_dsr_replay/shadow_native_dsr_ready_gap_comparison.csv",
+    "contract_md": "scripts/outputs/bt2_shadow_dsr_replay/shadow_native_dsr_ready_contract.md",
+    "adapter_md": "scripts/outputs/bt2_shadow_dsr_replay/shadow_native_dsr_input_adapter.md"
+  }
+}

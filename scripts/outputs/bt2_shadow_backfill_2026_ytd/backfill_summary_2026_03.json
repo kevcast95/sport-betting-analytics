@@ -1,0 +1,30 @@
+{
+  "run_key": "shadow-subset5-backfill-2026-03",
+  "window": "2026-03..03",
+  "fixtures_seen": 60,
+  "fixtures_matched": 59,
+  "match_rate": 0.983333,
+  "fixtures_with_h2h_t60": 59,
+  "matched_with_odds_t60": 59,
+  "matched_without_odds_t60": 0,
+  "unmatched_event": 1,
+  "credits_used": 650.0,
+  "shadow_picks_generated": 59,
+  "value_pool_pass_rate": 0.0,
+  "distinct_leagues": 5,
+  "sm_league_ids": [
+    8,
+    82,
+    301,
+    384,
+    564
+  ],
+  "rows_persisted": {
+    "bt2_shadow_runs": 1,
+    "bt2_shadow_provider_snapshots": 60,
+    "bt2_shadow_daily_picks": 60,
+    "bt2_shadow_pick_inputs": 60,
+    "bt2_shadow_pick_eval": 60
+  },
+  "row_source": "sportmonks_between_subset5"
+}

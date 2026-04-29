@@ -1056,6 +1056,93 @@ class Bt2AdminMonitorResultadosOut(BaseModel):
     rows_limit: int = Field(1500, alias="rowsLimit")
 
 
+class Bt2AdminShadowKpisOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    fixtures_seen: int = Field(..., alias="fixturesSeen")
+    fixtures_matched: int = Field(..., alias="fixturesMatched")
+    match_rate: float = Field(..., alias="matchRate")
+    fixtures_with_h2h_t60: int = Field(..., alias="fixturesWithH2hT60")
+    value_pool_pass_rate: float = Field(..., alias="valuePoolPassRate")
+    shadow_picks_generated: int = Field(..., alias="shadowPicksGenerated")
+    matched_with_odds_t60: int = Field(..., alias="matchedWithOddsT60")
+    matched_without_odds_t60: int = Field(..., alias="matchedWithoutOddsT60")
+    unmatched_event: int = Field(..., alias="unmatchedEvent")
+    credits_used: float = Field(..., alias="creditsUsed")
+    avg_credits_per_fixture: float = Field(..., alias="avgCreditsPerFixture")
+    scored_picks: int = Field(0, alias="scoredPicks")
+    evaluated_hit: int = Field(0, alias="evaluatedHit")
+    evaluated_miss: int = Field(0, alias="evaluatedMiss")
+    void_count: int = Field(0, alias="voidCount")
+    pending_result: int = Field(0, alias="pendingResult")
+    no_evaluable: int = Field(0, alias="noEvaluable")
+    hit_rate_on_scored: float = Field(0.0, alias="hitRateOnScored")
+    roi_flat_stake_units: float = Field(0.0, alias="roiFlatStakeUnits")
+    roi_flat_stake_pct: float = Field(0.0, alias="roiFlatStakePct")
+
+
+class Bt2AdminMonitorShadowRowOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    run_key: str = Field(..., alias="runKey")
+    selection_source: Optional[str] = Field(None, alias="selectionSource")
+    operating_day_key: str = Field(..., alias="operatingDayKey")
+    bt2_event_id: int = Field(..., alias="bt2EventId")
+    sm_fixture_id: int = Field(..., alias="smFixtureId")
+    fixture_event_label: str = Field(..., alias="fixtureEventLabel")
+    league_name: str = Field(..., alias="leagueName")
+    market: str
+    selection: Optional[str] = None
+    status_shadow: str = Field(..., alias="statusShadow")
+    classification_taxonomy: str = Field(..., alias="classificationTaxonomy")
+    decimal_odds: Optional[float] = Field(None, alias="decimalOdds")
+    dsr_model: Optional[str] = Field(None, alias="dsrModel")
+    dsr_prompt_version: Optional[str] = Field(None, alias="dsrPromptVersion")
+    dsr_parse_status: Optional[str] = Field(None, alias="dsrParseStatus")
+    dsr_failure_reason: Optional[str] = Field(None, alias="dsrFailureReason")
+    dsr_no_pick_reason: Optional[str] = Field(None, alias="dsrNoPickReason")
+    dsr_market_canonical: Optional[str] = Field(None, alias="dsrMarketCanonical")
+    dsr_selection_canonical: Optional[str] = Field(None, alias="dsrSelectionCanonical")
+    dsr_selected_team: Optional[str] = Field(None, alias="dsrSelectedTeam")
+    dsr_response_excerpt: Optional[str] = Field(None, alias="dsrResponseExcerpt")
+    dsr_confidence_label: Optional[str] = Field(None, alias="dsrConfidenceLabel")
+    provider_source: str = Field(..., alias="providerSource")
+    provider_snapshot_time: Optional[str] = Field(None, alias="providerSnapshotTime")
+    provider_last_update: Optional[str] = Field(None, alias="providerLastUpdate")
+    ingested_at: Optional[str] = Field(None, alias="ingestedAt")
+    region: str
+    snapshot_time_t60: Optional[str] = Field(None, alias="snapshotTimeT60")
+    dsr_source: Optional[str] = Field(None, alias="dsrSource")
+    value_pool_pass: Optional[str] = Field(None, alias="valuePoolPass")
+    toa_event_id: Optional[str] = Field(None, alias="toaEventId")
+    match_notes: Optional[str] = Field(None, alias="matchNotes")
+    raw_payload_summary: Optional[str] = Field(None, alias="rawPayloadSummary")
+    evaluation_status: Optional[str] = Field(None, alias="evaluationStatus")
+    evaluation_reason: Optional[str] = Field(None, alias="evaluationReason")
+    settlement_stage: Optional[str] = Field(None, alias="settlementStage")
+    result_score_text: Optional[str] = Field(None, alias="resultScoreText")
+
+
+class Bt2AdminMonitorShadowOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    mode: Literal["shadow"]
+    provider_stack: str = Field(..., alias="providerStack")
+    timezone_label: str = Field(..., alias="timezoneLabel")
+    operating_day_key_from: str = Field(..., alias="operatingDayKeyFrom")
+    operating_day_key_to: str = Field(..., alias="operatingDayKeyTo")
+    today_operating_day_key: str = Field(..., alias="todayOperatingDayKey")
+    summary_human_es: str = Field(..., alias="summaryHumanEs")
+    kpis: Bt2AdminShadowKpisOut
+    rows_total: int = Field(..., alias="rowsTotal")
+    rows_offset: int = Field(..., alias="rowsOffset")
+    rows_limit: int = Field(..., alias="rowsLimit")
+    rows: List[Bt2AdminMonitorShadowRowOut] = Field(default_factory=list)
+    run_groups: List[dict[str, Any]] = Field(default_factory=list, alias="runGroups")
+    selected_run_kind: Optional[str] = Field(None, alias="selectedRunKind")
+    selected_run_key: Optional[str] = Field(None, alias="selectedRunKey")
+
+
 OPERATOR_PROFILE_VALUES = {
     "DISCIPLINE_TRADER",
     "IMPULSE_REACTIVE",

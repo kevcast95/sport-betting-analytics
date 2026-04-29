@@ -1,0 +1,26 @@
+{
+  "generated_at_note": "Tras ejecutar bt2_shadow_evaluate_performance.py sobre shadow-subset5-backfill-2026-04 y shadow-daily-2026-04-27.",
+  "re_evaluation_result": {
+    "pending_resolved_delta": 0,
+    "shadow_subset5_backfill_2026_04_pending_after": 11,
+    "shadow_daily_2026_04_27_pending_after": 3
+  },
+  "shadow_subset5_backfill_2026_04": {
+    "classification": "deuda_de_datos_cdm_y_acceso_sm",
+    "evidence": [
+      "bt2_events marca status=finished pero result_home/result_away NULL para los 11 picks (settlement incompleto en CDM local).",
+      "GET SportMonks v3 /football/fixtures/{id} para IDs de muestra devuelve message de suscripción/no result (sin payload data); el evaluador no puede completar marcador por API con el plan actual."
+    ],
+    "truth_source_attempted": [
+      "bt2_events_cdm_v1",
+      "sportmonks_fixture_api_v1"
+    ]
+  },
+  "shadow_daily_2026_04_27": {
+    "classification": "settlement_natural_partidos_no_finalizados",
+    "evidence": [
+      "bt2_event_id NULL en picks daily (solo sm_fixture_id).",
+      "SportMonks devuelve state NS (Not Started) y scores [] para fixtures de muestra: partidos aún no disputados respecto al reloj de datos."
+    ]
+  }
+}

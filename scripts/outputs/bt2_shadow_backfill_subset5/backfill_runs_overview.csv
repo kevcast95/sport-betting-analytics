@@ -1,0 +1,4 @@
+run_key,window,fixtures_seen,fixtures_matched,match_rate,fixtures_with_h2h_t60,matched_with_odds_t60,matched_without_odds_t60,unmatched_event,credits_used,shadow_picks_generated,value_pool_pass_rate,distinct_leagues
+shadow-subset5-backfill-2025-01-05,2025-01..05,20,19,0.95,19,19,0,1,210.0,19,1.0,5
+shadow-subset5-backfill-2025-07-12,2025-07..12,0,0,0.0,0,0,0,0,0.0,0,0.0,0
+shadow-subset5-recovery-2025-07-12,2025-07..12,20,19,0.95,19,19,0,1,210.0,19,0.0,5

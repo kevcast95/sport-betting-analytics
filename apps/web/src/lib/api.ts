@@ -6,6 +6,7 @@ import type {
   Bt2AdminF2PoolMetricsOut,
   Bt2AdminFase1OperationalSummaryOut,
   Bt2AdminMonitorResultadosOut,
+  Bt2AdminMonitorShadowOut,
   Bt2AdminRefreshCdmFromSmOut,
   Bt2AdminVaultPickDistributionOut,
   Bt2AdminVaultRegenerateSnapshotOut,
@@ -536,6 +537,51 @@ export async function fetchBt2AdminMonitorResultados(
   if (sq) qs.set('search', sq)
   return fetchJson<Bt2AdminMonitorResultadosOut>(
     `/bt2/admin/analytics/monitor-resultados?${qs.toString()}`,
+    { headers: { 'X-BT2-Admin-Key': key } },
+  )
+}
+
+/**
+ * GET /bt2/admin/analytics/monitor-resultados-shadow — lane shadow subset5.
+ */
+export async function fetchBt2AdminMonitorResultadosShadow(
+  operatingDayKeyFrom: string,
+  operatingDayKeyTo: string,
+  options?: {
+    rowsOffset?: number
+    rowsLimit?: number
+    marketSubstring?: string
+    search?: string
+    classificationFilter?: string
+    runKind?: string
+    runKey?: string
+    groupByRun?: boolean
+  },
+): Promise<Bt2AdminMonitorShadowOut> {
+  const key = (import.meta.env.VITE_BT2_ADMIN_API_KEY ?? '').trim()
+  if (!key) {
+    throw new Error(
+      'Falta VITE_BT2_ADMIN_API_KEY en apps/web/.env (mismo valor que BT2_ADMIN_API_KEY en el servidor).',
+    )
+  }
+  const qs = new URLSearchParams()
+  qs.set('operatingDayKeyFrom', operatingDayKeyFrom.trim())
+  qs.set('operatingDayKeyTo', operatingDayKeyTo.trim())
+  if (options?.rowsOffset != null) qs.set('rowsOffset', String(options.rowsOffset))
+  if (options?.rowsLimit != null) qs.set('rowsLimit', String(options.rowsLimit))
+  const mk = options?.marketSubstring?.trim()
+  if (mk) qs.set('marketSubstring', mk)
+  const sq = options?.search?.trim()
+  if (sq) qs.set('search', sq)
+  const cf = options?.classificationFilter?.trim()
+  if (cf && cf !== 'all') qs.set('classificationFilter', cf)
+  const rk = options?.runKey?.trim()
+  if (rk) qs.set('runKey', rk)
+  const rkind = options?.runKind?.trim()
+  if (rkind) qs.set('runKind', rkind)
+  if (options?.groupByRun) qs.set('groupByRun', 'true')
+  return fetchJson<Bt2AdminMonitorShadowOut>(
+    `/bt2/admin/analytics/monitor-resultados-shadow?${qs.toString()}`,
     { headers: { 'X-BT2-Admin-Key': key } },
   )
 }

@@ -1,0 +1,124 @@
+{
+  "run_key": "shadow-dsr-replay-full-20260428-200602",
+  "selection_source": "dsr_api_only",
+  "run_family": "shadow_dsr_replay",
+  "model": "deepseek-v4-pro",
+  "contract_version": "bt2-dx-001-s6.2r3",
+  "frozen_run_keys": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12",
+    "shadow-subset5-backfill-2026-01",
+    "shadow-subset5-backfill-2026-02",
+    "shadow-subset5-backfill-2026-03",
+    "shadow-subset5-backfill-2026-04"
+  ],
+  "subset5_sportmonks_ids": [
+    8,
+    82,
+    301,
+    384,
+    564
+  ],
+  "universe_rows_matched_taxonomy": 278,
+  "eligible_after_t60_value_pool": 41,
+  "universe_executed_with_dsr": 41,
+  "metrics": {
+    "prompts_built": 41,
+    "dsr_failed": 0,
+    "ok_total": 41,
+    "evaluable": 41,
+    "parse_status_counts": {
+      "ok": 41
+    },
+    "usage_prompt_tokens_sum": 71528,
+    "usage_completion_tokens_sum": 8123,
+    "estimated_cost_usd": null,
+    "picks_total": 41,
+    "scored": 20,
+    "hit": 8,
+    "miss": 12,
+    "void": 0,
+    "pending_result": 21,
+    "no_evaluable": 0,
+    "hit_rate_on_scored": 0.4,
+    "roi_flat_stake_units": -1.67,
+    "roi_flat_stake_pct": -8.35,
+    "baseline_non_dsr_same_slice": {
+      "picks_total": 41,
+      "scored": 19,
+      "hit": 9,
+      "miss": 10,
+      "void": 0,
+      "pending_result": 21,
+      "no_evaluable": 1,
+      "hit_rate_on_scored": 0.473684,
+      "roi_flat_stake_units": 7.33,
+      "roi_flat_stake_pct": 38.578947
+    }
+  },
+  "batch_traces_sample": [
+    {
+      "response_id": "df131236-e938-4f17-9668-6280611bf438",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 23873,
+        "completion_tokens": 2724,
+        "total_tokens": 26597,
+        "prompt_tokens_details": {
+          "cached_tokens": 384
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1860
+        },
+        "prompt_cache_hit_tokens": 384,
+        "prompt_cache_miss_tokens": 23489
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 102344,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"West Ham United\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102337,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Monaco\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102353,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Roma\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102328,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Real Madrid\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102345,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Arsenal\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102346,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Brighton & Hove Albion\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102347,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"sel"
+    },
+    {
+      "response_id": "fb7c4715-e796-43dd-991e-47f8a1f9a827",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 26832,
+        "completion_tokens": 2280,
+        "total_tokens": 29112,
+        "prompt_tokens_details": {
+          "cached_tokens": 384
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1417
+        },
+        "prompt_cache_hit_tokens": 384,
+        "prompt_cache_miss_tokens": 26448
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 102330,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Elche\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102331,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"FC Barcelona\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102332,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Atlético Madrid\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102349,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Newcastle United\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102350,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Nottingham Forest\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102351,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Sunderland\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102352,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n"
+    },
+    {
+      "response_id": "48f6e11a-dda2-443c-ba98-c45b93b96ceb",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 20823,
+        "completion_tokens": 3119,
+        "total_tokens": 23942,
+        "prompt_tokens_details": {
+          "cached_tokens": 384
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2478
+        },
+        "prompt_cache_hit_tokens": 384,
+        "prompt_cache_miss_tokens": 20439
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 102619,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Brentford\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102620,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Leeds United\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102610,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Olympique Marseille\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102611,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Le Havre\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102612,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"LOSC Lille\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102613,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Monaco\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 102628,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"sele"
+    }
+  ]
+}

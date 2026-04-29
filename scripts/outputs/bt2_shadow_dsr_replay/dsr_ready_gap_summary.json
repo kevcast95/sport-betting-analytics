@@ -1,0 +1,44 @@
+{
+  "generated_at_utc": "2026-04-28T20:48:04.065163+00:00",
+  "frozen_run_keys": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12",
+    "shadow-subset5-backfill-2026-01",
+    "shadow-subset5-backfill-2026-02",
+    "shadow-subset5-backfill-2026-03",
+    "shadow-subset5-backfill-2026-04"
+  ],
+  "subset5_sportmonks_ids": [
+    8,
+    82,
+    301,
+    384,
+    564
+  ],
+  "universe_rows_matched_taxonomy": 278,
+  "eligible_after_t60_value_pool": 41,
+  "excluded_before_dsr": 237,
+  "by_cause": [
+    {
+      "cause": "missing_bt2_event_id",
+      "count": 199,
+      "pct_over_total": 71.5827
+    },
+    {
+      "cause": "eligible_dsr_ready",
+      "count": 41,
+      "pct_over_total": 14.7482
+    },
+    {
+      "cause": "no_local_snapshot_before_t60",
+      "count": 29,
+      "pct_over_total": 10.4317
+    },
+    {
+      "cause": "value_pool_failed_no_complete_market_family",
+      "count": 9,
+      "pct_over_total": 3.2374
+    }
+  ],
+  "csv_path": "scripts/outputs/bt2_shadow_dsr_replay/dsr_ready_gap_278_to_41.csv"
+}

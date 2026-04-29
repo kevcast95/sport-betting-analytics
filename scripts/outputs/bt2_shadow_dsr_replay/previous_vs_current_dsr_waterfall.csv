@@ -1,0 +1,4 @@
+flow,candidate_fixtures,matched_with_odds_t60,dsr_ready,prompts_built,api_success,parseable_json,canonical_pick,postprocess_ok,persisted_pick,scored_pick,hit,hit_rate
+A_previous_shadow_non_dsr_baseline_2025_windows,40,38,38,0,0,0,0,0,40,38,19,0.5
+A2_previous_bt2_daily_picks_dsr_api_observed,n/a,n/a,n/a,n/a,n/a,n/a,108,n/a,108,56,30,0.535714
+B_current_shadow_dsr_replay_fixed32_after_fix,32,32,32,32,15,15,0,0,0,0,0,

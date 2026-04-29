@@ -1,0 +1,279 @@
+shadow_pick_id,source_run_key,operating_day_key,bt2_event_id,sm_fixture_id,sm_league_id,league_name,legacy_exclusion,shadow_native_exclusion,legacy_eligible,shadow_native_eligible
+149,shadow-subset5-backfill-2025-01-05,2025-01-01,24657,19134910,8,Premier League,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+157,shadow-subset5-backfill-2025-01-05,2025-01-03,27061,19139795,301,Ligue 1,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+165,shadow-subset5-backfill-2025-01-05,2025-01-03,24979,19135367,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+150,shadow-subset5-backfill-2025-01-05,2025-01-04,24674,19134927,8,Premier League,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+151,shadow-subset5-backfill-2025-01-05,2025-01-04,24666,19134919,8,Premier League,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+152,shadow-subset5-backfill-2025-01-05,2025-01-04,24667,19134920,8,Premier League,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+158,shadow-subset5-backfill-2025-01-05,2025-01-04,27056,19139790,301,Ligue 1,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+159,shadow-subset5-backfill-2025-01-05,2025-01-04,27058,19139792,301,Ligue 1,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+161,shadow-subset5-backfill-2025-01-05,2025-01-04,31499,19155256,384,Serie A,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+162,shadow-subset5-backfill-2025-01-05,2025-01-04,31492,19155249,384,Serie A,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+163,shadow-subset5-backfill-2025-01-05,2025-01-04,31493,19155250,384,Serie A,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+164,shadow-subset5-backfill-2025-01-05,2025-01-05,31496,19155253,384,Serie A,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+153,shadow-subset5-backfill-2025-01-05,2025-01-10,30924,19154681,82,Bundesliga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+166,shadow-subset5-backfill-2025-01-05,2025-01-10,25050,19135438,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+154,shadow-subset5-backfill-2025-01-05,2025-01-11,30925,19154682,82,Bundesliga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+155,shadow-subset5-backfill-2025-01-05,2025-01-11,30926,19154683,82,Bundesliga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+156,shadow-subset5-backfill-2025-01-05,2025-01-11,30927,19154684,82,Bundesliga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+167,shadow-subset5-backfill-2025-01-05,2025-01-11,25046,19135434,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+168,shadow-subset5-backfill-2025-01-05,2025-01-11,25049,19135437,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+169,shadow-subset5-recovery-2025-07-12,2025-08-15,,19427455,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+177,shadow-subset5-recovery-2025-07-12,2025-08-15,,19433447,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+185,shadow-subset5-recovery-2025-07-12,2025-08-15,,19439255,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+186,shadow-subset5-recovery-2025-07-12,2025-08-15,,19439259,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+170,shadow-subset5-recovery-2025-07-12,2025-08-16,,19427456,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+171,shadow-subset5-recovery-2025-07-12,2025-08-16,,19427457,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+172,shadow-subset5-recovery-2025-07-12,2025-08-16,,19427459,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+179,shadow-subset5-recovery-2025-07-12,2025-08-16,,19433440,301,Ligue 1,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+180,shadow-subset5-recovery-2025-07-12,2025-08-16,,19433444,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+187,shadow-subset5-recovery-2025-07-12,2025-08-16,,19439256,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+188,shadow-subset5-recovery-2025-07-12,2025-08-16,,19439252,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+173,shadow-subset5-recovery-2025-07-12,2025-08-22,,19431622,82,Bundesliga,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+174,shadow-subset5-recovery-2025-07-12,2025-08-23,,19431623,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+175,shadow-subset5-recovery-2025-07-12,2025-08-23,,19433478,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+176,shadow-subset5-recovery-2025-07-12,2025-08-23,,19433479,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+181,shadow-subset5-recovery-2025-07-12,2025-08-23,,19424884,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+182,shadow-subset5-recovery-2025-07-12,2025-08-23,,19424889,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+183,shadow-subset5-recovery-2025-07-12,2025-08-23,,19424887,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+184,shadow-subset5-recovery-2025-07-12,2025-08-23,,19424888,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+266,shadow-subset5-backfill-2026-01,2026-01-01,,19427640,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+267,shadow-subset5-backfill-2026-01,2026-01-01,,19427641,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+268,shadow-subset5-backfill-2026-01,2026-01-01,,19427637,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+269,shadow-subset5-backfill-2026-01,2026-01-01,,19427644,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+290,shadow-subset5-backfill-2026-01,2026-01-02,,19433885,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+302,shadow-subset5-backfill-2026-01,2026-01-02,,19425052,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+314,shadow-subset5-backfill-2026-01,2026-01-02,,19439426,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+270,shadow-subset5-backfill-2026-01,2026-01-03,,19427646,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+271,shadow-subset5-backfill-2026-01,2026-01-03,,19427648,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+272,shadow-subset5-backfill-2026-01,2026-01-03,,19427655,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+273,shadow-subset5-backfill-2026-01,2026-01-03,,19427647,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+292,shadow-subset5-backfill-2026-01,2026-01-03,,19433881,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+293,shadow-subset5-backfill-2026-01,2026-01-03,,19433879,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+303,shadow-subset5-backfill-2026-01,2026-01-03,,19425053,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+304,shadow-subset5-backfill-2026-01,2026-01-03,,19425055,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+305,shadow-subset5-backfill-2026-01,2026-01-03,,19425060,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+306,shadow-subset5-backfill-2026-01,2026-01-03,,19425058,384,Serie A,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+307,shadow-subset5-backfill-2026-01,2026-01-03,,19425051,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+315,shadow-subset5-backfill-2026-01,2026-01-03,,19439420,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+316,shadow-subset5-backfill-2026-01,2026-01-03,,19439425,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+317,shadow-subset5-backfill-2026-01,2026-01-03,,19439422,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+318,shadow-subset5-backfill-2026-01,2026-01-03,,19439423,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+274,shadow-subset5-backfill-2026-01,2026-01-04,,19427651,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+275,shadow-subset5-backfill-2026-01,2026-01-04,,19427649,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+276,shadow-subset5-backfill-2026-01,2026-01-04,,19427653,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+277,shadow-subset5-backfill-2026-01,2026-01-04,,19427654,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+294,shadow-subset5-backfill-2026-01,2026-01-04,,19433882,301,Ligue 1,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+295,shadow-subset5-backfill-2026-01,2026-01-04,,19433878,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+296,shadow-subset5-backfill-2026-01,2026-01-04,,19433880,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+297,shadow-subset5-backfill-2026-01,2026-01-04,,19433884,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+298,shadow-subset5-backfill-2026-01,2026-01-04,,19433883,301,Ligue 1,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+308,shadow-subset5-backfill-2026-01,2026-01-04,,19425059,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+309,shadow-subset5-backfill-2026-01,2026-01-04,,19425054,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+310,shadow-subset5-backfill-2026-01,2026-01-04,,19425056,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+311,shadow-subset5-backfill-2026-01,2026-01-04,,19425057,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+319,shadow-subset5-backfill-2026-01,2026-01-04,,19439429,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+320,shadow-subset5-backfill-2026-01,2026-01-04,,19439427,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+321,shadow-subset5-backfill-2026-01,2026-01-04,,19439421,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+322,shadow-subset5-backfill-2026-01,2026-01-04,,19439424,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+323,shadow-subset5-backfill-2026-01,2026-01-04,,19439428,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+312,shadow-subset5-backfill-2026-01,2026-01-06,,19425068,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+313,shadow-subset5-backfill-2026-01,2026-01-06,,19425064,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+278,shadow-subset5-backfill-2026-01,2026-01-09,,19433614,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+324,shadow-subset5-backfill-2026-01,2026-01-09,,19439432,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+279,shadow-subset5-backfill-2026-01,2026-01-10,,19433610,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+280,shadow-subset5-backfill-2026-01,2026-01-10,,19433611,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+281,shadow-subset5-backfill-2026-01,2026-01-10,,19433617,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+282,shadow-subset5-backfill-2026-01,2026-01-10,,19433612,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+325,shadow-subset5-backfill-2026-01,2026-01-10,,19439436,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+283,shadow-subset5-backfill-2026-01,2026-01-11,,19433613,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+284,shadow-subset5-backfill-2026-01,2026-01-11,,19433615,82,Bundesliga,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+285,shadow-subset5-backfill-2026-01,2026-01-13,,19433626,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+286,shadow-subset5-backfill-2026-01,2026-01-13,,19433620,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+287,shadow-subset5-backfill-2026-01,2026-01-13,,19433621,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+288,shadow-subset5-backfill-2026-01,2026-01-14,,19433627,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+289,shadow-subset5-backfill-2026-01,2026-01-14,,19433619,82,Bundesliga,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+299,shadow-subset5-backfill-2026-01,2026-01-16,,19433887,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+300,shadow-subset5-backfill-2026-01,2026-01-16,,19433890,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+301,shadow-subset5-backfill-2026-01,2026-01-17,,19433891,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+326,shadow-subset5-backfill-2026-02,2026-02-01,,19427686,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+327,shadow-subset5-backfill-2026-02,2026-02-01,,19427691,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+328,shadow-subset5-backfill-2026-02,2026-02-01,,19427692,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+329,shadow-subset5-backfill-2026-02,2026-02-01,,19427694,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+338,shadow-subset5-backfill-2026-02,2026-02-01,,19433654,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+339,shadow-subset5-backfill-2026-02,2026-02-01,,19433647,82,Bundesliga,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+351,shadow-subset5-backfill-2026-02,2026-02-01,,19433907,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+352,shadow-subset5-backfill-2026-02,2026-02-01,,19433912,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+353,shadow-subset5-backfill-2026-02,2026-02-01,,19467805,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+354,shadow-subset5-backfill-2026-02,2026-02-01,,19433911,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+362,shadow-subset5-backfill-2026-02,2026-02-01,,19425109,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+363,shadow-subset5-backfill-2026-02,2026-02-01,,19425103,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+364,shadow-subset5-backfill-2026-02,2026-02-01,,19425104,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+365,shadow-subset5-backfill-2026-02,2026-02-01,,19425107,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+374,shadow-subset5-backfill-2026-02,2026-02-01,,19439468,564,La Liga,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+375,shadow-subset5-backfill-2026-02,2026-02-01,,19439467,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+376,shadow-subset5-backfill-2026-02,2026-02-01,,19439463,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+377,shadow-subset5-backfill-2026-02,2026-02-01,,19439460,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+330,shadow-subset5-backfill-2026-02,2026-02-02,,19427693,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+366,shadow-subset5-backfill-2026-02,2026-02-02,,19425110,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+378,shadow-subset5-backfill-2026-02,2026-02-02,,19439465,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+367,shadow-subset5-backfill-2026-02,2026-02-03,,19425101,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+331,shadow-subset5-backfill-2026-02,2026-02-06,,19427701,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+340,shadow-subset5-backfill-2026-02,2026-02-06,,19433657,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+355,shadow-subset5-backfill-2026-02,2026-02-06,,19433916,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+368,shadow-subset5-backfill-2026-02,2026-02-06,,19425115,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+379,shadow-subset5-backfill-2026-02,2026-02-06,,19439473,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+332,shadow-subset5-backfill-2026-02,2026-02-07,,19427703,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+333,shadow-subset5-backfill-2026-02,2026-02-07,,19427696,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+334,shadow-subset5-backfill-2026-02,2026-02-07,,19427697,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+335,shadow-subset5-backfill-2026-02,2026-02-07,,19427699,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+336,shadow-subset5-backfill-2026-02,2026-02-07,,19427700,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+337,shadow-subset5-backfill-2026-02,2026-02-07,,19427705,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+341,shadow-subset5-backfill-2026-02,2026-02-07,,19433655,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+342,shadow-subset5-backfill-2026-02,2026-02-07,,19433658,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+343,shadow-subset5-backfill-2026-02,2026-02-07,,19433661,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+344,shadow-subset5-backfill-2026-02,2026-02-07,,19433662,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+345,shadow-subset5-backfill-2026-02,2026-02-07,,19433663,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+346,shadow-subset5-backfill-2026-02,2026-02-07,,19433659,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+356,shadow-subset5-backfill-2026-02,2026-02-07,,19433920,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+357,shadow-subset5-backfill-2026-02,2026-02-07,,19433921,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+369,shadow-subset5-backfill-2026-02,2026-02-07,,19425114,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+370,shadow-subset5-backfill-2026-02,2026-02-07,,19425113,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+380,shadow-subset5-backfill-2026-02,2026-02-07,,19439472,564,La Liga,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+381,shadow-subset5-backfill-2026-02,2026-02-07,,19439476,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+347,shadow-subset5-backfill-2026-02,2026-02-08,,19433656,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+348,shadow-subset5-backfill-2026-02,2026-02-08,,19433660,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+359,shadow-subset5-backfill-2026-02,2026-02-08,,19433918,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+360,shadow-subset5-backfill-2026-02,2026-02-08,,19467815,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+361,shadow-subset5-backfill-2026-02,2026-02-08,,19467817,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+371,shadow-subset5-backfill-2026-02,2026-02-08,,19425112,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+372,shadow-subset5-backfill-2026-02,2026-02-08,,19425117,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+373,shadow-subset5-backfill-2026-02,2026-02-08,,19425120,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+382,shadow-subset5-backfill-2026-02,2026-02-08,,19439474,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+383,shadow-subset5-backfill-2026-02,2026-02-08,,19439470,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+384,shadow-subset5-backfill-2026-02,2026-02-08,,19439477,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+385,shadow-subset5-backfill-2026-02,2026-02-08,,19439471,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+349,shadow-subset5-backfill-2026-02,2026-02-13,,19433665,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+386,shadow-subset5-backfill-2026-03,2026-03-01,,19427157,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+387,shadow-subset5-backfill-2026-03,2026-03-01,,19427159,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+388,shadow-subset5-backfill-2026-03,2026-03-01,,19427162,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+389,shadow-subset5-backfill-2026-03,2026-03-01,,19427155,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+398,shadow-subset5-backfill-2026-03,2026-03-01,,19433690,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+399,shadow-subset5-backfill-2026-03,2026-03-01,,19433685,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+400,shadow-subset5-backfill-2026-03,2026-03-01,,19433687,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+410,shadow-subset5-backfill-2026-03,2026-03-01,,19467843,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+411,shadow-subset5-backfill-2026-03,2026-03-01,,19467847,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+412,shadow-subset5-backfill-2026-03,2026-03-01,,19467848,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+413,shadow-subset5-backfill-2026-03,2026-03-01,,19467849,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+422,shadow-subset5-backfill-2026-03,2026-03-01,,19425142,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+423,shadow-subset5-backfill-2026-03,2026-03-01,,19425148,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+424,shadow-subset5-backfill-2026-03,2026-03-01,,19425149,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+425,shadow-subset5-backfill-2026-03,2026-03-01,,19425147,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+434,shadow-subset5-backfill-2026-03,2026-03-01,,19439501,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+435,shadow-subset5-backfill-2026-03,2026-03-01,,19439509,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+436,shadow-subset5-backfill-2026-03,2026-03-01,,19439506,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+437,shadow-subset5-backfill-2026-03,2026-03-01,,19439502,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+426,shadow-subset5-backfill-2026-03,2026-03-02,,19425146,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+427,shadow-subset5-backfill-2026-03,2026-03-02,,19425150,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+438,shadow-subset5-backfill-2026-03,2026-03-02,,19439507,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+390,shadow-subset5-backfill-2026-03,2026-03-03,,19427166,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+391,shadow-subset5-backfill-2026-03,2026-03-03,,19427168,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+392,shadow-subset5-backfill-2026-03,2026-03-03,,19427170,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+393,shadow-subset5-backfill-2026-03,2026-03-03,,19427174,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+394,shadow-subset5-backfill-2026-03,2026-03-04,,19427165,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+395,shadow-subset5-backfill-2026-03,2026-03-04,,19427167,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+396,shadow-subset5-backfill-2026-03,2026-03-04,,19427169,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+397,shadow-subset5-backfill-2026-03,2026-03-04,,19427171,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+401,shadow-subset5-backfill-2026-03,2026-03-04,,19433623,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+439,shadow-subset5-backfill-2026-03,2026-03-04,,19439475,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+402,shadow-subset5-backfill-2026-03,2026-03-06,,19433695,82,Bundesliga,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+415,shadow-subset5-backfill-2026-03,2026-03-06,,19467851,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+428,shadow-subset5-backfill-2026-03,2026-03-06,,19425160,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+440,shadow-subset5-backfill-2026-03,2026-03-06,,19439512,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+403,shadow-subset5-backfill-2026-03,2026-03-07,,19433691,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+404,shadow-subset5-backfill-2026-03,2026-03-07,,19433694,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+405,shadow-subset5-backfill-2026-03,2026-03-07,,19433697,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+406,shadow-subset5-backfill-2026-03,2026-03-07,,19433698,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+407,shadow-subset5-backfill-2026-03,2026-03-07,,19433699,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+408,shadow-subset5-backfill-2026-03,2026-03-07,,19433692,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+416,shadow-subset5-backfill-2026-03,2026-03-07,,19467850,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+417,shadow-subset5-backfill-2026-03,2026-03-07,,19467852,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+418,shadow-subset5-backfill-2026-03,2026-03-07,,19467854,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+429,shadow-subset5-backfill-2026-03,2026-03-07,,19425153,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+430,shadow-subset5-backfill-2026-03,2026-03-07,,19425151,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+431,shadow-subset5-backfill-2026-03,2026-03-07,,19425156,384,Serie A,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+441,shadow-subset5-backfill-2026-03,2026-03-07,,19439516,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+442,shadow-subset5-backfill-2026-03,2026-03-07,,19439515,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+443,shadow-subset5-backfill-2026-03,2026-03-07,,19439511,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+444,shadow-subset5-backfill-2026-03,2026-03-07,,19439510,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+409,shadow-subset5-backfill-2026-03,2026-03-08,,19433696,82,Bundesliga,missing_bt2_event_id,eligible_shadow_native,False,True
+419,shadow-subset5-backfill-2026-03,2026-03-08,,19467856,301,Ligue 1,missing_bt2_event_id,shadow_native_value_pool_failed,False,False
+420,shadow-subset5-backfill-2026-03,2026-03-08,,19467855,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+421,shadow-subset5-backfill-2026-03,2026-03-08,,19467857,301,Ligue 1,missing_bt2_event_id,eligible_shadow_native,False,True
+432,shadow-subset5-backfill-2026-03,2026-03-08,,19425158,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+433,shadow-subset5-backfill-2026-03,2026-03-08,,19425152,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+445,shadow-subset5-backfill-2026-03,2026-03-08,,19439519,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True
+206,shadow-subset5-backfill-2026-04,2026-04-10,102344,19427726,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+230,shadow-subset5-backfill-2026-04,2026-04-10,102337,19467890,301,Ligue 1,eligible_legacy_local,eligible_shadow_native,True,True
+231,shadow-subset5-backfill-2026-04,2026-04-10,102338,19467894,301,Ligue 1,value_pool_failed_no_complete_market_family,shadow_native_value_pool_failed,False,False
+242,shadow-subset5-backfill-2026-04,2026-04-10,102353,19425199,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+254,shadow-subset5-backfill-2026-04,2026-04-10,102328,19439557,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+207,shadow-subset5-backfill-2026-04,2026-04-11,102345,19427721,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+208,shadow-subset5-backfill-2026-04,2026-04-11,102346,19427194,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+209,shadow-subset5-backfill-2026-04,2026-04-11,102347,19427722,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+210,shadow-subset5-backfill-2026-04,2026-04-11,102348,19427197,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+232,shadow-subset5-backfill-2026-04,2026-04-11,102339,19467891,301,Ligue 1,eligible_legacy_local,eligible_shadow_native,True,True
+233,shadow-subset5-backfill-2026-04,2026-04-11,102340,19467893,301,Ligue 1,eligible_legacy_local,eligible_shadow_native,True,True
+243,shadow-subset5-backfill-2026-04,2026-04-11,102354,19425193,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+244,shadow-subset5-backfill-2026-04,2026-04-11,102355,19425200,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+245,shadow-subset5-backfill-2026-04,2026-04-11,102356,19425197,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+246,shadow-subset5-backfill-2026-04,2026-04-11,102357,19425191,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+255,shadow-subset5-backfill-2026-04,2026-04-11,102329,19439558,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+256,shadow-subset5-backfill-2026-04,2026-04-11,102330,19439553,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+257,shadow-subset5-backfill-2026-04,2026-04-11,102331,19439551,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+258,shadow-subset5-backfill-2026-04,2026-04-11,102332,19439559,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+211,shadow-subset5-backfill-2026-04,2026-04-12,102349,19427196,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+212,shadow-subset5-backfill-2026-04,2026-04-12,102350,19427724,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+213,shadow-subset5-backfill-2026-04,2026-04-12,102351,19427725,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+214,shadow-subset5-backfill-2026-04,2026-04-12,102352,19427195,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+234,shadow-subset5-backfill-2026-04,2026-04-12,102341,19467886,301,Ligue 1,value_pool_failed_no_complete_market_family,eligible_shadow_native,False,True
+235,shadow-subset5-backfill-2026-04,2026-04-12,102342,19467887,301,Ligue 1,eligible_legacy_local,eligible_shadow_native,True,True
+247,shadow-subset5-backfill-2026-04,2026-04-12,102358,19425196,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+248,shadow-subset5-backfill-2026-04,2026-04-12,102359,19425198,384,Serie A,value_pool_failed_no_complete_market_family,eligible_shadow_native,False,True
+249,shadow-subset5-backfill-2026-04,2026-04-12,102360,19425192,384,Serie A,value_pool_failed_no_complete_market_family,eligible_shadow_native,False,True
+250,shadow-subset5-backfill-2026-04,2026-04-12,102361,19425194,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+259,shadow-subset5-backfill-2026-04,2026-04-12,102333,19439556,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+260,shadow-subset5-backfill-2026-04,2026-04-12,102334,19439555,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+261,shadow-subset5-backfill-2026-04,2026-04-12,102335,19439552,564,La Liga,value_pool_failed_no_complete_market_family,eligible_shadow_native,False,True
+262,shadow-subset5-backfill-2026-04,2026-04-12,102336,19439550,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+215,shadow-subset5-backfill-2026-04,2026-04-13,102542,19427723,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+251,shadow-subset5-backfill-2026-04,2026-04-13,102543,19425195,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+263,shadow-subset5-backfill-2026-04,2026-04-13,102541,19439554,564,La Liga,value_pool_failed_no_complete_market_family,eligible_shadow_native,False,True
+237,shadow-subset5-backfill-2026-04,2026-04-17,102609,19467900,301,Ligue 1,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+252,shadow-subset5-backfill-2026-04,2026-04-17,102632,19425209,384,Serie A,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+253,shadow-subset5-backfill-2026-04,2026-04-17,102633,19425203,384,Serie A,no_local_snapshot_before_t60,shadow_native_value_pool_failed,False,False
+216,shadow-subset5-backfill-2026-04,2026-04-18,102619,19427729,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+217,shadow-subset5-backfill-2026-04,2026-04-18,102620,19427733,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+238,shadow-subset5-backfill-2026-04,2026-04-18,102610,19467898,301,Ligue 1,eligible_legacy_local,eligible_shadow_native,True,True
+239,shadow-subset5-backfill-2026-04,2026-04-18,102611,19467901,301,Ligue 1,eligible_legacy_local,eligible_shadow_native,True,True
+240,shadow-subset5-backfill-2026-04,2026-04-18,102612,19467895,301,Ligue 1,eligible_legacy_local,eligible_shadow_native,True,True
+241,shadow-subset5-backfill-2026-04,2026-04-19,102613,19467903,301,Ligue 1,eligible_legacy_local,eligible_shadow_native,True,True
+193,shadow-daily-2026-04-20,2026-04-20,102628,19427731,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+194,shadow-daily-2026-04-20,2026-04-20,102641,19425205,384,Serie A,eligible_legacy_local,eligible_shadow_native,True,True
+195,shadow-daily-2026-04-21,2026-04-21,102629,19427198,8,Premier League,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+196,shadow-daily-2026-04-21,2026-04-21,102602,19439570,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+197,shadow-daily-2026-04-21,2026-04-21,102603,19439575,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+198,shadow-daily-2026-04-21,2026-04-21,102604,19439573,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+199,shadow-daily-2026-04-21,2026-04-21,102605,19439577,564,La Liga,no_local_snapshot_before_t60,shadow_native_value_pool_failed,False,False
+264,shadow-subset5-backfill-2026-04,2026-04-21,102602,19439570,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+265,shadow-subset5-backfill-2026-04,2026-04-21,102603,19439575,564,La Liga,no_local_snapshot_before_t60,eligible_shadow_native,False,True
+200,shadow-daily-2026-04-22,2026-04-22,102630,19427199,8,Premier League,value_pool_failed_no_complete_market_family,shadow_native_value_pool_failed,False,False
+201,shadow-daily-2026-04-22,2026-04-22,102631,19427739,8,Premier League,eligible_legacy_local,eligible_shadow_native,True,True
+202,shadow-daily-2026-04-22,2026-04-22,102618,19467866,301,Ligue 1,value_pool_failed_no_complete_market_family,shadow_native_value_pool_failed,False,False
+203,shadow-daily-2026-04-22,2026-04-22,102606,19439572,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+204,shadow-daily-2026-04-22,2026-04-22,102607,19439579,564,La Liga,eligible_legacy_local,eligible_shadow_native,True,True
+205,shadow-daily-2026-04-22,2026-04-22,102608,19439571,564,La Liga,value_pool_failed_no_complete_market_family,shadow_native_value_pool_failed,False,False
+189,shadow-daily-2026-04-27,2026-04-27,,19427202,8,Premier League,missing_bt2_event_id,eligible_shadow_native,False,True
+190,shadow-daily-2026-04-27,2026-04-27,,19425212,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+191,shadow-daily-2026-04-27,2026-04-27,,19425216,384,Serie A,missing_bt2_event_id,eligible_shadow_native,False,True
+192,shadow-daily-2026-04-27,2026-04-27,,19439562,564,La Liga,missing_bt2_event_id,eligible_shadow_native,False,True

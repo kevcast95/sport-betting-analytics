@@ -642,3 +642,13 @@ def extract_lineups_summary_from_raw_payload(payload: Any) -> Optional[dict[str,
     if not team_counts and not xi_home and not xi_away:
         base["teams_distinct"] = 0
     return base
+
+
+def sm_participant_sportmonks_team_ids(payload: dict[str, Any]) -> tuple[Optional[int], Optional[int]]:
+    """
+    IDs de equipo en el namespace SportMonks tomados de `participants[]` (meta.location home/away).
+
+    Usado por el carril shadow-native para enlazar con `bt2_teams.sportmonks_id` cuando el CDM
+    no tiene `home_team_id` / `away_team_id` poblados.
+    """
+    return _sm_home_away_team_ids(payload)

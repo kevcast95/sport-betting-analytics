@@ -1,0 +1,43 @@
+{
+  "generated_at_utc": "2026-04-28T04:46:31.962123+00:00",
+  "phase": "4B_execution",
+  "frozen_sources": {
+    "holdout_plan": "/Users/kevcast/Projects/scrapper/scripts/outputs/bt2_phase4a_shadow_signal_diagnosis/phase4b_holdout_plan.json",
+    "allowed_segments": "/Users/kevcast/Projects/scrapper/scripts/outputs/bt2_phase4a_shadow_signal_diagnosis/phase4b_allowed_segments.csv",
+    "preregister": "/Users/kevcast/Projects/scrapper/scripts/outputs/bt2_phase4a_shadow_signal_diagnosis/preregister_phase4b_final.md"
+  },
+  "universe": {
+    "run_keys_discovery": [
+      "shadow-subset5-backfill-2025-01-05",
+      "shadow-subset5-backfill-2026-01",
+      "shadow-subset5-backfill-2026-02",
+      "shadow-subset5-backfill-2026-03",
+      "shadow-subset5-recovery-2025-07-12"
+    ],
+    "run_keys_validation": [
+      "shadow-daily-2026-04-20",
+      "shadow-daily-2026-04-21",
+      "shadow-daily-2026-04-22",
+      "shadow-daily-2026-04-27",
+      "shadow-subset5-backfill-2026-04"
+    ],
+    "picks_total_all_partitions": 297,
+    "gates_applied": {
+      "n_tier_required_each_partition": "C_adequate_descriptive (scored >= 50) en discovery y en validation, por el mismo identificador de segmento univariado",
+      "validation_roi_flat_stake_pct_min": -4.0,
+      "stability_max_pp_worsening_discovery_to_validation": 3.0,
+      "units": "pp = puntos porcentuales de roi_flat_stake_pct; mismo definición que 4A (stake 1, ROIs sumados de evals)"
+    }
+  },
+  "counts": {
+    "segments_evaluated": 21,
+    "prometedor": 0,
+    "ruido": 4,
+    "no_interpretar": 17
+  },
+  "verdict_one_liner": "Ningún segmento univariado cumplió todas las compuertas de prometedor.",
+  "structural_notes_4b": [
+    "El segmento source_path=sportmonks_between_subset5_fallback solo existe en runs 2026-01..03 (discovery); en validation queda scored_validation=0 por definición de carril.",
+    "Muchos estratos tienen scored_validation<50 (a menudo tier A en validation) porque abril+daily concentra menos masa por liga/banda que Q1+Q4 discovery-only splits."
+  ]
+}

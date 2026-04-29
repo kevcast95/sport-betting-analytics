@@ -1,0 +1,770 @@
+[
+  {
+    "shadow_pick_id": 244,
+    "league_name": "Serie A",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Torino es favorito claro según cuotas de consenso, sin señales en contra en los datos disponibles.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.052593,
+      "ft_1x2_book_spread_ratio": 2.25641,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 214,
+    "league_name": "Premier League",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "medium",
+    "rationale_short_es": "Manchester City es favorito según cuotas de consenso, con alineaciones confirmadas y sin datos en contra.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.051594,
+      "ft_1x2_book_spread_ratio": 2.010309,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 203,
+    "league_name": "La Liga",
+    "operating_day_key": "2026-04-22",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "low",
+    "rationale_short_es": "Elche CF ligeramente favorito según cuotas de consenso, aunque con datos limitados.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.053948,
+      "ft_1x2_book_spread_ratio": 1.54334,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 235,
+    "league_name": "Ligue 1",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "medium",
+    "rationale_short_es": "Lille es favorito según cuotas de consenso, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.05193,
+      "ft_1x2_book_spread_ratio": 1.506667,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 243,
+    "league_name": "Serie A",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "low",
+    "rationale_short_es": "Cagliari favorito en cuotas, aunque con datos limitados.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.048771,
+      "ft_1x2_book_spread_ratio": 1.904762,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 193,
+    "league_name": "Premier League",
+    "operating_day_key": "2026-04-20",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "low",
+    "rationale_short_es": "Crystal Palace ligeramente favorito en cuotas, aunque con desventaja de descanso y más bajas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.048701,
+      "ft_1x2_book_spread_ratio": 1.309804,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 262,
+    "league_name": "La Liga",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Athletic Bilbao favorito claro en cuotas, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.047562,
+      "ft_1x2_book_spread_ratio": 1.785366,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 239,
+    "league_name": "Ligue 1",
+    "operating_day_key": "2026-04-18",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "medium",
+    "rationale_short_es": "Le Havre favorito en cuotas a pesar de poco descanso reciente.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.057373,
+      "ft_1x2_book_spread_ratio": 1.425532,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 242,
+    "league_name": "Serie A",
+    "operating_day_key": "2026-04-10",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "AS Roma es favorito abrumador según cuotas de consenso.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.056253,
+      "ft_1x2_book_spread_ratio": 6.741573,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 213,
+    "league_name": "Premier League",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "Cuotas casi idénticas para local y visitante, sin datos de forma ni h2h que permitan inclinarse.",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "confidence_label": "low",
+    "rationale_short_es": "",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.050398,
+      "ft_1x2_book_spread_ratio": 1.264151,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": null,
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 259,
+    "league_name": "La Liga",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "low",
+    "rationale_short_es": "Osasuna favorito en cuotas, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.044377,
+      "ft_1x2_book_spread_ratio": 1.533333,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 233,
+    "league_name": "Ligue 1",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Rennes favorito abrumador en cuotas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.051366,
+      "ft_1x2_book_spread_ratio": 7.159091,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 251,
+    "league_name": "Serie A",
+    "operating_day_key": "2026-04-13",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Fiorentina favorito en cuotas, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.055805,
+      "ft_1x2_book_spread_ratio": 1.382979,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 212,
+    "league_name": "Premier League",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "low",
+    "rationale_short_es": "Nottingham Forest ligeramente favorito en cuotas, partido muy igualado.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.050759,
+      "ft_1x2_book_spread_ratio": 1.245283,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 256,
+    "league_name": "La Liga",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "low",
+    "rationale_short_es": "Elche CF favorito en cuotas, aunque con datos limitados.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.048701,
+      "ft_1x2_book_spread_ratio": 1.309804,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 238,
+    "league_name": "Ligue 1",
+    "operating_day_key": "2026-04-18",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "medium",
+    "rationale_short_es": "Marsella favorito claro en cuotas, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.059266,
+      "ft_1x2_book_spread_ratio": 2.947531,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 246,
+    "league_name": "Serie A",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "medium",
+    "rationale_short_es": "Juventus favorito en cuotas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.048259,
+      "ft_1x2_book_spread_ratio": 1.484716,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 201,
+    "league_name": "Premier League",
+    "operating_day_key": "2026-04-22",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "low",
+    "rationale_short_es": "Bournemouth favorito en cuotas, aunque ambos equipos con poco descanso.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.049951,
+      "ft_1x2_book_spread_ratio": 1.948718,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 257,
+    "league_name": "La Liga",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "high",
+    "rationale_short_es": "Barcelona favorito abrumador en cuotas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.047373,
+      "ft_1x2_book_spread_ratio": 6.184211,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 232,
+    "league_name": "Ligue 1",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Auxerre favorito en cuotas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.054626,
+      "ft_1x2_book_spread_ratio": 2.251309,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 250,
+    "league_name": "Serie A",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "medium",
+    "rationale_short_es": "Inter Milan favorito en cuotas, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.056831,
+      "ft_1x2_book_spread_ratio": 1.322917,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 217,
+    "league_name": "Premier League",
+    "operating_day_key": "2026-04-18",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Leeds Utd favorito claro en cuotas, a pesar de poco descanso.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.047512,
+      "ft_1x2_book_spread_ratio": 3.821656,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 255,
+    "league_name": "La Liga",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Real Sociedad favorito en cuotas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.045874,
+      "ft_1x2_book_spread_ratio": 2.5,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 240,
+    "league_name": "Ligue 1",
+    "operating_day_key": "2026-04-18",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Lille favorito claro en cuotas, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.060606,
+      "ft_1x2_book_spread_ratio": 4.0,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 247,
+    "league_name": "Serie A",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Genoa favorito en cuotas, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.054499,
+      "ft_1x2_book_spread_ratio": 1.651163,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 211,
+    "league_name": "Premier League",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "medium",
+    "rationale_short_es": "Newcastle favorito en cuotas, con alineaciones confirmadas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.055612,
+      "ft_1x2_book_spread_ratio": 1.416667,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 260,
+    "league_name": "La Liga",
+    "operating_day_key": "2026-04-12",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "low",
+    "rationale_short_es": "Mallorca favorito en cuotas, aunque con más bajas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.050532,
+      "ft_1x2_book_spread_ratio": 1.361702,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 241,
+    "league_name": "Ligue 1",
+    "operating_day_key": "2026-04-19",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "medium",
+    "rationale_short_es": "Mónaco favorito claro en cuotas a pesar de múltiples bajas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.052729,
+      "ft_1x2_book_spread_ratio": 3.525641,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 245,
+    "league_name": "Serie A",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "high",
+    "rationale_short_es": "AC Milan favorito abrumador en cuotas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.05772,
+      "ft_1x2_book_spread_ratio": 5.892857,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 208,
+    "league_name": "Premier League",
+    "operating_day_key": "2026-04-11",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "medium",
+    "rationale_short_es": "Brighton favorito claro en cuotas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.053399,
+      "ft_1x2_book_spread_ratio": 3.117284,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 254,
+    "league_name": "La Liga",
+    "operating_day_key": "2026-04-10",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "confidence_label": "high",
+    "rationale_short_es": "Real Madrid favorito abrumador en cuotas.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.04563,
+      "ft_1x2_book_spread_ratio": 5.746269,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "home",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  },
+  {
+    "shadow_pick_id": 230,
+    "league_name": "Ligue 1",
+    "operating_day_key": "2026-04-10",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "confidence_label": "low",
+    "rationale_short_es": "Mónaco favorito en cuotas, aunque con datos limitados.",
+    "prob_coherence": {
+      "flag": "coherence_warning",
+      "ft_1x2_implied_sum_raw": 1.053039,
+      "ft_1x2_book_spread_ratio": 2.007874,
+      "ou_25_implied_sum_raw": null,
+      "notes": [
+        "ft_1x2_book_spread_ratio_above_threshold"
+      ]
+    },
+    "consensus_favorite_side": "away",
+    "odds_tier_when_ok": "favorite",
+    "trace_response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "trace_last_error": ""
+  }
+]

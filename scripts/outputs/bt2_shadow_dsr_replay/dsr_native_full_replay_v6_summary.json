@@ -1,0 +1,439 @@
+{
+  "run_key": "shadow-dsr-native-full-20260429-033425",
+  "selection_source": "dsr_api_only",
+  "run_family": "shadow_dsr_replay_native",
+  "model": "deepseek-v4-pro",
+  "contract_version": "bt2-dx-001-s6.2r3",
+  "dsr_prompt_version": "shadow_native_dsr_prompt_v6",
+  "gate": "shadow_native_only",
+  "frozen_run_keys": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12",
+    "shadow-subset5-backfill-2026-01",
+    "shadow-subset5-backfill-2026-02",
+    "shadow-subset5-backfill-2026-03",
+    "shadow-subset5-backfill-2026-04"
+  ],
+  "subset5_sportmonks_ids": [
+    8,
+    82,
+    301,
+    384,
+    564
+  ],
+  "batch_size_config": 15,
+  "batching_note": "Mismo bt2_dsr_batch_size que DSR admin; lotes para límites de tokens/timeout DeepSeek.",
+  "universe_rows_matched_taxonomy": 278,
+  "eligible_shadow_native": 259,
+  "excluded_shadow_native_value_pool_failed": 19,
+  "excluded_shadow_native_other": 0,
+  "universe_executed_with_dsr": 259,
+  "execution_shortfall": {
+    "eligible_minus_executed": 0,
+    "cause": null
+  },
+  "shadow_run_id": 18,
+  "metrics": {
+    "prompts_built": 259,
+    "dsr_failed": 1,
+    "ok_total": 246,
+    "evaluable": 246,
+    "parse_status_counts": {
+      "ok": 246,
+      "dsr_postprocess_reject": 12,
+      "dsr_failed": 1
+    },
+    "usage_prompt_tokens_sum": 673348,
+    "usage_completion_tokens_sum": 67261,
+    "estimated_cost_usd": null,
+    "picks_total": 259,
+    "scored": 43,
+    "hit": 20,
+    "miss": 23,
+    "void": 0,
+    "pending_result": 203,
+    "no_evaluable": 13,
+    "hit_rate_on_scored": 0.465116,
+    "roi_flat_stake_units": -2.455,
+    "roi_flat_stake_pct": -5.709302,
+    "baseline_non_dsr_same_native_slice": {
+      "description": "Picks shadow fuente (no DSR) por source_shadow_pick_id; misma función de verdad que DSR.",
+      "picks_total": 259,
+      "scored": 36,
+      "hit": 16,
+      "miss": 20,
+      "void": 0,
+      "pending_result": 215,
+      "no_evaluable": 8,
+      "hit_rate_on_scored": 0.444444,
+      "roi_flat_stake_units": 3.46,
+      "roi_flat_stake_pct": 9.611111
+    },
+    "comparison_slice_note": "Misma verdad de resultado para DSR y baseline: prioridad CDM `bt2_events`, si no hay evento, `raw_sportmonks_fixtures.payload` (FT); si no hay marcador, pending/no_evaluable.",
+    "odds_tier_distribution_ok": {
+      "favorite": 245,
+      "longshot": 1
+    },
+    "favorite_bias_ok_same_as_consensus": 245,
+    "favorite_bias_ok_not_favorite": 1
+  },
+  "batch_traces_sample": [
+    {
+      "response_id": "c5b5d8e7-d124-46be-9020-6874d640d2bc",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 38872,
+        "completion_tokens": 4442,
+        "total_tokens": 43314,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2996
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 38872
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 149,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Arsenal\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Arsenal heavily favored across all bookmakers with consensus away odds around 1.5 and no other data contradicting a visitor win.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 157,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Nice\",\n      \"confidence_label\": \"low\",\n      \"rationale_short_es\": \"Nice slightly favored across market consensus with home odds around 2.3 in absence of contradictory data.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 165,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Real Madrid\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Real Madrid heavily favored (consensus away ~1.38) across all bookmakers, no opposing data.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 150,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Newcastle Unit",
+      "raw_content_length_chars": 4983
+    },
+    {
+      "response_id": "a6cf53de-83eb-4e70-8db3-dd739f12293e",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 33683,
+        "completion_tokens": 3771,
+        "total_tokens": 37454,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2286
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 32659
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 155,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Union Berlin\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Consenso de cuotas favorece ligeramente a Union Berlin (2.55 vs 2.85), y el H2H no muestra victorias en 2 partidos.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 156,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"SC Freiburg\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Cuotas muy favorables al local (1.435) y ventaja en córners (7 a 1) respaldan al Freiburg.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 167,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Girona\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Girona es favorito según cuotas (2.4) y registra ventaja en descanso (22 vs 20 días), además de córners (6-3).\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 168,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Real Betis\",\n  ",
+      "raw_content_length_chars": 4808
+    },
+    {
+      "response_id": "1fa6f62a-25e0-4ac7-9c86-7776967076ca",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 36150,
+        "completion_tokens": 2866,
+        "total_tokens": 39016,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1495
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 36150
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 175,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"VfL Wolfsburg\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"VfL Wolfsburg cuenta con la cuota más baja según el consenso de cuotas.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 176,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"VfB Stuttgart\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"VfB Stuttgart es claro favorito según el consenso de cuotas.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 181,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Genoa\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Genoa es favorito claro según el consenso de cuotas.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 182,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Napoli\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Napoli es claro favorito según el consenso de cuotas.\",\n      \"no_pick_reas",
+      "raw_content_length_chars": 4573
+    },
+    {
+      "response_id": "9d3ac3bc-ca9e-448f-b8d9-f459541cdd58",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 37608,
+        "completion_tokens": 2556,
+        "total_tokens": 40164,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1074
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 36584
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 272,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Wolverhampton Wanderers\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Cuota de consenso más baja para el local (2.65) en un mercado sin datos adicionales.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 273,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Arsenal\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Clara ventaja visitante en el consenso (1.50) sin otra información contextual en el input.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 292,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Strasbourg\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Consenso indica favorito visitante (2.20) con diferencial moderado frente a locales y empate.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 293,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Lille\",\n      \"confidence_label\": \"high\",\n      \"rat",
+      "raw_content_length_chars": 4958
+    },
+    {
+      "response_id": "683fa8bd-12c3-4b03-a236-7d3131c6bf79",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 36458,
+        "completion_tokens": 2496,
+        "total_tokens": 38954,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1216
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 35434
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 277,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Tottenham Hotspur\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Clara ventaja en cuotas para el local.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 295,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Le Havre\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Favorito local según consenso de cuotas.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 296,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Lorient\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Cuota local baja indica ventaja clara.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 297,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Brest\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Local favorito con cuota más baja.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 308,\n      \"market_canonical\": \"FT_1X2\",\n",
+      "raw_content_length_chars": 4234
+    },
+    {
+      "response_id": "780599f9-fae7-4272-b84f-7a6119575fb7",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 36464,
+        "completion_tokens": 2983,
+        "total_tokens": 39447,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1841
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 35440
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\"picks_by_event\":[{\"event_id\":278,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Borussia Dortmund\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"Borussia Dortmund favorito con cuota implícita de 2.04 en consenso y consistencia entre casas.\",\"no_pick_reason\":\"\"},{\"event_id\":324,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Real Sociedad\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"Real Sociedad favorito con cuota implícita de 2.35 en consenso y soporte de múltiples bookmakers.\",\"no_pick_reason\":\"\"},{\"event_id\":279,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"1. FC Köln\",\"confidence_label\":\"low\",\"rationale_short_es\":\"1. FC Köln ligeramente favorito (2.505) aunque con margen estrecho sobre Heidenheim.\",\"no_pick_reason\":\"\"},{\"event_id\":280,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"Union Berlin\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"Union Berlin favorito con cuota de 2.15 y respaldo unánime en las casas.\",\"no_pick_reason\":\"\"},{\"event_id\":281,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"SC Freiburg\",\"confidence_label\":\"hi",
+      "raw_content_length_chars": 3800
+    },
+    {
+      "response_id": "eff7b1e0-3c2e-46c8-a1f5-5befc38541e1",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 37227,
+        "completion_tokens": 4207,
+        "total_tokens": 41434,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 3092
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 37227
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\"picks_by_event\":[{\"event_id\":326,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"Aston Villa\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"El consenso de cuotas muestra al Aston Villa como favorito con cuota 2.2, respaldado por la ventaja de local.\",\"no_pick_reason\":\"\"},{\"event_id\":327,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"Manchester United\",\"confidence_label\":\"high\",\"rationale_short_es\":\"Cuotas de consenso fuertemente inclinadas a favor del Manchester United como local (1.57).\",\"no_pick_reason\":\"\"},{\"event_id\":328,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"Nottingham Forest\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"El consenso de mercado indica al Nottingham Forest como favorito jugando en casa (2.07).\",\"no_pick_reason\":\"\"},{\"event_id\":329,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Manchester City\",\"confidence_label\":\"high\",\"rationale_short_es\":\"Las cuotas de consenso muestran al Manchester City como claro favorito visitante (1.68).\",\"no_pick_reason\":\"\"},{\"event_id\":338,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"",
+      "raw_content_length_chars": 3822
+    },
+    {
+      "response_id": "61c2ac6b-cbe4-4307-a465-42424efb1bbe",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 37542,
+        "completion_tokens": 4695,
+        "total_tokens": 42237,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 3283
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 36518
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 377,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Athletic Bilbao\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"El consenso de cuotas muestra ventaja clara del Athletic Bilbao sobre Real Sociedad.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 330,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Sunderland\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Cuotas consistentes con favoritismo fuerte del Sunderland ante Burnley.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 366,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"AS Roma\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"El mercado de apuestas favorece de forma consistente a la AS Roma frente a Udinese.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 378,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"draw\",\n      \"selected_team\": \"\",\n      \"confidence_label\": \"low\",\n      \"rationale_short_es\": \"Cuotas muy ajustadas ent",
+      "raw_content_length_chars": 4845
+    },
+    {
+      "response_id": "04085304-6667-4114-ac86-96ad645f7d40",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 36710,
+        "completion_tokens": 3965,
+        "total_tokens": 40675,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2534
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 35686
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 337,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Chelsea\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Chelsea es favorito consistente con cuota media 1.6 y consenso entre casas.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 341,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Hamburger SV\",\n      \"confidence_label\": \"low\",\n      \"rationale_short_es\": \"Hamburger SV es ligero favorito en cuotas de consenso (2.4).\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 342,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"FSV Mainz 05\",\n      \"confidence_label\": \"low\",\n      \"rationale_short_es\": \"Mainz 05 es favorito según cuotas de consenso (2.0) bien respaldadas por múltiples casas.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 343,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"VfB Stuttgart\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"VfB Stuttgart es claro favo",
+      "raw_content_length_chars": 4605
+    },
+    {
+      "response_id": "30a7ce49-6bd0-427b-8df6-040d29708c1b",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 37256,
+        "completion_tokens": 3759,
+        "total_tokens": 41015,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2616
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 36232
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\"picks_by_event\":[{\"event_id\":360,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Toulouse\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"Consenso de casas de apuestas muestra a Toulouse como favorito (cuota 2.05), sin otra información disponible.\",\"no_pick_reason\":\"\"},{\"event_id\":361,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Strasbourg\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"Strasbourg es favorito con cuota 1.87 en consenso, apoyado por todas las casas.\",\"no_pick_reason\":\"\"},{\"event_id\":371,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"Bologna\",\"confidence_label\":\"high\",\"rationale_short_es\":\"Bologna es claro favorito con cuota 1.67, respaldado por todas las casas.\",\"no_pick_reason\":\"\"},{\"event_id\":372,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Udinese\",\"confidence_label\":\"low\",\"rationale_short_es\":\"Udinese ligeramente favorito (2.66) en consenso de cuotas; alternativas cercanas reflejan incertidumbre.\",\"no_pick_reason\":\"\"},{\"event_id\":373,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Inter Milan\",\"confidence_label\":\"high\",",
+      "raw_content_length_chars": 3814
+    },
+    {
+      "response_id": "92a6474c-6cb8-4835-b4c4-e92bbb3fdcad",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 36274,
+        "completion_tokens": 4305,
+        "total_tokens": 40579,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2881
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 35250
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 399,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Eintracht Frankfurt\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Cuota consenso más baja para el local, señal clara de mercado aunque datos de contexto ausentes.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 400,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"RB Leipzig\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Cuota consenso baja para visitante, expectativa de mercado clara pese a advertencia de coherencia.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 410,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Paris FC\",\n      \"confidence_label\": \"low\",\n      \"rationale_short_es\": \"Ligero favoritismo local según cuotas consenso, con diferencia pequeña en un partido con poca información.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 411,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Lille\",\n      \"confiden",
+      "raw_content_length_chars": 4803
+    },
+    {
+      "response_id": "1895246a-6422-4454-8711-ed932b370c20",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 38366,
+        "completion_tokens": 3681,
+        "total_tokens": 42047,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2247
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 37342
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 427,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Fiorentina\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Consenso de cuotas muestra a Fiorentina como favorito visitante con 2.385, respaldado por todas las casas.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 438,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Real Madrid\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Real Madrid es claro favorito en casa con cuota 1.36 de consenso.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 390,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Bournemouth\",\n      \"confidence_label\": \"low\",\n      \"rationale_short_es\": \"Cuota de consenso mínima para local (2.55) en un mercado muy parejo, sin datos adicionales.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 391,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Everton\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_e",
+      "raw_content_length_chars": 4661
+    },
+    {
+      "response_id": "7d1d30c6-92f3-43ec-bcf7-864ab17ca74c",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 35010,
+        "completion_tokens": 3834,
+        "total_tokens": 38844,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2333
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 35010
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 403,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"TSG Hoffenheim\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Consenso de mercado abrumadoramente favorable al visitante (cuota ~1.50), con respaldo unánime en todas las casas.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 404,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"VfB Stuttgart\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Cuota del visitante consistentemente por debajo de 2.00 en todas las casas, indicando favoritismo moderado.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 405,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"RB Leipzig\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Mercado asigna probabilidad implícita muy alta al local (cuota ~1.38), sin señales en contra.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 406,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Bayer Leve",
+      "raw_content_length_chars": 4984
+    },
+    {
+      "response_id": "c37519e1-9861-49ac-9143-a7fe518a5eb0",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 40314,
+        "completion_tokens": 4513,
+        "total_tokens": 44827,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2939
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 39290
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 409,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Eintracht Frankfurt\",\n      \"confidence_label\": \"low\",\n      \"rationale_short_es\": \"Cuotas muy parejas entre local y visitante, con ligera ventaja para Eintracht Frankfurt en el consenso de mercado (2.615 vs 2.695).\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 420,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Lille\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Lille es favorito claro según el consenso de mercado (1.50), con amplia diferencia sobre visitante y empate.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 421,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"away\",\n      \"selected_team\": \"Rennes\",\n      \"confidence_label\": \"low\",\n      \"rationale_short_es\": \"Mercado muy ajustado entre Nice y Rennes, con ligera preferencia por el visitante en el consenso (2.545).\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 432,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected",
+      "raw_content_length_chars": 5034
+    },
+    {
+      "response_id": "8f72a5ed-59f6-4805-aca4-3a0cfdd791a7",
+      "model": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 44610,
+        "completion_tokens": 4168,
+        "total_tokens": 48778,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2754
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 43586
+      },
+      "last_error": "",
+      "parse_success": true,
+      "attempts_used": 1,
+      "raw_content_excerpt": "{\n  \"picks_by_event\": [\n    {\n      \"event_id\": 233,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Rennes\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Fuerte consenso de cuotas con local ampliamente favorito; sin indicios en contra.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 243,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Cagliari\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Cuotas consistentes favorecen al local, aunque ajustadas; no hay datos que sugieran sorpresa.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 244,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"Torino\",\n      \"confidence_label\": \"medium\",\n      \"rationale_short_es\": \"Consenso de mercado inclina ligeramente hacia el local, respaldado por cuotas estables.\",\n      \"no_pick_reason\": \"\"\n    },\n    {\n      \"event_id\": 245,\n      \"market_canonical\": \"FT_1X2\",\n      \"selection_canonical\": \"home\",\n      \"selected_team\": \"AC Milan\",\n      \"confidence_label\": \"high\",\n      \"rationale_short_es\": \"Loca",
+      "raw_content_length_chars": 4818
+    }
+  ],
+  "observability": {
+    "audit_trail_row_count": 259,
+    "human_audit_sample_size": 10
+  },
+  "operational_snapshot": {
+    "parse_status_counts": {
+      "ok": 246,
+      "dsr_postprocess_reject": 12,
+      "dsr_failed": 1
+    },
+    "ok_total": 246,
+    "dsr_failed": 1,
+    "dsr_empty_signal": 0,
+    "scored": 43,
+    "pending_result": 203,
+    "no_evaluable": 13,
+    "hit": 20,
+    "miss": 23,
+    "odds_tier_distribution_ok": {
+      "favorite": 245,
+      "longshot": 1
+    },
+    "favorite_bias_among_ok_picks": {
+      "same_as_consensus_favorite": 245,
+      "not_favorite": 1
+    }
+  }
+}

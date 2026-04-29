@@ -1,0 +1,50 @@
+{
+  "document": "preregister_phase4b_final.md",
+  "status": "frozen_pre_execution",
+  "stack_constraints": {
+    "lane": "shadow",
+    "subset": "subset5",
+    "market": "h2h",
+    "region": "us",
+    "snapshot_policy": "T-60"
+  },
+  "partition_rule": "by_run_key",
+  "discovery": {
+    "label": "discovery",
+    "run_keys": [
+      "shadow-subset5-backfill-2025-01-05",
+      "shadow-subset5-recovery-2025-07-12",
+      "shadow-subset5-backfill-2026-01",
+      "shadow-subset5-backfill-2026-02",
+      "shadow-subset5-backfill-2026-03"
+    ],
+    "approx_picks_baseline_297": 220,
+    "rationale": "Agrupa 2025 (subset5) y los meses 2026-01..03 (fallback mensual) antes del holdout mensual+diario de abril 2026."
+  },
+  "validation": {
+    "label": "validation",
+    "run_keys": [
+      "shadow-subset5-backfill-2026-04",
+      "shadow-daily-2026-04-20",
+      "shadow-daily-2026-04-21",
+      "shadow-daily-2026-04-22",
+      "shadow-daily-2026-04-27"
+    ],
+    "approx_picks_baseline_297": 77,
+    "rationale": "Abril 2026: backfill subset5-04 + toda la ventana shadow-daily presente; holdout temporal respecto a Q1 2026 y respecto a 2025, sin tocar criterios de corridas a posteriori."
+  },
+  "quantitative_gates_for_promising_candidate": {
+    "n_tier_required_each_partition": "C_adequate_descriptive (scored >= 50) en discovery y en validation, por el mismo identificador de segmento univariado",
+    "validation_roi_flat_stake_pct_min": -4.0,
+    "stability_max_pp_worsening_discovery_to_validation": 3.0,
+    "units": "pp = puntos porcentuales de roi_flat_stake_pct; mismo definición que 4A (stake 1, ROIs sumados de evals)"
+  },
+  "prohibited_for_promising": [
+    "cross_dimensional_2d_or_more",
+    "daily_shadow_sm_toa as primary",
+    "unknown_odds",
+    "selection_side unknown|unknown_resolved_teams (primary)",
+    "tier A or B in either partition for promising label"
+  ],
+  "baseline_universe_picks_total": 297
+}

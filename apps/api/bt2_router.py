@@ -78,6 +78,7 @@ from apps.api.bt2_schemas import (
     Bt2AdminFase1OperationalSummaryOut,
     Bt2AdminF2PoolMetricsOut,
     Bt2AdminMonitorResultadosOut,
+    Bt2AdminMonitorShadowOut,
     Bt2AdminBacktestReplayOut,
     Bt2AdminBacktestWindowSmRefreshOut,
     Bt2AdminOfficialEvaluationLoopOut,
@@ -104,6 +105,7 @@ from apps.api.bt2_schemas import (
 )
 from apps.api.bt2_admin_backtest_replay import build_backtest_replay_payload
 from apps.api.bt2_monitor_resultados import build_monitor_resultados_payload
+from apps.api.bt2_shadow_monitor import build_shadow_monitor_payload
 from apps.api.bt2_admin_fase1_summary import build_fase1_operational_summary
 from apps.api.bt2_f2_metrics import build_f2_pool_eligibility_metrics
 from apps.api.bt2_admin_refresh_cdm_from_sm import (
@@ -4522,6 +4524,99 @@ def bt2_admin_monitor_resultados(
         cur.close()
         conn.close()
     return Bt2AdminMonitorResultadosOut.model_validate(raw)
+
+
+@router.get(
+    "/admin/analytics/monitor-resultados-shadow",
+    response_model=Bt2AdminMonitorShadowOut,
+    response_model_by_alias=True,
+    dependencies=[Depends(_require_bt2_admin)],
+    tags=["bt2-admin"],
+)
+def bt2_admin_monitor_resultados_shadow(
+    operating_day_key_from: str = Query(..., min_length=10, max_length=10, alias="operatingDayKeyFrom"),
+    operating_day_key_to: str = Query(..., min_length=10, max_length=10, alias="operatingDayKeyTo"),
+    rows_offset: int = Query(0, ge=0, alias="rowsOffset"),
+    rows_limit: int = Query(1500, ge=1, le=3000, alias="rowsLimit"),
+    market_substring: Optional[str] = Query(None, alias="marketSubstring"),
+    search: Optional[str] = Query(None),
+    classification_filter: Optional[str] = Query(
+        None,
+        alias="classificationFilter",
+        description="Taxonomía shadow: matched_with_odds_t60, unmatched_event, etc.",
+    ),
+    run_kind: Optional[str] = Query(
+        None,
+        alias="runKind",
+        description="Filtro lógico de corrida shadow: daily_shadow | backfill_window | day1_lab | other.",
+    ),
+    run_key: Optional[str] = Query(
+        None,
+        alias="runKey",
+        description="Run key exacto para aislar una corrida shadow.",
+    ),
+    group_by_run: bool = Query(
+        False,
+        alias="groupByRun",
+        description="Si true, agrega runGroups en payload para selector Diario/Histórico.",
+    ),
+    shadow_fallback_artifacts: bool = Query(
+        False,
+        alias="shadowFallbackArtifacts",
+        description="Fallback explícito a artefactos de laboratorio cuando DB shadow no tenga datos.",
+    ),
+) -> Bt2AdminMonitorShadowOut:
+    """
+    Monitor shadow (subset5) sin tocar tablas productivas.
+
+    Lectura inicial desde artefactos auditables de laboratorio; contrato estable para migrar a
+    persistencia `bt2_shadow_*` sin romper UI.
+    """
+    try:
+        d0 = date.fromisoformat(operating_day_key_from)
+        d1 = date.fromisoformat(operating_day_key_to)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="operatingDayKeyFrom y operatingDayKeyTo deben ser YYYY-MM-DD válidos.",
+        )
+    if d0 > d1:
+        raise HTTPException(
+            status_code=400,
+            detail="operatingDayKeyFrom no puede ser posterior a operatingDayKeyTo.",
+        )
+    span = (d1 - d0).days + 1
+    if span > _BT2_ADMIN_MONITOR_MAX_DAYS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Rango máximo {_BT2_ADMIN_MONITOR_MAX_DAYS} días.",
+        )
+
+    conn = _db_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        raw = build_shadow_monitor_payload(
+            cur,
+            operating_day_key_from=operating_day_key_from,
+            operating_day_key_to=operating_day_key_to,
+            rows_limit=rows_limit,
+            rows_offset=rows_offset,
+            search=search,
+            market_substring=market_substring,
+            classification_filter=classification_filter,
+            run_kind=run_kind,
+            run_key=run_key,
+            group_by_run=group_by_run,
+            allow_artifacts_fallback=shadow_fallback_artifacts,
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
+    return Bt2AdminMonitorShadowOut.model_validate(raw)
 
 
 @router.get(

@@ -1,0 +1,4 @@
+source_path,picks_total,pct_of_all_shadow_picks,scored,hit,miss,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct
+cdm_shadow,100,0.3367,85,38,47,0.447059,-1.86,-2.188235
+daily_shadow_sm_toa,17,0.057239,14,4,10,0.285714,-4.88,-34.857143
+sportmonks_between_subset5_fallback,180,0.606061,176,62,114,0.352273,-16.69,-9.482955

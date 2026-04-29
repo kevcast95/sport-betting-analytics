@@ -1,0 +1,2295 @@
+{
+  "cases": [
+    {
+      "source_shadow_pick_id": 149,
+      "event_id": 149,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "away": 1.5,
+            "home": 6.0,
+            "draw": 4.5
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.51,
+            "fetched_at": "2025-01-01T16:24:59+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 6.0,
+            "fetched_at": "2025-01-01T16:24:59+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.4,
+            "fetched_at": "2025-01-01T16:24:59+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.51,
+            "fetched_at": "2025-01-01T16:23:40+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 5.8,
+            "fetched_at": "2025-01-01T16:23:40+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.6,
+            "fetched_at": "2025-01-01T16:23:40+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.5,
+            "fetched_at": "2025-01-01T16:24:56+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 5.75,
+            "fetched_at": "2025-01-01T16:24:56+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.5,
+            "fetched_at": "2025-01-01T16:24:56+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.5,
+            "fetched_at": "2025-01-01T16:24:55+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 5.75,
+            "fetched_at": "2025-01-01T16:24:55+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.8,
+            "fetched_at": "2025-01-01T16:24:55+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.51,
+            "fetched_at": "2025-01-01T16:25:28+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 6.0,
+            "fetched_at": "2025-01-01T16:25:28+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.5,
+            "fetched_at": "2025-01-01T16:25:28+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.5,
+            "fetched_at": "2025-01-01T16:24:55+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 6.1,
+            "fetched_at": "2025-01-01T16:24:55+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.4,
+            "fetched_at": "2025-01-01T16:24:55+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.48,
+            "fetched_at": "2025-01-01T16:24:49+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 6.4,
+            "fetched_at": "2025-01-01T16:24:49+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.6,
+            "fetched_at": "2025-01-01T16:24:49+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.055556,
+          "ft_1x2_book_spread_ratio": 4.0,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 157,
+      "event_id": 157,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "home": 2.325,
+            "away": 3.125,
+            "draw": 3.2649999999999997
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.25,
+            "fetched_at": "2025-01-03T18:54:02+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 3.2,
+            "fetched_at": "2025-01-03T18:54:02+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2025-01-03T18:54:02+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.3,
+            "fetched_at": "2025-01-03T18:54:51+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 3.15,
+            "fetched_at": "2025-01-03T18:54:51+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2025-01-03T18:54:51+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.35,
+            "fetched_at": "2025-01-03T18:55:07+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 3.1,
+            "fetched_at": "2025-01-03T18:55:07+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2025-01-03T18:55:07+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.2,
+            "fetched_at": "2025-01-03T18:54:51+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 3.4,
+            "fetched_at": "2025-01-03T18:54:51+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.35,
+            "fetched_at": "2025-01-03T18:54:51+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.38,
+            "fetched_at": "2025-01-03T18:55:22+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 3.1,
+            "fetched_at": "2025-01-03T18:55:22+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2025-01-03T18:55:22+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.45,
+            "fetched_at": "2025-01-03T18:55:21+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 3.1,
+            "fetched_at": "2025-01-03T18:55:21+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.28,
+            "fetched_at": "2025-01-03T18:55:21+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.45,
+            "fetched_at": "2025-01-03T18:55:14+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 3.1,
+            "fetched_at": "2025-01-03T18:55:14+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.28,
+            "fetched_at": "2025-01-03T18:55:14+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.3,
+            "fetched_at": "2025-01-03T18:54:42+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 3.25,
+            "fetched_at": "2025-01-03T18:54:42+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.25,
+            "fetched_at": "2025-01-03T18:54:42+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.056386,
+          "ft_1x2_book_spread_ratio": 1.404301,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 165,
+      "event_id": 165,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "away": 1.3849999999999998,
+            "home": 7.7,
+            "draw": 4.875
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.34,
+            "fetched_at": "2025-01-03T18:54:54+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 8.0,
+            "fetched_at": "2025-01-03T18:54:54+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.9,
+            "fetched_at": "2025-01-03T18:54:54+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.36,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 7.0,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.8,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.4,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 7.25,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.9,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.36,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 8.0,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.7,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.4,
+            "fetched_at": "2025-01-03T18:54:54+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 7.25,
+            "fetched_at": "2025-01-03T18:54:54+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.8,
+            "fetched_at": "2025-01-03T18:54:54+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.39,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 8.28,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 5.15,
+            "fetched_at": "2025-01-03T18:54:53+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.39,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 8.28,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 5.15,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.38,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 7.4,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.85,
+            "fetched_at": "2025-01-03T18:55:23+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.05702,
+          "ft_1x2_book_spread_ratio": 5.559567,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 150,
+      "event_id": 150,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "away": 1.77,
+            "home": 3.85,
+            "draw": 4.5
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.77,
+            "fetched_at": "2025-01-04T11:25:22+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.8,
+            "fetched_at": "2025-01-04T11:25:22+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.5,
+            "fetched_at": "2025-01-04T11:25:22+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.74,
+            "fetched_at": "2025-01-04T11:25:03+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.9,
+            "fetched_at": "2025-01-04T11:25:03+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.33,
+            "fetched_at": "2025-01-04T11:25:03+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.78,
+            "fetched_at": "2025-01-04T11:25:03+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.85,
+            "fetched_at": "2025-01-04T11:25:03+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.4,
+            "fetched_at": "2025-01-04T11:25:03+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.77,
+            "fetched_at": "2025-01-04T11:25:05+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.9,
+            "fetched_at": "2025-01-04T11:25:05+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.3,
+            "fetched_at": "2025-01-04T11:25:05+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.74,
+            "fetched_at": "2025-01-04T11:25:22+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.9,
+            "fetched_at": "2025-01-04T11:25:22+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.5,
+            "fetched_at": "2025-01-04T11:25:22+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.83,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.6,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.3,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.74,
+            "fetched_at": "2025-01-04T11:24:35+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.9,
+            "fetched_at": "2025-01-04T11:24:35+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.51,
+            "fetched_at": "2025-01-04T11:24:35+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.8,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.85,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.55,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.8,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.85,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.55,
+            "fetched_at": "2025-01-04T11:25:21+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.046934,
+          "ft_1x2_book_spread_ratio": 2.542373,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 378,
+      "event_id": 378,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "home": 2.7,
+            "away": 2.9,
+            "draw": 3.0
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.7,
+            "fetched_at": "2026-02-02T18:55:26+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.85,
+            "fetched_at": "2026-02-02T18:55:26+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 2.95,
+            "fetched_at": "2026-02-02T18:55:26+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.66,
+            "fetched_at": "2026-02-02T18:55:24+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.9,
+            "fetched_at": "2026-02-02T18:55:24+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.0,
+            "fetched_at": "2026-02-02T18:55:24+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.72,
+            "fetched_at": "2026-02-02T18:55:25+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.95,
+            "fetched_at": "2026-02-02T18:55:25+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.05,
+            "fetched_at": "2026-02-02T18:55:25+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.72,
+            "fetched_at": "2026-02-02T18:55:24+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.95,
+            "fetched_at": "2026-02-02T18:55:24+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.05,
+            "fetched_at": "2026-02-02T18:55:24+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.7,
+            "fetched_at": "2026-02-02T18:53:49+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.9,
+            "fetched_at": "2026-02-02T18:53:49+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.0,
+            "fetched_at": "2026-02-02T18:53:49+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.7,
+            "fetched_at": "2026-02-02T18:55:29+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.75,
+            "fetched_at": "2026-02-02T18:55:29+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 2.95,
+            "fetched_at": "2026-02-02T18:55:29+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.75,
+            "fetched_at": "2026-02-02T18:55:26+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.85,
+            "fetched_at": "2026-02-02T18:55:26+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.0,
+            "fetched_at": "2026-02-02T18:55:26+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.65,
+            "fetched_at": "2026-02-02T18:54:36+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.85,
+            "fetched_at": "2026-02-02T18:54:36+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.1,
+            "fetched_at": "2026-02-02T18:54:36+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.75,
+            "fetched_at": "2026-02-02T18:55:25+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.9,
+            "fetched_at": "2026-02-02T18:55:25+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.0,
+            "fetched_at": "2026-02-02T18:55:25+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_ok",
+          "ft_1x2_implied_sum_raw": 1.048531,
+          "ft_1x2_book_spread_ratio": 1.111111,
+          "ou_25_implied_sum_raw": null,
+          "notes": []
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 211,
+      "event_id": 211,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "home": 2.9,
+            "away": 2.4,
+            "draw": 3.4
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.9,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.4,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.35,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.83,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.4,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.6,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.9,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.4,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.4,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.85,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.47,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.35,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.0,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.32,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.45,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.88,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.4,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.4,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.0,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.35,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.4,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.9,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.4,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.01,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.4,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.5,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.01,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.4,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.5,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.95,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.35,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.45,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.055612,
+          "ft_1x2_book_spread_ratio": 1.416667,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 212,
+      "event_id": 212,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "away": 2.7,
+            "home": 2.65,
+            "draw": 3.3
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.6,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.67,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.44,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.6,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.6,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.74,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.55,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.4,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.8,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.55,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.8,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.32,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.8,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.32,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.75,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.6,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.050759,
+          "ft_1x2_book_spread_ratio": 1.245283,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 213,
+      "event_id": 213,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "home": 2.67,
+            "away": 2.65,
+            "draw": 3.35
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.64,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.6,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.48,
+            "fetched_at": "2026-04-12T11:54:43+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T11:54:56+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.35,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T11:54:54+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.73,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.63,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "bovada",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.25,
+            "fetched_at": "2026-04-12T11:48:37+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.67,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.73,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.4,
+            "fetched_at": "2026-04-12T11:55:18+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.67,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.73,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.4,
+            "fetched_at": "2026-04-12T11:55:06+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.35,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.6,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.4,
+            "fetched_at": "2026-04-12T11:55:28+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 2.65,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 2.7,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2026-04-12T11:55:33+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.050398,
+          "ft_1x2_book_spread_ratio": 1.264151,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 214,
+      "event_id": 214,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "home": 3.575,
+            "away": 1.94,
+            "draw": 3.9
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.7,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.91,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.8,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.48,
+            "fetched_at": "2026-04-12T14:24:14+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.92,
+            "fetched_at": "2026-04-12T14:24:14+00:00"
+          },
+          {
+            "bookmaker": "mybookieag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 4.2,
+            "fetched_at": "2026-04-12T14:24:14+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.5,
+            "fetched_at": "2026-04-12T14:24:57+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.95,
+            "fetched_at": "2026-04-12T14:24:57+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.8,
+            "fetched_at": "2026-04-12T14:24:57+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.55,
+            "fetched_at": "2026-04-12T14:25:31+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.95,
+            "fetched_at": "2026-04-12T14:25:31+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.9,
+            "fetched_at": "2026-04-12T14:25:31+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.55,
+            "fetched_at": "2026-04-12T14:24:58+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.93,
+            "fetched_at": "2026-04-12T14:24:58+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.8,
+            "fetched_at": "2026-04-12T14:24:58+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.7,
+            "fetched_at": "2026-04-12T14:25:22+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.96,
+            "fetched_at": "2026-04-12T14:25:22+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.92,
+            "fetched_at": "2026-04-12T14:25:22+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.7,
+            "fetched_at": "2026-04-12T14:25:31+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.96,
+            "fetched_at": "2026-04-12T14:25:31+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.92,
+            "fetched_at": "2026-04-12T14:25:31+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.55,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.97,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.95,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.6,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.91,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.9,
+            "fetched_at": "2026-04-12T14:25:20+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 3.6,
+            "fetched_at": "2026-04-12T14:24:52+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 1.91,
+            "fetched_at": "2026-04-12T14:24:52+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.8,
+            "fetched_at": "2026-04-12T14:24:52+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.051594,
+          "ft_1x2_book_spread_ratio": 2.010309,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 234,
+      "event_id": 234,
+      "market_view": {
+        "consensus": {
+          "FT_1X2": {
+            "away": 4.35,
+            "home": 1.95,
+            "draw": 3.3
+          }
+        },
+        "by_bookmaker": [
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.4,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.91,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "fanduel",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.35,
+            "fetched_at": "2026-04-12T14:09:59+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.91,
+            "fetched_at": "2026-04-12T14:09:59+00:00"
+          },
+          {
+            "bookmaker": "betrivers",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2026-04-12T14:09:59+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.3,
+            "fetched_at": "2026-04-12T14:10:23+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.95,
+            "fetched_at": "2026-04-12T14:10:23+00:00"
+          },
+          {
+            "bookmaker": "draftkings",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.35,
+            "fetched_at": "2026-04-12T14:10:23+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.3,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.91,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "fanatics",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.2,
+            "fetched_at": "2026-04-12T14:09:49+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.91,
+            "fetched_at": "2026-04-12T14:09:49+00:00"
+          },
+          {
+            "bookmaker": "betmgm",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.4,
+            "fetched_at": "2026-04-12T14:09:49+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.35,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.95,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "betus",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.2,
+            "fetched_at": "2026-04-12T14:08:32+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.95,
+            "fetched_at": "2026-04-12T14:08:32+00:00"
+          },
+          {
+            "bookmaker": "williamhill_us",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.2,
+            "fetched_at": "2026-04-12T14:08:32+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.55,
+            "fetched_at": "2026-04-12T14:10:11+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.95,
+            "fetched_at": "2026-04-12T14:10:11+00:00"
+          },
+          {
+            "bookmaker": "lowvig",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T14:10:11+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "away",
+            "decimal": 4.55,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "home",
+            "decimal": 1.95,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          },
+          {
+            "bookmaker": "betonlineag",
+            "market_canonical": "FT_1X2",
+            "selection_canonical": "draw",
+            "decimal": 3.3,
+            "fetched_at": "2026-04-12T14:10:21+00:00"
+          }
+        ],
+        "prob_coherence": {
+          "flag": "coherence_warning",
+          "ft_1x2_implied_sum_raw": 1.045736,
+          "ft_1x2_book_spread_ratio": 2.230769,
+          "ou_25_implied_sum_raw": null,
+          "notes": [
+            "ft_1x2_book_spread_ratio_above_threshold"
+          ]
+        },
+        "market_coverage": {
+          "FT_1X2": true,
+          "OU_GOALS_2_5": false,
+          "BTTS": false,
+          "OU_GOALS_1_5": false,
+          "OU_GOALS_3_5": false,
+          "DOUBLE_CHANCE_1X": false,
+          "DOUBLE_CHANCE_X2": false,
+          "DOUBLE_CHANCE_12": false
+        }
+      }
+    }
+  ]
+}

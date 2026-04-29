@@ -1,0 +1,92 @@
+{
+  "generated_at_utc": "2026-04-28T23:51:08.924209+00:00",
+  "dsr_run_key": "shadow-dsr-native-full-20260428-214014",
+  "comparison_rules": {
+    "dsr_metrics_source": "bt2_shadow_pick_eval (tras evaluación shadow H2H estándar)",
+    "non_dsr_metrics_source": "recompute con EvalRow + _evaluate_one + _fetch_sm_truth_map (idéntico a bt2_shadow_evaluate_performance.py)",
+    "same_truth": "bt2_events con fallback SportMonks si falta marcador local",
+    "same_selection_mapping": "_selection_side importado del evaluador shadow",
+    "selection_semantics": "DSR re-read usa selected_side_canonical del pick; no-DSR usa _selection_side(selection, merged home/away)",
+    "what_is_being_compared": "Mismos 259 eventos (via source_shadow_pick_id); selección y cuota difieren entre DSR y pick shadow fuente. Métricas comparan dos estrategias de pick sobre la misma verdad final."
+  },
+  "dsr_native_liquidated": {
+    "picks_total": 259,
+    "scored": 259,
+    "hit": 134,
+    "miss": 125,
+    "void": 0,
+    "pending_result": 0,
+    "no_evaluable": 0,
+    "roi_flat_stake_units": -7.34,
+    "hit_rate_on_scored": 0.517375,
+    "roi_flat_stake_pct": -2.833977
+  },
+  "baseline_non_dsr_same_slice": {
+    "picks_total": 259,
+    "scored": 259,
+    "hit": 95,
+    "miss": 164,
+    "void": 0,
+    "pending_result": 0,
+    "no_evaluable": 0,
+    "roi_flat_stake_units": -32.96,
+    "hit_rate_on_scored": 0.366795,
+    "roi_flat_stake_pct": -12.725869
+  },
+  "delta": {
+    "hit_rate_on_scored_diff": 0.15058,
+    "roi_flat_stake_pct_diff": 9.891892
+  },
+  "by_league_compare": [
+    {
+      "league_name": "Bundesliga",
+      "picks_total": 39,
+      "dsr_hit_rate_on_scored": 0.641026,
+      "non_dsr_hit_rate_on_scored": 0.358974,
+      "hit_rate_diff": 0.282052,
+      "dsr_roi_flat_stake_pct": 13.858974,
+      "non_dsr_roi_flat_stake_pct": -19.871795,
+      "roi_flat_stake_pct_diff": 33.730769
+    },
+    {
+      "league_name": "La Liga",
+      "picks_total": 60,
+      "dsr_hit_rate_on_scored": 0.5,
+      "non_dsr_hit_rate_on_scored": 0.333333,
+      "hit_rate_diff": 0.166667,
+      "dsr_roi_flat_stake_pct": 0.025,
+      "non_dsr_roi_flat_stake_pct": -9.133333,
+      "roi_flat_stake_pct_diff": 9.158333
+    },
+    {
+      "league_name": "Ligue 1",
+      "picks_total": 44,
+      "dsr_hit_rate_on_scored": 0.386364,
+      "non_dsr_hit_rate_on_scored": 0.386364,
+      "hit_rate_diff": 0.0,
+      "dsr_roi_flat_stake_pct": -25.784091,
+      "non_dsr_roi_flat_stake_pct": 14.363636,
+      "roi_flat_stake_pct_diff": -40.147727
+    },
+    {
+      "league_name": "Premier League",
+      "picks_total": 60,
+      "dsr_hit_rate_on_scored": 0.516667,
+      "non_dsr_hit_rate_on_scored": 0.416667,
+      "hit_rate_diff": 0.1,
+      "dsr_roi_flat_stake_pct": -8.166667,
+      "non_dsr_roi_flat_stake_pct": -11.15,
+      "roi_flat_stake_pct_diff": 2.983333
+    },
+    {
+      "league_name": "Serie A",
+      "picks_total": 56,
+      "dsr_hit_rate_on_scored": 0.553571,
+      "non_dsr_hit_rate_on_scored": 0.339286,
+      "hit_rate_diff": 0.214285,
+      "dsr_roi_flat_stake_pct": 6.223214,
+      "non_dsr_roi_flat_stake_pct": -34.571429,
+      "roi_flat_stake_pct_diff": 40.794643
+    }
+  ]
+}

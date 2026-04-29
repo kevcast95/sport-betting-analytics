@@ -1,0 +1,1684 @@
+{
+  "cases": [
+    {
+      "source_shadow_pick_id": 149,
+      "event_id": 149,
+      "ds_input_context_only": {
+        "event_id": 149,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "Premier League",
+          "home_team": "Brentford",
+          "away_team": "Arsenal",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": false
+          },
+          "h2h": {
+            "available": true,
+            "meetings_in_sample": 3,
+            "current_home_wins": 0,
+            "draws": 0,
+            "current_away_wins": 0,
+            "same_fixture_orientation_history": {
+              "available": true,
+              "meetings_in_sample": 2,
+              "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+              "host_side_wins": 0,
+              "draws": 0,
+              "guest_side_wins": 0
+            }
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2024/25",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 5
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 5
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_home": 4,
+              "corners_count_away": 3
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "available": false
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": false
+          },
+          "tactical_shape": {
+            "available": false
+          },
+          "prediction_signals": {
+            "available": false
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "available": false
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": false,
+          "h2h_ok": true,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap",
+            "lineups:no_lineups_array_or_empty_in_raw_payload"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 157,
+      "event_id": 157,
+      "ds_input_context_only": {
+        "event_id": 157,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "Ligue 1",
+          "home_team": "Nice",
+          "away_team": "Rennes",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": false
+          },
+          "h2h": {
+            "available": true,
+            "meetings_in_sample": 2,
+            "current_home_wins": 0,
+            "draws": 0,
+            "current_away_wins": 0,
+            "same_fixture_orientation_history": {
+              "available": true,
+              "meetings_in_sample": 1,
+              "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+              "host_side_wins": 0,
+              "draws": 0,
+              "guest_side_wins": 0
+            }
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2024/25",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 13
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 12
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_away": 3,
+              "corners_count_home": 3
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "available": false
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": false
+          },
+          "tactical_shape": {
+            "available": false
+          },
+          "prediction_signals": {
+            "available": false
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "available": false
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": false,
+          "h2h_ok": true,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap",
+            "lineups:no_lineups_array_or_empty_in_raw_payload"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 165,
+      "event_id": 165,
+      "ds_input_context_only": {
+        "event_id": 165,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "La Liga",
+          "home_team": "Valencia",
+          "away_team": "Real Madrid",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": false
+          },
+          "h2h": {
+            "available": true,
+            "meetings_in_sample": 2,
+            "current_home_wins": 0,
+            "draws": 0,
+            "current_away_wins": 0,
+            "same_fixture_orientation_history": {
+              "available": true,
+              "meetings_in_sample": 1,
+              "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+              "host_side_wins": 0,
+              "draws": 0,
+              "guest_side_wins": 0
+            }
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2024/25",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 12
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 12
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_away": 5,
+              "corners_count_home": 2
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "available": false
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": false
+          },
+          "tactical_shape": {
+            "available": false
+          },
+          "prediction_signals": {
+            "available": false
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "available": false
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": false,
+          "h2h_ok": true,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap",
+            "lineups:no_lineups_array_or_empty_in_raw_payload"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 150,
+      "event_id": 150,
+      "ds_input_context_only": {
+        "event_id": 150,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "Premier League",
+          "home_team": "Tottenham Hotspur",
+          "away_team": "Newcastle United",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": false
+          },
+          "h2h": {
+            "available": true,
+            "meetings_in_sample": 3,
+            "current_home_wins": 0,
+            "draws": 0,
+            "current_away_wins": 0,
+            "same_fixture_orientation_history": {
+              "available": true,
+              "meetings_in_sample": 1,
+              "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+              "host_side_wins": 0,
+              "draws": 0,
+              "guest_side_wins": 0
+            }
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2024/25",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 6
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 5
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_away": 10,
+              "corners_count_home": 9
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "available": false
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": false
+          },
+          "tactical_shape": {
+            "available": false
+          },
+          "prediction_signals": {
+            "available": false
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "available": false
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": false,
+          "h2h_ok": true,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap",
+            "lineups:no_lineups_array_or_empty_in_raw_payload"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 378,
+      "event_id": 378,
+      "ds_input_context_only": {
+        "event_id": 378,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "La Liga",
+          "home_team": "Mallorca",
+          "away_team": "Sevilla",
+          "match_state": "scheduled",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": false
+          },
+          "h2h": {
+            "available": false
+          },
+          "statistics": {
+            "available": false
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "available": false
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": false
+          },
+          "tactical_shape": {
+            "available": false
+          },
+          "prediction_signals": {
+            "available": false
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "available": false
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": false,
+          "h2h_ok": false,
+          "statistics_ok": false,
+          "fetch_errors": [
+            "lineups:no_raw_sportmonks_row"
+          ],
+          "raw_fixture_missing": true,
+          "team_season_stats_reason": null,
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 211,
+      "event_id": 211,
+      "ds_input_context_only": {
+        "event_id": 211,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "Premier League",
+          "home_team": "Crystal Palace",
+          "away_team": "Newcastle United",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": true,
+            "lineup_rows_observed": 40,
+            "teams_distinct": 2,
+            "max_rows_per_team_side": 20,
+            "starting_xi_rows_home": 11,
+            "starting_xi_rows_away": 11
+          },
+          "h2h": {
+            "available": true,
+            "meetings_in_sample": 4,
+            "current_home_wins": 0,
+            "draws": 0,
+            "current_away_wins": 0,
+            "same_fixture_orientation_history": {
+              "available": true,
+              "meetings_in_sample": 2,
+              "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+              "host_side_wins": 0,
+              "draws": 0,
+              "guest_side_wins": 0
+            }
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2025/26",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 322
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 322
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_away": 4,
+              "corners_count_home": 2
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "venue_name": "Selhurst Park",
+            "venue_city": "London",
+            "venue_capacity": 25456,
+            "venue_surface": "grass",
+            "fixture_state_label": "Full Time",
+            "fixture_state_id": 5,
+            "available": true
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": true,
+            "sidelined_rows": 7,
+            "by_team_id_count": {
+              "51": 4,
+              "20": 3
+            },
+            "by_type_id_count": {
+              "587": 2,
+              "536": 2,
+              "537": 1,
+              "595": 1,
+              "554": 1
+            },
+            "sample_out": [
+              {
+                "player": "Eddie Nketiah",
+                "type_id": 587
+              },
+              {
+                "player": "Cheick Doucouré",
+                "type_id": 536
+              },
+              {
+                "player": "Evann Guessand",
+                "type_id": 536
+              },
+              {
+                "player": "Fabian Schär",
+                "type_id": 537
+              },
+              {
+                "player": "Emil Krafth",
+                "type_id": 587
+              },
+              {
+                "player": "Caleb Kporha",
+                "type_id": 595
+              },
+              {
+                "player": "Bruno Guimarães",
+                "type_id": 554
+              }
+            ]
+          },
+          "tactical_shape": {
+            "formations": [
+              {
+                "participant_id": 20,
+                "location": "away",
+                "formation": "4-3-3"
+              },
+              {
+                "participant_id": 51,
+                "location": "home",
+                "formation": "3-4-3"
+              }
+            ],
+            "available": true
+          },
+          "prediction_signals": {
+            "available": true,
+            "items": [
+              {
+                "type_id": 233,
+                "fixture_id": 19427196
+              },
+              {
+                "type_id": 237,
+                "fixture_id": 19427196
+              },
+              {
+                "type_id": 1685,
+                "fixture_id": 19427196
+              },
+              {
+                "type_id": 1690,
+                "fixture_id": 19427196
+              },
+              {
+                "type_id": 1686,
+                "fixture_id": 19427196
+              },
+              {
+                "type_id": 1683,
+                "fixture_id": 19427196
+              },
+              {
+                "type_id": 1687,
+                "fixture_id": 19427196
+              },
+              {
+                "type_id": 1688,
+                "fixture_id": 19427196
+              }
+            ]
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "has_pressure_object": true,
+            "has_matchfacts": true,
+            "available": true
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": true,
+          "h2h_ok": true,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 212,
+      "event_id": 212,
+      "ds_input_context_only": {
+        "event_id": 212,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "Premier League",
+          "home_team": "Nottingham Forest",
+          "away_team": "Aston Villa",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": true,
+            "lineup_rows_observed": 40,
+            "teams_distinct": 2,
+            "max_rows_per_team_side": 20,
+            "starting_xi_rows_home": 11,
+            "starting_xi_rows_away": 11
+          },
+          "h2h": {
+            "available": true,
+            "meetings_in_sample": 4,
+            "current_home_wins": 0,
+            "draws": 0,
+            "current_away_wins": 0,
+            "same_fixture_orientation_history": {
+              "available": true,
+              "meetings_in_sample": 2,
+              "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+              "host_side_wins": 0,
+              "draws": 0,
+              "guest_side_wins": 0
+            }
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2025/26",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 322
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 322
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_away": 3,
+              "corners_count_home": 7
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "venue_name": "The City Ground",
+            "venue_city": "Nottingham",
+            "venue_capacity": 30445,
+            "venue_surface": "grass",
+            "fixture_state_label": "Full Time",
+            "fixture_state_id": 5,
+            "available": true
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": true,
+            "sidelined_rows": 8,
+            "by_team_id_count": {
+              "15": 3,
+              "63": 5
+            },
+            "by_type_id_count": {
+              "545": 1,
+              "554": 1,
+              "549": 1,
+              "587": 4,
+              "557": 1
+            },
+            "sample_out": [
+              {
+                "player": "Jadon Sancho",
+                "type_id": 545
+              },
+              {
+                "player": "Alysson",
+                "type_id": 554
+              },
+              {
+                "player": "Jair Cunha",
+                "type_id": 549
+              },
+              {
+                "player": "Nicolò Savona",
+                "type_id": 587
+              },
+              {
+                "player": "John Victor",
+                "type_id": 587
+              },
+              {
+                "player": "Eric da Silva Moreira",
+                "type_id": 587
+              },
+              {
+                "player": "Willy Boly",
+                "type_id": 587
+              },
+              {
+                "player": "Boubacar Kamara",
+                "type_id": 557
+              }
+            ]
+          },
+          "tactical_shape": {
+            "formations": [
+              {
+                "participant_id": 15,
+                "location": "away",
+                "formation": "4-2-3-1"
+              },
+              {
+                "participant_id": 63,
+                "location": "home",
+                "formation": "4-2-3-1"
+              }
+            ],
+            "available": true
+          },
+          "prediction_signals": {
+            "available": true,
+            "items": [
+              {
+                "type_id": 234,
+                "fixture_id": 19427724
+              },
+              {
+                "type_id": 1688,
+                "fixture_id": 19427724
+              },
+              {
+                "type_id": 233,
+                "fixture_id": 19427724
+              },
+              {
+                "type_id": 232,
+                "fixture_id": 19427724
+              },
+              {
+                "type_id": 231,
+                "fixture_id": 19427724
+              },
+              {
+                "type_id": 327,
+                "fixture_id": 19427724
+              },
+              {
+                "type_id": 1686,
+                "fixture_id": 19427724
+              },
+              {
+                "type_id": 1683,
+                "fixture_id": 19427724
+              }
+            ]
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "has_pressure_object": true,
+            "has_matchfacts": true,
+            "available": true
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": true,
+          "h2h_ok": true,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 213,
+      "event_id": 213,
+      "ds_input_context_only": {
+        "event_id": 213,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "Premier League",
+          "home_team": "Sunderland",
+          "away_team": "Tottenham Hotspur",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": true,
+            "lineup_rows_observed": 40,
+            "teams_distinct": 2,
+            "max_rows_per_team_side": 20,
+            "starting_xi_rows_home": 11,
+            "starting_xi_rows_away": 11
+          },
+          "h2h": {
+            "available": false
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2025/26",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 323
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 322
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_away": 6,
+              "corners_count_home": 2
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "venue_name": "Stadium of Light",
+            "venue_city": "Sunderland",
+            "venue_capacity": 48707,
+            "venue_surface": "grass",
+            "fixture_state_label": "Full Time",
+            "fixture_state_id": 5,
+            "available": true
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": true,
+            "sidelined_rows": 13,
+            "by_team_id_count": {
+              "3": 6,
+              "6": 7
+            },
+            "by_type_id_count": {
+              "536": 2,
+              "587": 5,
+              "554": 1,
+              "1986": 1,
+              "1682": 4
+            },
+            "sample_out": [
+              {
+                "player": "Bertrand Traoré",
+                "type_id": 536
+              },
+              {
+                "player": "James Maddison",
+                "type_id": 587
+              },
+              {
+                "player": "Dejan Kulusevski",
+                "type_id": 536
+              },
+              {
+                "player": "Wilson Odobert",
+                "type_id": 587
+              },
+              {
+                "player": "Romaine Mundle",
+                "type_id": 587
+              },
+              {
+                "player": "Ben Davies",
+                "type_id": 587
+              },
+              {
+                "player": "Nilson Angulo",
+                "type_id": 554
+              },
+              {
+                "player": "Jocelin Ta Bi",
+                "type_id": 587
+              },
+              {
+                "player": "Simon Moore",
+                "type_id": 1986
+              },
+              {
+                "player": "Guglielmo Vicario",
+                "type_id": 1682
+              }
+            ]
+          },
+          "tactical_shape": {
+            "formations": [
+              {
+                "participant_id": 6,
+                "location": "away",
+                "formation": "4-2-3-1"
+              },
+              {
+                "participant_id": 3,
+                "location": "home",
+                "formation": "4-2-3-1"
+              }
+            ],
+            "available": true
+          },
+          "prediction_signals": {
+            "available": true,
+            "items": [
+              {
+                "type_id": 235,
+                "fixture_id": 19427725
+              },
+              {
+                "type_id": 333,
+                "fixture_id": 19427725
+              },
+              {
+                "type_id": 1686,
+                "fixture_id": 19427725
+              },
+              {
+                "type_id": 1685,
+                "fixture_id": 19427725
+              },
+              {
+                "type_id": 232,
+                "fixture_id": 19427725
+              },
+              {
+                "type_id": 231,
+                "fixture_id": 19427725
+              },
+              {
+                "type_id": 238,
+                "fixture_id": 19427725
+              },
+              {
+                "type_id": 234,
+                "fixture_id": 19427725
+              }
+            ]
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "has_pressure_object": true,
+            "has_matchfacts": true,
+            "available": true
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": true,
+          "h2h_ok": false,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "h2h:no_finished_rows_for_pair",
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 214,
+      "event_id": 214,
+      "ds_input_context_only": {
+        "event_id": 214,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "Premier League",
+          "home_team": "Chelsea",
+          "away_team": "Manchester City",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": true,
+            "lineup_rows_observed": 40,
+            "teams_distinct": 2,
+            "max_rows_per_team_side": 20,
+            "starting_xi_rows_home": 11,
+            "starting_xi_rows_away": 11
+          },
+          "h2h": {
+            "available": true,
+            "meetings_in_sample": 5,
+            "current_home_wins": 0,
+            "draws": 0,
+            "current_away_wins": 0,
+            "same_fixture_orientation_history": {
+              "available": true,
+              "meetings_in_sample": 2,
+              "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+              "host_side_wins": 0,
+              "draws": 0,
+              "guest_side_wins": 0
+            }
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2025/26",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 322
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 322
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_home": 4,
+              "corners_count_away": 12
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "venue_name": "Stamford Bridge",
+            "venue_city": "London",
+            "venue_capacity": 40341,
+            "venue_surface": "grass",
+            "fixture_state_label": "Full Time",
+            "fixture_state_id": 5,
+            "available": true
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": true,
+            "sidelined_rows": 11,
+            "by_team_id_count": {
+              "9": 3,
+              "18": 8
+            },
+            "by_type_id_count": {
+              "587": 3,
+              "339": 1,
+              "1952": 1,
+              "1682": 2,
+              "1616": 1,
+              "2046": 1,
+              "537": 1,
+              "532": 1
+            },
+            "sample_out": [
+              {
+                "player": "Rúben Dias",
+                "type_id": 587
+              },
+              {
+                "player": "Filip Jørgensen",
+                "type_id": 339
+              },
+              {
+                "player": "Enzo Fernández",
+                "type_id": 587
+              },
+              {
+                "player": "Caleb Wiley",
+                "type_id": 1952
+              },
+              {
+                "player": "Reece James",
+                "type_id": 1682
+              },
+              {
+                "player": "Mykhaylo Mudryk",
+                "type_id": 1616
+              },
+              {
+                "player": "Josko Gvardiol",
+                "type_id": 2046
+              },
+              {
+                "player": "Levi Colwill",
+                "type_id": 587
+              },
+              {
+                "player": "Jamie Gittens",
+                "type_id": 1682
+              },
+              {
+                "player": "Trevoh Chalobah",
+                "type_id": 537
+              }
+            ]
+          },
+          "tactical_shape": {
+            "formations": [
+              {
+                "participant_id": 9,
+                "location": "away",
+                "formation": "4-2-3-1"
+              },
+              {
+                "participant_id": 18,
+                "location": "home",
+                "formation": "4-2-3-1"
+              }
+            ],
+            "available": true
+          },
+          "prediction_signals": {
+            "available": true,
+            "items": [
+              {
+                "type_id": 235,
+                "fixture_id": 19427195
+              },
+              {
+                "type_id": 232,
+                "fixture_id": 19427195
+              },
+              {
+                "type_id": 233,
+                "fixture_id": 19427195
+              },
+              {
+                "type_id": 1690,
+                "fixture_id": 19427195
+              },
+              {
+                "type_id": 1687,
+                "fixture_id": 19427195
+              },
+              {
+                "type_id": 1585,
+                "fixture_id": 19427195
+              },
+              {
+                "type_id": 1684,
+                "fixture_id": 19427195
+              },
+              {
+                "type_id": 1685,
+                "fixture_id": 19427195
+              }
+            ]
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "has_pressure_object": true,
+            "has_matchfacts": true,
+            "available": true
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": true,
+          "h2h_ok": true,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    },
+    {
+      "source_shadow_pick_id": 234,
+      "event_id": 234,
+      "ds_input_context_only": {
+        "event_id": 234,
+        "sport": "football",
+        "selection_tier": "A",
+        "schedule_display": {
+          "utc_iso": "2099-06-15T20:00:00Z",
+          "timezone_reference": "UTC"
+        },
+        "event_context": {
+          "league_name": "Ligue 1",
+          "home_team": "Nice",
+          "away_team": "Le Havre",
+          "match_state": "unknown",
+          "league_tier": "S"
+        },
+        "processed": {
+          "lineups": {
+            "available": true,
+            "lineup_rows_observed": 40,
+            "teams_distinct": 2,
+            "max_rows_per_team_side": 20,
+            "starting_xi_rows_home": 11,
+            "starting_xi_rows_away": 11
+          },
+          "h2h": {
+            "available": true,
+            "meetings_in_sample": 4,
+            "current_home_wins": 0,
+            "draws": 0,
+            "current_away_wins": 0,
+            "same_fixture_orientation_history": {
+              "available": true,
+              "meetings_in_sample": 2,
+              "fixed_orientation_note": "solo_partidos_donde_el_local_actual_fue_local_en_bt2_events",
+              "host_side_wins": 0,
+              "draws": 0,
+              "guest_side_wins": 0
+            }
+          },
+          "statistics": {
+            "available": true,
+            "cdm_from_bt2_events": {
+              "available": true,
+              "definitions": {
+                "window_N": 5,
+                "scope": "solo_partidos_finished_en_bt2_events_previos_al_kickoff_de_este_evento",
+                "same_league_filter": true,
+                "season_field_on_row": "2025/26",
+                "sums_note": "goles_a_favor_en_contra_sumados_en_la_ventana_N_no_promedio",
+                "orientation_subblock_h2h": "historial_solo_cuando_el_equipo_que_hoy_es_local_fue_local_en_bt2_y_el_visitante_fue_visitante"
+              },
+              "home_side_context": {
+                "rest_days_before_this_kickoff": 330
+              },
+              "away_side_context": {
+                "rest_days_before_this_kickoff": 330
+              }
+            },
+            "from_sm_fixture": {
+              "available": true,
+              "corners_count_home": 5,
+              "corners_count_away": 2
+            }
+          },
+          "team_streaks": {
+            "available": false
+          },
+          "team_season_stats": {
+            "available": false
+          },
+          "fixture_conditions": {
+            "venue_name": "Allianz Riviera",
+            "venue_city": "Nice",
+            "venue_capacity": 36178,
+            "venue_surface": "grass",
+            "fixture_state_label": "Full Time",
+            "fixture_state_id": 5,
+            "available": true
+          },
+          "match_officials": {
+            "available": false
+          },
+          "squad_availability": {
+            "available": true,
+            "sidelined_rows": 8,
+            "by_team_id_count": {
+              "1055": 3,
+              "450": 5
+            },
+            "by_type_id_count": {
+              "561": 1,
+              "537": 1,
+              "2017": 1,
+              "1608": 1,
+              "536": 2,
+              "532": 1,
+              "587": 1
+            },
+            "sample_out": [
+              {
+                "player": "Étienne Youté Kinkoué",
+                "type_id": 561
+              },
+              {
+                "player": "Everton Pereira",
+                "type_id": 537
+              },
+              {
+                "player": "Moïse Bombito",
+                "type_id": 2017
+              },
+              {
+                "player": "Youssouf Ndayishimiye",
+                "type_id": 1608
+              },
+              {
+                "player": "Abdoulaye Touré",
+                "type_id": 536
+              },
+              {
+                "player": "Dante",
+                "type_id": 532
+              },
+              {
+                "player": "Felix Mambimbi",
+                "type_id": 536
+              },
+              {
+                "player": "Tanguy Ndombélé",
+                "type_id": 587
+              }
+            ]
+          },
+          "tactical_shape": {
+            "formations": [
+              {
+                "participant_id": 1055,
+                "location": "away",
+                "formation": "3-4-1-2"
+              },
+              {
+                "participant_id": 450,
+                "location": "home",
+                "formation": "3-5-2"
+              }
+            ],
+            "available": true
+          },
+          "prediction_signals": {
+            "available": true,
+            "items": [
+              {
+                "type_id": 233,
+                "fixture_id": 19467886
+              },
+              {
+                "type_id": 231,
+                "fixture_id": 19467886
+              },
+              {
+                "type_id": 238,
+                "fixture_id": 19467886
+              },
+              {
+                "type_id": 240,
+                "fixture_id": 19467886
+              },
+              {
+                "type_id": 234,
+                "fixture_id": 19467886
+              },
+              {
+                "type_id": 332,
+                "fixture_id": 19467886
+              },
+              {
+                "type_id": 326,
+                "fixture_id": 19467886
+              },
+              {
+                "type_id": 1585,
+                "fixture_id": 19467886
+              }
+            ]
+          },
+          "broadcast_notes": {
+            "available": false
+          },
+          "fixture_advanced_sm": {
+            "has_pressure_object": true,
+            "has_matchfacts": true,
+            "available": true
+          }
+        },
+        "diagnostics": {
+          "market_coverage": {
+            "FT_1X2": true,
+            "OU_GOALS_2_5": false,
+            "BTTS": false,
+            "OU_GOALS_1_5": false,
+            "OU_GOALS_3_5": false,
+            "DOUBLE_CHANCE_1X": false,
+            "DOUBLE_CHANCE_X2": false,
+            "DOUBLE_CHANCE_12": false
+          },
+          "lineups_ok": true,
+          "h2h_ok": true,
+          "statistics_ok": true,
+          "fetch_errors": [
+            "statistics:no_recent_finished_for_teams",
+            "team_season_stats:no_aggregate_table_bt2_s6_1r1_dx_gap"
+          ],
+          "raw_fixture_missing": false,
+          "team_season_stats_reason": "no_bt2_team_season_aggregate_table",
+          "sfs_fusion_applied": false,
+          "sfs_fusion_synthetic_rows": 0,
+          "markets_available": [
+            "FT_1X2"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "run_key": "shadow-subset5-backfill-2025-07-12",
+  "window": "2025-07..12",
+  "fixtures_seen": 0,
+  "fixtures_matched": 0,
+  "match_rate": 0.0,
+  "fixtures_with_h2h_t60": 0,
+  "matched_with_odds_t60": 0,
+  "matched_without_odds_t60": 0,
+  "unmatched_event": 0,
+  "credits_used": 0.0,
+  "shadow_picks_generated": 0,
+  "value_pool_pass_rate": 0.0,
+  "distinct_leagues": 0,
+  "sm_league_ids": [],
+  "rows_persisted": {
+    "bt2_shadow_runs": 0,
+    "bt2_shadow_provider_snapshots": 0,
+    "bt2_shadow_daily_picks": 0,
+    "bt2_shadow_pick_inputs": 0,
+    "bt2_shadow_pick_eval": 0
+  }
+}

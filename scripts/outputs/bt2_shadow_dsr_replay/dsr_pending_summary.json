@@ -1,0 +1,44 @@
+{
+  "generated_at_utc": "2026-04-28T23:27:32.351747+00:00",
+  "run_family": "shadow_dsr_replay_native",
+  "selection_source": "dsr_api_only",
+  "run_key": "shadow-dsr-native-full-20260428-214014",
+  "pending_count_at_audit": 215,
+  "pending_truth_source_breakdown_at_audit": {
+    "toa_payload_only_v1_never_h2h_eval": 186,
+    "bt2_events_cdm_v1_missing_local_score": 29
+  },
+  "root_cause_distribution_at_audit": {
+    "falta de enlace limpio": 186,
+    "sin marcador final en fuente local": 29
+  },
+  "interpretation": {
+    "dominant": "186 pending tenían truth_source=toa_payload_only_v1: el replay native persistió eval inicial sin pasar por bt2_shadow_evaluate_performance (merge CDM + fallback SM).",
+    "secondary": "29 pending tenían truth_source=bt2_events_cdm_v1: el evaluador H2H ya corrió pero faltaba marcador final en CDM; en auditoría SportMonks tenía FT para cerrar vía merge."
+  },
+  "reconciliation_surface_at_audit": {
+    "pending_with_merge_ft_available_now": 215,
+    "note": "Simulación merge local+SM: los 215 podían completar par FT vía SM para intentar hit/miss."
+  },
+  "sportmonks_api": {
+    "key_configured": true,
+    "fixtures_fetched_pending": 213
+  },
+  "after_shadow_evaluate_performance": {
+    "executed_utc": "2026-04-28T23:30:36.661534+00:00",
+    "script": "scripts/bt2_shadow_evaluate_performance.py",
+    "run_key": "shadow-dsr-native-full-20260428-214014",
+    "result": {
+      "picks_total": 259,
+      "scored": 259,
+      "hit": 134,
+      "miss": 125,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "hit_rate": 0.517375,
+      "roi_flat_stake_pct": -2.833977
+    },
+    "note": "Solo escribe bt2_shadow_pick_eval (carril shadow). No productivo. Resolvió los 215 pending."
+  }
+}

@@ -1,0 +1,322 @@
+[
+  {
+    "bt2_event_id": 102355,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "7939ccdc-0ad6-4a3d-a1e6-c12265ad02e8",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102352,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "76e1a715-3c4b-470e-aa2b-78c03d4c8623",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102606,
+    "run_key": "shadow-daily-2026-04-22",
+    "dsr_response_id": "0c0abfe9-a544-442e-9de5-97e0a8ee5269",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102342,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "e893d466-44df-4d17-a653-a9f48d4e7226",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102354,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "a6fab72b-e86f-4281-b12c-c5e70de4c102",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102628,
+    "run_key": "shadow-daily-2026-04-20",
+    "dsr_response_id": "965f7315-e743-4b4a-9eba-6420a0f74515",
+    "parse_status": "dsr_failed",
+    "failure_reason": "ValueError",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102336,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "181691be-a119-4bee-a442-3bf8995c6a73",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "truth_hit": false
+  },
+  {
+    "bt2_event_id": 102611,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "08843fff-7ddc-4bdb-bb07-8f87373fee88",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102353,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "de4f2d46-fc6e-4aac-aef4-e9c2a852c130",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102351,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "4704c542-b923-4294-8631-72139cc9a957",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102333,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "0fc4cc23-5017-4f04-ac44-59a7c4a4b1aa",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102340,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "bf9012eb-7031-4431-8eec-1f6a5f0f013d",
+    "parse_status": "dsr_failed",
+    "failure_reason": "ValueError",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102543,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "f032933d-2701-4033-834d-d49c68f7b28a",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102350,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "a8a91408-182b-4622-93e0-ff696f82ac5b",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102330,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "49d7b00a-0883-4456-a8d2-f414b05ca49f",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102610,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "4c935a2d-d0f0-4c55-9d5d-3247558e4682",
+    "parse_status": "dsr_failed",
+    "failure_reason": "ValueError",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102357,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "ef4efc99-604e-4f75-b2ea-77b1d9f4d27b",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102631,
+    "run_key": "shadow-daily-2026-04-22",
+    "dsr_response_id": "06bbc762-55e7-493e-8d12-f8f24576f50b",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102331,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "0931135a-c212-43c1-b7d2-16b3a4c604a1",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102339,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "2cfed225-eb97-43b4-9f23-fe8826a7db87",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102361,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "4c1f3bb5-ec74-42a3-bcc8-3f769b16408e",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102620,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "f27a579b-0d64-4ed0-a37b-6351449b31e3",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102329,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "f31148e4-9990-422c-a90d-77371f982e85",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102612,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "cc5e673d-23a9-44b7-be7d-4361c4b1823d",
+    "parse_status": "dsr_failed",
+    "failure_reason": "ValueError",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102358,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "b4fee2a4-01d3-42a6-b338-12754958f776",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "truth_hit": true
+  },
+  {
+    "bt2_event_id": 102349,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "71040602-faaa-452f-9ae4-365a51f4bd86",
+    "parse_status": "dsr_failed",
+    "failure_reason": "ValueError",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102334,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "d2cd78f5-4c8b-419e-b364-f6b5ff8e6841",
+    "parse_status": "dsr_failed",
+    "failure_reason": "ValueError",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102613,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "05828c8b-2e54-4c74-b8cd-17f6497fde34",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102356,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "7a10b017-31cf-4dc0-96d9-54cc017e4bbf",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102346,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "2e08189d-50d6-4d18-8faa-1cd66f01d345",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "away",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102328,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "0adcba32-f5bf-4b10-b9e4-55732b680595",
+    "parse_status": "ok",
+    "failure_reason": "",
+    "market_canonical": "FT_1X2",
+    "selection_canonical": "home",
+    "truth_hit": null
+  },
+  {
+    "bt2_event_id": 102337,
+    "run_key": "shadow-subset5-backfill-2026-04",
+    "dsr_response_id": "80ebc31f-28e7-4442-be55-a36a80e0df7e",
+    "parse_status": "dsr_empty_signal",
+    "failure_reason": "no_canonical_pick",
+    "market_canonical": "",
+    "selection_canonical": "",
+    "truth_hit": null
+  }
+]

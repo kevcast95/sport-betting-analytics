@@ -1,0 +1,5 @@
+league_name,picks_total,scored,hit,miss,void,pending_result,no_evaluable,hit_rate_on_scored,roi_flat_stake_units,roi_flat_stake_pct
+La Liga,10,3,1,2,0,7,0,0.333333,-0.5,-16.666667
+Ligue 1,8,5,1,4,0,3,0,0.2,-2.6,-52.0
+Premier League,14,8,3,5,0,6,0,0.375,-1.45,-18.125
+Serie A,9,4,3,1,0,5,0,0.75,2.88,72.0

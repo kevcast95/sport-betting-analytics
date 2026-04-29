@@ -1,0 +1,103 @@
+{
+  "dsr_run_key": "shadow-dsr-native-full-20260429-033425",
+  "benchmark_rules": {
+    "name": "always_favorite_ft_1x2",
+    "consensus_source": "aggregated_odds_from_toa_shadow_payload (mismo snapshot TOA / fallback pick_inputs que shadow-native)",
+    "choice": "pierna con menor decimal en consensus.FT_1X2 (home, draw, away)",
+    "tiebreak": "si dos o tres piernas empatan al mínimo, elegir en orden fijo home → draw → away",
+    "evaluation": "EvalRow + _evaluate_one (scripts/bt2_shadow_evaluate_performance.py), misma fusión de verdad (bt2_events + fallback SportMonks) para DSR, baseline no-DSR y always_favorite. Métricas DSR recalculadas aquí (no solo fila histórica en bt2_shadow_pick_eval)."
+  },
+  "full_native_run_n": 259,
+  "sample_32_n": 32,
+  "sample_32_source_csv": "/Users/kevcast/Projects/scrapper/scripts/outputs/bt2_shadow_dsr_replay/dsr_pilot_sample.csv",
+  "alignment_dsr_vs_favorite": {
+    "full_run_same_pick_count": 245,
+    "full_run_comparable_pair_count": 259,
+    "full_run_same_pick_rate": 0.945946,
+    "sample32_same_pick_count": 31,
+    "sample32_comparable_pair_count": 32,
+    "sample32_same_pick_rate": 0.96875
+  },
+  "metrics_full_run": {
+    "dsr_native": {
+      "picks_total": 259,
+      "scored": 246,
+      "hit": 129,
+      "miss": 117,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 13,
+      "roi_flat_stake_units": -5.28,
+      "hit_rate_on_scored": 0.52439,
+      "roi_flat_stake_pct": -2.146341
+    },
+    "always_favorite": {
+      "picks_total": 259,
+      "scored": 259,
+      "hit": 134,
+      "miss": 125,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -7.34,
+      "hit_rate_on_scored": 0.517375,
+      "roi_flat_stake_pct": -2.833977
+    },
+    "baseline_non_dsr_same_slice": {
+      "picks_total": 259,
+      "scored": 259,
+      "hit": 95,
+      "miss": 164,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -32.96,
+      "hit_rate_on_scored": 0.366795,
+      "roi_flat_stake_pct": -12.725869
+    }
+  },
+  "metrics_sample_32": {
+    "dsr_native": {
+      "picks_total": 32,
+      "scored": 31,
+      "hit": 16,
+      "miss": 15,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 1,
+      "roi_flat_stake_units": 0.87,
+      "hit_rate_on_scored": 0.516129,
+      "roi_flat_stake_pct": 2.806452
+    },
+    "always_favorite": {
+      "picks_total": 32,
+      "scored": 32,
+      "hit": 16,
+      "miss": 16,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -0.13,
+      "hit_rate_on_scored": 0.5,
+      "roi_flat_stake_pct": -0.40625
+    },
+    "baseline_non_dsr_same_slice": {
+      "picks_total": 32,
+      "scored": 32,
+      "hit": 13,
+      "miss": 19,
+      "void": 0,
+      "pending_result": 0,
+      "no_evaluable": 0,
+      "roi_flat_stake_units": -2.05,
+      "hit_rate_on_scored": 0.40625,
+      "roi_flat_stake_pct": -6.40625
+    }
+  },
+  "delta_hit_rate_on_scored": {
+    "dsr_minus_favorite_full": 0.007015,
+    "dsr_minus_favorite_sample32": 0.016129,
+    "dsr_minus_favorite_roi_pct_full": 0.687636,
+    "dsr_minus_favorite_roi_pct_sample32": 3.212702
+  }
+}

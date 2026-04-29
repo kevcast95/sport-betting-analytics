@@ -1,0 +1,56 @@
+{
+  "generated_at_utc": "2026-04-27T17:08:45.355779+00:00",
+  "runs_filtered": [
+    "shadow-subset5-backfill-2025-01-05",
+    "shadow-subset5-recovery-2025-07-12",
+    "shadow-subset5-backfill-2026-01",
+    "shadow-subset5-backfill-2026-02",
+    "shadow-subset5-backfill-2026-03",
+    "shadow-subset5-backfill-2026-04",
+    "shadow-daily-2026-04-27",
+    "shadow-daily-2026-04-20",
+    "shadow-daily-2026-04-21",
+    "shadow-daily-2026-04-22"
+  ],
+  "definitions": {
+    "cdm_shadow": "Runs mensuales/2025 construidos desde bt2_events (CDM) en _build_rows_for_window; incluye shadow-subset5-backfill-2026-04.",
+    "sportmonks_between_subset5_fallback": "Meses 2026-01/02/03 sin cohorte CDM ese mes; filas desde SportMonks fixtures/between (subset5).",
+    "daily_shadow_sm_toa": "Corridas shadow-daily-* (SM + TOA histórico según runner diario)."
+  },
+  "total_shadow_picks_in_db": 297,
+  "by_source_path": [
+    {
+      "source_path": "cdm_shadow",
+      "picks_total": 100,
+      "pct_of_all_shadow_picks": 0.3367,
+      "scored": 85,
+      "hit": 38,
+      "miss": 47,
+      "hit_rate_on_scored": 0.447059,
+      "roi_flat_stake_units": -1.86,
+      "roi_flat_stake_pct": -2.188235
+    },
+    {
+      "source_path": "daily_shadow_sm_toa",
+      "picks_total": 17,
+      "pct_of_all_shadow_picks": 0.057239,
+      "scored": 14,
+      "hit": 4,
+      "miss": 10,
+      "hit_rate_on_scored": 0.285714,
+      "roi_flat_stake_units": -4.88,
+      "roi_flat_stake_pct": -34.857143
+    },
+    {
+      "source_path": "sportmonks_between_subset5_fallback",
+      "picks_total": 180,
+      "pct_of_all_shadow_picks": 0.606061,
+      "scored": 176,
+      "hit": 62,
+      "miss": 114,
+      "hit_rate_on_scored": 0.352273,
+      "roi_flat_stake_units": -16.69,
+      "roi_flat_stake_pct": -9.482955
+    }
+  ]
+}

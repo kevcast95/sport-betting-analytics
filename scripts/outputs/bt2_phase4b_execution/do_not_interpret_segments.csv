@@ -1,0 +1,18 @@
+dimension,segment_id,picks_total,scored_discovery,scored_validation,hit_rate_discovery,hit_rate_validation,roi_discovery_units,roi_validation_units,roi_discovery_pct,roi_validation_pct,interpretation_tier_discovery,interpretation_tier_validation,interpretation_tier,final_classification,classification_reason,primary_analysis_csv
+league,Bundesliga,56,44,0,0.386364,0.0,-9.18,0.0,-20.863636,0.0,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+league,La Liga,64,44,19,0.340909,0.368421,-1.9,-4.23,-4.318182,-22.263158,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+league,Ligue 1,57,38,12,0.421053,0.333333,21.03,-2.28,55.342105,-19.0,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+league,Premier League,61,44,16,0.409091,0.4375,-8.79,2.1,-19.977273,13.125,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+league,Serie A,59,44,14,0.340909,0.357143,-15.88,-4.3,-36.090909,-30.714286,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+league,Unknown,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,A_inadequate,A_inadequate,A_inadequate|A_inadequate,no_interpretar,excluded_primary:league_unknown_by_case,BY_CASE
+odds_band,dec_2_5_to_3,34,25,9,0.2,0.333333,-11.25,-0.85,-45.0,-9.444444,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+odds_band,dec_2_to_2_5,45,31,12,0.419355,0.5,-3.12,1.47,-10.064516,12.25,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+odds_band,dec_3_to_4,41,34,6,0.294118,0.166667,-0.37,-2.3,-1.088235,-38.333333,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+odds_band,dec_4_to_6,36,30,6,0.166667,0.333333,-7.3,4.1,-24.333333,68.333333,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+odds_band,dec_ge_6,26,20,6,0.15,0.0,12.5,-6.0,62.5,-100.0,B_weak_exploratory,A_inadequate,B_weak_exploratory|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES
+odds_band,unknown_odds,19,0,0,0.0,0.0,0.0,0.0,0.0,0.0,A_inadequate,A_inadequate,A_inadequate|A_inadequate,no_interpretar,excluded_primary:primary_no_csv,NO
+selection_side,draw,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,A_inadequate,A_inadequate,A_inadequate|A_inadequate,no_interpretar,excluded_primary:draw_by_case_scored_lt_20,BY_CASE
+selection_side,unknown,19,0,0,0.0,0.0,0.0,0.0,0.0,0.0,A_inadequate,A_inadequate,A_inadequate|A_inadequate,no_interpretar,excluded_primary:primary_no_csv,NO
+selection_side,unknown_resolved_teams,16,11,5,0.636364,0.8,-0.85,2.64,-7.727273,52.8,A_inadequate,A_inadequate,A_inadequate|A_inadequate,no_interpretar,excluded_primary:primary_no_csv,NO
+source_path,daily_shadow_sm_toa,17,0,14,0.0,0.285714,0.0,-4.88,0.0,-34.857143,A_inadequate,A_inadequate,A_inadequate|A_inadequate,no_interpretar,excluded_primary:primary_no_csv,NO
+source_path,sportmonks_between_subset5_fallback,180,176,0,0.352273,0.0,-16.69,0.0,-9.482955,0.0,C_adequate_descriptive,A_inadequate,C_adequate_descriptive|A_inadequate,no_interpretar,tier_A_inadequate_in_discovery_or_validation,YES

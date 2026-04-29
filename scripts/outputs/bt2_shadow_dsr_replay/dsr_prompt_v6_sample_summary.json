@@ -1,0 +1,81 @@
+{
+  "generated_at_utc": "2026-04-29T02:58:53.593162+00:00",
+  "dsr_prompt_version": "shadow_native_dsr_prompt_v6",
+  "model": "deepseek-v4-pro",
+  "fixed_sample_csv": "scripts/outputs/bt2_shadow_dsr_replay/dsr_pilot_sample.csv",
+  "sample_ids_requested": [
+    244,
+    214,
+    203,
+    235,
+    243,
+    193,
+    262,
+    239,
+    242,
+    213,
+    259,
+    233,
+    251,
+    212,
+    256,
+    238,
+    246,
+    201,
+    257,
+    232,
+    250,
+    217,
+    255,
+    240,
+    247,
+    211,
+    260,
+    241,
+    245,
+    208,
+    254,
+    230
+  ],
+  "batch_event_count": 32,
+  "skipped_ids": [],
+  "metrics": {
+    "ok_total": 31,
+    "dsr_failed": 0,
+    "dsr_empty_signal": 1,
+    "dsr_postprocess_reject": 0,
+    "dsr_non_h2h_canonical": 0,
+    "parse_status_counts": {
+      "ok": 31,
+      "dsr_empty_signal": 1
+    },
+    "picks_odds_tier_when_ok": {
+      "favorite": 31
+    },
+    "favorite_alignment_when_ok": {
+      "same_as_consensus_favorite": 31,
+      "not_favorite": 0
+    }
+  },
+  "deepseek_trace": {
+    "response_id": "89a14274-c870-4b24-a406-26a867e0cee4",
+    "model": "deepseek-v4-pro",
+    "usage": {
+      "prompt_tokens": 97888,
+      "completion_tokens": 8386,
+      "total_tokens": 106274,
+      "prompt_tokens_details": {
+        "cached_tokens": 97792
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 6209
+      },
+      "prompt_cache_hit_tokens": 97792,
+      "prompt_cache_miss_tokens": 96
+    },
+    "last_error": "",
+    "parse_success": true,
+    "attempts_used": 1,
+    "raw_content_excerpt": "{\"picks_by_event\":[{\"event_id\":244,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"Torino\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"Torino es favorito claro según cuotas de consenso, sin señales en contra en los datos disponibles.\",\"no_pick_reason\":\"\"},{\"event_id\":214,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Manchester City\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"Manchester City es favorito según cuotas de consenso, con alineaciones confirmadas y sin datos en contra.\",\"no_pick_reason\":\"\"},{\"event_id\":203,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"Elche CF\",\"confidence_label\":\"low\",\"rationale_short_es\":\"Elche CF ligeramente favorito según cuotas de consenso, aunque con datos limitados.\",\"no_pick_reason\":\"\"},{\"event_id\":235,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"away\",\"selected_team\":\"Lille\",\"confidence_label\":\"medium\",\"rationale_short_es\":\"Lille es favorito según cuotas de consenso, con alineaciones confirmadas.\",\"no_pick_reason\":\"\"},{\"event_id\":243,\"market_canonical\":\"FT_1X2\",\"selection_canonical\":\"home\",\"selected_team\":\"Cagliari\",\"confidence_label\":\"low\",\"ratio"
+  }
+}

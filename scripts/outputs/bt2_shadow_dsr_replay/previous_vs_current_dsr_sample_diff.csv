@@ -1,0 +1,33 @@
+bt2_event_id,old_run_key,old_dsr_source,old_selection,old_decimal_odds,old_eval_status,new_parse_status,new_failure_reason,new_dsr_response_id
+102355,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Hellas Verona,4.6,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102352,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Chelsea,3.7,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102606,shadow-daily-2026-04-22,historical_sm_lbu_t60,Atlético Madrid,2.65,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102342,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,LOSC Lille,2.2,hit,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102354,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Cagliari,2.05,hit,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102628,shadow-daily-2026-04-20,historical_sm_lbu_t60,Crystal Palace,2.59,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102336,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Athletic Bilbao,2.05,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102611,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Angers SCO,3.4,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102353,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Roma,1.32,hit,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102351,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Sunderland,2.7,hit,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102333,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Osasuna,2.25,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102340,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Angers SCO,9.0,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102543,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Fiorentina,2.35,hit,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102350,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Aston Villa,2.7,miss,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102330,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Elche,2.55,hit,dsr_failed,deepseek_batch_degraded,dfccfe70-05b5-46c3-9a97-03d6deab775c
+102610,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Lorient,4.9,hit,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102357,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Atalanta,3.1,miss,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102631,shadow-daily-2026-04-22,historical_sm_lbu_t60,AFC Bournemouth,1.91,miss,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102331,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,FC Barcelona,1.29,hit,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102339,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Auxerre,1.91,miss,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102361,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Como,3.0,miss,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102620,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Leeds United,1.58,hit,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102329,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Deportivo Alavés,4.6,miss,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102612,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,LOSC Lille,1.5,miss,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102358,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Genoa,2.15,hit,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102349,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Crystal Palace,2.9,hit,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102334,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Mallorca,2.35,hit,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102613,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Monaco,1.54,miss,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102356,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,AC Milan,1.4,miss,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102346,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Brighton and Hove Albion,1.61,hit,dsr_empty_signal,no_canonical_pick,06aa52bb-b337-427c-be54-916c160acea5
+102328,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Girona,7.5,miss,dsr_failed,parse_json,0e18a353-7c2c-404f-9597-5681f3aa4d09
+102337,shadow-subset5-backfill-2026-04,historical_sm_lbu_t60,Monaco,1.87,miss,dsr_failed,parse_json,0e18a353-7c2c-404f-9597-5681f3aa4d09
