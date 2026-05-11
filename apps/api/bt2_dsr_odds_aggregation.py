@@ -30,7 +30,37 @@ def _median(vals: list[float]) -> float:
     return float(statistics.median(vals))
 
 
-def classify_snapshot_row(market: str, selection: str) -> Optional[tuple[str, str]]:
+def _line_to_token(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    try:
+        line = float(value)
+    except (TypeError, ValueError):
+        return None
+    if abs(line - 1.5) < 0.000001:
+        return "1_5"
+    if abs(line - 2.5) < 0.000001:
+        return "2_5"
+    if abs(line - 3.5) < 0.000001:
+        return "3_5"
+    return None
+
+
+def _extract_goals_line_token(market: str, selection: str, point: Any = None) -> Optional[str]:
+    point_token = _line_to_token(point)
+    if point_token:
+        return point_token
+    combined = f"{market} {selection}".lower()
+    if "1.5" in combined or "1,5" in combined:
+        return "1_5"
+    if "2.5" in combined or "2,5" in combined:
+        return "2_5"
+    if "3.5" in combined or "3,5" in combined:
+        return "3_5"
+    return None
+
+
+def classify_snapshot_row(market: str, selection: str, point: Any = None) -> Optional[tuple[str, str]]:
     """
     Mapea fila CDM cruda → (market_canonical, selection_canonical).
     None si no reconocido (se ignora para consensus).
@@ -79,7 +109,8 @@ def classify_snapshot_row(market: str, selection: str) -> Optional[tuple[str, st
             return ("BTTS", "no")
         return None
 
-    # Goals O/U — líneas
+    # Goals O/U — líneas. Provider rows such as TOA totals carry the line in
+    # ``point``; preserve it and only activate the matching canonical market.
     if any(
         k in m
         for k in (
@@ -90,23 +121,13 @@ def classify_snapshot_row(market: str, selection: str) -> Optional[tuple[str, st
             "goal line",
         )
     ) or ("goal" in m and ("over" in m or "under" in m)):
-        if "1.5" in m or "1,5" in m:
-            mk = "OU_GOALS_1_5"
+        line = _extract_goals_line_token(m_raw, s_raw, point)
+        if line in {"1_5", "2_5", "3_5"}:
+            mk = f"OU_GOALS_{line}"
             if "over" in sl:
-                return (mk, "over_1_5")
+                return (mk, f"over_{line}")
             if "under" in sl:
-                return (mk, "under_1_5")
-        if "3.5" in m or "3,5" in m:
-            mk = "OU_GOALS_3_5"
-            if "over" in sl:
-                return (mk, "over_3_5")
-            if "under" in sl:
-                return (mk, "under_3_5")
-        if "2.5" in m or "2,5" in m or ("over" in m and "under" in m and "2" in m):
-            if "over" in sl and "under" not in sl:
-                return ("OU_GOALS_2_5", "over_2_5")
-            if "under" in sl:
-                return ("OU_GOALS_2_5", "under_2_5")
+                return (mk, f"under_{line}")
         return None
 
     # 1X2
@@ -157,13 +178,14 @@ def aggregate_odds_for_event(
             book, mk, sel, odds_val, fetched = (row[0], row[1], row[2], row[3], row[4])
         else:
             continue
+        point = row[5] if len(row) >= 6 else None
         try:
             dec = float(odds_val)
         except (TypeError, ValueError):
             continue
         if dec < min_decimal:
             continue
-        cl = classify_snapshot_row(str(mk), str(sel))
+        cl = classify_snapshot_row(str(mk), str(sel), point)
         if not cl:
             raw_keys.add((str(mk).strip(), str(sel).strip()))
             continue

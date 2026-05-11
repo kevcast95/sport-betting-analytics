@@ -32,6 +32,7 @@ if _repo_root not in sys.path:
 from dotenv import load_dotenv
 load_dotenv(Path(_repo_root) / ".env")
 
+from apps.api.bt2_theoddsapi_mapping import TOA_TIER_S_SPORT_KEYS
 from scripts.bt2_atraco.sportmonks_worker import run_sportmonks
 from scripts.bt2_atraco.theoddsapi_worker import run_theoddsapi
 
@@ -44,13 +45,7 @@ LOG_DIR = RECON_DIR
 TIER_S_LEAGUES = [8, 82, 301, 384, 564]   # EPL, Bundesliga, Ligue 1, Serie A, La Liga
 TIER_A_LEAGUES = [72, 208, 453, 462, 501, 600, 672]  # Eredivisie, Pro League, Ekstraklasa, Liga Portugal, Premiership, Super Lig, BetPlay
 
-TIER_S_SPORTS = [
-    "soccer_epl",
-    "soccer_germany_bundesliga",
-    "soccer_france_ligue_1",
-    "soccer_italy_serie_a",
-    "soccer_spain_la_liga",
-]
+TIER_S_SPORTS = list(TOA_TIER_S_SPORT_KEYS)
 TIER_A_SPORTS = [
     "soccer_netherlands_eredivisie",
     "soccer_turkey_super_league",

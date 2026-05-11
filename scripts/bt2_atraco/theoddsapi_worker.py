@@ -15,6 +15,8 @@ from typing import List, Optional
 
 import httpx
 
+from apps.api.bt2_theoddsapi_mapping import TOA_SPORT_LABELS
+
 _repo_root = str(Path(__file__).resolve().parents[2])
 if _repo_root not in sys.path:
     sys.path.insert(0, _repo_root)
@@ -25,17 +27,7 @@ ODDS_BASE_URL = "https://api.the-odds-api.com/v4"
 CACHE_FILE = Path(__file__).parent / ".cache_theoddsapi.json"
 
 # Mapeo sport_key → nombre legible para logs
-SPORT_LABELS = {
-    "soccer_epl": "EPL",
-    "soccer_spain_la_liga": "La Liga",
-    "soccer_germany_bundesliga": "Bundesliga",
-    "soccer_italy_serie_a": "Serie A",
-    "soccer_france_ligue_1": "Ligue 1",
-    "soccer_netherlands_eredivisie": "Eredivisie",
-    "soccer_turkey_super_league": "Super Lig",
-    "soccer_portugal_primeira_liga": "Liga Portugal",
-    "soccer_colombia_primera_a": "Liga BetPlay",
-}
+SPORT_LABELS = dict(TOA_SPORT_LABELS)
 
 
 def _load_cache() -> dict:

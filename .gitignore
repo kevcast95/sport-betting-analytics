@@ -24,6 +24,12 @@ db/backups/
 
 # Salidas, logs, estado de scheduler y artefactos de jobs
 out/
+scripts/outputs/**/*.log
+scripts/outputs/**/manual_outputs*/
+scripts/outputs/**/*raw*.json
+scripts/outputs/**/*rendered_prompts*.json
+scripts/outputs/**/*packages*.json
+scripts/outputs/**/*checkpoint*.json
 
 # Raíz: JSON sueltos de prueba (legacy)
 candidates.json

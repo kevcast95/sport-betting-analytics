@@ -116,6 +116,35 @@ class TestCanonical(unittest.TestCase):
         )
 
 
+class TestOddsAggregationLinePreservation(unittest.TestCase):
+    def test_totals_point_preserves_ou_line(self) -> None:
+        rows = [
+            ("book", "Total Goals", "Over", 1.91, "2026-01-01T10:00:00Z", 2.5),
+            ("book", "Total Goals", "Under", 1.93, "2026-01-01T10:00:00Z", 2.5),
+            ("book", "Total Goals", "Over", 1.70, "2026-01-01T10:00:00Z", 3.5),
+            ("book", "Total Goals", "Under", 2.05, "2026-01-01T10:00:00Z", 3.5),
+        ]
+        agg = aggregate_odds_for_event(rows, min_decimal=1.30)
+
+        self.assertEqual(agg.consensus["OU_GOALS_2_5"]["over_2_5"], 1.91)
+        self.assertEqual(agg.consensus["OU_GOALS_2_5"]["under_2_5"], 1.93)
+        self.assertEqual(agg.consensus["OU_GOALS_3_5"]["over_3_5"], 1.70)
+        self.assertEqual(agg.consensus["OU_GOALS_3_5"]["under_3_5"], 2.05)
+        self.assertTrue(agg.market_coverage["OU_GOALS_2_5"])
+        self.assertTrue(agg.market_coverage["OU_GOALS_3_5"])
+
+    def test_totals_without_line_is_ignored(self) -> None:
+        agg = aggregate_odds_for_event(
+            [
+                ("book", "Total Goals", "Over", 1.91, "2026-01-01T10:00:00Z"),
+                ("book", "Total Goals", "Under", 1.93, "2026-01-01T10:00:00Z"),
+            ],
+            min_decimal=1.30,
+        )
+
+        self.assertNotIn("OU_GOALS_2_5", agg.consensus)
+
+
 class TestDsrStub(unittest.TestCase):
     def test_stub_prefers_1x2(self) -> None:
         narr, conf, mmc, msc, _pv, src, _h = suggest_from_candidate_row(
