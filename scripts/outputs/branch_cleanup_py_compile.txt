@@ -1,0 +1,90 @@
+=== scripts/mm3_0a_local_db_market_data_universe_audit.py ===
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 215, in <module>
+    sys.exit(main())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 207, in main
+    compile(filename, doraise=True)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 172, in compile
+    importlib._bootstrap_external._write_atomic(cfile, bytecode, mode)
+  File "<frozen importlib._bootstrap_external>", line 186, in _write_atomic
+PermissionError: [Errno 1] Operation not permitted: '/Users/kevcast/Library/Caches/com.apple.python/Users/kevcast/Projects/scrapper/scripts/mm3_0a_local_db_market_data_universe_audit.cpython-39.pyc.4446788912'
+FAIL
+=== scripts/mm3_1a_toa_historical_sweep_cost_estimator.py ===
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 215, in <module>
+    sys.exit(main())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 207, in main
+    compile(filename, doraise=True)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 172, in compile
+    importlib._bootstrap_external._write_atomic(cfile, bytecode, mode)
+  File "<frozen importlib._bootstrap_external>", line 186, in _write_atomic
+PermissionError: [Errno 1] Operation not permitted: '/Users/kevcast/Library/Caches/com.apple.python/Users/kevcast/Projects/scrapper/scripts/mm3_1a_toa_historical_sweep_cost_estimator.cpython-39.pyc.4313701680'
+FAIL
+=== scripts/mm3_1b_toa_p0_controlled_backfill.py ===
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 215, in <module>
+    sys.exit(main())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 207, in main
+    compile(filename, doraise=True)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 172, in compile
+    importlib._bootstrap_external._write_atomic(cfile, bytecode, mode)
+  File "<frozen importlib._bootstrap_external>", line 186, in _write_atomic
+PermissionError: [Errno 1] Operation not permitted: '/Users/kevcast/Library/Caches/com.apple.python/Users/kevcast/Projects/scrapper/scripts/mm3_1b_toa_p0_controlled_backfill.cpython-39.pyc.4312899376'
+FAIL
+=== scripts/mm3_1c_toa_match_coverage_audit.py ===
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 215, in <module>
+    sys.exit(main())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 207, in main
+    compile(filename, doraise=True)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 172, in compile
+    importlib._bootstrap_external._write_atomic(cfile, bytecode, mode)
+  File "<frozen importlib._bootstrap_external>", line 186, in _write_atomic
+PermissionError: [Errno 1] Operation not permitted: '/Users/kevcast/Library/Caches/com.apple.python/Users/kevcast/Projects/scrapper/scripts/mm3_1c_toa_match_coverage_audit.cpython-39.pyc.4390313776'
+FAIL
+=== scripts/mm3_1d_toa_matching_improvement.py ===
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 215, in <module>
+    sys.exit(main())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 207, in main
+    compile(filename, doraise=True)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 172, in compile
+    importlib._bootstrap_external._write_atomic(cfile, bytecode, mode)
+  File "<frozen importlib._bootstrap_external>", line 186, in _write_atomic
+PermissionError: [Errno 1] Operation not permitted: '/Users/kevcast/Library/Caches/com.apple.python/Users/kevcast/Projects/scrapper/scripts/mm3_1d_toa_matching_improvement.cpython-39.pyc.4339683120'
+FAIL
+=== scripts/mm3_1e_representativeness_mitigation.py ===
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 215, in <module>
+    sys.exit(main())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 207, in main
+    compile(filename, doraise=True)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/py_compile.py", line 172, in compile
+    importlib._bootstrap_external._write_atomic(cfile, bytecode, mode)
+  File "<frozen importlib._bootstrap_external>", line 186, in _write_atomic
+PermissionError: [Errno 1] Operation not permitted: '/Users/kevcast/Library/Caches/com.apple.python/Users/kevcast/Projects/scrapper/scripts/mm3_1e_representativeness_mitigation.cpython-39.pyc.4422229808'
+FAIL

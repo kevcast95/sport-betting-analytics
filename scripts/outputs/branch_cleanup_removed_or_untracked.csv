@@ -1,0 +1,2 @@
+path,action,reason
+(none),no_delete,"Archivos MM-3 grandes permanecen en disco local. Se añadieron patrones a .gitignore para no versionarlos. No se eliminó mm3_1b_toa_p0_raw.json (irreproducible sin TOA)."

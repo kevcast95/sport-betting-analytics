@@ -1,0 +1,58 @@
+{
+  "generated_at_utc": "2026-05-12T01:22:43.864251+00:00",
+  "definitions": {
+    "probability_modeling_base": "bt2_events con result_home/result_away no nulos",
+    "roi_prematch_odds": "bt2_odds_snapshot.fetched_at < bt2_events.kickoff_utc",
+    "league_panel": "Top 120 filas de bt2_leagues por COUNT(bt2_events) DESC",
+    "n_leagues_in_catalog": 100
+  },
+  "coverage_snapshot_counts": {
+    "n_events_probability_base": 43569,
+    "n_events_roi_ft_1x2": 102,
+    "n_events_roi_ou25_pattern": 0,
+    "n_events_roi_any_prematch_market": 102,
+    "n_events_snapshot_ft_ignore_time": 41724,
+    "n_events_snapshot_ou25_ignore_time": 0,
+    "n_events_snapshot_any_odds_ignore_time": 41724
+  },
+  "recommended_first_mm3_targets": [
+    {
+      "priority": 1,
+      "market": "FT_1X2",
+      "rationale": "Mayor soporte en bt2_odds_snapshot (mercados 1X2/Match Winner) y outcomes binarios/ternarios limpios desde marcador."
+    },
+    {
+      "priority": 2,
+      "market": "OU_GOALS_2_5",
+      "rationale": "Históricamente materializado en ingesta CDM; validar cobertura vs FT en años tempranos en mm3_0a_odds_market_coverage.csv."
+    }
+  ],
+  "non_claim": "Sin afirmación de edge; solo cobertura de datos locales.",
+  "distinct_markets_top": [
+    {
+      "market": "Fulltime Result",
+      "n": 126232
+    },
+    {
+      "market": "Match Winner",
+      "n": 125839
+    },
+    {
+      "market": "Full Time Result",
+      "n": 121305
+    },
+    {
+      "market": "Goals Over/Under",
+      "n": 84557
+    },
+    {
+      "market": "Money Line 3-way",
+      "n": 1
+    }
+  ],
+  "comparison_totals": {
+    "pairs_year_league": 312,
+    "sum_raw_fixtures_raw_query": 55541,
+    "sum_bt2_events_joined_league": 44225
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "generated_at_utc": "2026-05-12T04:34:17.795767+00:00",
+  "dry_run": false,
+  "requests_executed": 2740,
+  "requests_skipped_resume": 0,
+  "credits_consumed_sum_x_requests_last": 54800.0,
+  "remaining_credits_final": "40777",
+  "requests_used_header_final": "59223",
+  "sport_keys_completed_distinct": [
+    "soccer_epl",
+    "soccer_france_ligue_one",
+    "soccer_germany_bundesliga",
+    "soccer_italy_serie_a",
+    "soccer_spain_la_liga"
+  ],
+  "timestamps_completed_distinct_count": 2232,
+  "total_planned_pairs": 2740,
+  "planned_credits_if_full_run": 54800,
+  "checkpoint_pairs_completed_total": 2740,
+  "bt2_fixtures_in_scope": 3806,
+  "bt2_events_matched_distinct": 2031,
+  "match_coverage_vs_fixtures": 0.5336,
+  "ft_1x2_ready_count": 2031,
+  "totals_ready_count": 2031,
+  "ou_lines_detected_sum_across_matched": 7510,
+  "ou2_5_ready_count": 2031,
+  "failed_rejected_match_rows": 21913,
+  "provider_errors_count": 0,
+  "provider_errors_sample": [],
+  "cost_formula_still_confirmed": true,
+  "ready_for_mm3_2_feature_dataset": false,
+  "ready_for_mm3_2_feature_dataset_reasons": [
+    "match_coverage_low:0.534"
+  ],
+  "stop_reason": null,
+  "mm3_1a_batches_artifact": "/Users/kevcast/Projects/scrapper/scripts/outputs/mm3_1a_backfill_batches.json",
+  "repo_fix_candidates": [
+    {
+      "id": "TOA_HISTORICAL_ODDS_URL_MM31A",
+      "affected_path": "scripts/bt2_atraco/theoddsapi_worker.py",
+      "bug": "endpoint histórico TOA incorrecto",
+      "wrong_endpoint": "GET /v4/historical/odds?sport=...",
+      "correct_endpoint": "GET /v4/historical/sports/{sport}/odds",
+      "evidence": "MM-3.1A: ruta antigua → HTML 404 sin headers de uso; ruta correcta → HTTP 200 + x-requests-last=20 (h2h+totals, eu).",
+      "recommendation": "Fix en branch limpia separada; no mezclar con backfill/artifacts MM-3.1B."
+    }
+  ]
+}

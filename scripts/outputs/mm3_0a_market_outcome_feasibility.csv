@@ -1,0 +1,11 @@
+outcome_key,definition,n_events_usable,pct_of_all_bt2_events,notes
+FT_1X2,result_home/away no nulos — clase 1/X/2 desde goles,43569,98.5167,Modelado de probabilidad sobre marcador final.
+OU_GOALS_0_5,total goles vs línea 0.5,43569,98.5167,Binario sobre suma de goles.
+OU_GOALS_1_5,total goles vs línea 1.5,43569,98.5167,
+OU_GOALS_2_5,total goles vs línea 2.5,43569,98.5167,Mercado histórico principal en CDM normalize (OU 2.5).
+OU_GOALS_3_5,total goles vs línea 3.5,43569,98.5167,
+OU_GOALS_4_5,total goles vs línea 4.5,43569,98.5167,
+BTTS,ambos marcan — derivado de goles >0 por equipo,43569,98.5167,Clases yes/no observables si marcador completo.
+CORNERS_TOTAL_PROXY,proxy: payload JSON contiene texto 'corner' (no parsing de tipo 34),43208,,Auditoría burda de presencia en raw; entrenamiento fino requiere statistics tipadas.
+CARDS_PROXY,proxy: payload contiene booking/yellow/red,18945,,Proxy textual; odds de tarjetas ver tabla de mercados.
+RAW_STATISTICS_ARRAY,payload.statistics es array no vacío,53101,,Base para corners/corners markets si type_id presente.

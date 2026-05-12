@@ -1,0 +1,66 @@
+bt2_event_id,toa_event_id,sport_key,kickoff_bt2_utc,commence_toa,home_bt2,away_bt2,home_toa,away_toa,match_score
+826,bf0182d3f58394917fe1d87dd5d46fb0,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:00Z,Newcastle United,Burnley,Newcastle United,Burnley,2.0
+825,2ffa0cbab18cafdc6ec18e225b27fc18,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:00Z,Manchester United,Crystal Palace,Manchester United,Crystal Palace,2.0
+830,822f82f91ad92eb7dc3667ef2625bc16,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:00Z,Wolverhampton Wanderers,Manchester City,Wolverhampton Wanderers,Manchester City,2.0
+829,c1d930d000d60dec48b06ccd2ce5a9d7,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:00Z,West Ham United,Sheffield United,West Ham United,Sheffield United,2.0
+828,37aed7a71cd72642860be7e3947000ea,soccer_epl,2023-09-30T11:30:00-05:00,2023-09-30T16:30:00Z,Tottenham Hotspur,Liverpool,Tottenham Hotspur,Liverpool,2.0
+826,bf0182d3f58394917fe1d87dd5d46fb0,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:00Z,Newcastle United,Burnley,Newcastle United,Burnley,2.0
+825,2ffa0cbab18cafdc6ec18e225b27fc18,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:00Z,Manchester United,Crystal Palace,Manchester United,Crystal Palace,2.0
+830,822f82f91ad92eb7dc3667ef2625bc16,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:00Z,Wolverhampton Wanderers,Manchester City,Wolverhampton Wanderers,Manchester City,2.0
+829,c1d930d000d60dec48b06ccd2ce5a9d7,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:00Z,West Ham United,Sheffield United,West Ham United,Sheffield United,2.0
+828,37aed7a71cd72642860be7e3947000ea,soccer_epl,2023-09-30T11:30:00-05:00,2023-09-30T16:30:00Z,Tottenham Hotspur,Liverpool,Tottenham Hotspur,Liverpool,2.0
+830,822f82f91ad92eb7dc3667ef2625bc16,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:16Z,Wolverhampton Wanderers,Manchester City,Wolverhampton Wanderers,Manchester City,1.9956
+825,2ffa0cbab18cafdc6ec18e225b27fc18,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:22Z,Manchester United,Crystal Palace,Manchester United,Crystal Palace,1.9939
+829,c1d930d000d60dec48b06ccd2ce5a9d7,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:37Z,West Ham United,Sheffield United,West Ham United,Sheffield United,1.9897
+826,bf0182d3f58394917fe1d87dd5d46fb0,soccer_epl,2023-09-30T09:00:00-05:00,2023-09-30T14:00:58Z,Newcastle United,Burnley,Newcastle United,Burnley,1.9839
+828,37aed7a71cd72642860be7e3947000ea,soccer_epl,2023-09-30T11:30:00-05:00,2023-09-30T16:30:00Z,Tottenham Hotspur,Liverpool,Tottenham Hotspur,Liverpool,2.0
+845,4026494a30d50d6e544312b4110353da,soccer_epl,2023-10-21T06:30:00-05:00,2023-10-21T11:30:00Z,Liverpool,Everton,Liverpool,Everton,2.0
+843,268cf4f91bfda0b9cac2a5236af1eead,soccer_epl,2023-10-21T09:00:00-05:00,2023-10-21T14:00:00Z,Brentford,Burnley,Brentford,Burnley,2.0
+847,ce277932a11c04fb64e91e4cafaab38a,soccer_epl,2023-10-21T09:00:00-05:00,2023-10-21T14:00:00Z,Newcastle United,Crystal Palace,Newcastle United,Crystal Palace,2.0
+844,4e8496d20347695809150f629832a3a1,soccer_epl,2023-10-21T11:30:00-05:00,2023-10-21T16:30:00Z,Chelsea,Arsenal,Chelsea,Arsenal,2.0
+849,503b226b80dc3b0fb6c252ca17a2f7e4,soccer_epl,2023-10-21T14:00:00-05:00,2023-10-21T19:00:00Z,Sheffield United,Manchester United,Sheffield United,Manchester United,2.0
+845,4026494a30d50d6e544312b4110353da,soccer_epl,2023-10-21T06:30:00-05:00,2023-10-21T11:30:42Z,Liverpool,Everton,Liverpool,Everton,1.9883
+843,268cf4f91bfda0b9cac2a5236af1eead,soccer_epl,2023-10-21T09:00:00-05:00,2023-10-21T14:00:00Z,Brentford,Burnley,Brentford,Burnley,2.0
+847,ce277932a11c04fb64e91e4cafaab38a,soccer_epl,2023-10-21T09:00:00-05:00,2023-10-21T14:00:00Z,Newcastle United,Crystal Palace,Newcastle United,Crystal Palace,2.0
+844,4e8496d20347695809150f629832a3a1,soccer_epl,2023-10-21T11:30:00-05:00,2023-10-21T16:30:00Z,Chelsea,Arsenal,Chelsea,Arsenal,2.0
+849,503b226b80dc3b0fb6c252ca17a2f7e4,soccer_epl,2023-10-21T14:00:00-05:00,2023-10-21T19:00:00Z,Sheffield United,Manchester United,Sheffield United,Manchester United,2.0
+847,ce277932a11c04fb64e91e4cafaab38a,soccer_epl,2023-10-21T09:00:00-05:00,2023-10-21T14:01:59Z,Newcastle United,Crystal Palace,Newcastle United,Crystal Palace,1.9669
+843,268cf4f91bfda0b9cac2a5236af1eead,soccer_epl,2023-10-21T09:00:00-05:00,2023-10-21T14:08:40Z,Brentford,Burnley,Brentford,Burnley,1.8556
+844,4e8496d20347695809150f629832a3a1,soccer_epl,2023-10-21T11:30:00-05:00,2023-10-21T16:30:00Z,Chelsea,Arsenal,Chelsea,Arsenal,2.0
+849,503b226b80dc3b0fb6c252ca17a2f7e4,soccer_epl,2023-10-21T14:00:00-05:00,2023-10-21T19:00:00Z,Sheffield United,Manchester United,Sheffield United,Manchester United,2.0
+844,4e8496d20347695809150f629832a3a1,soccer_epl,2023-10-21T11:30:00-05:00,2023-10-21T16:30:24Z,Chelsea,Arsenal,Chelsea,Arsenal,1.9933
+849,503b226b80dc3b0fb6c252ca17a2f7e4,soccer_epl,2023-10-21T14:00:00-05:00,2023-10-21T19:00:00Z,Sheffield United,Manchester United,Sheffield United,Manchester United,2.0
+1347,4606047aeb27e6856b3ff293ec578e43,soccer_epl,2024-03-30T07:30:00-05:00,2024-03-30T12:30:00Z,Newcastle United,West Ham United,Newcastle United,West Ham United,2.0
+1344,2597298743f78005ba7c2b7f9cefd2a4,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:00:00Z,Chelsea,Burnley,Chelsea,Burnley,2.0
+1348,d1e3eb5871c7e3b1ac9dabd09d94344f,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:00:00Z,Nottingham Forest,Crystal Palace,Nottingham Forest,Crystal Palace,2.0
+1349,efb7bcd1f4959bf80197ec581b077cb2,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:00:00Z,Sheffield United,Fulham,Sheffield United,Fulham,2.0
+1342,60b84c40ac236905064dae0535ba9c73,soccer_epl,2024-03-30T12:30:00-05:00,2024-03-30T17:30:00Z,Aston Villa,Wolverhampton Wanderers,Aston Villa,Wolverhampton Wanderers,2.0
+1343,3c3df999f07010248fb7e25e24bc851e,soccer_epl,2024-03-30T15:00:00-05:00,2024-03-30T20:00:00Z,Brentford,Manchester United,Brentford,Manchester United,2.0
+1347,4606047aeb27e6856b3ff293ec578e43,soccer_epl,2024-03-30T07:30:00-05:00,2024-03-30T12:30:07Z,Newcastle United,West Ham United,Newcastle United,West Ham United,1.9981
+1344,2597298743f78005ba7c2b7f9cefd2a4,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:00:00Z,Chelsea,Burnley,Chelsea,Burnley,2.0
+1348,d1e3eb5871c7e3b1ac9dabd09d94344f,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:00:00Z,Nottingham Forest,Crystal Palace,Nottingham Forest,Crystal Palace,2.0
+1349,efb7bcd1f4959bf80197ec581b077cb2,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:00:00Z,Sheffield United,Fulham,Sheffield United,Fulham,2.0
+1342,60b84c40ac236905064dae0535ba9c73,soccer_epl,2024-03-30T12:30:00-05:00,2024-03-30T17:30:00Z,Aston Villa,Wolverhampton Wanderers,Aston Villa,Wolverhampton Wanderers,2.0
+1343,3c3df999f07010248fb7e25e24bc851e,soccer_epl,2024-03-30T15:00:00-05:00,2024-03-30T20:00:00Z,Brentford,Manchester United,Brentford,Manchester United,2.0
+1344,2597298743f78005ba7c2b7f9cefd2a4,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:00:03Z,Chelsea,Burnley,Chelsea,Burnley,1.9992
+1349,efb7bcd1f4959bf80197ec581b077cb2,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:00:17Z,Sheffield United,Fulham,Sheffield United,Fulham,1.9953
+1348,d1e3eb5871c7e3b1ac9dabd09d94344f,soccer_epl,2024-03-30T10:00:00-05:00,2024-03-30T15:01:48Z,Nottingham Forest,Crystal Palace,Nottingham Forest,Crystal Palace,1.97
+1342,60b84c40ac236905064dae0535ba9c73,soccer_epl,2024-03-30T12:30:00-05:00,2024-03-30T17:30:00Z,Aston Villa,Wolverhampton Wanderers,Aston Villa,Wolverhampton Wanderers,2.0
+1343,3c3df999f07010248fb7e25e24bc851e,soccer_epl,2024-03-30T15:00:00-05:00,2024-03-30T20:00:00Z,Brentford,Manchester United,Brentford,Manchester United,2.0
+1342,60b84c40ac236905064dae0535ba9c73,soccer_epl,2024-03-30T12:30:00-05:00,2024-03-30T17:30:11Z,Aston Villa,Wolverhampton Wanderers,Aston Villa,Wolverhampton Wanderers,1.9969
+1343,3c3df999f07010248fb7e25e24bc851e,soccer_epl,2024-03-30T15:00:00-05:00,2024-03-30T20:00:00Z,Brentford,Manchester United,Brentford,Manchester United,2.0
+1421,672a1729a6b0323ecd5b47e4d5a33c23,soccer_epl,2024-05-19T10:00:00-05:00,2024-05-19T15:00:00Z,Arsenal,Everton,Arsenal,Everton,2.0
+1426,5866498ca2390a3c0cedf5037bd50b6a,soccer_epl,2024-05-19T10:00:00-05:00,2024-05-19T15:00:00Z,Crystal Palace,Aston Villa,Crystal Palace,Aston Villa,2.0
+1422,7f178786915e6ced46d0c76e34beb045,soccer_epl,2024-05-19T10:00:00-05:00,2024-05-19T15:00:00Z,Brentford,Newcastle United,Brentford,Newcastle United,2.0
+1424,2afc81c23b9ef9ebdfc18a0db97e55ca,soccer_epl,2024-05-19T10:00:00-05:00,2024-05-19T15:00:00Z,Burnley,Nottingham Forest,Burnley,Nottingham Forest,2.0
+1427,fd2bfff9d295143ca491e063daf57119,soccer_epl,2024-05-19T10:00:00-05:00,2024-05-19T15:00:00Z,Liverpool,Wolverhampton Wanderers,Liverpool,Wolverhampton Wanderers,2.0
+1429,12c8092adaa57469145367ea74ed6872,soccer_epl,2024-05-19T10:00:00-05:00,2024-05-19T15:00:00Z,Manchester City,West Ham United,Manchester City,West Ham United,2.0
+1430,3fc76a90ce239f0cd3223cba025aa94f,soccer_epl,2024-05-19T10:00:00-05:00,2024-05-19T15:00:00Z,Sheffield United,Tottenham Hotspur,Sheffield United,Tottenham Hotspur,2.0
+24793,d98b7037fb65c1b746d0f6a39750b048,soccer_epl,2025-05-25T10:00:00-05:00,2025-05-25T15:00:00Z,Southampton,Arsenal,Southampton,Arsenal,2.0
+24790,4eb2ba91580642dfdbdb4c70feecfd39,soccer_epl,2025-05-25T10:00:00-05:00,2025-05-25T15:00:00Z,Manchester United,Aston Villa,Manchester United,Aston Villa,2.0
+24795,84c30fe877ce402264ff72923e161d33,soccer_epl,2025-05-25T10:00:00-05:00,2025-05-25T15:00:00Z,Wolverhampton Wanderers,Brentford,Wolverhampton Wanderers,Brentford,2.0
+24792,7065ea5e6e4ecef6b5845a117e42bc0e,soccer_epl,2025-05-25T10:00:00-05:00,2025-05-25T15:00:00Z,Nottingham Forest,Chelsea,Nottingham Forest,Chelsea,2.0
+24789,57dbfe6d749a1e225d7fd5e03a6dd42b,soccer_epl,2025-05-25T10:00:00-05:00,2025-05-25T15:00:00Z,Liverpool,Crystal Palace,Liverpool,Crystal Palace,2.0
+24791,18e352c5225d8e744053a63b74e2fdd2,soccer_epl,2025-05-25T10:00:00-05:00,2025-05-25T15:00:00Z,Newcastle United,Everton,Newcastle United,Everton,2.0
+24787,237603f9835fa7473c68c5b034c8c7e1,soccer_epl,2025-05-25T10:00:00-05:00,2025-05-25T15:00:00Z,Fulham,Manchester City,Fulham,Manchester City,2.0
+24788,f7ee35bd5614661f0c83e59885c2a933,soccer_epl,2025-05-25T10:00:00-05:00,2025-05-25T15:00:00Z,Ipswich Town,West Ham United,Ipswich Town,West Ham United,2.0

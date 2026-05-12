@@ -1,0 +1,89 @@
+=== branch ===
+phase4/mm3-data-science-feasibility
+=== status ===
+?? docs/bettracker2/audits/MM3_0A_LOCAL_DB_MARKET_DATA_UNIVERSE_AUDIT.md
+?? docs/bettracker2/audits/MM3_1A_TOA_HISTORICAL_SWEEP_COST_ESTIMATOR_AUDIT.md
+?? docs/bettracker2/audits/MM3_1B_TOA_P0_CONTROLLED_BACKFILL_AUDIT.md
+?? docs/bettracker2/audits/MM3_1C_TOA_MATCH_COVERAGE_AUDIT.md
+?? docs/bettracker2/audits/MM3_1D_TOA_MATCHING_IMPROVEMENT_AUDIT.md
+?? docs/bettracker2/audits/MM3_1E_REPRESENTATIVENESS_MITIGATION_AUDIT.md
+?? scripts/mm3_0a_local_db_market_data_universe_audit.py
+?? scripts/mm3_1a_toa_historical_sweep_cost_estimator.py
+?? scripts/mm3_1b_toa_p0_controlled_backfill.py
+?? scripts/mm3_1c_toa_match_coverage_audit.py
+?? scripts/mm3_1d_toa_matching_improvement.py
+?? scripts/mm3_1e_representativeness_mitigation.py
+?? scripts/outputs/branch_cleanup_status_before.txt
+?? scripts/outputs/mm3_0a_event_result_coverage.csv
+?? scripts/outputs/mm3_0a_historical_range_inventory.csv
+?? scripts/outputs/mm3_0a_historical_range_summary.json
+?? scripts/outputs/mm3_0a_league_coverage_120_sm.csv
+?? scripts/outputs/mm3_0a_market_outcome_feasibility.csv
+?? scripts/outputs/mm3_0a_market_training_candidate_matrix.csv
+?? scripts/outputs/mm3_0a_odds_market_coverage.csv
+?? scripts/outputs/mm3_0a_recommended_markets.json
+?? scripts/outputs/mm3_0a_table_inventory.csv
+?? scripts/outputs/mm3_1a_backfill_batches.json
+?? scripts/outputs/mm3_1a_big5_fixture_inventory.csv
+?? scripts/outputs/mm3_1a_cost_estimate.json
+?? scripts/outputs/mm3_1a_cost_estimate_by_policy.csv
+?? scripts/outputs/mm3_1a_cost_reconciliation.json
+?? scripts/outputs/mm3_1a_scenario_estimates.csv
+?? scripts/outputs/mm3_1a_snapshot_plan_rows.csv
+?? scripts/outputs/mm3_1a_sweep_readiness.json
+?? scripts/outputs/mm3_1a_toa_pilot_cost.json
+?? scripts/outputs/mm3_1a_toa_pilot_match_rows.csv
+?? scripts/outputs/mm3_1a_toa_pilot_rejections.csv
+?? scripts/outputs/mm3_1b_summary.json
+?? scripts/outputs/mm3_1b_toa_p0_cost.json
+?? scripts/outputs/mm3_1b_toa_p0_market_board.json
+?? scripts/outputs/mm3_1b_toa_p0_market_board_rows.csv
+?? scripts/outputs/mm3_1b_toa_p0_match_rows.csv
+?? scripts/outputs/mm3_1b_toa_p0_rejections.csv
+?? scripts/outputs/mm3_1c_coverage_by_league_year_month.csv
+?? scripts/outputs/mm3_1c_kickoff_tolerance_candidates.csv
+?? scripts/outputs/mm3_1c_matched_vs_full_representativeness.csv
+?? scripts/outputs/mm3_1c_mm3_2_readiness.json
+?? scripts/outputs/mm3_1c_rejection_detail_rows.csv
+?? scripts/outputs/mm3_1c_rejection_reason_summary.csv
+?? scripts/outputs/mm3_1c_representativeness_summary.json
+?? scripts/outputs/mm3_1c_roi_safe_subset_v0.csv
+?? scripts/outputs/mm3_1c_roi_safe_subset_v0.json
+?? scripts/outputs/mm3_1c_team_alias_candidates.csv
+?? scripts/outputs/mm3_1d_ambiguous_match_rows.csv
+?? scripts/outputs/mm3_1d_best_match_rows.csv
+?? scripts/outputs/mm3_1d_coverage_after_matching.csv
+?? scripts/outputs/mm3_1d_improved_market_board.json
+?? scripts/outputs/mm3_1d_improved_market_board_rows.csv
+?? scripts/outputs/mm3_1d_matching_attempt_rows.csv
+?? scripts/outputs/mm3_1d_mm3_2_readiness.json
+?? scripts/outputs/mm3_1d_representativeness_after_matching.json
+?? scripts/outputs/mm3_1d_roi_safe_subset_v1.csv
+?? scripts/outputs/mm3_1d_roi_safe_subset_v1.json
+?? scripts/outputs/mm3_1d_team_alias_proposals.csv
+?? scripts/outputs/mm3_1d_team_name_normalization_rules.json
+?? scripts/outputs/mm3_1e_alias_simulated_coverage.csv
+?? scripts/outputs/mm3_1e_alias_simulated_match_rows.csv
+?? scripts/outputs/mm3_1e_bias_diagnosis_rows.csv
+?? scripts/outputs/mm3_1e_bias_summary.json
+?? scripts/outputs/mm3_1e_dataset_candidate_summary.csv
+?? scripts/outputs/mm3_1e_dataset_representativeness_comparison.csv
+?? scripts/outputs/mm3_1e_manual_alias_review_queue.csv
+?? scripts/outputs/mm3_1e_mm3_2_decision.json
+?? scripts/outputs/mm3_1e_representativeness_root_cause.json
+?? scripts/outputs/mm3_1e_roi_safe_subset_v2_full.csv
+?? scripts/outputs/mm3_1e_roi_safe_subset_v2_stratified.csv
+?? scripts/outputs/mm3_1e_roi_safe_subset_v2_weighted.csv
+=== log ===
+832354f (HEAD -> phase4/mm3-data-science-feasibility, main, cleanup/mm-promote-minimal-fixes) docs(bt2): record MM branch merge decision
+09ffec3 fix(bt2): promote minimal MM branch fixes
+192f706 (origin/main, origin/HEAD, phase3f/vendor-paid-lab-day1-subset5) chore(bt2): scale paid lab day1 outputs to 20 and 28 fixtures
+e651b35 feat(bt2): improve SM-TOA pilot matching and pass day1 fixed sample
+3d29a8c (origin/phase3f/vendor-paid-lab-day1-subset5) feat(bt2): phase 3F paid lab day1 — SM Starter + The Odds API matching/odds audit
+427d10f (origin/phase3e/theoddsapi-pilot-prep-subset5, phase3e/theoddsapi-pilot-prep-subset5) fix(bt2): pilot prep — top-up DB 5 ligas (82/384) + diagnóstico sample 3D
+e9f0419 feat(bt2): phase 3e prep — The Odds API pilot manifest, request plan, dry-run (subset5)
+e734177 (audit/subset5-sm-context-depth) Merge branch 'phase3d/vendor-readiness-sm-theoddsapi'
+f253b35 (phase3d/vendor-readiness-sm-theoddsapi) feat(bt2): phase 3d real-db readiness for SM fixture master and The Odds API
+7ef36f9 docs(bt2): README vendor readiness — DB vs offline
+=== diff stat ===
+=== diff name-status ===

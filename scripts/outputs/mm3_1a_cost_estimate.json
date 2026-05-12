@@ -1,0 +1,246 @@
+{
+  "generated_at_utc": "2026-05-12T03:11:41.091402+00:00",
+  "db_span": {
+    "n_fixtures": 3806,
+    "kickoff_utc_min": "2023-08-11T12:30:00-05:00",
+    "kickoff_utc_max": "2026-04-22T14:30:00-05:00",
+    "n_local_day_sport_key_buckets": 1224,
+    "events_per_local_day_sport_key_sample": [
+      {
+        "local_kickoff_date": "2023-08-11",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-11",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-11",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-12",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 6
+      },
+      {
+        "local_kickoff_date": "2023-08-12",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-12",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 3
+      },
+      {
+        "local_kickoff_date": "2023-08-13",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-13",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 6
+      },
+      {
+        "local_kickoff_date": "2023-08-13",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 3
+      },
+      {
+        "local_kickoff_date": "2023-08-14",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-14",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-18",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-18",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-18",
+        "toa_sport_key": "soccer_germany_bundesliga",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-18",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-19",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 5
+      },
+      {
+        "local_kickoff_date": "2023-08-19",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-19",
+        "toa_sport_key": "soccer_germany_bundesliga",
+        "n_events": 6
+      },
+      {
+        "local_kickoff_date": "2023-08-19",
+        "toa_sport_key": "soccer_italy_serie_a",
+        "n_events": 4
+      },
+      {
+        "local_kickoff_date": "2023-08-19",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 3
+      },
+      {
+        "local_kickoff_date": "2023-08-20",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-20",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 6
+      },
+      {
+        "local_kickoff_date": "2023-08-20",
+        "toa_sport_key": "soccer_germany_bundesliga",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-20",
+        "toa_sport_key": "soccer_italy_serie_a",
+        "n_events": 4
+      },
+      {
+        "local_kickoff_date": "2023-08-20",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 3
+      },
+      {
+        "local_kickoff_date": "2023-08-21",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-21",
+        "toa_sport_key": "soccer_italy_serie_a",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-21",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-25",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-25",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-25",
+        "toa_sport_key": "soccer_germany_bundesliga",
+        "n_events": 1
+      },
+      {
+        "local_kickoff_date": "2023-08-25",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-26",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 6
+      },
+      {
+        "local_kickoff_date": "2023-08-26",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 2
+      },
+      {
+        "local_kickoff_date": "2023-08-26",
+        "toa_sport_key": "soccer_germany_bundesliga",
+        "n_events": 6
+      },
+      {
+        "local_kickoff_date": "2023-08-26",
+        "toa_sport_key": "soccer_italy_serie_a",
+        "n_events": 4
+      },
+      {
+        "local_kickoff_date": "2023-08-26",
+        "toa_sport_key": "soccer_spain_la_liga",
+        "n_events": 3
+      },
+      {
+        "local_kickoff_date": "2023-08-27",
+        "toa_sport_key": "soccer_epl",
+        "n_events": 3
+      },
+      {
+        "local_kickoff_date": "2023-08-27",
+        "toa_sport_key": "soccer_france_ligue_one",
+        "n_events": 6
+      },
+      {
+        "local_kickoff_date": "2023-08-27",
+        "toa_sport_key": "soccer_germany_bundesliga",
+        "n_events": 2
+      }
+    ]
+  },
+  "current_selected_markets": [
+    "h2h",
+    "totals"
+  ],
+  "regions": [
+    "eu"
+  ],
+  "snapshot_policy": "t60",
+  "snapshot_count_distinct_requests": 2740,
+  "credits_per_request_formula": "10 * n_regions * n_markets",
+  "credits_per_request": 20,
+  "estimated_requests": 2740,
+  "estimated_credits": 54800,
+  "previous_observed_from_artifacts": {
+    "artifact_paths_checked": [
+      "/Users/kevcast/Projects/scrapper/scripts/outputs/bt2_vendor_lab_day1/toa_credit_usage_summary.json",
+      "/Users/kevcast/Projects/scrapper/scripts/outputs/bt2_vendor_readiness/the_odds_api_credit_estimator.csv"
+    ],
+    "previous_observed_cost_per_request": null,
+    "previous_observed_cost_per_historical_event_odds_call": 10.0,
+    "lab_historical_event_odds_avg_x_requests_last": 10.0,
+    "notes": [
+      "Lab vendor day1: historical_event_odds (P2-style) observó x-requests-last≈10 por llamada (1 mercado × 1 región); no es el mismo endpoint que historical/odds featured."
+    ]
+  },
+  "conservative_multiplier": 1.15,
+  "estimated_credits_conservative": 63020.0,
+  "recommended_safe_batch_size_requests": 50,
+  "balance_required_warning": false,
+  "operational_credit_budget": null,
+  "notes": [
+    "Requests = pares únicos (toa_sport_key, snapshot_utc) con snapshot por política relativa a kickoff.",
+    "closing_approx usa kickoff_utc - 3 min como proxy documentado de línea de cierre.",
+    "P2/event odds es modelo distinto (10×R×M×eventos); ver scenario F."
+  ]
+}

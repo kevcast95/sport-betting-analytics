@@ -1,0 +1,7 @@
+scenario_id,label,markets,regions,snapshot_policy,cost_model,n_events,estimated_requests,estimated_credits
+A,"P0 h2h+totals, 1 región, T-60","h2h,totals",eu,t60,featured_historical_odds,3806,2740,54800
+B,"P0 h2h+totals, 1 región, T-24 + T-60","h2h,totals",eu,t24_t60,featured_historical_odds,3806,5278,105560
+C,"P0+P1 h2h+totals+spreads, 1 región, T-60 (solo estimación)","h2h,totals,spreads",eu,t60,featured_historical_odds,3806,2740,82200
+D,"P0 h2h+totals, 2 regiones, T-60","h2h,totals","eu,uk",t60,featured_historical_odds,3806,2740,109600
+E,"P0 h2h+totals, 1 región, multi-snapshot","h2h,totals",eu,multi,featured_historical_odds,3806,10615,212300
+F,"P2 additional/event-level (solo estimación, no ejecutar)","btts,corners,cards,team_totals,additional_other",eu,t60,additional_event_markets,3806,3806,190300

@@ -1,0 +1,39 @@
+{
+  "MM3_1a_cost_estimator_completed": true,
+  "TOA_pilot_executed": true,
+  "estimated_full_p0_t60_credits": 54800.0,
+  "estimated_full_p0_multi_snapshot_credits": 212300.0,
+  "observed_pilot_cost": {
+    "requests_executed": 13,
+    "sum_x_requests_last": 260.0,
+    "last_x_requests_remaining": "95577",
+    "last_x_requests_used": "4423",
+    "avg_x_requests_last": 20.0
+  },
+  "cost_formula_confirmed": true,
+  "recommended_first_production_batch": {
+    "batch_id": "b0001",
+    "sport_key": "soccer_epl",
+    "date_range_local_start": "2023-08-11",
+    "date_range_local_end": "2023-08-14",
+    "markets": "h2h,totals",
+    "region": "eu",
+    "snapshot_policy": "t60",
+    "snapshot_count_basis": "distinct_sport_timestamp_queries",
+    "estimated_requests": 7,
+    "estimated_credits": 140,
+    "stop_condition": "pause_if_rate_limit_or_budget;no_full_sweep_without_approval",
+    "expected_output_path": "scripts/outputs/mm3_1a_toa_historical_chunk_soccer_epl_2023-08-11_2023-08-14.jsonl",
+    "is_pilot_candidate": true,
+    "pilot_note": "Primer batch operativo sugerido: una sola liga, ventana corta, máx 5 días locales; no mezclar ligas."
+  },
+  "ready_for_full_backfill": false,
+  "ready_for_full_backfill_gates": [
+    "piloto ejecutado exitosamente",
+    "costo real razonable vs estimación",
+    "sin errores críticos de proveedor",
+    "plan de batches presente",
+    "costo total dentro de presupuesto",
+    "aprobación explícita del usuario (instrucción posterior)"
+  ]
+}

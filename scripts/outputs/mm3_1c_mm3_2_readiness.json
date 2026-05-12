@@ -1,0 +1,15 @@
+{
+  "matched_events_count": 2031,
+  "full_big5_events_count": 3806,
+  "match_rate": 0.5336,
+  "all_matched_have_h2h": true,
+  "all_matched_have_totals": true,
+  "all_matched_have_ou2_5": true,
+  "representativeness_risk": "critical",
+  "recommended_path": "improve_matching_first",
+  "ready_for_mm3_2a_subset": false,
+  "ready_for_mm3_2_full_big5": false,
+  "league_coverage_hole_flag": true,
+  "provider_errors_count": 0,
+  "cost_formula_confirmed": true
+}

@@ -1,0 +1,118 @@
+bt2_team_id,bt2_team_name,toa_team_name_candidate,league,sport_key,similarity_score,evidence_count,mm3_1d_recommendation,review_class
+16816,Atalanta,Atalanta BC,Serie A,soccer_italy_serie_a,0.8421,84,review_manual,needs_manual_review
+6652,Osasuna,CA Osasuna,La Liga,soccer_spain_la_liga,0.8235,84,review_manual,needs_manual_review
+1527,Brighton & Hove Albion,Brighton and Hove Albion,Premier League,soccer_epl,0.913,79,probable_typo_or_locale,needs_manual_review
+16809,Inter,Inter Milan,Serie A,soccer_italy_serie_a,0.625,79,review_manual,low_confidence
+6647,Athletic Club,Athletic Bilbao,La Liga,soccer_spain_la_liga,0.7857,78,review_manual,needs_manual_review
+2906,Bayer 04 Leverkusen,Bayer Leverkusen,Bundesliga,soccer_germany_bundesliga,0.9143,70,probable_typo_or_locale,needs_manual_review
+2922,FC Bayern München,Bayern Munich,Bundesliga,soccer_germany_bundesliga,0.7333,70,review_manual,low_confidence
+2918,VfL Bochum 1848,VfL Bochum,Bundesliga,soccer_germany_bundesliga,0.8,68,review_manual,needs_manual_review
+13796,LOSC Lille,Lille,Ligue 1,soccer_france_ligue_one,0.6667,58,review_manual,low_confidence
+13793,Olympique Marseille,Marseille,Ligue 1,soccer_france_ligue_one,0.6429,54,review_manual,low_confidence
+13804,Lens,RC Lens,Ligue 1,soccer_france_ligue_one,0.7273,51,review_manual,low_confidence
+13794,Reims,Stade de Reims,Ligue 1,soccer_france_ligue_one,0.5263,51,review_manual,low_confidence
+1528,Luton Town,Luton,Premier League,soccer_epl,0.6667,38,review_manual,low_confidence
+12265,Real Valladolid,Valladolid,La Liga,soccer_spain_la_liga,0.8,36,review_manual,needs_manual_review
+14412,Angers SCO,Angers,Ligue 1,soccer_france_ligue_one,0.75,26,review_manual,needs_manual_review
+13795,Nice,Nice,Ligue 1,soccer_france_ligue_one,1.0,21,strong_alias_candidate,likely_duplicate
+13791,Rennes,Rennes,Ligue 1,soccer_france_ligue_one,1.0,21,strong_alias_candidate,likely_duplicate
+13800,Toulouse,Toulouse,Ligue 1,soccer_france_ligue_one,1.0,20,strong_alias_candidate,likely_duplicate
+13802,Le Havre,Le Havre,Ligue 1,soccer_france_ligue_one,1.0,20,strong_alias_candidate,likely_duplicate
+13798,Monaco,AS Monaco,Ligue 1,soccer_france_ligue_one,0.8,19,review_manual,needs_manual_review
+13803,Brest,Brest,Ligue 1,soccer_france_ligue_one,1.0,18,strong_alias_candidate,likely_duplicate
+13799,Nantes,Nantes,Ligue 1,soccer_france_ligue_one,1.0,18,strong_alias_candidate,likely_duplicate
+13787,Paris Saint Germain,Paris Saint Germain,Ligue 1,soccer_france_ligue_one,1.0,18,strong_alias_candidate,likely_duplicate
+13801,Montpellier,Montpellier,Ligue 1,soccer_france_ligue_one,1.0,18,strong_alias_candidate,likely_duplicate
+13789,Strasbourg,Strasbourg,Ligue 1,soccer_france_ligue_one,1.0,18,strong_alias_candidate,likely_duplicate
+2890,VfB Stuttgart,VfB Stuttgart,Bundesliga,soccer_germany_bundesliga,1.0,13,strong_alias_candidate,likely_duplicate
+2892,Borussia Dortmund,Borussia Dortmund,Bundesliga,soccer_germany_bundesliga,1.0,13,strong_alias_candidate,likely_duplicate
+2878,FC Augsburg,Augsburg,Bundesliga,soccer_germany_bundesliga,0.8421,13,review_manual,needs_manual_review
+6646,Rayo Vallecano,Rayo Vallecano,La Liga,soccer_spain_la_liga,1.0,12,strong_alias_candidate,likely_duplicate
+2902,Werder Bremen,Werder Bremen,Bundesliga,soccer_germany_bundesliga,1.0,12,strong_alias_candidate,likely_duplicate
+2924,RB Leipzig,RB Leipzig,Bundesliga,soccer_germany_bundesliga,1.0,12,strong_alias_candidate,likely_duplicate
+2898,Eintracht Frankfurt,Eintracht Frankfurt,Bundesliga,soccer_germany_bundesliga,1.0,12,strong_alias_candidate,likely_duplicate
+2896,FSV Mainz 05,FSV Mainz 05,Bundesliga,soccer_germany_bundesliga,1.0,12,strong_alias_candidate,likely_duplicate
+2914,SC Freiburg,SC Freiburg,Bundesliga,soccer_germany_bundesliga,1.0,12,strong_alias_candidate,likely_duplicate
+2874,VfL Wolfsburg,VfL Wolfsburg,Bundesliga,soccer_germany_bundesliga,1.0,12,strong_alias_candidate,likely_duplicate
+2888,TSG Hoffenheim,TSG Hoffenheim,Bundesliga,soccer_germany_bundesliga,1.0,12,strong_alias_candidate,likely_duplicate
+2916,Borussia Mönchengladbach,Borussia Monchengladbach,Bundesliga,soccer_germany_bundesliga,0.9583,12,strong_alias_candidate,safe_auto_artifact_only
+2900,FC Union Berlin,Union Berlin,Bundesliga,soccer_germany_bundesliga,0.8889,12,probable_typo_or_locale,needs_manual_review
+6651,Celta de Vigo,Celta Vigo,La Liga,soccer_spain_la_liga,0.8696,12,review_manual,needs_manual_review
+16813,Roma,AS Roma,Serie A,soccer_italy_serie_a,0.7273,12,review_manual,low_confidence
+6660,Real Betis,Real Betis,La Liga,soccer_spain_la_liga,1.0,11,strong_alias_candidate,likely_duplicate
+6653,Sevilla,Sevilla,La Liga,soccer_spain_la_liga,1.0,11,strong_alias_candidate,likely_duplicate
+6659,Villarreal,Villarreal,La Liga,soccer_spain_la_liga,1.0,11,strong_alias_candidate,likely_duplicate
+14410,Auxerre,Auxerre,Ligue 1,soccer_france_ligue_one,1.0,11,strong_alias_candidate,likely_duplicate
+6658,FC Barcelona,Barcelona,La Liga,soccer_spain_la_liga,0.8571,11,review_manual,needs_manual_review
+14407,Saint-Étienne,Saint Etienne,Ligue 1,soccer_france_ligue_one,0.8462,11,review_manual,needs_manual_review
+6648,Real Madrid,Real Madrid,La Liga,soccer_spain_la_liga,1.0,10,strong_alias_candidate,likely_duplicate
+6654,Valencia,Valencia,La Liga,soccer_spain_la_liga,1.0,10,strong_alias_candidate,likely_duplicate
+6656,Mallorca,Mallorca,La Liga,soccer_spain_la_liga,1.0,10,strong_alias_candidate,likely_duplicate
+6657,Getafe,Getafe,La Liga,soccer_spain_la_liga,1.0,10,strong_alias_candidate,likely_duplicate
+6649,Atlético Madrid,Atlético Madrid,La Liga,soccer_spain_la_liga,1.0,10,strong_alias_candidate,likely_duplicate
+6661,Real Sociedad,Real Sociedad,La Liga,soccer_spain_la_liga,1.0,10,strong_alias_candidate,likely_duplicate
+6662,Girona,Girona,La Liga,soccer_spain_la_liga,1.0,10,strong_alias_candidate,likely_duplicate
+6655,Las Palmas,Las Palmas,La Liga,soccer_spain_la_liga,1.0,10,strong_alias_candidate,likely_duplicate
+13792,Metz,Metz,Ligue 1,soccer_france_ligue_one,1.0,10,strong_alias_candidate,likely_duplicate
+16817,Torino,Torino,Serie A,soccer_italy_serie_a,1.0,10,strong_alias_candidate,likely_duplicate
+6664,Deportivo Alavés,Alavés,La Liga,soccer_spain_la_liga,0.5455,10,review_manual,low_confidence
+13788,Lorient,Lorient,Ligue 1,soccer_france_ligue_one,1.0,9,strong_alias_candidate,likely_duplicate
+16818,Cagliari,Cagliari,Serie A,soccer_italy_serie_a,1.0,9,strong_alias_candidate,likely_duplicate
+16808,Fiorentina,Fiorentina,Serie A,soccer_italy_serie_a,1.0,9,strong_alias_candidate,likely_duplicate
+16803,Empoli,Empoli,Serie A,soccer_italy_serie_a,1.0,9,strong_alias_candidate,likely_duplicate
+16820,Juventus,Juventus,Serie A,soccer_italy_serie_a,1.0,9,strong_alias_candidate,likely_duplicate
+16812,Lazio,Lazio,Serie A,soccer_italy_serie_a,1.0,9,strong_alias_candidate,likely_duplicate
+16807,Genoa,Genoa,Serie A,soccer_italy_serie_a,1.0,9,strong_alias_candidate,likely_duplicate
+16806,Napoli,Napoli,Serie A,soccer_italy_serie_a,1.0,9,strong_alias_candidate,likely_duplicate
+16811,Lecce,Lecce,Serie A,soccer_italy_serie_a,1.0,9,strong_alias_candidate,likely_duplicate
+13797,Clermont,Clermont,Ligue 1,soccer_france_ligue_one,1.0,8,strong_alias_candidate,likely_duplicate
+16810,Monza,Monza,Serie A,soccer_italy_serie_a,1.0,8,strong_alias_candidate,likely_duplicate
+16802,AC Milan,AC Milan,Serie A,soccer_italy_serie_a,1.0,8,strong_alias_candidate,likely_duplicate
+16801,Bologna,Bologna,Serie A,soccer_italy_serie_a,1.0,8,strong_alias_candidate,likely_duplicate
+16819,Udinese,Udinese,Serie A,soccer_italy_serie_a,1.0,8,strong_alias_candidate,likely_duplicate
+1537,Chelsea,Chelsea,Premier League,soccer_epl,1.0,7,strong_alias_candidate,likely_duplicate
+1536,Tottenham Hotspur,Tottenham Hotspur,Premier League,soccer_epl,1.0,7,strong_alias_candidate,likely_duplicate
+12251,Espanyol,Espanyol,La Liga,soccer_spain_la_liga,1.0,7,strong_alias_candidate,likely_duplicate
+2870,St. Pauli,FC St. Pauli,Bundesliga,soccer_germany_bundesliga,0.8571,7,review_manual,needs_manual_review
+1540,Wolverhampton Wanderers,Wolverhampton Wanderers,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1526,West Ham United,West Ham United,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1533,Newcastle United,Newcastle United,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1530,Fulham,Fulham,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1539,Manchester United,Manchester United,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1534,Aston Villa,Aston Villa,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1529,Everton,Everton,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1538,Liverpool,Liverpool,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1522,Manchester City,Manchester City,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1524,Nottingham Forest,Nottingham Forest,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1532,Crystal Palace,Crystal Palace,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1535,Brentford,Brentford,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+1523,Arsenal,Arsenal,Premier League,soccer_epl,1.0,6,strong_alias_candidate,likely_duplicate
+12250,Leganés,Leganés,La Liga,soccer_spain_la_liga,1.0,6,strong_alias_candidate,likely_duplicate
+2912,Holstein Kiel,Holstein Kiel,Bundesliga,soccer_germany_bundesliga,1.0,6,strong_alias_candidate,likely_duplicate
+21900,Como,Como,Serie A,soccer_italy_serie_a,1.0,6,strong_alias_candidate,likely_duplicate
+2862,Darmstadt 98,SV Darmstadt 98,Bundesliga,soccer_germany_bundesliga,0.8889,6,probable_typo_or_locale,needs_manual_review
+2880,Heidenheim,FC Heidenheim,Bundesliga,soccer_germany_bundesliga,0.8696,6,review_manual,needs_manual_review
+2868,FC Köln,FC Koln,Bundesliga,soccer_germany_bundesliga,0.8571,6,review_manual,needs_manual_review
+1525,AFC Bournemouth,Bournemouth,Premier League,soccer_epl,0.8462,6,review_manual,needs_manual_review
+2880,Heidenheim,1. FC Heidenheim,Bundesliga,soccer_germany_bundesliga,0.7692,6,review_manual,needs_manual_review
+1521,Burnley,Burnley,Premier League,soccer_epl,1.0,5,strong_alias_candidate,likely_duplicate
+16814,Salernitana,Salernitana,Serie A,soccer_italy_serie_a,1.0,5,strong_alias_candidate,likely_duplicate
+21899,Venezia,Venezia,Serie A,soccer_italy_serie_a,1.0,5,strong_alias_candidate,likely_duplicate
+16804,Hellas Verona,Hellas Verona,Serie A,soccer_italy_serie_a,1.0,5,strong_alias_candidate,likely_duplicate
+1531,Sheffield United,Sheffield United,Premier League,soccer_epl,1.0,4,strong_alias_candidate,likely_duplicate
+6645,Almería,Almería,La Liga,soccer_spain_la_liga,1.0,4,strong_alias_candidate,likely_duplicate
+16815,Sassuolo,Sassuolo,Serie A,soccer_italy_serie_a,1.0,4,strong_alias_candidate,likely_duplicate
+16805,Frosinone,Frosinone,Serie A,soccer_italy_serie_a,1.0,4,strong_alias_candidate,likely_duplicate
+21891,Parma,Parma,Serie A,soccer_italy_serie_a,1.0,4,strong_alias_candidate,likely_duplicate
+16804,Hellas Verona,Hellas Verona FC,Serie A,soccer_italy_serie_a,0.8966,4,probable_typo_or_locale,needs_manual_review
+6650,Granada,Granada CF,La Liga,soccer_spain_la_liga,0.8235,4,review_manual,needs_manual_review
+6663,Cádiz,Cádiz CF,La Liga,soccer_spain_la_liga,0.7692,4,review_manual,needs_manual_review
+4287,Leicester City,Leicester City,Premier League,soccer_epl,1.0,2,probable_typo_or_locale,likely_duplicate
+4292,Ipswich Town,Ipswich Town,Premier League,soccer_epl,1.0,2,probable_typo_or_locale,likely_duplicate
+4270,Southampton,Southampton,Premier League,soccer_epl,1.0,2,probable_typo_or_locale,likely_duplicate
+6656,Mallorca,Real Sociedad,La Liga,soccer_spain_la_liga,0.4762,2,review_manual,low_confidence
+12246,Real Oviedo,Oviedo,La Liga,soccer_spain_la_liga,0.7059,1,review_manual,low_confidence
+12265,Real Valladolid,Mallorca,La Liga,soccer_spain_la_liga,0.3478,1,review_manual,low_confidence
+6660,Real Betis,Mallorca,La Liga,soccer_spain_la_liga,0.2222,1,review_manual,low_confidence
+,,ambiguous_event:9935|top1=daf81d98e5f08bb56c108bc8ec6005da|top2=bf5d4a250797068cf3b51fa08b24a66f,,,1.5921,1,ambiguous_top1_top2,likely_duplicate
+,,ambiguous_event:31640|top1=a1a97cc571b21a71810042c76b68ce7a|top2=83b621406141110857e9690920a7fe6d,,,1.5921,1,ambiguous_top1_top2,likely_duplicate

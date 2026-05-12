@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "lowercase": true,
+  "strip_accents": true,
+  "remove_punctuation_to_space": true,
+  "collapse_whitespace": true,
+  "strip_suffix_tokens": [
+    "ac",
+    "afc",
+    "as",
+    "cd",
+    "cf",
+    "club",
+    "de",
+    "deportivo",
+    "fc",
+    "la",
+    "sc",
+    "sv",
+    "the",
+    "ud"
+  ],
+  "abbrev_regex_replacements": [
+    {
+      "pattern": "\\bman utd\\b",
+      "replace": "manchester united"
+    },
+    {
+      "pattern": "\\bman united\\b",
+      "replace": "manchester united"
+    },
+    {
+      "pattern": "\\bmanchester utd\\b",
+      "replace": "manchester united"
+    },
+    {
+      "pattern": "\\bman city\\b",
+      "replace": "manchester city"
+    },
+    {
+      "pattern": "\\bmanchester c\\b\\b",
+      "replace": "manchester city"
+    },
+    {
+      "pattern": "\\bspurs\\b",
+      "replace": "tottenham hotspur"
+    },
+    {
+      "pattern": "\\btottenham\\b(?!\\s+hotspur)",
+      "replace": "tottenham hotspur"
+    },
+    {
+      "pattern": "\\binter milan\\b",
+      "replace": "internazionale"
+    },
+    {
+      "pattern": "\\bfc inter milano\\b",
+      "replace": "internazionale"
+    },
+    {
+      "pattern": "\\bfc internazionale\\b",
+      "replace": "internazionale"
+    },
+    {
+      "pattern": "\\bpsg\\b",
+      "replace": "paris saint germain"
+    },
+    {
+      "pattern": "\\bparis sg\\b",
+      "replace": "paris saint germain"
+    },
+    {
+      "pattern": "\\bparis saint-germain\\b",
+      "replace": "paris saint germain"
+    },
+    {
+      "pattern": "\\b1\\.?\\s*fc\\b",
+      "replace": " "
+    },
+    {
+      "pattern": "\\b1\\.?\\s*fussballclub\\b",
+      "replace": " "
+    }
+  ],
+  "manual_alias_file": "/Users/kevcast/Projects/scrapper/scripts/outputs/mm3_1d_manual_team_aliases.json",
+  "manual_loaded": false
+}

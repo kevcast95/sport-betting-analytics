@@ -1,0 +1,801 @@
+bt2_event_id,sport_key,bt2_home,bt2_away,toa_home,toa_away,name_similarity_score,pattern_hint
+780,soccer_epl,Wolverhampton Wanderers,Brighton & Hove Albion,Wolverhampton Wanderers,Brighton and Hove Albion,0.957,ampersand_vs_and
+784,soccer_epl,Brighton & Hove Albion,West Ham United,Brighton and Hove Albion,West Ham United,0.957,ampersand_vs_and
+793,soccer_epl,Brighton & Hove Albion,Newcastle United,Brighton and Hove Albion,Newcastle United,0.957,ampersand_vs_and
+805,soccer_epl,Manchester United,Brighton & Hove Albion,Manchester United,Brighton and Hove Albion,0.957,ampersand_vs_and
+822,soccer_epl,Aston Villa,Brighton & Hove Albion,Aston Villa,Brighton and Hove Albion,0.957,ampersand_vs_and
+832,soccer_epl,Brighton & Hove Albion,Liverpool,Brighton and Hove Albion,Liverpool,0.957,ampersand_vs_and
+846,soccer_epl,Manchester City,Brighton & Hove Albion,Manchester City,Brighton and Hove Albion,0.957,ampersand_vs_and
+1144,soccer_epl,Brighton & Hove Albion,Fulham,Brighton and Hove Albion,Fulham,0.957,ampersand_vs_and
+1153,soccer_epl,Everton,Brighton & Hove Albion,Everton,Brighton and Hove Albion,0.957,ampersand_vs_and
+1164,soccer_epl,Brighton & Hove Albion,Sheffield United,Brighton and Hove Albion,Sheffield United,0.957,ampersand_vs_and
+1178,soccer_epl,Nottingham Forest,Brighton & Hove Albion,Nottingham Forest,Brighton and Hove Albion,0.957,ampersand_vs_and
+1185,soccer_epl,Chelsea,Brighton & Hove Albion,Chelsea,Brighton and Hove Albion,0.957,ampersand_vs_and
+1192,soccer_epl,Brighton & Hove Albion,Brentford,Brighton and Hove Albion,Brentford,0.957,ampersand_vs_and
+1202,soccer_epl,Brighton & Hove Albion,Burnley,Brighton and Hove Albion,Burnley,0.957,ampersand_vs_and
+1212,soccer_epl,Arsenal,Brighton & Hove Albion,Arsenal,Brighton and Hove Albion,0.957,ampersand_vs_and
+1222,soccer_epl,Crystal Palace,Brighton & Hove Albion,Crystal Palace,Brighton and Hove Albion,0.957,ampersand_vs_and
+1234,soccer_epl,Brighton & Hove Albion,Tottenham Hotspur,Brighton and Hove Albion,Tottenham Hotspur,0.957,ampersand_vs_and
+1249,soccer_epl,West Ham United,Brighton & Hove Albion,West Ham United,Brighton and Hove Albion,0.957,ampersand_vs_and
+1254,soccer_epl,Brighton & Hove Albion,Wolverhampton Wanderers,Brighton and Hove Albion,Wolverhampton Wanderers,0.957,ampersand_vs_and
+1274,soccer_epl,Brighton & Hove Albion,Crystal Palace,Brighton and Hove Albion,Crystal Palace,0.957,ampersand_vs_and
+1288,soccer_epl,Tottenham Hotspur,Brighton & Hove Albion,Tottenham Hotspur,Brighton and Hove Albion,0.957,ampersand_vs_and
+1299,soccer_epl,Sheffield United,Brighton & Hove Albion,Sheffield United,Brighton and Hove Albion,0.957,ampersand_vs_and
+1304,soccer_epl,Brighton & Hove Albion,Everton,Brighton and Hove Albion,Everton,0.957,ampersand_vs_and
+1314,soccer_epl,Fulham,Brighton & Hove Albion,Fulham,Brighton and Hove Albion,0.957,ampersand_vs_and
+1324,soccer_epl,Brighton & Hove Albion,Nottingham Forest,Brighton and Hove Albion,Nottingham Forest,0.957,ampersand_vs_and
+1332,soccer_epl,Brighton & Hove Albion,Manchester City,Brighton and Hove Albion,Manchester City,0.957,ampersand_vs_and
+1345,soccer_epl,Liverpool,Brighton & Hove Albion,Liverpool,Brighton and Hove Albion,0.957,ampersand_vs_and
+1353,soccer_epl,Brentford,Brighton & Hove Albion,Brentford,Brighton and Hove Albion,0.957,ampersand_vs_and
+1362,soccer_epl,Brighton & Hove Albion,Arsenal,Brighton and Hove Albion,Arsenal,0.957,ampersand_vs_and
+1374,soccer_epl,Burnley,Brighton & Hove Albion,Burnley,Brighton and Hove Albion,0.957,ampersand_vs_and
+1382,soccer_epl,Brighton & Hove Albion,Chelsea,Brighton and Hove Albion,Chelsea,0.957,ampersand_vs_and
+1403,soccer_epl,Brighton & Hove Albion,Aston Villa,Brighton and Hove Albion,Aston Villa,0.957,ampersand_vs_and
+1416,soccer_epl,Newcastle United,Brighton & Hove Albion,Newcastle United,Brighton and Hove Albion,0.957,ampersand_vs_and
+1423,soccer_epl,Brighton & Hove Albion,Manchester United,Brighton and Hove Albion,Manchester United,0.957,ampersand_vs_and
+8078,soccer_germany_bundesliga,Bayer 04 Leverkusen,RB Leipzig,Bayer Leverkusen,RB Leipzig,0.957,general_name_drift
+8123,soccer_germany_bundesliga,FSV Mainz 05,Bayer 04 Leverkusen,FSV Mainz 05,Bayer Leverkusen,0.957,general_name_drift
+8141,soccer_germany_bundesliga,VfL Wolfsburg,Bayer 04 Leverkusen,VfL Wolfsburg,Bayer Leverkusen,0.957,general_name_drift
+8149,soccer_germany_bundesliga,Bayer 04 Leverkusen,SC Freiburg,Bayer Leverkusen,SC Freiburg,0.957,general_name_drift
+8162,soccer_germany_bundesliga,TSG Hoffenheim,Bayer 04 Leverkusen,TSG Hoffenheim,Bayer Leverkusen,0.957,general_name_drift
+8181,soccer_germany_bundesliga,Werder Bremen,Bayer 04 Leverkusen,Werder Bremen,Bayer Leverkusen,0.957,general_name_drift
+8185,soccer_germany_bundesliga,Bayer 04 Leverkusen,Borussia Dortmund,Bayer Leverkusen,Borussia Dortmund,0.957,general_name_drift
+8199,soccer_germany_bundesliga,VfB Stuttgart,Bayer 04 Leverkusen,VfB Stuttgart,Bayer Leverkusen,0.957,general_name_drift
+8204,soccer_germany_bundesliga,Bayer 04 Leverkusen,Eintracht Frankfurt,Bayer Leverkusen,Eintracht Frankfurt,0.957,general_name_drift
+8229,soccer_germany_bundesliga,RB Leipzig,Bayer 04 Leverkusen,RB Leipzig,Bayer Leverkusen,0.957,general_name_drift
+8276,soccer_germany_bundesliga,Bayer 04 Leverkusen,FSV Mainz 05,Bayer Leverkusen,FSV Mainz 05,0.957,general_name_drift
+8293,soccer_germany_bundesliga,Bayer 04 Leverkusen,VfL Wolfsburg,Bayer Leverkusen,VfL Wolfsburg,0.957,general_name_drift
+8302,soccer_germany_bundesliga,SC Freiburg,Bayer 04 Leverkusen,SC Freiburg,Bayer Leverkusen,0.957,general_name_drift
+8311,soccer_germany_bundesliga,Bayer 04 Leverkusen,TSG Hoffenheim,Bayer Leverkusen,TSG Hoffenheim,0.957,general_name_drift
+8329,soccer_germany_bundesliga,Bayer 04 Leverkusen,Werder Bremen,Bayer Leverkusen,Werder Bremen,0.957,general_name_drift
+8336,soccer_germany_bundesliga,Borussia Dortmund,Bayer 04 Leverkusen,Borussia Dortmund,Bayer Leverkusen,0.957,general_name_drift
+8348,soccer_germany_bundesliga,Bayer 04 Leverkusen,VfB Stuttgart,Bayer Leverkusen,VfB Stuttgart,0.957,general_name_drift
+8356,soccer_germany_bundesliga,Eintracht Frankfurt,Bayer 04 Leverkusen,Eintracht Frankfurt,Bayer Leverkusen,0.957,general_name_drift
+24419,soccer_epl,Everton,Brighton & Hove Albion,Everton,Brighton and Hove Albion,0.957,ampersand_vs_and
+24428,soccer_epl,Brighton & Hove Albion,Manchester United,Brighton and Hove Albion,Manchester United,0.957,ampersand_vs_and
+24436,soccer_epl,Arsenal,Brighton & Hove Albion,Arsenal,Brighton and Hove Albion,0.957,ampersand_vs_and
+24447,soccer_epl,Brighton & Hove Albion,Nottingham Forest,Brighton and Hove Albion,Nottingham Forest,0.957,ampersand_vs_and
+24459,soccer_epl,Chelsea,Brighton & Hove Albion,Chelsea,Brighton and Hove Albion,0.957,ampersand_vs_and
+24469,soccer_epl,Brighton & Hove Albion,Tottenham Hotspur,Brighton and Hove Albion,Tottenham Hotspur,0.957,ampersand_vs_and
+24481,soccer_epl,Newcastle United,Brighton & Hove Albion,Newcastle United,Brighton and Hove Albion,0.957,ampersand_vs_and
+24489,soccer_epl,Brighton & Hove Albion,Wolverhampton Wanderers,Brighton and Hove Albion,Wolverhampton Wanderers,0.957,ampersand_vs_and
+24497,soccer_epl,Brighton & Hove Albion,Manchester City,Brighton and Hove Albion,Manchester City,0.957,ampersand_vs_and
+24512,soccer_epl,Leicester City,Brighton & Hove Albion,Leicester City,Brighton and Hove Albion,0.957,ampersand_vs_and
+24519,soccer_epl,Ipswich Town,Brighton & Hove Albion,Ipswich Town,Brighton and Hove Albion,0.957,ampersand_vs_and
+24534,soccer_epl,Nottingham Forest,Brighton & Hove Albion,Nottingham Forest,Brighton and Hove Albion,0.957,ampersand_vs_and
+24537,soccer_epl,Brighton & Hove Albion,Chelsea,Brighton and Hove Albion,Chelsea,0.957,ampersand_vs_and
+24555,soccer_epl,Southampton,Brighton & Hove Albion,Southampton,Brighton and Hove Albion,0.957,ampersand_vs_and
+24567,soccer_epl,Brighton & Hove Albion,Southampton,Brighton and Hove Albion,Southampton,0.957,ampersand_vs_and
+24582,soccer_epl,Manchester United,Brighton & Hove Albion,Manchester United,Brighton and Hove Albion,0.957,ampersand_vs_and
+24588,soccer_epl,Brighton & Hove Albion,Ipswich Town,Brighton and Hove Albion,Ipswich Town,0.957,ampersand_vs_and
+24598,soccer_epl,Brighton & Hove Albion,Crystal Palace,Brighton and Hove Albion,Crystal Palace,0.957,ampersand_vs_and
+24608,soccer_epl,Brighton & Hove Albion,Everton,Brighton and Hove Albion,Everton,0.957,ampersand_vs_and
+24619,soccer_epl,Liverpool,Brighton & Hove Albion,Liverpool,Brighton and Hove Albion,0.957,ampersand_vs_and
+24630,soccer_epl,Fulham,Brighton & Hove Albion,Fulham,Brighton and Hove Albion,0.957,ampersand_vs_and
+24645,soccer_epl,West Ham United,Brighton & Hove Albion,West Ham United,Brighton and Hove Albion,0.957,ampersand_vs_and
+24648,soccer_epl,Brighton & Hove Albion,Brentford,Brighton and Hove Albion,Brentford,0.957,ampersand_vs_and
+24656,soccer_epl,Aston Villa,Brighton & Hove Albion,Aston Villa,Brighton and Hove Albion,0.957,ampersand_vs_and
+24668,soccer_epl,Brighton & Hove Albion,Arsenal,Brighton and Hove Albion,Arsenal,0.957,ampersand_vs_and
+24687,soccer_epl,Brighton & Hove Albion,Fulham,Brighton and Hove Albion,Fulham,0.957,ampersand_vs_and
+24703,soccer_epl,Manchester City,Brighton & Hove Albion,Manchester City,Brighton and Hove Albion,0.957,ampersand_vs_and
+24708,soccer_epl,Brighton & Hove Albion,Aston Villa,Brighton and Hove Albion,Aston Villa,0.957,ampersand_vs_and
+24718,soccer_epl,Crystal Palace,Brighton & Hove Albion,Crystal Palace,Brighton and Hove Albion,0.957,ampersand_vs_and
+24728,soccer_epl,Brighton & Hove Albion,Leicester City,Brighton and Hove Albion,Leicester City,0.957,ampersand_vs_and
+24737,soccer_epl,Brentford,Brighton & Hove Albion,Brentford,Brighton and Hove Albion,0.957,ampersand_vs_and
+24748,soccer_epl,Brighton & Hove Albion,West Ham United,Brighton and Hove Albion,West Ham United,0.957,ampersand_vs_and
+24759,soccer_epl,Brighton & Hove Albion,Newcastle United,Brighton and Hove Albion,Newcastle United,0.957,ampersand_vs_and
+24775,soccer_epl,Wolverhampton Wanderers,Brighton & Hove Albion,Wolverhampton Wanderers,Brighton and Hove Albion,0.957,ampersand_vs_and
+24779,soccer_epl,Brighton & Hove Albion,Liverpool,Brighton and Hove Albion,Liverpool,0.957,ampersand_vs_and
+24794,soccer_epl,Tottenham Hotspur,Brighton & Hove Albion,Tottenham Hotspur,Brighton and Hove Albion,0.957,ampersand_vs_and
+30797,soccer_germany_bundesliga,Bayer 04 Leverkusen,RB Leipzig,Bayer Leverkusen,RB Leipzig,0.957,general_name_drift
+30808,soccer_germany_bundesliga,TSG Hoffenheim,Bayer 04 Leverkusen,TSG Hoffenheim,Bayer Leverkusen,0.957,general_name_drift
+30815,soccer_germany_bundesliga,Bayer 04 Leverkusen,VfL Wolfsburg,Bayer Leverkusen,VfL Wolfsburg,0.957,general_name_drift
+30833,soccer_germany_bundesliga,Bayer 04 Leverkusen,Holstein Kiel,Bayer Leverkusen,Holstein Kiel,0.957,general_name_drift
+30842,soccer_germany_bundesliga,Bayer 04 Leverkusen,Eintracht Frankfurt,Bayer Leverkusen,Eintracht Frankfurt,0.957,general_name_drift
+30854,soccer_germany_bundesliga,Werder Bremen,Bayer 04 Leverkusen,Werder Bremen,Bayer Leverkusen,0.957,general_name_drift
+30860,soccer_germany_bundesliga,Bayer 04 Leverkusen,VfB Stuttgart,Bayer Leverkusen,VfB Stuttgart,0.957,general_name_drift
+30914,soccer_germany_bundesliga,Bayer 04 Leverkusen,SC Freiburg,Bayer Leverkusen,SC Freiburg,0.957,general_name_drift
+30924,soccer_germany_bundesliga,Borussia Dortmund,Bayer 04 Leverkusen,Borussia Dortmund,Bayer Leverkusen,0.957,general_name_drift
+30932,soccer_germany_bundesliga,Bayer 04 Leverkusen,FSV Mainz 05,Bayer Leverkusen,FSV Mainz 05,0.957,general_name_drift
+30950,soccer_germany_bundesliga,RB Leipzig,Bayer 04 Leverkusen,RB Leipzig,Bayer Leverkusen,0.957,general_name_drift
+30959,soccer_germany_bundesliga,Bayer 04 Leverkusen,TSG Hoffenheim,Bayer Leverkusen,TSG Hoffenheim,0.957,general_name_drift
+30973,soccer_germany_bundesliga,VfL Wolfsburg,Bayer 04 Leverkusen,VfL Wolfsburg,Bayer Leverkusen,0.957,general_name_drift
+30994,soccer_germany_bundesliga,Holstein Kiel,Bayer 04 Leverkusen,Holstein Kiel,Bayer Leverkusen,0.957,general_name_drift
+30997,soccer_germany_bundesliga,Eintracht Frankfurt,Bayer 04 Leverkusen,Eintracht Frankfurt,Bayer Leverkusen,0.957,general_name_drift
+31004,soccer_germany_bundesliga,Bayer 04 Leverkusen,Werder Bremen,Bayer Leverkusen,Werder Bremen,0.957,general_name_drift
+31013,soccer_germany_bundesliga,VfB Stuttgart,Bayer 04 Leverkusen,VfB Stuttgart,Bayer Leverkusen,0.957,general_name_drift
+31070,soccer_germany_bundesliga,SC Freiburg,Bayer 04 Leverkusen,SC Freiburg,Bayer Leverkusen,0.957,general_name_drift
+31076,soccer_germany_bundesliga,Bayer 04 Leverkusen,Borussia Dortmund,Bayer Leverkusen,Borussia Dortmund,0.957,general_name_drift
+31091,soccer_germany_bundesliga,FSV Mainz 05,Bayer 04 Leverkusen,FSV Mainz 05,Bayer Leverkusen,0.957,general_name_drift
+102321,soccer_germany_bundesliga,Borussia Dortmund,Bayer 04 Leverkusen,Borussia Dortmund,Bayer Leverkusen,0.957,general_name_drift
+102346,soccer_epl,Burnley,Brighton & Hove Albion,Burnley,Brighton and Hove Albion,0.957,ampersand_vs_and
+102622,soccer_epl,Tottenham Hotspur,Brighton & Hove Albion,Tottenham Hotspur,Brighton and Hove Albion,0.957,ampersand_vs_and
+102629,soccer_epl,Brighton & Hove Albion,Chelsea,Brighton and Hove Albion,Chelsea,0.957,ampersand_vs_and
+8077,soccer_germany_bundesliga,FC Union Berlin,FSV Mainz 05,Union Berlin,FSV Mainz 05,0.944,general_name_drift
+8079,soccer_germany_bundesliga,Eintracht Frankfurt,Darmstadt 98,Eintracht Frankfurt,SV Darmstadt 98,0.944,general_name_drift
+8094,soccer_germany_bundesliga,FC Union Berlin,RB Leipzig,Union Berlin,RB Leipzig,0.944,general_name_drift
+8105,soccer_germany_bundesliga,VfL Wolfsburg,FC Union Berlin,VfL Wolfsburg,Union Berlin,0.944,general_name_drift
+8113,soccer_germany_bundesliga,FC Union Berlin,TSG Hoffenheim,Union Berlin,TSG Hoffenheim,0.944,general_name_drift
+8119,soccer_germany_bundesliga,VfB Stuttgart,Darmstadt 98,VfB Stuttgart,SV Darmstadt 98,0.944,general_name_drift
+8128,soccer_germany_bundesliga,Darmstadt 98,Werder Bremen,SV Darmstadt 98,Werder Bremen,0.944,general_name_drift
+8130,soccer_germany_bundesliga,Borussia Dortmund,FC Union Berlin,Borussia Dortmund,Union Berlin,0.944,general_name_drift
+8139,soccer_germany_bundesliga,FC Union Berlin,VfB Stuttgart,Union Berlin,VfB Stuttgart,0.944,general_name_drift
+8146,soccer_germany_bundesliga,Darmstadt 98,RB Leipzig,SV Darmstadt 98,RB Leipzig,0.944,general_name_drift
+8152,soccer_germany_bundesliga,Werder Bremen,FC Union Berlin,Werder Bremen,Union Berlin,0.944,general_name_drift
+8157,soccer_germany_bundesliga,FC Union Berlin,Eintracht Frankfurt,Union Berlin,Eintracht Frankfurt,0.944,general_name_drift
+8173,soccer_germany_bundesliga,Darmstadt 98,FSV Mainz 05,SV Darmstadt 98,FSV Mainz 05,0.944,general_name_drift
+8176,soccer_germany_bundesliga,SC Freiburg,Darmstadt 98,SC Freiburg,SV Darmstadt 98,0.944,general_name_drift
+8209,soccer_germany_bundesliga,Darmstadt 98,VfL Wolfsburg,SV Darmstadt 98,VfL Wolfsburg,0.944,general_name_drift
+8215,soccer_germany_bundesliga,TSG Hoffenheim,Darmstadt 98,TSG Hoffenheim,SV Darmstadt 98,0.944,general_name_drift
+8221,soccer_germany_bundesliga,SC Freiburg,FC Union Berlin,SC Freiburg,Union Berlin,0.944,general_name_drift
+8227,soccer_germany_bundesliga,Darmstadt 98,Borussia Dortmund,SV Darmstadt 98,Borussia Dortmund,0.944,general_name_drift
+8231,soccer_germany_bundesliga,FSV Mainz 05,FC Union Berlin,FSV Mainz 05,Union Berlin,0.944,general_name_drift
+8236,soccer_germany_bundesliga,Darmstadt 98,Eintracht Frankfurt,SV Darmstadt 98,Eintracht Frankfurt,0.944,general_name_drift
+8247,soccer_germany_bundesliga,RB Leipzig,FC Union Berlin,RB Leipzig,Union Berlin,0.944,general_name_drift
+8256,soccer_germany_bundesliga,FC Union Berlin,VfL Wolfsburg,Union Berlin,VfL Wolfsburg,0.944,general_name_drift
+8269,soccer_germany_bundesliga,TSG Hoffenheim,FC Union Berlin,TSG Hoffenheim,Union Berlin,0.944,general_name_drift
+8272,soccer_germany_bundesliga,Darmstadt 98,VfB Stuttgart,SV Darmstadt 98,VfB Stuttgart,0.944,general_name_drift
+8279,soccer_germany_bundesliga,Werder Bremen,Darmstadt 98,Werder Bremen,SV Darmstadt 98,0.944,general_name_drift
+8282,soccer_germany_bundesliga,FC Union Berlin,Borussia Dortmund,Union Berlin,Borussia Dortmund,0.944,general_name_drift
+8292,soccer_germany_bundesliga,RB Leipzig,Darmstadt 98,RB Leipzig,SV Darmstadt 98,0.944,general_name_drift
+8299,soccer_germany_bundesliga,VfB Stuttgart,FC Union Berlin,VfB Stuttgart,Union Berlin,0.944,general_name_drift
+8301,soccer_germany_bundesliga,FC Union Berlin,Werder Bremen,Union Berlin,Werder Bremen,0.944,general_name_drift
+8312,soccer_germany_bundesliga,Eintracht Frankfurt,FC Union Berlin,Eintracht Frankfurt,Union Berlin,0.944,general_name_drift
+8323,soccer_germany_bundesliga,FSV Mainz 05,Darmstadt 98,FSV Mainz 05,SV Darmstadt 98,0.944,general_name_drift
+8335,soccer_germany_bundesliga,Darmstadt 98,SC Freiburg,SV Darmstadt 98,SC Freiburg,0.944,general_name_drift
+8357,soccer_germany_bundesliga,VfL Wolfsburg,Darmstadt 98,VfL Wolfsburg,SV Darmstadt 98,0.944,general_name_drift
+8371,soccer_germany_bundesliga,Darmstadt 98,TSG Hoffenheim,SV Darmstadt 98,TSG Hoffenheim,0.944,general_name_drift
+8372,soccer_germany_bundesliga,Borussia Dortmund,Darmstadt 98,Borussia Dortmund,SV Darmstadt 98,0.944,general_name_drift
+8373,soccer_germany_bundesliga,FC Union Berlin,SC Freiburg,Union Berlin,SC Freiburg,0.944,general_name_drift
+30795,soccer_germany_bundesliga,FSV Mainz 05,FC Union Berlin,FSV Mainz 05,Union Berlin,0.944,general_name_drift
+30806,soccer_germany_bundesliga,RB Leipzig,FC Union Berlin,RB Leipzig,Union Berlin,0.944,general_name_drift
+30821,soccer_germany_bundesliga,FC Union Berlin,TSG Hoffenheim,Union Berlin,TSG Hoffenheim,0.944,general_name_drift
+30839,soccer_germany_bundesliga,FC Union Berlin,Borussia Dortmund,Union Berlin,Borussia Dortmund,0.944,general_name_drift
+30850,soccer_germany_bundesliga,Holstein Kiel,FC Union Berlin,Holstein Kiel,Union Berlin,0.944,general_name_drift
+30857,soccer_germany_bundesliga,FC Union Berlin,Eintracht Frankfurt,Union Berlin,Eintracht Frankfurt,0.944,general_name_drift
+30875,soccer_germany_bundesliga,FC Union Berlin,SC Freiburg,Union Berlin,SC Freiburg,0.944,general_name_drift
+30884,soccer_germany_bundesliga,VfL Wolfsburg,FC Union Berlin,VfL Wolfsburg,Union Berlin,0.944,general_name_drift
+30897,soccer_germany_bundesliga,VfB Stuttgart,FC Union Berlin,VfB Stuttgart,Union Berlin,0.944,general_name_drift
+30919,soccer_germany_bundesliga,Werder Bremen,FC Union Berlin,Werder Bremen,Union Berlin,0.944,general_name_drift
+30947,soccer_germany_bundesliga,FC Union Berlin,FSV Mainz 05,Union Berlin,FSV Mainz 05,0.944,general_name_drift
+30965,soccer_germany_bundesliga,FC Union Berlin,RB Leipzig,Union Berlin,RB Leipzig,0.944,general_name_drift
+30971,soccer_germany_bundesliga,TSG Hoffenheim,FC Union Berlin,TSG Hoffenheim,Union Berlin,0.944,general_name_drift
+30988,soccer_germany_bundesliga,Borussia Dortmund,FC Union Berlin,Borussia Dortmund,Union Berlin,0.944,general_name_drift
+31001,soccer_germany_bundesliga,FC Union Berlin,Holstein Kiel,Union Berlin,Holstein Kiel,0.944,general_name_drift
+31007,soccer_germany_bundesliga,Eintracht Frankfurt,FC Union Berlin,Eintracht Frankfurt,Union Berlin,0.944,general_name_drift
+31027,soccer_germany_bundesliga,SC Freiburg,FC Union Berlin,SC Freiburg,Union Berlin,0.944,general_name_drift
+31037,soccer_germany_bundesliga,FC Union Berlin,VfL Wolfsburg,Union Berlin,VfL Wolfsburg,0.944,general_name_drift
+31056,soccer_germany_bundesliga,FC Union Berlin,VfB Stuttgart,Union Berlin,VfB Stuttgart,0.944,general_name_drift
+31074,soccer_germany_bundesliga,FC Union Berlin,Werder Bremen,Union Berlin,Werder Bremen,0.944,general_name_drift
+102594,soccer_germany_bundesliga,FC Union Berlin,VfL Wolfsburg,Union Berlin,VfL Wolfsburg,0.944,general_name_drift
+8088,soccer_germany_bundesliga,Borussia Mönchengladbach,Bayer 04 Leverkusen,Borussia Monchengladbach,Bayer Leverkusen,0.936,general_name_drift
+8239,soccer_germany_bundesliga,Bayer 04 Leverkusen,Borussia Mönchengladbach,Bayer Leverkusen,Borussia Monchengladbach,0.936,general_name_drift
+30788,soccer_germany_bundesliga,Borussia Mönchengladbach,Bayer 04 Leverkusen,Borussia Monchengladbach,Bayer Leverkusen,0.936,general_name_drift
+30941,soccer_germany_bundesliga,Bayer 04 Leverkusen,Borussia Mönchengladbach,Bayer Leverkusen,Borussia Monchengladbach,0.936,general_name_drift
+3340,soccer_spain_la_liga,Real Sociedad,Celta de Vigo,Real Sociedad,Celta Vigo,0.935,general_name_drift
+3344,soccer_spain_la_liga,Celta de Vigo,Real Madrid,Celta Vigo,Real Madrid,0.935,general_name_drift
+3353,soccer_spain_la_liga,Almería,Celta de Vigo,Almería,Celta Vigo,0.935,general_name_drift
+3365,soccer_spain_la_liga,Celta de Vigo,Mallorca,Celta Vigo,Mallorca,0.935,general_name_drift
+3401,soccer_spain_la_liga,Las Palmas,Celta de Vigo,Las Palmas,Celta Vigo,0.935,general_name_drift
+3405,soccer_spain_la_liga,Celta de Vigo,Getafe,Celta Vigo,Getafe,0.935,general_name_drift
+3416,soccer_spain_la_liga,Celta de Vigo,Atlético Madrid,Celta Vigo,Atlético Madrid,0.935,general_name_drift
+3430,soccer_spain_la_liga,Girona,Celta de Vigo,Girona,Celta Vigo,0.935,general_name_drift
+4592,soccer_spain_la_liga,Celta de Vigo,Sevilla,Celta Vigo,Sevilla,0.935,general_name_drift
+4619,soccer_spain_la_liga,Valencia,Celta de Vigo,Valencia,Celta Vigo,0.935,general_name_drift
+4639,soccer_spain_la_liga,Rayo Vallecano,Celta de Vigo,Rayo Vallecano,Celta Vigo,0.935,general_name_drift
+4660,soccer_spain_la_liga,Villarreal,Celta de Vigo,Villarreal,Celta Vigo,0.935,general_name_drift
+4667,soccer_spain_la_liga,Celta de Vigo,Real Betis,Celta Vigo,Real Betis,0.935,general_name_drift
+4679,soccer_spain_la_liga,Mallorca,Celta de Vigo,Mallorca,Celta Vigo,0.935,general_name_drift
+4681,soccer_spain_la_liga,Celta de Vigo,Real Sociedad,Celta Vigo,Real Sociedad,0.935,general_name_drift
+4693,soccer_spain_la_liga,Celta de Vigo,Girona,Celta Vigo,Girona,0.935,general_name_drift
+4718,soccer_spain_la_liga,Getafe,Celta de Vigo,Getafe,Celta Vigo,0.935,general_name_drift
+4744,soccer_spain_la_liga,Celta de Vigo,Almería,Celta Vigo,Almería,0.935,general_name_drift
+4759,soccer_spain_la_liga,Real Madrid,Celta de Vigo,Real Madrid,Celta Vigo,0.935,general_name_drift
+4767,soccer_spain_la_liga,Sevilla,Celta de Vigo,Sevilla,Celta Vigo,0.935,general_name_drift
+4774,soccer_spain_la_liga,Celta de Vigo,Rayo Vallecano,Celta Vigo,Rayo Vallecano,0.935,general_name_drift
+4783,soccer_spain_la_liga,Real Betis,Celta de Vigo,Real Betis,Celta Vigo,0.935,general_name_drift
+4793,soccer_spain_la_liga,Celta de Vigo,Las Palmas,Celta Vigo,Las Palmas,0.935,general_name_drift
+4811,soccer_spain_la_liga,Celta de Vigo,Villarreal,Celta Vigo,Villarreal,0.935,general_name_drift
+4822,soccer_spain_la_liga,Atlético Madrid,Celta de Vigo,Atlético Madrid,Celta Vigo,0.935,general_name_drift
+4852,soccer_spain_la_liga,Celta de Vigo,Valencia,Celta Vigo,Valencia,0.935,general_name_drift
+8080,soccer_germany_bundesliga,VfL Wolfsburg,Heidenheim,VfL Wolfsburg,FC Heidenheim,0.935,general_name_drift
+8091,soccer_germany_bundesliga,Heidenheim,TSG Hoffenheim,FC Heidenheim,TSG Hoffenheim,0.935,general_name_drift
+8093,soccer_germany_bundesliga,Borussia Dortmund,Heidenheim,Borussia Dortmund,FC Heidenheim,0.935,general_name_drift
+8109,soccer_germany_bundesliga,Heidenheim,Werder Bremen,FC Heidenheim,Werder Bremen,0.935,general_name_drift
+8133,soccer_germany_bundesliga,Eintracht Frankfurt,Heidenheim,Eintracht Frankfurt,FC Heidenheim,0.935,general_name_drift
+8163,soccer_germany_bundesliga,Heidenheim,VfB Stuttgart,FC Heidenheim,VfB Stuttgart,0.935,general_name_drift
+8184,soccer_germany_bundesliga,RB Leipzig,Heidenheim,RB Leipzig,FC Heidenheim,0.935,general_name_drift
+8205,soccer_germany_bundesliga,FSV Mainz 05,Heidenheim,FSV Mainz 05,FC Heidenheim,0.935,general_name_drift
+8218,soccer_germany_bundesliga,Heidenheim,SC Freiburg,FC Heidenheim,SC Freiburg,0.935,general_name_drift
+8235,soccer_germany_bundesliga,Heidenheim,VfL Wolfsburg,FC Heidenheim,VfL Wolfsburg,0.935,general_name_drift
+8242,soccer_germany_bundesliga,TSG Hoffenheim,Heidenheim,TSG Hoffenheim,FC Heidenheim,0.935,general_name_drift
+8253,soccer_germany_bundesliga,Heidenheim,Borussia Dortmund,FC Heidenheim,Borussia Dortmund,0.935,general_name_drift
+8261,soccer_germany_bundesliga,Werder Bremen,Heidenheim,Werder Bremen,FC Heidenheim,0.935,general_name_drift
+8289,soccer_germany_bundesliga,Heidenheim,Eintracht Frankfurt,FC Heidenheim,Eintracht Frankfurt,0.935,general_name_drift
+8317,soccer_germany_bundesliga,VfB Stuttgart,Heidenheim,VfB Stuttgart,FC Heidenheim,0.935,general_name_drift
+8344,soccer_germany_bundesliga,Heidenheim,RB Leipzig,FC Heidenheim,RB Leipzig,0.935,general_name_drift
+8362,soccer_germany_bundesliga,Heidenheim,FSV Mainz 05,FC Heidenheim,FSV Mainz 05,0.935,general_name_drift
+8365,soccer_germany_bundesliga,SC Freiburg,Heidenheim,SC Freiburg,FC Heidenheim,0.935,general_name_drift
+24873,soccer_spain_la_liga,Celta de Vigo,Valencia,Celta Vigo,Valencia,0.935,general_name_drift
+24888,soccer_spain_la_liga,Villarreal,Celta de Vigo,Villarreal,Celta Vigo,0.935,general_name_drift
+24928,soccer_spain_la_liga,Celta de Vigo,Atlético Madrid,Celta Vigo,Atlético Madrid,0.935,general_name_drift
+24934,soccer_spain_la_liga,Celta de Vigo,Girona,Celta Vigo,Girona,0.935,general_name_drift
+24950,soccer_spain_la_liga,Las Palmas,Celta de Vigo,Las Palmas,Celta Vigo,0.935,general_name_drift
+24954,soccer_spain_la_liga,Celta de Vigo,Real Madrid,Celta Vigo,Real Madrid,0.935,general_name_drift
+24967,soccer_spain_la_liga,Leganés,Celta de Vigo,Leganés,Celta Vigo,0.935,general_name_drift
+24974,soccer_spain_la_liga,Celta de Vigo,Getafe,Celta Vigo,Getafe,0.935,general_name_drift
+24982,soccer_spain_la_liga,Real Betis,Celta de Vigo,Real Betis,Celta Vigo,0.935,general_name_drift
+25005,soccer_spain_la_liga,Espanyol,Celta de Vigo,Espanyol,Celta Vigo,0.935,general_name_drift
+25005,soccer_spain_la_liga,Espanyol,Celta de Vigo,Espanyol,Celta Vigo,0.935,general_name_drift
+25014,soccer_spain_la_liga,Celta de Vigo,Mallorca,Celta Vigo,Mallorca,0.935,general_name_drift
+25028,soccer_spain_la_liga,Sevilla,Celta de Vigo,Sevilla,Celta Vigo,0.935,general_name_drift
+25033,soccer_spain_la_liga,Celta de Vigo,Real Sociedad,Celta Vigo,Real Sociedad,0.935,general_name_drift
+25050,soccer_spain_la_liga,Rayo Vallecano,Celta de Vigo,Rayo Vallecano,Celta Vigo,0.935,general_name_drift
+25080,soccer_spain_la_liga,Valencia,Celta de Vigo,Valencia,Celta Vigo,0.935,general_name_drift
+25089,soccer_spain_la_liga,Celta de Vigo,Real Betis,Celta Vigo,Real Betis,0.935,general_name_drift
+25092,soccer_spain_la_liga,Atlético Madrid,Celta de Vigo,Atlético Madrid,Celta Vigo,0.935,general_name_drift
+25117,soccer_spain_la_liga,Girona,Celta de Vigo,Girona,Celta Vigo,0.935,general_name_drift
+25125,soccer_spain_la_liga,Celta de Vigo,Leganés,Celta Vigo,Leganés,0.935,general_name_drift
+25145,soccer_spain_la_liga,Celta de Vigo,Las Palmas,Celta Vigo,Las Palmas,0.935,general_name_drift
+25158,soccer_spain_la_liga,Mallorca,Celta de Vigo,Mallorca,Celta Vigo,0.935,general_name_drift
+25171,soccer_spain_la_liga,Celta de Vigo,Espanyol,Celta Vigo,Espanyol,0.935,general_name_drift
+25186,soccer_spain_la_liga,Celta de Vigo,Villarreal,Celta Vigo,Villarreal,0.935,general_name_drift
+25198,soccer_spain_la_liga,Real Madrid,Celta de Vigo,Real Madrid,Celta Vigo,0.935,general_name_drift
+25205,soccer_spain_la_liga,Celta de Vigo,Sevilla,Celta Vigo,Sevilla,0.935,general_name_drift
+25217,soccer_spain_la_liga,Real Sociedad,Celta de Vigo,Real Sociedad,Celta Vigo,0.935,general_name_drift
+25224,soccer_spain_la_liga,Celta de Vigo,Rayo Vallecano,Celta Vigo,Rayo Vallecano,0.935,general_name_drift
+25239,soccer_spain_la_liga,Getafe,Celta de Vigo,Getafe,Celta Vigo,0.935,general_name_drift
+3329,soccer_spain_la_liga,Getafe,FC Barcelona,Getafe,Barcelona,0.929,general_name_drift
+3349,soccer_spain_la_liga,Villarreal,FC Barcelona,Villarreal,Barcelona,0.929,general_name_drift
+3364,soccer_spain_la_liga,FC Barcelona,Real Betis,Barcelona,Real Betis,0.929,general_name_drift
+3387,soccer_spain_la_liga,Mallorca,FC Barcelona,Mallorca,Barcelona,0.929,general_name_drift
+3395,soccer_spain_la_liga,FC Barcelona,Sevilla,Barcelona,Sevilla,0.929,general_name_drift
+3425,soccer_spain_la_liga,FC Barcelona,Real Madrid,Barcelona,Real Madrid,0.929,general_name_drift
+4596,soccer_spain_la_liga,Real Sociedad,FC Barcelona,Real Sociedad,Barcelona,0.929,general_name_drift
+4618,soccer_spain_la_liga,Rayo Vallecano,FC Barcelona,Rayo Vallecano,Barcelona,0.929,general_name_drift
+4626,soccer_spain_la_liga,FC Barcelona,Atlético Madrid,Barcelona,Atlético Madrid,0.929,general_name_drift
+4631,soccer_spain_la_liga,FC Barcelona,Girona,Barcelona,Girona,0.929,general_name_drift
+4646,soccer_spain_la_liga,Valencia,FC Barcelona,Valencia,Barcelona,0.929,general_name_drift
+4659,soccer_spain_la_liga,FC Barcelona,Almería,Barcelona,Almería,0.929,general_name_drift
+4666,soccer_spain_la_liga,Las Palmas,FC Barcelona,Las Palmas,Barcelona,0.929,general_name_drift
+4687,soccer_spain_la_liga,Real Betis,FC Barcelona,Real Betis,Barcelona,0.929,general_name_drift
+4692,soccer_spain_la_liga,FC Barcelona,Villarreal,Barcelona,Villarreal,0.929,general_name_drift
+4732,soccer_spain_la_liga,FC Barcelona,Getafe,Barcelona,Getafe,0.929,general_name_drift
+4752,soccer_spain_la_liga,FC Barcelona,Mallorca,Barcelona,Mallorca,0.929,general_name_drift
+4761,soccer_spain_la_liga,Atlético Madrid,FC Barcelona,Atlético Madrid,Barcelona,0.929,general_name_drift
+4772,soccer_spain_la_liga,FC Barcelona,Las Palmas,Barcelona,Las Palmas,0.929,general_name_drift
+4796,soccer_spain_la_liga,Real Madrid,FC Barcelona,Real Madrid,Barcelona,0.929,general_name_drift
+4802,soccer_spain_la_liga,FC Barcelona,Valencia,Barcelona,Valencia,0.929,general_name_drift
+4815,soccer_spain_la_liga,Girona,FC Barcelona,Girona,Barcelona,0.929,general_name_drift
+4823,soccer_spain_la_liga,FC Barcelona,Real Sociedad,Barcelona,Real Sociedad,0.929,general_name_drift
+4831,soccer_spain_la_liga,Almería,FC Barcelona,Almería,Barcelona,0.929,general_name_drift
+4843,soccer_spain_la_liga,FC Barcelona,Rayo Vallecano,Barcelona,Rayo Vallecano,0.929,general_name_drift
+4858,soccer_spain_la_liga,Sevilla,FC Barcelona,Sevilla,Barcelona,0.929,general_name_drift
+24867,soccer_spain_la_liga,Valencia,FC Barcelona,Valencia,Barcelona,0.929,general_name_drift
+24887,soccer_spain_la_liga,Rayo Vallecano,FC Barcelona,Rayo Vallecano,Barcelona,0.929,general_name_drift
+24907,soccer_spain_la_liga,Girona,FC Barcelona,Girona,Barcelona,0.929,general_name_drift
+24917,soccer_spain_la_liga,Villarreal,FC Barcelona,Villarreal,Barcelona,0.929,general_name_drift
+24922,soccer_spain_la_liga,FC Barcelona,Getafe,Barcelona,Getafe,0.929,general_name_drift
+24953,soccer_spain_la_liga,FC Barcelona,Sevilla,Barcelona,Sevilla,0.929,general_name_drift
+24966,soccer_spain_la_liga,Real Madrid,FC Barcelona,Real Madrid,Barcelona,0.929,general_name_drift
+24981,soccer_spain_la_liga,FC Barcelona,Espanyol,Barcelona,Espanyol,0.929,general_name_drift
+24988,soccer_spain_la_liga,Real Sociedad,FC Barcelona,Real Sociedad,Barcelona,0.929,general_name_drift
+25002,soccer_spain_la_liga,FC Barcelona,Las Palmas,Barcelona,Las Palmas,0.929,general_name_drift
+25002,soccer_spain_la_liga,FC Barcelona,Las Palmas,Barcelona,Las Palmas,0.929,general_name_drift
+25018,soccer_spain_la_liga,Real Betis,FC Barcelona,Real Betis,Barcelona,0.929,general_name_drift
+25023,soccer_spain_la_liga,FC Barcelona,Leganés,Barcelona,Leganés,0.929,general_name_drift
+25039,soccer_spain_la_liga,FC Barcelona,Atlético Madrid,Barcelona,Atlético Madrid,0.929,general_name_drift
+25048,soccer_spain_la_liga,Mallorca,FC Barcelona,Mallorca,Barcelona,0.929,general_name_drift
+25057,soccer_spain_la_liga,Getafe,FC Barcelona,Getafe,Barcelona,0.929,general_name_drift
+25064,soccer_spain_la_liga,FC Barcelona,Valencia,Barcelona,Valencia,0.929,general_name_drift
+25088,soccer_spain_la_liga,Sevilla,FC Barcelona,Sevilla,Barcelona,0.929,general_name_drift
+25093,soccer_spain_la_liga,FC Barcelona,Rayo Vallecano,Barcelona,Rayo Vallecano,0.929,general_name_drift
+25107,soccer_spain_la_liga,Las Palmas,FC Barcelona,Las Palmas,Barcelona,0.929,general_name_drift
+25112,soccer_spain_la_liga,FC Barcelona,Real Sociedad,Barcelona,Real Sociedad,0.929,general_name_drift
+25112,soccer_spain_la_liga,FC Barcelona,Real Sociedad,Barcelona,Real Sociedad,0.929,general_name_drift
+25132,soccer_spain_la_liga,Atlético Madrid,FC Barcelona,Atlético Madrid,Barcelona,0.929,general_name_drift
+25143,soccer_spain_la_liga,FC Barcelona,Girona,Barcelona,Girona,0.929,general_name_drift
+25152,soccer_spain_la_liga,FC Barcelona,Real Betis,Barcelona,Real Betis,0.929,general_name_drift
+25167,soccer_spain_la_liga,Leganés,FC Barcelona,Leganés,Barcelona,0.929,general_name_drift
+25184,soccer_spain_la_liga,FC Barcelona,Mallorca,Barcelona,Mallorca,0.929,general_name_drift
+25203,soccer_spain_la_liga,FC Barcelona,Real Madrid,Barcelona,Real Madrid,0.929,general_name_drift
+25213,soccer_spain_la_liga,Espanyol,FC Barcelona,Espanyol,Barcelona,0.929,general_name_drift
+25223,soccer_spain_la_liga,FC Barcelona,Villarreal,Barcelona,Villarreal,0.929,general_name_drift
+30823,soccer_germany_bundesliga,St. Pauli,RB Leipzig,FC St. Pauli,RB Leipzig,0.929,general_name_drift
+30828,soccer_germany_bundesliga,SC Freiburg,St. Pauli,SC Freiburg,FC St. Pauli,0.929,general_name_drift
+30841,soccer_germany_bundesliga,St. Pauli,FSV Mainz 05,FC St. Pauli,FSV Mainz 05,0.929,general_name_drift
+30844,soccer_germany_bundesliga,Borussia Dortmund,St. Pauli,Borussia Dortmund,FC St. Pauli,0.929,general_name_drift
+30859,soccer_germany_bundesliga,St. Pauli,VfL Wolfsburg,FC St. Pauli,VfL Wolfsburg,0.929,general_name_drift
+30864,soccer_germany_bundesliga,TSG Hoffenheim,St. Pauli,TSG Hoffenheim,FC St. Pauli,0.929,general_name_drift
+30895,soccer_germany_bundesliga,St. Pauli,Holstein Kiel,FC St. Pauli,Holstein Kiel,0.929,general_name_drift
+30913,soccer_germany_bundesliga,St. Pauli,Werder Bremen,FC St. Pauli,Werder Bremen,0.929,general_name_drift
+30915,soccer_germany_bundesliga,VfB Stuttgart,St. Pauli,VfB Stuttgart,FC St. Pauli,0.929,general_name_drift
+30931,soccer_germany_bundesliga,St. Pauli,Eintracht Frankfurt,FC St. Pauli,Eintracht Frankfurt,0.929,general_name_drift
+30969,soccer_germany_bundesliga,RB Leipzig,St. Pauli,RB Leipzig,FC St. Pauli,0.929,general_name_drift
+30985,soccer_germany_bundesliga,St. Pauli,SC Freiburg,FC St. Pauli,SC Freiburg,0.929,general_name_drift
+30992,soccer_germany_bundesliga,FSV Mainz 05,St. Pauli,FSV Mainz 05,FC St. Pauli,0.929,general_name_drift
+31003,soccer_germany_bundesliga,St. Pauli,Borussia Dortmund,FC St. Pauli,Borussia Dortmund,0.929,general_name_drift
+31010,soccer_germany_bundesliga,VfL Wolfsburg,St. Pauli,VfL Wolfsburg,FC St. Pauli,0.929,general_name_drift
+31021,soccer_germany_bundesliga,St. Pauli,TSG Hoffenheim,FC St. Pauli,TSG Hoffenheim,0.929,general_name_drift
+31048,soccer_germany_bundesliga,Holstein Kiel,St. Pauli,Holstein Kiel,FC St. Pauli,0.929,general_name_drift
+31063,soccer_germany_bundesliga,Werder Bremen,St. Pauli,Werder Bremen,FC St. Pauli,0.929,general_name_drift
+31075,soccer_germany_bundesliga,St. Pauli,VfB Stuttgart,FC St. Pauli,VfB Stuttgart,0.929,general_name_drift
+31079,soccer_germany_bundesliga,Eintracht Frankfurt,St. Pauli,Eintracht Frankfurt,FC St. Pauli,0.929,general_name_drift
+102331,soccer_spain_la_liga,FC Barcelona,Espanyol,Barcelona,Espanyol,0.929,general_name_drift
+8110,soccer_germany_bundesliga,Darmstadt 98,Borussia Mönchengladbach,SV Darmstadt 98,Borussia Monchengladbach,0.924,general_name_drift
+8193,soccer_germany_bundesliga,FC Union Berlin,Borussia Mönchengladbach,Union Berlin,Borussia Monchengladbach,0.924,general_name_drift
+8259,soccer_germany_bundesliga,Borussia Mönchengladbach,Darmstadt 98,Borussia Monchengladbach,SV Darmstadt 98,0.924,general_name_drift
+8350,soccer_germany_bundesliga,Borussia Mönchengladbach,FC Union Berlin,Borussia Monchengladbach,Union Berlin,0.924,general_name_drift
+30831,soccer_germany_bundesliga,Borussia Mönchengladbach,FC Union Berlin,Borussia Monchengladbach,Union Berlin,0.924,general_name_drift
+30983,soccer_germany_bundesliga,FC Union Berlin,Borussia Mönchengladbach,Union Berlin,Borussia Monchengladbach,0.924,general_name_drift
+763,soccer_epl,AFC Bournemouth,West Ham United,Bournemouth,West Ham United,0.923,afc_prefix
+774,soccer_epl,Liverpool,AFC Bournemouth,Liverpool,Bournemouth,0.923,afc_prefix
+781,soccer_epl,AFC Bournemouth,Tottenham Hotspur,Bournemouth,Tottenham Hotspur,0.923,afc_prefix
+792,soccer_epl,Brentford,AFC Bournemouth,Brentford,Bournemouth,0.923,afc_prefix
+801,soccer_epl,AFC Bournemouth,Chelsea,Bournemouth,Chelsea,0.923,afc_prefix
+821,soccer_epl,AFC Bournemouth,Arsenal,Bournemouth,Arsenal,0.923,afc_prefix
+835,soccer_epl,Everton,AFC Bournemouth,Everton,Bournemouth,0.923,afc_prefix
+841,soccer_epl,AFC Bournemouth,Wolverhampton Wanderers,Bournemouth,Wolverhampton Wanderers,0.923,afc_prefix
+1141,soccer_epl,AFC Bournemouth,Burnley,Bournemouth,Burnley,0.923,afc_prefix
+1156,soccer_epl,Manchester City,AFC Bournemouth,Manchester City,Bournemouth,0.923,afc_prefix
+1161,soccer_epl,AFC Bournemouth,Newcastle United,Bournemouth,Newcastle United,0.923,afc_prefix
+1179,soccer_epl,Sheffield United,AFC Bournemouth,Sheffield United,Bournemouth,0.923,afc_prefix
+1181,soccer_epl,AFC Bournemouth,Aston Villa,Bournemouth,Aston Villa,0.923,afc_prefix
+1199,soccer_epl,Crystal Palace,AFC Bournemouth,Crystal Palace,Bournemouth,0.923,afc_prefix
+1207,soccer_epl,Manchester United,AFC Bournemouth,Manchester United,Bournemouth,0.923,afc_prefix
+1227,soccer_epl,Nottingham Forest,AFC Bournemouth,Nottingham Forest,Bournemouth,0.923,afc_prefix
+1231,soccer_epl,AFC Bournemouth,Fulham,Bournemouth,Fulham,0.923,afc_prefix
+1248,soccer_epl,Tottenham Hotspur,AFC Bournemouth,Tottenham Hotspur,Bournemouth,0.923,afc_prefix
+1251,soccer_epl,AFC Bournemouth,Liverpool,Bournemouth,Liverpool,0.923,afc_prefix
+1266,soccer_epl,West Ham United,AFC Bournemouth,West Ham United,Bournemouth,0.923,afc_prefix
+1271,soccer_epl,AFC Bournemouth,Nottingham Forest,Bournemouth,Nottingham Forest,0.923,afc_prefix
+1283,soccer_epl,Fulham,AFC Bournemouth,Fulham,Bournemouth,0.923,afc_prefix
+1297,soccer_epl,Newcastle United,AFC Bournemouth,Newcastle United,Bournemouth,0.923,afc_prefix
+1301,soccer_epl,AFC Bournemouth,Manchester City,Bournemouth,Manchester City,0.923,afc_prefix
+1312,soccer_epl,Burnley,AFC Bournemouth,Burnley,Bournemouth,0.923,afc_prefix
+1321,soccer_epl,AFC Bournemouth,Sheffield United,Bournemouth,Sheffield United,0.923,afc_prefix
+1340,soccer_epl,Wolverhampton Wanderers,AFC Bournemouth,Wolverhampton Wanderers,Bournemouth,0.923,afc_prefix
+1341,soccer_epl,AFC Bournemouth,Everton,Bournemouth,Everton,0.923,afc_prefix
+1351,soccer_epl,AFC Bournemouth,Crystal Palace,Bournemouth,Crystal Palace,0.923,afc_prefix
+1371,soccer_epl,AFC Bournemouth,Manchester United,Bournemouth,Manchester United,0.923,afc_prefix
+1381,soccer_epl,Aston Villa,AFC Bournemouth,Aston Villa,Bournemouth,0.923,afc_prefix
+1401,soccer_epl,Arsenal,AFC Bournemouth,Arsenal,Bournemouth,0.923,afc_prefix
+1411,soccer_epl,AFC Bournemouth,Brentford,Bournemouth,Brentford,0.923,afc_prefix
+1425,soccer_epl,Chelsea,AFC Bournemouth,Chelsea,Bournemouth,0.923,afc_prefix
+24421,soccer_epl,Nottingham Forest,AFC Bournemouth,Nottingham Forest,Bournemouth,0.923,afc_prefix
+24426,soccer_epl,AFC Bournemouth,Newcastle United,Bournemouth,Newcastle United,0.923,afc_prefix
+24439,soccer_epl,Everton,AFC Bournemouth,Everton,Bournemouth,0.923,afc_prefix
+24451,soccer_epl,Liverpool,AFC Bournemouth,Liverpool,Bournemouth,0.923,afc_prefix
+24456,soccer_epl,AFC Bournemouth,Southampton,Bournemouth,Southampton,0.923,afc_prefix
+24473,soccer_epl,Leicester City,AFC Bournemouth,Leicester City,Bournemouth,0.923,afc_prefix
+24476,soccer_epl,AFC Bournemouth,Arsenal,Bournemouth,Arsenal,0.923,afc_prefix
+24487,soccer_epl,Aston Villa,AFC Bournemouth,Aston Villa,Bournemouth,0.923,afc_prefix
+24496,soccer_epl,Brentford,AFC Bournemouth,Brentford,Bournemouth,0.923,afc_prefix
+24511,soccer_epl,Ipswich Town,AFC Bournemouth,Ipswich Town,Bournemouth,0.923,afc_prefix
+24523,soccer_epl,Chelsea,AFC Bournemouth,Chelsea,Bournemouth,0.923,afc_prefix
+24526,soccer_epl,AFC Bournemouth,Liverpool,Bournemouth,Liverpool,0.923,afc_prefix
+24543,soccer_epl,Southampton,AFC Bournemouth,Southampton,Bournemouth,0.923,afc_prefix
+24546,soccer_epl,AFC Bournemouth,Wolverhampton Wanderers,Bournemouth,Wolverhampton Wanderers,0.923,afc_prefix
+24575,soccer_epl,Wolverhampton Wanderers,AFC Bournemouth,Wolverhampton Wanderers,Bournemouth,0.923,afc_prefix
+24583,soccer_epl,Newcastle United,AFC Bournemouth,Newcastle United,Bournemouth,0.923,afc_prefix
+24586,soccer_epl,AFC Bournemouth,Chelsea,Bournemouth,Chelsea,0.923,afc_prefix
+24596,soccer_epl,AFC Bournemouth,West Ham United,Bournemouth,West Ham United,0.923,afc_prefix
+24606,soccer_epl,AFC Bournemouth,Nottingham Forest,Bournemouth,Nottingham Forest,0.923,afc_prefix
+24616,soccer_epl,AFC Bournemouth,Manchester City,Bournemouth,Manchester City,0.923,afc_prefix
+24626,soccer_epl,AFC Bournemouth,Tottenham Hotspur,Bournemouth,Tottenham Hotspur,0.923,afc_prefix
+24643,soccer_epl,Manchester United,AFC Bournemouth,Manchester United,Bournemouth,0.923,afc_prefix
+24646,soccer_epl,AFC Bournemouth,Crystal Palace,Bournemouth,Crystal Palace,0.923,afc_prefix
+24660,soccer_epl,Fulham,AFC Bournemouth,Fulham,Bournemouth,0.923,afc_prefix
+24666,soccer_epl,AFC Bournemouth,Everton,Bournemouth,Everton,0.923,afc_prefix
+24693,soccer_epl,Tottenham Hotspur,AFC Bournemouth,Tottenham Hotspur,Bournemouth,0.923,afc_prefix
+24696,soccer_epl,AFC Bournemouth,Brentford,Bournemouth,Brentford,0.923,afc_prefix
+24706,soccer_epl,AFC Bournemouth,Ipswich Town,Bournemouth,Ipswich Town,0.923,afc_prefix
+24725,soccer_epl,West Ham United,AFC Bournemouth,West Ham United,Bournemouth,0.923,afc_prefix
+24726,soccer_epl,AFC Bournemouth,Fulham,Bournemouth,Fulham,0.923,afc_prefix
+24738,soccer_epl,Crystal Palace,AFC Bournemouth,Crystal Palace,Bournemouth,0.923,afc_prefix
+24746,soccer_epl,AFC Bournemouth,Manchester United,Bournemouth,Manchester United,0.923,afc_prefix
+24756,soccer_epl,Arsenal,AFC Bournemouth,Arsenal,Bournemouth,0.923,afc_prefix
+24766,soccer_epl,AFC Bournemouth,Aston Villa,Bournemouth,Aston Villa,0.923,afc_prefix
+24784,soccer_epl,Manchester City,AFC Bournemouth,Manchester City,Bournemouth,0.923,afc_prefix
+24786,soccer_epl,AFC Bournemouth,Leicester City,Bournemouth,Leicester City,0.923,afc_prefix
+102345,soccer_epl,Arsenal,AFC Bournemouth,Arsenal,Bournemouth,0.923,afc_prefix
+102621,soccer_epl,Newcastle United,AFC Bournemouth,Newcastle United,Bournemouth,0.923,afc_prefix
+102631,soccer_epl,AFC Bournemouth,Leeds United,Bournemouth,Leeds United,0.923,afc_prefix
+8103,soccer_germany_bundesliga,RB Leipzig,FC Augsburg,RB Leipzig,Augsburg,0.921,general_name_drift
+8118,soccer_germany_bundesliga,FC Augsburg,FSV Mainz 05,Augsburg,FSV Mainz 05,0.921,general_name_drift
+8121,soccer_germany_bundesliga,SC Freiburg,FC Augsburg,SC Freiburg,Augsburg,0.921,general_name_drift
+8154,soccer_germany_bundesliga,FC Augsburg,VfL Wolfsburg,Augsburg,VfL Wolfsburg,0.921,general_name_drift
+8171,soccer_germany_bundesliga,FC Augsburg,TSG Hoffenheim,Augsburg,TSG Hoffenheim,0.921,general_name_drift
+8189,soccer_germany_bundesliga,FC Augsburg,Eintracht Frankfurt,Augsburg,Eintracht Frankfurt,0.921,general_name_drift
+8198,soccer_germany_bundesliga,Werder Bremen,FC Augsburg,Werder Bremen,Augsburg,0.921,general_name_drift
+8208,soccer_germany_bundesliga,FC Augsburg,Borussia Dortmund,Augsburg,Borussia Dortmund,0.921,general_name_drift
+8217,soccer_germany_bundesliga,VfB Stuttgart,FC Augsburg,VfB Stuttgart,Augsburg,0.921,general_name_drift
+8262,soccer_germany_bundesliga,FC Augsburg,RB Leipzig,Augsburg,RB Leipzig,0.921,general_name_drift
+8267,soccer_germany_bundesliga,FSV Mainz 05,FC Augsburg,FSV Mainz 05,Augsburg,0.921,general_name_drift
+8280,soccer_germany_bundesliga,FC Augsburg,SC Freiburg,Augsburg,SC Freiburg,0.921,general_name_drift
+8303,soccer_germany_bundesliga,VfL Wolfsburg,FC Augsburg,VfL Wolfsburg,Augsburg,0.921,general_name_drift
+8325,soccer_germany_bundesliga,TSG Hoffenheim,FC Augsburg,TSG Hoffenheim,Augsburg,0.921,general_name_drift
+8339,soccer_germany_bundesliga,Eintracht Frankfurt,FC Augsburg,Eintracht Frankfurt,Augsburg,0.921,general_name_drift
+8352,soccer_germany_bundesliga,FC Augsburg,Werder Bremen,Augsburg,Werder Bremen,0.921,general_name_drift
+8354,soccer_germany_bundesliga,Borussia Dortmund,FC Augsburg,Borussia Dortmund,Augsburg,0.921,general_name_drift
+8370,soccer_germany_bundesliga,FC Augsburg,VfB Stuttgart,Augsburg,VfB Stuttgart,0.921,general_name_drift
+8408,soccer_italy_serie_a,Sassuolo,Atalanta,Sassuolo,Atalanta BC,0.921,general_name_drift
+8413,soccer_italy_serie_a,Frosinone,Atalanta,Frosinone,Atalanta BC,0.921,general_name_drift
+8421,soccer_italy_serie_a,Atalanta,Monza,Atalanta BC,Monza,0.921,general_name_drift
+8432,soccer_italy_serie_a,Fiorentina,Atalanta,Fiorentina,Atalanta BC,0.921,general_name_drift
+8441,soccer_italy_serie_a,Atalanta,Cagliari,Atalanta BC,Cagliari,0.921,general_name_drift
+8461,soccer_italy_serie_a,Atalanta,Juventus,Atalanta BC,Juventus,0.921,general_name_drift
+8477,soccer_italy_serie_a,Lazio,Atalanta,Lazio,Atalanta BC,0.921,general_name_drift
+8481,soccer_italy_serie_a,Atalanta,Genoa,Atalanta BC,Genoa,0.921,general_name_drift
+8492,soccer_italy_serie_a,Empoli,Atalanta,Empoli,Atalanta BC,0.921,general_name_drift
+8520,soccer_italy_serie_a,Udinese,Atalanta,Udinese,Atalanta BC,0.921,general_name_drift
+8521,soccer_italy_serie_a,Atalanta,Napoli,Atalanta BC,Napoli,0.921,general_name_drift
+8539,soccer_italy_serie_a,Torino,Atalanta,Torino,Atalanta BC,0.921,general_name_drift
+8541,soccer_italy_serie_a,Atalanta,AC Milan,Atalanta BC,AC Milan,0.921,general_name_drift
+8551,soccer_italy_serie_a,Atalanta,Salernitana,Atalanta BC,Salernitana,0.921,general_name_drift
+8561,soccer_italy_serie_a,Bologna,Atalanta,Bologna,Atalanta BC,0.921,general_name_drift
+8571,soccer_italy_serie_a,Atalanta,Lecce,Atalanta BC,Lecce,0.921,general_name_drift
+8601,soccer_italy_serie_a,Atalanta,Lazio,Atalanta BC,Lazio,0.921,general_name_drift
+8614,soccer_italy_serie_a,Genoa,Atalanta,Genoa,Atalanta BC,0.921,general_name_drift
+8627,soccer_italy_serie_a,AC Milan,Atalanta,AC Milan,Atalanta BC,0.921,general_name_drift
+8631,soccer_italy_serie_a,Atalanta,Bologna,Atalanta BC,Bologna,0.921,general_name_drift
+8645,soccer_italy_serie_a,Juventus,Atalanta,Juventus,Atalanta BC,0.921,general_name_drift
+8651,soccer_italy_serie_a,Atalanta,Frosinone,Atalanta BC,Frosinone,0.921,general_name_drift
+8661,soccer_italy_serie_a,Atalanta,Udinese,Atalanta BC,Udinese,0.921,general_name_drift
+8671,soccer_italy_serie_a,Atalanta,Sassuolo,Atalanta BC,Sassuolo,0.921,general_name_drift
+9845,soccer_italy_serie_a,Atalanta,Fiorentina,Atalanta BC,Fiorentina,0.921,general_name_drift
+9862,soccer_italy_serie_a,Napoli,Atalanta,Napoli,Atalanta BC,0.921,general_name_drift
+9865,soccer_italy_serie_a,Cagliari,Atalanta,Cagliari,Atalanta BC,0.921,general_name_drift
+9890,soccer_italy_serie_a,Monza,Atalanta,Monza,Atalanta BC,0.921,general_name_drift
+9895,soccer_italy_serie_a,Atalanta,Empoli,Atalanta BC,Empoli,0.921,general_name_drift
+9895,soccer_italy_serie_a,Atalanta,Empoli,Atalanta BC,Empoli,0.921,general_name_drift
+9911,soccer_italy_serie_a,Salernitana,Atalanta,Salernitana,Atalanta BC,0.921,general_name_drift
+9928,soccer_italy_serie_a,Lecce,Atalanta,Lecce,Atalanta BC,0.921,general_name_drift
+9935,soccer_italy_serie_a,Atalanta,Torino,Atalanta BC,Torino,0.921,general_name_drift
+9935,soccer_italy_serie_a,Atalanta,Torino,Atalanta BC,Torino,0.921,general_name_drift
+30793,soccer_germany_bundesliga,FC Augsburg,Werder Bremen,Augsburg,Werder Bremen,0.921,general_name_drift
+30820,soccer_germany_bundesliga,FC Augsburg,FSV Mainz 05,Augsburg,FSV Mainz 05,0.921,general_name_drift
+30825,soccer_germany_bundesliga,RB Leipzig,FC Augsburg,RB Leipzig,Augsburg,0.921,general_name_drift
+30846,soccer_germany_bundesliga,SC Freiburg,FC Augsburg,SC Freiburg,Augsburg,0.921,general_name_drift
+30855,soccer_germany_bundesliga,FC Augsburg,Borussia Dortmund,Augsburg,Borussia Dortmund,0.921,general_name_drift
+30866,soccer_germany_bundesliga,VfL Wolfsburg,FC Augsburg,VfL Wolfsburg,Augsburg,0.921,general_name_drift
+30873,soccer_germany_bundesliga,FC Augsburg,TSG Hoffenheim,Augsburg,TSG Hoffenheim,0.921,general_name_drift
+30899,soccer_germany_bundesliga,Eintracht Frankfurt,FC Augsburg,Eintracht Frankfurt,Augsburg,0.921,general_name_drift
+30922,soccer_germany_bundesliga,Holstein Kiel,FC Augsburg,Holstein Kiel,Augsburg,0.921,general_name_drift
+30928,soccer_germany_bundesliga,FC Augsburg,VfB Stuttgart,Augsburg,VfB Stuttgart,0.921,general_name_drift
+30946,soccer_germany_bundesliga,Werder Bremen,FC Augsburg,Werder Bremen,Augsburg,0.921,general_name_drift
+30974,soccer_germany_bundesliga,FSV Mainz 05,FC Augsburg,FSV Mainz 05,Augsburg,0.921,general_name_drift
+30982,soccer_germany_bundesliga,FC Augsburg,RB Leipzig,Augsburg,RB Leipzig,0.921,general_name_drift
+31000,soccer_germany_bundesliga,FC Augsburg,SC Freiburg,Augsburg,SC Freiburg,0.921,general_name_drift
+31006,soccer_germany_bundesliga,Borussia Dortmund,FC Augsburg,Borussia Dortmund,Augsburg,0.921,general_name_drift
+31017,soccer_germany_bundesliga,FC Augsburg,VfL Wolfsburg,Augsburg,VfL Wolfsburg,0.921,general_name_drift
+31026,soccer_germany_bundesliga,TSG Hoffenheim,FC Augsburg,TSG Hoffenheim,Augsburg,0.921,general_name_drift
+31054,soccer_germany_bundesliga,FC Augsburg,Eintracht Frankfurt,Augsburg,Eintracht Frankfurt,0.921,general_name_drift
+31071,soccer_germany_bundesliga,FC Augsburg,Holstein Kiel,Augsburg,Holstein Kiel,0.921,general_name_drift
+31077,soccer_germany_bundesliga,VfB Stuttgart,FC Augsburg,VfB Stuttgart,Augsburg,0.921,general_name_drift
+31317,soccer_italy_serie_a,Lecce,Atalanta,Lecce,Atalanta BC,0.921,general_name_drift
+31328,soccer_italy_serie_a,Torino,Atalanta,Torino,Atalanta BC,0.921,general_name_drift
+31340,soccer_italy_serie_a,Atalanta,Fiorentina,Atalanta BC,Fiorentina,0.921,general_name_drift
+31350,soccer_italy_serie_a,Atalanta,Como,Atalanta BC,Como,0.921,general_name_drift
+31350,soccer_italy_serie_a,Atalanta,Como,Atalanta BC,Como,0.921,general_name_drift
+31360,soccer_italy_serie_a,Bologna,Atalanta,Bologna,Atalanta BC,0.921,general_name_drift
+31370,soccer_italy_serie_a,Atalanta,Genoa,Atalanta BC,Genoa,0.921,general_name_drift
+31389,soccer_italy_serie_a,Venezia,Atalanta,Venezia,Atalanta BC,0.921,general_name_drift
+31390,soccer_italy_serie_a,Atalanta,Hellas Verona,Atalanta BC,Hellas Verona,0.921,general_name_drift
+31400,soccer_italy_serie_a,Atalanta,Monza,Atalanta BC,Monza,0.921,general_name_drift
+31416,soccer_italy_serie_a,Napoli,Atalanta,Napoli,Atalanta BC,0.921,general_name_drift
+31420,soccer_italy_serie_a,Atalanta,Udinese,Atalanta BC,Udinese,0.921,general_name_drift
+31437,soccer_italy_serie_a,Parma,Atalanta,Parma,Atalanta BC,0.921,general_name_drift
+31450,soccer_italy_serie_a,Atalanta,AC Milan,Atalanta BC,AC Milan,0.921,general_name_drift
+31461,soccer_italy_serie_a,Cagliari,Atalanta,Cagliari,Atalanta BC,0.921,general_name_drift
+31470,soccer_italy_serie_a,Atalanta,Empoli,Atalanta BC,Empoli,0.921,general_name_drift
+31485,soccer_italy_serie_a,Lazio,Atalanta,Lazio,Atalanta BC,0.921,general_name_drift
+31490,soccer_italy_serie_a,Atalanta,Juventus,Atalanta BC,Juventus,0.921,general_name_drift
+31508,soccer_italy_serie_a,Udinese,Atalanta,Udinese,Atalanta BC,0.921,general_name_drift
+31510,soccer_italy_serie_a,Atalanta,Napoli,Atalanta BC,Napoli,0.921,general_name_drift
+31520,soccer_italy_serie_a,Como,Atalanta,Como,Atalanta BC,0.921,general_name_drift
+31530,soccer_italy_serie_a,Atalanta,Torino,Atalanta BC,Torino,0.921,general_name_drift
+31543,soccer_italy_serie_a,Hellas Verona,Atalanta,Hellas Verona,Atalanta BC,0.921,general_name_drift
+31543,soccer_italy_serie_a,Hellas Verona,Atalanta,Hellas Verona,Atalanta BC,0.921,general_name_drift
+31550,soccer_italy_serie_a,Atalanta,Cagliari,Atalanta BC,Cagliari,0.921,general_name_drift
+31562,soccer_italy_serie_a,Empoli,Atalanta,Empoli,Atalanta BC,0.921,general_name_drift
+31570,soccer_italy_serie_a,Atalanta,Venezia,Atalanta BC,Venezia,0.921,general_name_drift
+31570,soccer_italy_serie_a,Atalanta,Venezia,Atalanta BC,Venezia,0.921,general_name_drift
+31585,soccer_italy_serie_a,Juventus,Atalanta,Juventus,Atalanta BC,0.921,general_name_drift
+31602,soccer_italy_serie_a,Fiorentina,Atalanta,Fiorentina,Atalanta BC,0.921,general_name_drift
+31610,soccer_italy_serie_a,Atalanta,Lazio,Atalanta BC,Lazio,0.921,general_name_drift
+31620,soccer_italy_serie_a,Atalanta,Bologna,Atalanta BC,Bologna,0.921,general_name_drift
+31635,soccer_italy_serie_a,AC Milan,Atalanta,AC Milan,Atalanta BC,0.921,general_name_drift
+31640,soccer_italy_serie_a,Atalanta,Lecce,Atalanta BC,Lecce,0.921,general_name_drift
+31656,soccer_italy_serie_a,Monza,Atalanta,Monza,Atalanta BC,0.921,general_name_drift
+31672,soccer_italy_serie_a,Genoa,Atalanta,Genoa,Atalanta BC,0.921,general_name_drift
+31672,soccer_italy_serie_a,Genoa,Atalanta,Genoa,Atalanta BC,0.921,general_name_drift
+31680,soccer_italy_serie_a,Atalanta,Parma,Atalanta BC,Parma,0.921,general_name_drift
+102319,soccer_germany_bundesliga,FC Augsburg,TSG Hoffenheim,Augsburg,TSG Hoffenheim,0.921,general_name_drift
+102357,soccer_italy_serie_a,Atalanta,Juventus,Atalanta BC,Juventus,0.921,general_name_drift
+8151,soccer_germany_bundesliga,Borussia Mönchengladbach,Heidenheim,Borussia Monchengladbach,FC Heidenheim,0.914,general_name_drift
+8307,soccer_germany_bundesliga,Heidenheim,Borussia Mönchengladbach,FC Heidenheim,Borussia Monchengladbach,0.914,general_name_drift
+3351,soccer_spain_la_liga,Valencia,Osasuna,Valencia,CA Osasuna,0.912,general_name_drift
+3366,soccer_spain_la_liga,Getafe,Osasuna,Getafe,CA Osasuna,0.912,general_name_drift
+3378,soccer_spain_la_liga,Osasuna,Sevilla,CA Osasuna,Sevilla,0.912,general_name_drift
+3386,soccer_spain_la_liga,Osasuna,Atlético Madrid,CA Osasuna,Atlético Madrid,0.912,general_name_drift
+3410,soccer_spain_la_liga,Real Madrid,Osasuna,Real Madrid,CA Osasuna,0.912,general_name_drift
+3426,soccer_spain_la_liga,Real Betis,Osasuna,Real Betis,CA Osasuna,0.912,general_name_drift
+4598,soccer_spain_la_liga,Osasuna,Girona,CA Osasuna,Girona,0.912,general_name_drift
+4609,soccer_spain_la_liga,Osasuna,Las Palmas,CA Osasuna,Las Palmas,0.912,general_name_drift
+4620,soccer_spain_la_liga,Villarreal,Osasuna,Villarreal,CA Osasuna,0.912,general_name_drift
+4624,soccer_spain_la_liga,Osasuna,Real Sociedad,CA Osasuna,Real Sociedad,0.912,general_name_drift
+4644,soccer_spain_la_liga,Osasuna,Rayo Vallecano,CA Osasuna,Rayo Vallecano,0.912,general_name_drift
+4655,soccer_spain_la_liga,Mallorca,Osasuna,Mallorca,CA Osasuna,0.912,general_name_drift
+4663,soccer_spain_la_liga,Osasuna,Almería,CA Osasuna,Almería,0.912,general_name_drift
+4688,soccer_spain_la_liga,Osasuna,Getafe,CA Osasuna,Getafe,0.912,general_name_drift
+4698,soccer_spain_la_liga,Sevilla,Osasuna,Sevilla,CA Osasuna,0.912,general_name_drift
+4698,soccer_spain_la_liga,Sevilla,Osasuna,Sevilla,CA Osasuna,0.912,general_name_drift
+4720,soccer_spain_la_liga,Real Sociedad,Osasuna,Real Sociedad,CA Osasuna,0.912,general_name_drift
+4738,soccer_spain_la_liga,Las Palmas,Osasuna,Las Palmas,CA Osasuna,0.912,general_name_drift
+4754,soccer_spain_la_liga,Girona,Osasuna,Girona,CA Osasuna,0.912,general_name_drift
+4763,soccer_spain_la_liga,Osasuna,Real Madrid,CA Osasuna,Real Madrid,0.912,general_name_drift
+4771,soccer_spain_la_liga,Almería,Osasuna,Almería,CA Osasuna,0.912,general_name_drift
+4785,soccer_spain_la_liga,Osasuna,Valencia,CA Osasuna,Valencia,0.912,general_name_drift
+4800,soccer_spain_la_liga,Rayo Vallecano,Osasuna,Rayo Vallecano,CA Osasuna,0.912,general_name_drift
+4816,soccer_spain_la_liga,Osasuna,Real Betis,CA Osasuna,Real Betis,0.912,general_name_drift
+4838,soccer_spain_la_liga,Osasuna,Mallorca,CA Osasuna,Mallorca,0.912,general_name_drift
+4842,soccer_spain_la_liga,Atlético Madrid,Osasuna,Atlético Madrid,CA Osasuna,0.912,general_name_drift
+4855,soccer_spain_la_liga,Osasuna,Villarreal,CA Osasuna,Villarreal,0.912,general_name_drift
+24870,soccer_spain_la_liga,Osasuna,Leganés,CA Osasuna,Leganés,0.912,general_name_drift
+24881,soccer_spain_la_liga,Osasuna,Mallorca,CA Osasuna,Mallorca,0.912,general_name_drift
+24884,soccer_spain_la_liga,Girona,Osasuna,Girona,CA Osasuna,0.912,general_name_drift
+24909,soccer_spain_la_liga,Rayo Vallecano,Osasuna,Rayo Vallecano,CA Osasuna,0.912,general_name_drift
+24909,soccer_spain_la_liga,Rayo Vallecano,Osasuna,Rayo Vallecano,CA Osasuna,0.912,general_name_drift
+24920,soccer_spain_la_liga,Osasuna,Las Palmas,CA Osasuna,Las Palmas,0.912,general_name_drift
+24930,soccer_spain_la_liga,Valencia,Osasuna,Valencia,CA Osasuna,0.912,general_name_drift
+24942,soccer_spain_la_liga,Getafe,Osasuna,Getafe,CA Osasuna,0.912,general_name_drift
+24958,soccer_spain_la_liga,Osasuna,Real Betis,CA Osasuna,Real Betis,0.912,general_name_drift
+24969,soccer_spain_la_liga,Real Sociedad,Osasuna,Real Sociedad,CA Osasuna,0.912,general_name_drift
+24989,soccer_spain_la_liga,Real Madrid,Osasuna,Real Madrid,CA Osasuna,0.912,general_name_drift
+24994,soccer_spain_la_liga,Osasuna,Villarreal,CA Osasuna,Villarreal,0.912,general_name_drift
+25011,soccer_spain_la_liga,Sevilla,Osasuna,Sevilla,CA Osasuna,0.912,general_name_drift
+25026,soccer_spain_la_liga,Espanyol,Osasuna,Espanyol,CA Osasuna,0.912,general_name_drift
+25043,soccer_spain_la_liga,Atlético Madrid,Osasuna,Atlético Madrid,CA Osasuna,0.912,general_name_drift
+25053,soccer_spain_la_liga,Osasuna,Rayo Vallecano,CA Osasuna,Rayo Vallecano,0.912,general_name_drift
+25053,soccer_spain_la_liga,Osasuna,Rayo Vallecano,CA Osasuna,Rayo Vallecano,0.912,general_name_drift
+25065,soccer_spain_la_liga,Las Palmas,Osasuna,Las Palmas,CA Osasuna,0.912,general_name_drift
+25075,soccer_spain_la_liga,Osasuna,Real Sociedad,CA Osasuna,Real Sociedad,0.912,general_name_drift
+25083,soccer_spain_la_liga,Mallorca,Osasuna,Mallorca,CA Osasuna,0.912,general_name_drift
+25095,soccer_spain_la_liga,Osasuna,Real Madrid,CA Osasuna,Real Madrid,0.912,general_name_drift
+25114,soccer_spain_la_liga,Osasuna,Valencia,CA Osasuna,Valencia,0.912,general_name_drift
+25138,soccer_spain_la_liga,Osasuna,Getafe,CA Osasuna,Getafe,0.912,general_name_drift
+25155,soccer_spain_la_liga,Leganés,Osasuna,Leganés,CA Osasuna,0.912,general_name_drift
+25168,soccer_spain_la_liga,Osasuna,Girona,CA Osasuna,Girona,0.912,general_name_drift
+25188,soccer_spain_la_liga,Osasuna,Sevilla,CA Osasuna,Sevilla,0.912,general_name_drift
+25200,soccer_spain_la_liga,Villarreal,Osasuna,Villarreal,CA Osasuna,0.912,general_name_drift
+25204,soccer_spain_la_liga,Real Betis,Osasuna,Real Betis,CA Osasuna,0.912,general_name_drift
+25215,soccer_spain_la_liga,Osasuna,Atlético Madrid,CA Osasuna,Atlético Madrid,0.912,general_name_drift
+25231,soccer_spain_la_liga,Osasuna,Espanyol,CA Osasuna,Espanyol,0.912,general_name_drift
+102325,soccer_germany_bundesliga,FC Köln,Werder Bremen,1. FC Köln,Werder Bremen,0.912,general_name_drift
+102333,soccer_spain_la_liga,Osasuna,Real Betis,CA Osasuna,Real Betis,0.912,general_name_drift
+30885,soccer_germany_bundesliga,Borussia Mönchengladbach,St. Pauli,Borussia Monchengladbach,FC St. Pauli,0.908,general_name_drift
+31039,soccer_germany_bundesliga,St. Pauli,Borussia Mönchengladbach,FC St. Pauli,Borussia Monchengladbach,0.908,general_name_drift
+8095,soccer_germany_bundesliga,Bayer 04 Leverkusen,Darmstadt 98,Bayer Leverkusen,SV Darmstadt 98,0.902,general_name_drift
+8167,soccer_germany_bundesliga,Bayer 04 Leverkusen,FC Union Berlin,Bayer Leverkusen,Union Berlin,0.902,general_name_drift
+8254,soccer_germany_bundesliga,Darmstadt 98,Bayer 04 Leverkusen,SV Darmstadt 98,Bayer Leverkusen,0.902,general_name_drift
+8319,soccer_germany_bundesliga,FC Union Berlin,Bayer 04 Leverkusen,Union Berlin,Bayer Leverkusen,0.902,general_name_drift
+30894,soccer_germany_bundesliga,FC Union Berlin,Bayer 04 Leverkusen,Union Berlin,Bayer Leverkusen,0.902,general_name_drift
+31040,soccer_germany_bundesliga,Bayer 04 Leverkusen,FC Union Berlin,Bayer Leverkusen,Union Berlin,0.902,general_name_drift
+6899,soccer_france_ligue_one,Clermont,Monaco,Clermont,AS Monaco,0.9,general_name_drift
+6905,soccer_france_ligue_one,Monaco,Strasbourg,AS Monaco,Strasbourg,0.9,general_name_drift
+6919,soccer_france_ligue_one,Nantes,Monaco,Nantes,AS Monaco,0.9,general_name_drift
+6934,soccer_france_ligue_one,Lorient,Monaco,Lorient,AS Monaco,0.9,general_name_drift
+6940,soccer_france_ligue_one,Monaco,Nice,AS Monaco,Nice,0.9,general_name_drift
+6969,soccer_france_ligue_one,Monaco,Metz,AS Monaco,Metz,0.9,general_name_drift
+6989,soccer_france_ligue_one,Monaco,Brest,AS Monaco,Brest,0.9,general_name_drift
+6998,soccer_france_ligue_one,Le Havre,Monaco,Le Havre,AS Monaco,0.9,general_name_drift
+7002,soccer_france_ligue_one,Paris Saint Germain,Monaco,Paris Saint Germain,AS Monaco,0.9,general_name_drift
+7013,soccer_france_ligue_one,Monaco,Montpellier,AS Monaco,Montpellier,0.9,general_name_drift
+7022,soccer_france_ligue_one,Rennes,Monaco,Rennes,AS Monaco,0.9,general_name_drift
+7040,soccer_france_ligue_one,Toulouse,Monaco,Toulouse,AS Monaco,0.9,general_name_drift
+7067,soccer_france_ligue_one,Monaco,Le Havre,AS Monaco,Le Havre,0.9,general_name_drift
+7078,soccer_france_ligue_one,Nice,Monaco,Nice,AS Monaco,0.9,general_name_drift
+7085,soccer_france_ligue_one,Monaco,Toulouse,AS Monaco,Toulouse,0.9,general_name_drift
+7103,soccer_france_ligue_one,Monaco,Paris Saint Germain,AS Monaco,Paris Saint Germain,0.9,general_name_drift
+7111,soccer_france_ligue_one,Strasbourg,Monaco,Strasbourg,AS Monaco,0.9,general_name_drift
+7121,soccer_france_ligue_one,Monaco,Lorient,AS Monaco,Lorient,0.9,general_name_drift
+7136,soccer_france_ligue_one,Metz,Monaco,Metz,AS Monaco,0.9,general_name_drift
+7139,soccer_france_ligue_one,Monaco,Rennes,AS Monaco,Rennes,0.9,general_name_drift
+7163,soccer_france_ligue_one,Brest,Monaco,Brest,AS Monaco,0.9,general_name_drift
+7174,soccer_france_ligue_one,Monaco,Clermont,AS Monaco,Clermont,0.9,general_name_drift
+7189,soccer_france_ligue_one,Montpellier,Monaco,Montpellier,AS Monaco,0.9,general_name_drift
+7193,soccer_france_ligue_one,Monaco,Nantes,AS Monaco,Nantes,0.9,general_name_drift
+8082,soccer_germany_bundesliga,FC Augsburg,Borussia Mönchengladbach,Augsburg,Borussia Monchengladbach,0.9,general_name_drift
+8083,soccer_germany_bundesliga,VfB Stuttgart,VfL Bochum 1848,VfB Stuttgart,VfL Bochum,0.9,general_name_drift
+8090,soccer_germany_bundesliga,VfL Bochum 1848,Borussia Dortmund,VfL Bochum,Borussia Dortmund,0.9,general_name_drift
+8108,soccer_germany_bundesliga,VfL Bochum 1848,Eintracht Frankfurt,VfL Bochum,Eintracht Frankfurt,0.9,general_name_drift
+8131,soccer_germany_bundesliga,RB Leipzig,VfL Bochum 1848,RB Leipzig,VfL Bochum,0.9,general_name_drift
+8140,soccer_germany_bundesliga,SC Freiburg,VfL Bochum 1848,SC Freiburg,VfL Bochum,0.9,general_name_drift
+8153,soccer_germany_bundesliga,VfL Bochum 1848,FSV Mainz 05,VfL Bochum,FSV Mainz 05,0.9,general_name_drift
+8188,soccer_germany_bundesliga,VfL Bochum 1848,VfL Wolfsburg,VfL Bochum,VfL Wolfsburg,0.9,general_name_drift
+8197,soccer_germany_bundesliga,TSG Hoffenheim,VfL Bochum 1848,TSG Hoffenheim,VfL Bochum,0.9,general_name_drift
+8225,soccer_germany_bundesliga,VfL Bochum 1848,Werder Bremen,VfL Bochum,Werder Bremen,0.9,general_name_drift
+8232,soccer_germany_bundesliga,Borussia Mönchengladbach,FC Augsburg,Borussia Monchengladbach,Augsburg,0.9,general_name_drift
+8234,soccer_germany_bundesliga,VfL Bochum 1848,VfB Stuttgart,VfL Bochum,VfB Stuttgart,0.9,general_name_drift
+8237,soccer_germany_bundesliga,Borussia Dortmund,VfL Bochum 1848,Borussia Dortmund,VfL Bochum,0.9,general_name_drift
+8258,soccer_germany_bundesliga,Eintracht Frankfurt,VfL Bochum 1848,Eintracht Frankfurt,VfL Bochum,0.9,general_name_drift
+8288,soccer_germany_bundesliga,VfL Bochum 1848,RB Leipzig,VfL Bochum,RB Leipzig,0.9,general_name_drift
+8297,soccer_germany_bundesliga,VfL Bochum 1848,SC Freiburg,VfL Bochum,SC Freiburg,0.9,general_name_drift
+8304,soccer_germany_bundesliga,FSV Mainz 05,VfL Bochum 1848,FSV Mainz 05,VfL Bochum,0.9,general_name_drift
+8340,soccer_germany_bundesliga,VfL Wolfsburg,VfL Bochum 1848,VfL Wolfsburg,VfL Bochum,0.9,general_name_drift
+8351,soccer_germany_bundesliga,VfL Bochum 1848,TSG Hoffenheim,VfL Bochum,TSG Hoffenheim,0.9,general_name_drift
+8378,soccer_germany_bundesliga,Werder Bremen,VfL Bochum 1848,Werder Bremen,VfL Bochum,0.9,general_name_drift
+24871,soccer_spain_la_liga,Real Valladolid,Espanyol,Valladolid,Espanyol,0.9,general_name_drift
+24875,soccer_spain_la_liga,Real Madrid,Real Valladolid,Real Madrid,Valladolid,0.9,general_name_drift
+24890,soccer_spain_la_liga,Real Valladolid,Leganés,Valladolid,Leganés,0.9,general_name_drift
+24919,soccer_spain_la_liga,Real Valladolid,Real Sociedad,Valladolid,Real Sociedad,0.9,general_name_drift
+24925,soccer_spain_la_liga,Sevilla,Real Valladolid,Sevilla,Valladolid,0.9,general_name_drift
+24937,soccer_spain_la_liga,Real Valladolid,Mallorca,Valladolid,Mallorca,0.9,general_name_drift
+24951,soccer_spain_la_liga,Real Valladolid,Rayo Vallecano,Valladolid,Rayo Vallecano,0.9,general_name_drift
+24970,soccer_spain_la_liga,Real Valladolid,Villarreal,Valladolid,Villarreal,0.9,general_name_drift
+24993,soccer_spain_la_liga,Getafe,Real Valladolid,Getafe,Valladolid,0.9,general_name_drift
+25007,soccer_spain_la_liga,Real Valladolid,Atlético Madrid,Valladolid,Atlético Madrid,0.9,general_name_drift
+25007,soccer_spain_la_liga,Real Valladolid,Atlético Madrid,Valladolid,Atlético Madrid,0.9,general_name_drift
+25016,soccer_spain_la_liga,Las Palmas,Real Valladolid,Las Palmas,Valladolid,0.9,general_name_drift
+25030,soccer_spain_la_liga,Real Valladolid,Valencia,Valladolid,Valencia,0.9,general_name_drift
+25035,soccer_spain_la_liga,Girona,Real Valladolid,Girona,Valladolid,0.9,general_name_drift
+25049,soccer_spain_la_liga,Real Valladolid,Real Betis,Valladolid,Real Betis,0.9,general_name_drift
+25054,soccer_spain_la_liga,Espanyol,Real Valladolid,Espanyol,Valladolid,0.9,general_name_drift
+25070,soccer_spain_la_liga,Real Valladolid,Real Madrid,Valladolid,Real Madrid,0.9,general_name_drift
+25076,soccer_spain_la_liga,Villarreal,Real Valladolid,Villarreal,Valladolid,0.9,general_name_drift
+25084,soccer_spain_la_liga,Rayo Vallecano,Real Valladolid,Rayo Vallecano,Valladolid,0.9,general_name_drift
+25098,soccer_spain_la_liga,Real Valladolid,Sevilla,Valladolid,Sevilla,0.9,general_name_drift
+25119,soccer_spain_la_liga,Real Valladolid,Las Palmas,Valladolid,Las Palmas,0.9,general_name_drift
+25127,soccer_spain_la_liga,Valencia,Real Valladolid,Valencia,Valladolid,0.9,general_name_drift
+25147,soccer_spain_la_liga,Real Sociedad,Real Valladolid,Real Sociedad,Valladolid,0.9,general_name_drift
+25159,soccer_spain_la_liga,Real Valladolid,Getafe,Valladolid,Getafe,0.9,general_name_drift
+25163,soccer_spain_la_liga,Atlético Madrid,Real Valladolid,Atlético Madrid,Valladolid,0.9,general_name_drift
+25185,soccer_spain_la_liga,Real Betis,Real Valladolid,Real Betis,Valladolid,0.9,general_name_drift
+25207,soccer_spain_la_liga,Mallorca,Real Valladolid,Mallorca,Valladolid,0.9,general_name_drift
+25218,soccer_spain_la_liga,Real Valladolid,Girona,Valladolid,Girona,0.9,general_name_drift
+25236,soccer_spain_la_liga,Leganés,Real Valladolid,Leganés,Valladolid,0.9,general_name_drift
+26945,soccer_france_ligue_one,Auxerre,Monaco,Auxerre,AS Monaco,0.9,general_name_drift
+26945,soccer_france_ligue_one,Auxerre,Monaco,Auxerre,AS Monaco,0.9,general_name_drift
+26962,soccer_france_ligue_one,Monaco,Le Havre,AS Monaco,Le Havre,0.9,general_name_drift
+26970,soccer_france_ligue_one,Monaco,Montpellier,AS Monaco,Montpellier,0.9,general_name_drift
+26978,soccer_france_ligue_one,Rennes,Monaco,Rennes,AS Monaco,0.9,general_name_drift
+26990,soccer_france_ligue_one,Nice,Monaco,Nice,AS Monaco,0.9,general_name_drift
+27012,soccer_france_ligue_one,Strasbourg,Monaco,Strasbourg,AS Monaco,0.9,general_name_drift
+27023,soccer_france_ligue_one,Monaco,Brest,AS Monaco,Brest,0.9,general_name_drift
+27043,soccer_france_ligue_one,Monaco,Toulouse,AS Monaco,Toulouse,0.9,general_name_drift
+27053,soccer_france_ligue_one,Monaco,Paris Saint Germain,AS Monaco,Paris Saint Germain,0.9,general_name_drift
+27063,soccer_france_ligue_one,Nantes,Monaco,Nantes,AS Monaco,0.9,general_name_drift
+27076,soccer_france_ligue_one,Montpellier,Monaco,Montpellier,AS Monaco,0.9,general_name_drift
+27082,soccer_france_ligue_one,Monaco,Rennes,AS Monaco,Rennes,0.9,general_name_drift
+27097,soccer_france_ligue_one,Monaco,Auxerre,AS Monaco,Auxerre,0.9,general_name_drift
+27103,soccer_france_ligue_one,Paris Saint Germain,Monaco,Paris Saint Germain,AS Monaco,0.9,general_name_drift
+27115,soccer_france_ligue_one,Monaco,Nantes,AS Monaco,Nantes,0.9,general_name_drift
+27137,soccer_france_ligue_one,Toulouse,Monaco,Toulouse,AS Monaco,0.9,general_name_drift
+27160,soccer_france_ligue_one,Monaco,Nice,AS Monaco,Nice,0.9,general_name_drift
+27163,soccer_france_ligue_one,Brest,Monaco,Brest,AS Monaco,0.9,general_name_drift
+27186,soccer_france_ligue_one,Monaco,Strasbourg,AS Monaco,Strasbourg,0.9,general_name_drift
+27188,soccer_france_ligue_one,Le Havre,Monaco,Le Havre,AS Monaco,0.9,general_name_drift
+30789,soccer_germany_bundesliga,RB Leipzig,VfL Bochum 1848,RB Leipzig,VfL Bochum,0.9,general_name_drift
+30809,soccer_germany_bundesliga,SC Freiburg,VfL Bochum 1848,SC Freiburg,VfL Bochum,0.9,general_name_drift
+30822,soccer_germany_bundesliga,VfL Bochum 1848,Holstein Kiel,VfL Bochum,Holstein Kiel,0.9,general_name_drift
+30826,soccer_germany_bundesliga,Borussia Dortmund,VfL Bochum 1848,Borussia Dortmund,VfL Bochum,0.9,general_name_drift
+30838,soccer_germany_bundesliga,FC Augsburg,Borussia Mönchengladbach,Augsburg,Borussia Monchengladbach,0.9,general_name_drift
+30840,soccer_germany_bundesliga,VfL Bochum 1848,VfL Wolfsburg,VfL Bochum,VfL Wolfsburg,0.9,general_name_drift
+30845,soccer_germany_bundesliga,TSG Hoffenheim,VfL Bochum 1848,TSG Hoffenheim,VfL Bochum,0.9,general_name_drift
+30863,soccer_germany_bundesliga,Eintracht Frankfurt,VfL Bochum 1848,Eintracht Frankfurt,VfL Bochum,0.9,general_name_drift
+30879,soccer_germany_bundesliga,VfB Stuttgart,VfL Bochum 1848,VfB Stuttgart,VfL Bochum,0.9,general_name_drift
+30903,soccer_germany_bundesliga,VfL Bochum 1848,Werder Bremen,VfL Bochum,Werder Bremen,0.9,general_name_drift
+30929,soccer_germany_bundesliga,FSV Mainz 05,VfL Bochum 1848,FSV Mainz 05,VfL Bochum,0.9,general_name_drift
+30948,soccer_germany_bundesliga,VfL Bochum 1848,RB Leipzig,VfL Bochum,RB Leipzig,0.9,general_name_drift
+30966,soccer_germany_bundesliga,VfL Bochum 1848,SC Freiburg,VfL Bochum,SC Freiburg,0.9,general_name_drift
+30976,soccer_germany_bundesliga,Holstein Kiel,VfL Bochum 1848,Holstein Kiel,VfL Bochum,0.9,general_name_drift
+30984,soccer_germany_bundesliga,VfL Bochum 1848,Borussia Dortmund,VfL Bochum,Borussia Dortmund,0.9,general_name_drift
+30991,soccer_germany_bundesliga,VfL Wolfsburg,VfL Bochum 1848,VfL Wolfsburg,VfL Bochum,0.9,general_name_drift
+30993,soccer_germany_bundesliga,Borussia Mönchengladbach,FC Augsburg,Borussia Monchengladbach,Augsburg,0.9,general_name_drift
+31002,soccer_germany_bundesliga,VfL Bochum 1848,TSG Hoffenheim,VfL Bochum,TSG Hoffenheim,0.9,general_name_drift
+31020,soccer_germany_bundesliga,VfL Bochum 1848,Eintracht Frankfurt,VfL Bochum,Eintracht Frankfurt,0.9,general_name_drift
+31038,soccer_germany_bundesliga,VfL Bochum 1848,VfB Stuttgart,VfL Bochum,VfB Stuttgart,0.9,general_name_drift
+31052,soccer_germany_bundesliga,Werder Bremen,VfL Bochum 1848,Werder Bremen,VfL Bochum,0.9,general_name_drift
+31083,soccer_germany_bundesliga,VfL Bochum 1848,FSV Mainz 05,VfL Bochum,FSV Mainz 05,0.9,general_name_drift
+102613,soccer_france_ligue_one,Monaco,Auxerre,AS Monaco,Auxerre,0.9,general_name_drift
+3324,soccer_spain_la_liga,Athletic Club,Real Madrid,Athletic Bilbao,Real Madrid,0.893,general_name_drift
+3343,soccer_spain_la_liga,Athletic Club,Real Betis,Athletic Bilbao,Real Betis,0.893,general_name_drift
+3359,soccer_spain_la_liga,Mallorca,Athletic Club,Mallorca,Athletic Bilbao,0.893,general_name_drift
+3383,soccer_spain_la_liga,Athletic Club,Getafe,Athletic Bilbao,Getafe,0.893,general_name_drift
+3400,soccer_spain_la_liga,Real Sociedad,Athletic Club,Real Sociedad,Athletic Bilbao,0.893,general_name_drift
+3408,soccer_spain_la_liga,Athletic Club,Almería,Athletic Bilbao,Almería,0.893,general_name_drift
+3424,soccer_spain_la_liga,Athletic Club,Valencia,Athletic Bilbao,Valencia,0.893,general_name_drift
+4594,soccer_spain_la_liga,Villarreal,Athletic Club,Villarreal,Athletic Bilbao,0.893,general_name_drift
+4617,soccer_spain_la_liga,Girona,Athletic Club,Girona,Athletic Bilbao,0.893,general_name_drift
+4622,soccer_spain_la_liga,Athletic Club,Rayo Vallecano,Athletic Bilbao,Rayo Vallecano,0.893,general_name_drift
+4642,soccer_spain_la_liga,Athletic Club,Atlético Madrid,Athletic Bilbao,Atlético Madrid,0.893,general_name_drift
+4651,soccer_spain_la_liga,Athletic Club,Las Palmas,Athletic Bilbao,Las Palmas,0.893,general_name_drift
+4664,soccer_spain_la_liga,Sevilla,Athletic Club,Sevilla,Athletic Bilbao,0.893,general_name_drift
+4672,soccer_spain_la_liga,Athletic Club,Real Sociedad,Athletic Bilbao,Real Sociedad,0.893,general_name_drift
+4685,soccer_spain_la_liga,Valencia,Athletic Club,Valencia,Athletic Bilbao,0.893,general_name_drift
+4701,soccer_spain_la_liga,Athletic Club,Mallorca,Athletic Bilbao,Mallorca,0.893,general_name_drift
+4711,soccer_spain_la_liga,Almería,Athletic Club,Almería,Athletic Bilbao,0.893,general_name_drift
+4721,soccer_spain_la_liga,Athletic Club,Girona,Athletic Bilbao,Girona,0.893,general_name_drift
+4740,soccer_spain_la_liga,Real Betis,Athletic Club,Real Betis,Athletic Bilbao,0.893,general_name_drift
+4757,soccer_spain_la_liga,Las Palmas,Athletic Club,Las Palmas,Athletic Bilbao,0.893,general_name_drift
+4777,soccer_spain_la_liga,Real Madrid,Athletic Club,Real Madrid,Athletic Bilbao,0.893,general_name_drift
+4781,soccer_spain_la_liga,Athletic Club,Villarreal,Athletic Bilbao,Villarreal,0.893,general_name_drift
+4807,soccer_spain_la_liga,Atlético Madrid,Athletic Club,Atlético Madrid,Athletic Bilbao,0.893,general_name_drift
+4813,soccer_spain_la_liga,Getafe,Athletic Club,Getafe,Athletic Bilbao,0.893,general_name_drift
+4841,soccer_spain_la_liga,Athletic Club,Sevilla,Athletic Bilbao,Sevilla,0.893,general_name_drift
+4856,soccer_spain_la_liga,Rayo Vallecano,Athletic Club,Rayo Vallecano,Athletic Bilbao,0.893,general_name_drift
+24862,soccer_spain_la_liga,Athletic Club,Getafe,Athletic Bilbao,Getafe,0.893,general_name_drift
+24882,soccer_spain_la_liga,Athletic Club,Valencia,Athletic Bilbao,Valencia,0.893,general_name_drift
+24892,soccer_spain_la_liga,Athletic Club,Atlético Madrid,Athletic Bilbao,Atlético Madrid,0.893,general_name_drift
+24906,soccer_spain_la_liga,Las Palmas,Athletic Club,Las Palmas,Athletic Bilbao,0.893,general_name_drift
+24927,soccer_spain_la_liga,Leganés,Athletic Club,Leganés,Athletic Bilbao,0.893,general_name_drift
+24932,soccer_spain_la_liga,Athletic Club,Sevilla,Athletic Bilbao,Sevilla,0.893,general_name_drift
+24947,soccer_spain_la_liga,Girona,Athletic Club,Girona,Athletic Bilbao,0.893,general_name_drift
+24961,soccer_spain_la_liga,Athletic Club,Espanyol,Athletic Bilbao,Espanyol,0.893,general_name_drift
+24961,soccer_spain_la_liga,Athletic Club,Espanyol,Athletic Bilbao,Espanyol,0.893,general_name_drift
+24964,soccer_spain_la_liga,Mallorca,Athletic Club,Mallorca,Athletic Bilbao,0.893,general_name_drift
+24972,soccer_spain_la_liga,Athletic Club,Real Betis,Athletic Bilbao,Real Betis,0.893,general_name_drift
+24992,soccer_spain_la_liga,Athletic Club,Real Sociedad,Athletic Bilbao,Real Sociedad,0.893,general_name_drift
+25006,soccer_spain_la_liga,Rayo Vallecano,Athletic Club,Rayo Vallecano,Athletic Bilbao,0.893,general_name_drift
+25012,soccer_spain_la_liga,Athletic Club,Villarreal,Athletic Bilbao,Villarreal,0.893,general_name_drift
+25042,soccer_spain_la_liga,Athletic Club,Real Madrid,Athletic Bilbao,Real Madrid,0.893,general_name_drift
+25062,soccer_spain_la_liga,Athletic Club,Leganés,Athletic Bilbao,Leganés,0.893,general_name_drift
+25079,soccer_spain_la_liga,Real Betis,Athletic Club,Real Betis,Athletic Bilbao,0.893,general_name_drift
+25082,soccer_spain_la_liga,Athletic Club,Girona,Athletic Bilbao,Girona,0.893,general_name_drift
+25096,soccer_spain_la_liga,Espanyol,Athletic Club,Espanyol,Athletic Bilbao,0.893,general_name_drift
+25116,soccer_spain_la_liga,Atlético Madrid,Athletic Club,Atlético Madrid,Athletic Bilbao,0.893,general_name_drift
+25122,soccer_spain_la_liga,Athletic Club,Mallorca,Athletic Bilbao,Mallorca,0.893,general_name_drift
+25135,soccer_spain_la_liga,Sevilla,Athletic Club,Sevilla,Athletic Bilbao,0.893,general_name_drift
+25156,soccer_spain_la_liga,Villarreal,Athletic Club,Villarreal,Athletic Bilbao,0.893,general_name_drift
+25162,soccer_spain_la_liga,Athletic Club,Rayo Vallecano,Athletic Bilbao,Rayo Vallecano,0.893,general_name_drift
+25175,soccer_spain_la_liga,Real Madrid,Athletic Club,Real Madrid,Athletic Bilbao,0.893,general_name_drift
+25182,soccer_spain_la_liga,Athletic Club,Las Palmas,Athletic Bilbao,Las Palmas,0.893,general_name_drift
+25196,soccer_spain_la_liga,Real Sociedad,Athletic Club,Real Sociedad,Athletic Bilbao,0.893,general_name_drift
+25214,soccer_spain_la_liga,Getafe,Athletic Club,Getafe,Athletic Bilbao,0.893,general_name_drift
+25225,soccer_spain_la_liga,Valencia,Athletic Club,Valencia,Athletic Bilbao,0.893,general_name_drift
+102336,soccer_spain_la_liga,Athletic Club,Villarreal,Athletic Bilbao,Villarreal,0.893,general_name_drift
+8114,soccer_germany_bundesliga,Bayer 04 Leverkusen,Heidenheim,Bayer Leverkusen,FC Heidenheim,0.892,general_name_drift
+8271,soccer_germany_bundesliga,Heidenheim,Bayer 04 Leverkusen,FC Heidenheim,Bayer Leverkusen,0.892,general_name_drift
+8092,soccer_germany_bundesliga,Darmstadt 98,FC Union Berlin,SV Darmstadt 98,Union Berlin,0.889,general_name_drift
+8238,soccer_germany_bundesliga,FC Union Berlin,Darmstadt 98,Union Berlin,SV Darmstadt 98,0.889,general_name_drift
+8132,soccer_germany_bundesliga,Bayer 04 Leverkusen,FC Köln,Bayer Leverkusen,FC Koln,0.886,general_name_drift
+8286,soccer_germany_bundesliga,FC Köln,Bayer 04 Leverkusen,FC Koln,Bayer Leverkusen,0.886,general_name_drift
+30896,soccer_germany_bundesliga,Bayer 04 Leverkusen,St. Pauli,Bayer Leverkusen,FC St. Pauli,0.886,general_name_drift
+31057,soccer_germany_bundesliga,St. Pauli,Bayer 04 Leverkusen,FC St. Pauli,Bayer Leverkusen,0.886,general_name_drift
+30807,soccer_germany_bundesliga,Borussia Dortmund,Heidenheim,Borussia Dortmund,1. FC Heidenheim,0.885,general_name_drift
+30818,soccer_germany_bundesliga,Heidenheim,SC Freiburg,1. FC Heidenheim,SC Freiburg,0.885,general_name_drift
+30830,soccer_germany_bundesliga,FSV Mainz 05,Heidenheim,FSV Mainz 05,1. FC Heidenheim,0.885,general_name_drift
+30836,soccer_germany_bundesliga,Heidenheim,RB Leipzig,1. FC Heidenheim,RB Leipzig,0.885,general_name_drift
+30853,soccer_germany_bundesliga,Heidenheim,TSG Hoffenheim,1. FC Heidenheim,TSG Hoffenheim,0.885,general_name_drift
+30868,soccer_germany_bundesliga,Holstein Kiel,Heidenheim,Holstein Kiel,1. FC Heidenheim,0.885,general_name_drift
+30871,soccer_germany_bundesliga,Heidenheim,VfL Wolfsburg,1. FC Heidenheim,VfL Wolfsburg,0.885,general_name_drift
+30889,soccer_germany_bundesliga,Heidenheim,Eintracht Frankfurt,1. FC Heidenheim,Eintracht Frankfurt,0.885,general_name_drift
+30907,soccer_germany_bundesliga,Heidenheim,VfB Stuttgart,1. FC Heidenheim,VfB Stuttgart,0.885,general_name_drift
+30936,soccer_germany_bundesliga,Werder Bremen,Heidenheim,Werder Bremen,1. FC Heidenheim,0.885,general_name_drift
+30963,soccer_germany_bundesliga,Heidenheim,Borussia Dortmund,1. FC Heidenheim,Borussia Dortmund,0.885,general_name_drift
+30972,soccer_germany_bundesliga,SC Freiburg,Heidenheim,SC Freiburg,1. FC Heidenheim,0.885,general_name_drift
+30980,soccer_germany_bundesliga,Heidenheim,FSV Mainz 05,1. FC Heidenheim,FSV Mainz 05,0.885,general_name_drift
+30987,soccer_germany_bundesliga,RB Leipzig,Heidenheim,RB Leipzig,1. FC Heidenheim,0.885,general_name_drift
+31008,soccer_germany_bundesliga,TSG Hoffenheim,Heidenheim,TSG Hoffenheim,1. FC Heidenheim,0.885,general_name_drift
+31015,soccer_germany_bundesliga,Heidenheim,Holstein Kiel,1. FC Heidenheim,Holstein Kiel,0.885,general_name_drift
+31028,soccer_germany_bundesliga,VfL Wolfsburg,Heidenheim,VfL Wolfsburg,1. FC Heidenheim,0.885,general_name_drift
+31043,soccer_germany_bundesliga,Eintracht Frankfurt,Heidenheim,Eintracht Frankfurt,1. FC Heidenheim,0.885,general_name_drift
+31059,soccer_germany_bundesliga,VfB Stuttgart,Heidenheim,VfB Stuttgart,1. FC Heidenheim,0.885,general_name_drift
+31088,soccer_germany_bundesliga,Heidenheim,Werder Bremen,1. FC Heidenheim,Werder Bremen,0.885,general_name_drift
+102599,soccer_germany_bundesliga,SC Freiburg,Heidenheim,SC Freiburg,1. FC Heidenheim,0.885,general_name_drift
+813,soccer_epl,Brighton & Hove Albion,AFC Bournemouth,Brighton and Hove Albion,Bournemouth,0.88,ampersand_vs_and|afc_prefix
+1391,soccer_epl,AFC Bournemouth,Brighton & Hove Albion,Bournemouth,Brighton and Hove Albion,0.88,ampersand_vs_and|afc_prefix
+24556,soccer_epl,AFC Bournemouth,Brighton & Hove Albion,Bournemouth,Brighton and Hove Albion,0.88,ampersand_vs_and|afc_prefix
+24677,soccer_epl,Brighton & Hove Albion,AFC Bournemouth,Brighton and Hove Albion,Bournemouth,0.88,ampersand_vs_and|afc_prefix
+8126,soccer_germany_bundesliga,VfL Bochum 1848,Borussia Mönchengladbach,VfL Bochum,Borussia Monchengladbach,0.879,general_name_drift
+8127,soccer_germany_bundesliga,Heidenheim,FC Union Berlin,FC Heidenheim,Union Berlin,0.879,general_name_drift
+8200,soccer_germany_bundesliga,Heidenheim,Darmstadt 98,FC Heidenheim,SV Darmstadt 98,0.879,general_name_drift
+8275,soccer_germany_bundesliga,FC Union Berlin,Heidenheim,Union Berlin,FC Heidenheim,0.879,general_name_drift
+8278,soccer_germany_bundesliga,Borussia Mönchengladbach,VfL Bochum 1848,Borussia Monchengladbach,VfL Bochum,0.879,general_name_drift
+8353,soccer_germany_bundesliga,Darmstadt 98,Heidenheim,SV Darmstadt 98,FC Heidenheim,0.879,general_name_drift
+30804,soccer_germany_bundesliga,VfL Bochum 1848,Borussia Mönchengladbach,VfL Bochum,Borussia Monchengladbach,0.879,general_name_drift
+30957,soccer_germany_bundesliga,Borussia Mönchengladbach,VfL Bochum 1848,Borussia Monchengladbach,VfL Bochum,0.879,general_name_drift
+8226,soccer_germany_bundesliga,FC Augsburg,Bayer 04 Leverkusen,Augsburg,Bayer Leverkusen,0.878,general_name_drift
+8374,soccer_germany_bundesliga,Bayer 04 Leverkusen,FC Augsburg,Bayer Leverkusen,Augsburg,0.878,general_name_drift
+30909,soccer_germany_bundesliga,FC Augsburg,Bayer 04 Leverkusen,Augsburg,Bayer Leverkusen,0.878,general_name_drift

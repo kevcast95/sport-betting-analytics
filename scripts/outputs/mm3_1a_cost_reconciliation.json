@@ -1,0 +1,13 @@
+{
+  "pilot_executed": true,
+  "theoretical_credits_per_request_t60_p0": 20,
+  "notes": [
+    "x-requests-last promedio vs 10×R×M: si difiere, TOA puede contar fraccional distinto o headers no alineados a créditos de facturación."
+  ],
+  "observed_avg_x_requests_last": 20.0,
+  "observed_cost_per_market_region_snapshot": 10.0,
+  "theoretical_requests": 13,
+  "theoretical_credits_linear": 260,
+  "cost_formula_confirmed": true,
+  "observed_cost_per_snapshot": 20.0
+}

@@ -31,6 +31,26 @@ scripts/outputs/**/*rendered_prompts*.json
 scripts/outputs/**/*packages*.json
 scripts/outputs/**/*checkpoint*.json
 
+# MM-3 lab: artefactos grandes / reproducibles (conservar en local; no versionar)
+scripts/outputs/mm3_1b_toa_p0_match_rows.csv
+scripts/outputs/mm3_1b_toa_p0_rejections.csv
+scripts/outputs/mm3_1b_toa_p0_market_board_rows.csv
+scripts/outputs/mm3_1c_rejection_detail_rows.csv
+scripts/outputs/mm3_1c_kickoff_tolerance_candidates.csv
+scripts/outputs/mm3_1d_matching_attempt_rows.csv
+scripts/outputs/mm3_1d_best_match_rows.csv
+scripts/outputs/mm3_1d_improved_market_board_rows.csv
+scripts/outputs/mm3_1d_roi_safe_subset_v1.csv
+scripts/outputs/mm3_1d_roi_safe_subset_v1.json
+scripts/outputs/mm3_1c_roi_safe_subset_v0.csv
+scripts/outputs/mm3_1c_roi_safe_subset_v0.json
+scripts/outputs/mm3_1e_roi_safe_subset_v2_full.csv
+scripts/outputs/mm3_1e_roi_safe_subset_v2_stratified.csv
+scripts/outputs/mm3_1e_roi_safe_subset_v2_weighted.csv
+scripts/outputs/mm3_1a_backfill_batches.json
+scripts/outputs/mm3_1a_toa_pilot_raw.json
+.pytest_cache/
+
 # Raíz: JSON sueltos de prueba (legacy)
 candidates.json
 picks.json

@@ -1,0 +1,1939 @@
+{
+  "generated_at_utc": "2026-05-12T01:22:43.864251+00:00",
+  "bt2_events_kickoff": {
+    "earliest": "2023-08-01T11:30:00-05:00",
+    "latest": "2026-04-22T18:30:00-05:00",
+    "n_rows": 44225,
+    "n_with_kickoff": 44225,
+    "n_with_final_score_goals": 43569
+  },
+  "raw_sportmonks_fixtures": {
+    "fixture_date_min": "2023-08-01",
+    "fixture_date_max": "2026-04-22",
+    "payload_starting_at_min": "2023-08-01T16:30:00-05:00",
+    "payload_starting_at_max": "2026-04-22T23:30:00-05:00",
+    "n_rows": 55541,
+    "n_distinct_fixture_id": 55541
+  },
+  "calendar_years_by_kickoff_utc": [
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "seasons_non_null_top": [
+    {
+      "season": "2024/25",
+      "n": 22875
+    },
+    {
+      "season": "2023/24",
+      "n": 20622
+    },
+    {
+      "season": "2025/26",
+      "n": 728
+    }
+  ],
+  "exact_row_counts_core_tables": {
+    "bt2_events": 44225,
+    "raw_sportmonks_fixtures": 55541,
+    "bt2_odds_snapshot": 457934,
+    "bt2_leagues": 100,
+    "bt2_teams": 3074,
+    "bt2_daily_picks": 195
+  },
+  "prematch_event_keyset": {
+    "n_distinct_events_with_any_prematch_odds_row": 402,
+    "sentinel_minus_one_only": false
+  },
+  "comparison_raw_vs_bt2_fixtures_by_year_league": [
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 8,
+      "n_raw_sportmonks_fixtures": 196,
+      "n_bt2_events": 196
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 9,
+      "n_raw_sportmonks_fixtures": 300,
+      "n_bt2_events": 300
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 12,
+      "n_raw_sportmonks_fixtures": 284,
+      "n_bt2_events": 284
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 14,
+      "n_raw_sportmonks_fixtures": 290,
+      "n_bt2_events": 290
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 17,
+      "n_raw_sportmonks_fixtures": 304,
+      "n_bt2_events": 304
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 24,
+      "n_raw_sportmonks_fixtures": 803,
+      "n_bt2_events": 803
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 27,
+      "n_raw_sportmonks_fixtures": 88,
+      "n_bt2_events": 88
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 45,
+      "n_raw_sportmonks_fixtures": 60,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 72,
+      "n_raw_sportmonks_fixtures": 144,
+      "n_bt2_events": 144
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 74,
+      "n_raw_sportmonks_fixtures": 199,
+      "n_bt2_events": 199
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 78,
+      "n_raw_sportmonks_fixtures": 93,
+      "n_bt2_events": 93
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 82,
+      "n_raw_sportmonks_fixtures": 143,
+      "n_bt2_events": 143
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 85,
+      "n_raw_sportmonks_fixtures": 144,
+      "n_bt2_events": 144
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 88,
+      "n_raw_sportmonks_fixtures": 197,
+      "n_bt2_events": 197
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 109,
+      "n_raw_sportmonks_fixtures": 56,
+      "n_bt2_events": 56
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 181,
+      "n_raw_sportmonks_fixtures": 96,
+      "n_bt2_events": 96
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 208,
+      "n_raw_sportmonks_fixtures": 152,
+      "n_bt2_events": 152
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 211,
+      "n_raw_sportmonks_fixtures": 128,
+      "n_bt2_events": 128
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 229,
+      "n_raw_sportmonks_fixtures": 138,
+      "n_bt2_events": 138
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 244,
+      "n_raw_sportmonks_fixtures": 82,
+      "n_bt2_events": 82
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 262,
+      "n_raw_sportmonks_fixtures": 132,
+      "n_bt2_events": 132
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 271,
+      "n_raw_sportmonks_fixtures": 90,
+      "n_bt2_events": 90
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 274,
+      "n_raw_sportmonks_fixtures": 96,
+      "n_bt2_events": 96
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 301,
+      "n_raw_sportmonks_fixtures": 153,
+      "n_bt2_events": 153
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 304,
+      "n_raw_sportmonks_fixtures": 190,
+      "n_bt2_events": 190
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 307,
+      "n_raw_sportmonks_fixtures": 134,
+      "n_bt2_events": 134
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 325,
+      "n_raw_sportmonks_fixtures": 105,
+      "n_bt2_events": 105
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 334,
+      "n_raw_sportmonks_fixtures": 97,
+      "n_bt2_events": 97
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 372,
+      "n_raw_sportmonks_fixtures": 90,
+      "n_bt2_events": 90
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 384,
+      "n_raw_sportmonks_fixtures": 180,
+      "n_bt2_events": 180
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 387,
+      "n_raw_sportmonks_fixtures": 190,
+      "n_bt2_events": 190
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 390,
+      "n_raw_sportmonks_fixtures": 32,
+      "n_bt2_events": 32
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 453,
+      "n_raw_sportmonks_fixtures": 152,
+      "n_bt2_events": 152
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 462,
+      "n_raw_sportmonks_fixtures": 135,
+      "n_bt2_events": 135
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 465,
+      "n_raw_sportmonks_fixtures": 136,
+      "n_bt2_events": 136
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 468,
+      "n_raw_sportmonks_fixtures": 130,
+      "n_bt2_events": 130
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 474,
+      "n_raw_sportmonks_fixtures": 144,
+      "n_bt2_events": 144
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 486,
+      "n_raw_sportmonks_fixtures": 128,
+      "n_bt2_events": 128
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 489,
+      "n_raw_sportmonks_fixtures": 153,
+      "n_bt2_events": 153
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 492,
+      "n_raw_sportmonks_fixtures": 132,
+      "n_bt2_events": 132
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 501,
+      "n_raw_sportmonks_fixtures": 117,
+      "n_bt2_events": 117
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 531,
+      "n_raw_sportmonks_fixtures": 144,
+      "n_bt2_events": 144
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 540,
+      "n_raw_sportmonks_fixtures": 102,
+      "n_bt2_events": 102
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 564,
+      "n_raw_sportmonks_fixtures": 180,
+      "n_bt2_events": 180
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 567,
+      "n_raw_sportmonks_fixtures": 231,
+      "n_bt2_events": 231
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 570,
+      "n_raw_sportmonks_fixtures": 93,
+      "n_bt2_events": 93
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 591,
+      "n_raw_sportmonks_fixtures": 96,
+      "n_bt2_events": 96
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 600,
+      "n_raw_sportmonks_fixtures": 170,
+      "n_bt2_events": 170
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 603,
+      "n_raw_sportmonks_fixtures": 153,
+      "n_bt2_events": 153
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 609,
+      "n_raw_sportmonks_fixtures": 121,
+      "n_bt2_events": 121
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 743,
+      "n_raw_sportmonks_fixtures": 144,
+      "n_bt2_events": 144
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 806,
+      "n_raw_sportmonks_fixtures": 125,
+      "n_bt2_events": 125
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 809,
+      "n_raw_sportmonks_fixtures": 81,
+      "n_bt2_events": 81
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 827,
+      "n_raw_sportmonks_fixtures": 120,
+      "n_bt2_events": 120
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 830,
+      "n_raw_sportmonks_fixtures": 83,
+      "n_bt2_events": 83
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 860,
+      "n_raw_sportmonks_fixtures": 103,
+      "n_bt2_events": 103
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 902,
+      "n_raw_sportmonks_fixtures": 116,
+      "n_bt2_events": 116
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 938,
+      "n_raw_sportmonks_fixtures": 72,
+      "n_bt2_events": 72
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 944,
+      "n_raw_sportmonks_fixtures": 170,
+      "n_bt2_events": 170
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 950,
+      "n_raw_sportmonks_fixtures": 27,
+      "n_bt2_events": 27
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 959,
+      "n_raw_sportmonks_fixtures": 84,
+      "n_bt2_events": 84
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1007,
+      "n_raw_sportmonks_fixtures": 68,
+      "n_bt2_events": 68
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1073,
+      "n_raw_sportmonks_fixtures": 56,
+      "n_bt2_events": 56
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1085,
+      "n_raw_sportmonks_fixtures": 133,
+      "n_bt2_events": 133
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1088,
+      "n_raw_sportmonks_fixtures": 121,
+      "n_bt2_events": 121
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1107,
+      "n_raw_sportmonks_fixtures": 107,
+      "n_bt2_events": 107
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1329,
+      "n_raw_sportmonks_fixtures": 144,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1356,
+      "n_raw_sportmonks_fixtures": 59,
+      "n_bt2_events": 59
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1419,
+      "n_raw_sportmonks_fixtures": 109,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1583,
+      "n_raw_sportmonks_fixtures": 57,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2023,
+      "sm_league_id": 1658,
+      "n_raw_sportmonks_fixtures": 204,
+      "n_bt2_events": 204
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 8,
+      "n_raw_sportmonks_fixtures": 372,
+      "n_bt2_events": 372
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 9,
+      "n_raw_sportmonks_fixtures": 541,
+      "n_bt2_events": 541
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 12,
+      "n_raw_sportmonks_fixtures": 537,
+      "n_bt2_events": 537
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 14,
+      "n_raw_sportmonks_fixtures": 533,
+      "n_bt2_events": 533
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 17,
+      "n_raw_sportmonks_fixtures": 536,
+      "n_bt2_events": 536
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 23,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 1
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 24,
+      "n_raw_sportmonks_fixtures": 885,
+      "n_bt2_events": 885
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 27,
+      "n_raw_sportmonks_fixtures": 93,
+      "n_bt2_events": 93
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 45,
+      "n_raw_sportmonks_fixtures": 132,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 72,
+      "n_raw_sportmonks_fixtures": 317,
+      "n_bt2_events": 317
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 74,
+      "n_raw_sportmonks_fixtures": 381,
+      "n_bt2_events": 381
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 78,
+      "n_raw_sportmonks_fixtures": 110,
+      "n_bt2_events": 110
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 82,
+      "n_raw_sportmonks_fixtures": 298,
+      "n_bt2_events": 298
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 85,
+      "n_raw_sportmonks_fixtures": 306,
+      "n_bt2_events": 306
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 88,
+      "n_raw_sportmonks_fixtures": 373,
+      "n_bt2_events": 373
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 109,
+      "n_raw_sportmonks_fixtures": 63,
+      "n_bt2_events": 63
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 181,
+      "n_raw_sportmonks_fixtures": 189,
+      "n_bt2_events": 189
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 208,
+      "n_raw_sportmonks_fixtures": 313,
+      "n_bt2_events": 313
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 211,
+      "n_raw_sportmonks_fixtures": 246,
+      "n_bt2_events": 246
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 229,
+      "n_raw_sportmonks_fixtures": 276,
+      "n_bt2_events": 276
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 244,
+      "n_raw_sportmonks_fixtures": 178,
+      "n_bt2_events": 178
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 262,
+      "n_raw_sportmonks_fixtures": 281,
+      "n_bt2_events": 281
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 271,
+      "n_raw_sportmonks_fixtures": 193,
+      "n_bt2_events": 193
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 274,
+      "n_raw_sportmonks_fixtures": 192,
+      "n_bt2_events": 192
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 292,
+      "n_raw_sportmonks_fixtures": 167,
+      "n_bt2_events": 167
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 301,
+      "n_raw_sportmonks_fixtures": 289,
+      "n_bt2_events": 289
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 304,
+      "n_raw_sportmonks_fixtures": 336,
+      "n_bt2_events": 336
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 307,
+      "n_raw_sportmonks_fixtures": 231,
+      "n_bt2_events": 231
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 325,
+      "n_raw_sportmonks_fixtures": 247,
+      "n_bt2_events": 247
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 334,
+      "n_raw_sportmonks_fixtures": 197,
+      "n_bt2_events": 197
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 360,
+      "n_raw_sportmonks_fixtures": 180,
+      "n_bt2_events": 180
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 372,
+      "n_raw_sportmonks_fixtures": 258,
+      "n_bt2_events": 258
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 384,
+      "n_raw_sportmonks_fixtures": 378,
+      "n_bt2_events": 378
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 387,
+      "n_raw_sportmonks_fixtures": 400,
+      "n_bt2_events": 400
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 390,
+      "n_raw_sportmonks_fixtures": 49,
+      "n_bt2_events": 49
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 444,
+      "n_raw_sportmonks_fixtures": 240,
+      "n_bt2_events": 240
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 453,
+      "n_raw_sportmonks_fixtures": 300,
+      "n_bt2_events": 300
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 462,
+      "n_raw_sportmonks_fixtures": 315,
+      "n_bt2_events": 315
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 465,
+      "n_raw_sportmonks_fixtures": 308,
+      "n_bt2_events": 308
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 468,
+      "n_raw_sportmonks_fixtures": 151,
+      "n_bt2_events": 151
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 474,
+      "n_raw_sportmonks_fixtures": 317,
+      "n_bt2_events": 317
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 486,
+      "n_raw_sportmonks_fixtures": 240,
+      "n_bt2_events": 240
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 489,
+      "n_raw_sportmonks_fixtures": 315,
+      "n_bt2_events": 315
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 492,
+      "n_raw_sportmonks_fixtures": 171,
+      "n_bt2_events": 171
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 501,
+      "n_raw_sportmonks_fixtures": 227,
+      "n_bt2_events": 227
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 513,
+      "n_raw_sportmonks_fixtures": 6,
+      "n_bt2_events": 6
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 531,
+      "n_raw_sportmonks_fixtures": 304,
+      "n_bt2_events": 304
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 540,
+      "n_raw_sportmonks_fixtures": 192,
+      "n_bt2_events": 192
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 564,
+      "n_raw_sportmonks_fixtures": 381,
+      "n_bt2_events": 381
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 567,
+      "n_raw_sportmonks_fixtures": 466,
+      "n_bt2_events": 466
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 570,
+      "n_raw_sportmonks_fixtures": 126,
+      "n_bt2_events": 126
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 573,
+      "n_raw_sportmonks_fixtures": 240,
+      "n_bt2_events": 240
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 591,
+      "n_raw_sportmonks_fixtures": 228,
+      "n_bt2_events": 228
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 600,
+      "n_raw_sportmonks_fixtures": 363,
+      "n_bt2_events": 363
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 603,
+      "n_raw_sportmonks_fixtures": 328,
+      "n_bt2_events": 328
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 609,
+      "n_raw_sportmonks_fixtures": 246,
+      "n_bt2_events": 246
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 636,
+      "n_raw_sportmonks_fixtures": 379,
+      "n_bt2_events": 379
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 648,
+      "n_raw_sportmonks_fixtures": 380,
+      "n_bt2_events": 380
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 651,
+      "n_raw_sportmonks_fixtures": 380,
+      "n_bt2_events": 380
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 654,
+      "n_raw_sportmonks_fixtures": 122,
+      "n_bt2_events": 122
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 663,
+      "n_raw_sportmonks_fixtures": 240,
+      "n_bt2_events": 240
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 672,
+      "n_raw_sportmonks_fixtures": 432,
+      "n_bt2_events": 432
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 723,
+      "n_raw_sportmonks_fixtures": 15,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 743,
+      "n_raw_sportmonks_fixtures": 340,
+      "n_bt2_events": 340
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 764,
+      "n_raw_sportmonks_fixtures": 306,
+      "n_bt2_events": 306
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 770,
+      "n_raw_sportmonks_fixtures": 297,
+      "n_bt2_events": 297
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 779,
+      "n_raw_sportmonks_fixtures": 522,
+      "n_bt2_events": 522
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 806,
+      "n_raw_sportmonks_fixtures": 201,
+      "n_bt2_events": 201
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 809,
+      "n_raw_sportmonks_fixtures": 267,
+      "n_bt2_events": 267
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 827,
+      "n_raw_sportmonks_fixtures": 240,
+      "n_bt2_events": 240
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 830,
+      "n_raw_sportmonks_fixtures": 283,
+      "n_bt2_events": 283
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 860,
+      "n_raw_sportmonks_fixtures": 265,
+      "n_bt2_events": 265
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 902,
+      "n_raw_sportmonks_fixtures": 236,
+      "n_bt2_events": 236
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 938,
+      "n_raw_sportmonks_fixtures": 126,
+      "n_bt2_events": 126
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 944,
+      "n_raw_sportmonks_fixtures": 253,
+      "n_bt2_events": 253
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 950,
+      "n_raw_sportmonks_fixtures": 28,
+      "n_bt2_events": 28
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 959,
+      "n_raw_sportmonks_fixtures": 167,
+      "n_bt2_events": 167
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 968,
+      "n_raw_sportmonks_fixtures": 380,
+      "n_bt2_events": 380
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 983,
+      "n_raw_sportmonks_fixtures": 39,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 989,
+      "n_raw_sportmonks_fixtures": 240,
+      "n_bt2_events": 240
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1007,
+      "n_raw_sportmonks_fixtures": 155,
+      "n_bt2_events": 155
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1034,
+      "n_raw_sportmonks_fixtures": 228,
+      "n_bt2_events": 228
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1073,
+      "n_raw_sportmonks_fixtures": 189,
+      "n_bt2_events": 189
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1082,
+      "n_raw_sportmonks_fixtures": 294,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1085,
+      "n_raw_sportmonks_fixtures": 105,
+      "n_bt2_events": 105
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1088,
+      "n_raw_sportmonks_fixtures": 113,
+      "n_bt2_events": 113
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1101,
+      "n_raw_sportmonks_fixtures": 124,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1107,
+      "n_raw_sportmonks_fixtures": 141,
+      "n_bt2_events": 141
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1116,
+      "n_raw_sportmonks_fixtures": 157,
+      "n_bt2_events": 157
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1122,
+      "n_raw_sportmonks_fixtures": 155,
+      "n_bt2_events": 155
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1123,
+      "n_raw_sportmonks_fixtures": 35,
+      "n_bt2_events": 35
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1128,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 1
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1328,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 1
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1329,
+      "n_raw_sportmonks_fixtures": 215,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1356,
+      "n_raw_sportmonks_fixtures": 170,
+      "n_bt2_events": 170
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1419,
+      "n_raw_sportmonks_fixtures": 160,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1452,
+      "n_raw_sportmonks_fixtures": 5,
+      "n_bt2_events": 5
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1502,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 1
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1583,
+      "n_raw_sportmonks_fixtures": 131,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1631,
+      "n_raw_sportmonks_fixtures": 134,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1658,
+      "n_raw_sportmonks_fixtures": 202,
+      "n_bt2_events": 202
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1673,
+      "n_raw_sportmonks_fixtures": 2,
+      "n_bt2_events": 2
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1681,
+      "n_raw_sportmonks_fixtures": 2,
+      "n_bt2_events": 2
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1682,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 1
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1691,
+      "n_raw_sportmonks_fixtures": 7,
+      "n_bt2_events": 7
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1885,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1989,
+      "n_raw_sportmonks_fixtures": 3,
+      "n_bt2_events": 3
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 1990,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 1
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 2450,
+      "n_raw_sportmonks_fixtures": 31,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 2451,
+      "n_raw_sportmonks_fixtures": 5347,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2024,
+      "sm_league_id": 2452,
+      "n_raw_sportmonks_fixtures": 1341,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 8,
+      "n_raw_sportmonks_fixtures": 192,
+      "n_bt2_events": 192
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 9,
+      "n_raw_sportmonks_fixtures": 273,
+      "n_bt2_events": 273
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 12,
+      "n_raw_sportmonks_fixtures": 293,
+      "n_bt2_events": 293
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 14,
+      "n_raw_sportmonks_fixtures": 291,
+      "n_bt2_events": 291
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 17,
+      "n_raw_sportmonks_fixtures": 273,
+      "n_bt2_events": 273
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 24,
+      "n_raw_sportmonks_fixtures": 63,
+      "n_bt2_events": 63
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 27,
+      "n_raw_sportmonks_fixtures": 5,
+      "n_bt2_events": 5
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 45,
+      "n_raw_sportmonks_fixtures": 72,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 72,
+      "n_raw_sportmonks_fixtures": 157,
+      "n_bt2_events": 157
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 74,
+      "n_raw_sportmonks_fixtures": 180,
+      "n_bt2_events": 180
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 78,
+      "n_raw_sportmonks_fixtures": 15,
+      "n_bt2_events": 15
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 82,
+      "n_raw_sportmonks_fixtures": 171,
+      "n_bt2_events": 171
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 85,
+      "n_raw_sportmonks_fixtures": 153,
+      "n_bt2_events": 153
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 88,
+      "n_raw_sportmonks_fixtures": 190,
+      "n_bt2_events": 190
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 109,
+      "n_raw_sportmonks_fixtures": 7,
+      "n_bt2_events": 7
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 181,
+      "n_raw_sportmonks_fixtures": 98,
+      "n_bt2_events": 98
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 208,
+      "n_raw_sportmonks_fixtures": 152,
+      "n_bt2_events": 152
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 211,
+      "n_raw_sportmonks_fixtures": 118,
+      "n_bt2_events": 118
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 229,
+      "n_raw_sportmonks_fixtures": 140,
+      "n_bt2_events": 140
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 244,
+      "n_raw_sportmonks_fixtures": 90,
+      "n_bt2_events": 90
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 262,
+      "n_raw_sportmonks_fixtures": 124,
+      "n_bt2_events": 124
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 271,
+      "n_raw_sportmonks_fixtures": 90,
+      "n_bt2_events": 90
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 274,
+      "n_raw_sportmonks_fixtures": 84,
+      "n_bt2_events": 84
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 292,
+      "n_raw_sportmonks_fixtures": 56,
+      "n_bt2_events": 56
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 301,
+      "n_raw_sportmonks_fixtures": 170,
+      "n_bt2_events": 170
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 304,
+      "n_raw_sportmonks_fixtures": 164,
+      "n_bt2_events": 164
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 307,
+      "n_raw_sportmonks_fixtures": 32,
+      "n_bt2_events": 32
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 325,
+      "n_raw_sportmonks_fixtures": 124,
+      "n_bt2_events": 124
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 334,
+      "n_raw_sportmonks_fixtures": 97,
+      "n_bt2_events": 97
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 360,
+      "n_raw_sportmonks_fixtures": 92,
+      "n_bt2_events": 92
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 372,
+      "n_raw_sportmonks_fixtures": 132,
+      "n_bt2_events": 132
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 384,
+      "n_raw_sportmonks_fixtures": 202,
+      "n_bt2_events": 202
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 387,
+      "n_raw_sportmonks_fixtures": 187,
+      "n_bt2_events": 187
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 390,
+      "n_raw_sportmonks_fixtures": 9,
+      "n_bt2_events": 9
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 444,
+      "n_raw_sportmonks_fixtures": 72,
+      "n_bt2_events": 72
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 453,
+      "n_raw_sportmonks_fixtures": 144,
+      "n_bt2_events": 144
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 462,
+      "n_raw_sportmonks_fixtures": 162,
+      "n_bt2_events": 162
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 465,
+      "n_raw_sportmonks_fixtures": 168,
+      "n_bt2_events": 168
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 468,
+      "n_raw_sportmonks_fixtures": 14,
+      "n_bt2_events": 14
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 474,
+      "n_raw_sportmonks_fixtures": 147,
+      "n_bt2_events": 147
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 486,
+      "n_raw_sportmonks_fixtures": 96,
+      "n_bt2_events": 96
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 489,
+      "n_raw_sportmonks_fixtures": 117,
+      "n_bt2_events": 117
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 492,
+      "n_raw_sportmonks_fixtures": 15,
+      "n_bt2_events": 15
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 501,
+      "n_raw_sportmonks_fixtures": 112,
+      "n_bt2_events": 112
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 513,
+      "n_raw_sportmonks_fixtures": 6,
+      "n_bt2_events": 6
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 531,
+      "n_raw_sportmonks_fixtures": 136,
+      "n_bt2_events": 136
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 540,
+      "n_raw_sportmonks_fixtures": 86,
+      "n_bt2_events": 86
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 564,
+      "n_raw_sportmonks_fixtures": 199,
+      "n_bt2_events": 199
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 567,
+      "n_raw_sportmonks_fixtures": 225,
+      "n_bt2_events": 225
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 570,
+      "n_raw_sportmonks_fixtures": 33,
+      "n_bt2_events": 33
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 573,
+      "n_raw_sportmonks_fixtures": 93,
+      "n_bt2_events": 93
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 591,
+      "n_raw_sportmonks_fixtures": 120,
+      "n_bt2_events": 120
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 600,
+      "n_raw_sportmonks_fixtures": 187,
+      "n_bt2_events": 187
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 603,
+      "n_raw_sportmonks_fixtures": 215,
+      "n_bt2_events": 215
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 609,
+      "n_raw_sportmonks_fixtures": 106,
+      "n_bt2_events": 106
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 636,
+      "n_raw_sportmonks_fixtures": 254,
+      "n_bt2_events": 254
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 648,
+      "n_raw_sportmonks_fixtures": 100,
+      "n_bt2_events": 100
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 651,
+      "n_raw_sportmonks_fixtures": 95,
+      "n_bt2_events": 95
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 654,
+      "n_raw_sportmonks_fixtures": 92,
+      "n_bt2_events": 92
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 663,
+      "n_raw_sportmonks_fixtures": 95,
+      "n_bt2_events": 95
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 672,
+      "n_raw_sportmonks_fixtures": 201,
+      "n_bt2_events": 201
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 723,
+      "n_raw_sportmonks_fixtures": 3,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 743,
+      "n_raw_sportmonks_fixtures": 170,
+      "n_bt2_events": 170
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 764,
+      "n_raw_sportmonks_fixtures": 122,
+      "n_bt2_events": 122
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 770,
+      "n_raw_sportmonks_fixtures": 131,
+      "n_bt2_events": 131
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 779,
+      "n_raw_sportmonks_fixtures": 243,
+      "n_bt2_events": 243
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 806,
+      "n_raw_sportmonks_fixtures": 154,
+      "n_bt2_events": 154
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 809,
+      "n_raw_sportmonks_fixtures": 107,
+      "n_bt2_events": 107
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 827,
+      "n_raw_sportmonks_fixtures": 120,
+      "n_bt2_events": 120
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 830,
+      "n_raw_sportmonks_fixtures": 165,
+      "n_bt2_events": 165
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 860,
+      "n_raw_sportmonks_fixtures": 112,
+      "n_bt2_events": 112
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 902,
+      "n_raw_sportmonks_fixtures": 128,
+      "n_bt2_events": 128
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 938,
+      "n_raw_sportmonks_fixtures": 66,
+      "n_bt2_events": 66
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 944,
+      "n_raw_sportmonks_fixtures": 189,
+      "n_bt2_events": 189
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 950,
+      "n_raw_sportmonks_fixtures": 7,
+      "n_bt2_events": 7
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 959,
+      "n_raw_sportmonks_fixtures": 113,
+      "n_bt2_events": 113
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 968,
+      "n_raw_sportmonks_fixtures": 186,
+      "n_bt2_events": 186
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 989,
+      "n_raw_sportmonks_fixtures": 101,
+      "n_bt2_events": 101
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1007,
+      "n_raw_sportmonks_fixtures": 79,
+      "n_bt2_events": 79
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1034,
+      "n_raw_sportmonks_fixtures": 101,
+      "n_bt2_events": 101
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1073,
+      "n_raw_sportmonks_fixtures": 104,
+      "n_bt2_events": 104
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1082,
+      "n_raw_sportmonks_fixtures": 58,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1085,
+      "n_raw_sportmonks_fixtures": 47,
+      "n_bt2_events": 47
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1088,
+      "n_raw_sportmonks_fixtures": 29,
+      "n_bt2_events": 29
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1101,
+      "n_raw_sportmonks_fixtures": 8,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1107,
+      "n_raw_sportmonks_fixtures": 37,
+      "n_bt2_events": 37
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1116,
+      "n_raw_sportmonks_fixtures": 112,
+      "n_bt2_events": 112
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1122,
+      "n_raw_sportmonks_fixtures": 126,
+      "n_bt2_events": 126
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1123,
+      "n_raw_sportmonks_fixtures": 18,
+      "n_bt2_events": 18
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1251,
+      "n_raw_sportmonks_fixtures": 3,
+      "n_bt2_events": 3
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1329,
+      "n_raw_sportmonks_fixtures": 31,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1356,
+      "n_raw_sportmonks_fixtures": 116,
+      "n_bt2_events": 116
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1419,
+      "n_raw_sportmonks_fixtures": 13,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1583,
+      "n_raw_sportmonks_fixtures": 96,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1631,
+      "n_raw_sportmonks_fixtures": 96,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1673,
+      "n_raw_sportmonks_fixtures": 2,
+      "n_bt2_events": 2
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1681,
+      "n_raw_sportmonks_fixtures": 2,
+      "n_bt2_events": 2
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1682,
+      "n_raw_sportmonks_fixtures": 3,
+      "n_bt2_events": 3
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1691,
+      "n_raw_sportmonks_fixtures": 2,
+      "n_bt2_events": 2
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1798,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 1
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1885,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 1989,
+      "n_raw_sportmonks_fixtures": 3,
+      "n_bt2_events": 3
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 2451,
+      "n_raw_sportmonks_fixtures": 2522,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2025,
+      "sm_league_id": 2452,
+      "n_raw_sportmonks_fixtures": 491,
+      "n_bt2_events": 0
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 8,
+      "n_raw_sportmonks_fixtures": 18,
+      "n_bt2_events": 23
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 9,
+      "n_raw_sportmonks_fixtures": 26,
+      "n_bt2_events": 38
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 72,
+      "n_raw_sportmonks_fixtures": 1,
+      "n_bt2_events": 10
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 82,
+      "n_raw_sportmonks_fixtures": 12,
+      "n_bt2_events": 225
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 85,
+      "n_raw_sportmonks_fixtures": 9,
+      "n_bt2_events": 18
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 208,
+      "n_raw_sportmonks_fixtures": 13,
+      "n_bt2_events": 21
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 301,
+      "n_raw_sportmonks_fixtures": 13,
+      "n_bt2_events": 17
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 304,
+      "n_raw_sportmonks_fixtures": 10,
+      "n_bt2_events": 18
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 384,
+      "n_raw_sportmonks_fixtures": 15,
+      "n_bt2_events": 20
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 387,
+      "n_raw_sportmonks_fixtures": 11,
+      "n_bt2_events": 21
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 453,
+      "n_raw_sportmonks_fixtures": 10,
+      "n_bt2_events": 18
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 462,
+      "n_raw_sportmonks_fixtures": 10,
+      "n_bt2_events": 18
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 501,
+      "n_raw_sportmonks_fixtures": 0,
+      "n_bt2_events": 6
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 564,
+      "n_raw_sportmonks_fixtures": 12,
+      "n_bt2_events": 17
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 567,
+      "n_raw_sportmonks_fixtures": 12,
+      "n_bt2_events": 22
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 573,
+      "n_raw_sportmonks_fixtures": 14,
+      "n_bt2_events": 20
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 600,
+      "n_raw_sportmonks_fixtures": 12,
+      "n_bt2_events": 19
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 636,
+      "n_raw_sportmonks_fixtures": 19,
+      "n_bt2_events": 30
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 648,
+      "n_raw_sportmonks_fixtures": 10,
+      "n_bt2_events": 20
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 663,
+      "n_raw_sportmonks_fixtures": 10,
+      "n_bt2_events": 15
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 672,
+      "n_raw_sportmonks_fixtures": 12,
+      "n_bt2_events": 19
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 743,
+      "n_raw_sportmonks_fixtures": 14,
+      "n_bt2_events": 22
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 779,
+      "n_raw_sportmonks_fixtures": 21,
+      "n_bt2_events": 35
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 1034,
+      "n_raw_sportmonks_fixtures": 14,
+      "n_bt2_events": 19
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 1116,
+      "n_raw_sportmonks_fixtures": 10,
+      "n_bt2_events": 18
+    },
+    {
+      "calendar_year": 2026,
+      "sm_league_id": 1122,
+      "n_raw_sportmonks_fixtures": 11,
+      "n_bt2_events": 19
+    }
+  ],
+  "comparison_totals": {
+    "pairs_year_league": 312,
+    "sum_raw_fixtures_raw_query": 55541,
+    "sum_bt2_events_joined_league": 44225
+  },
+  "odds_temporal_vs_snapshot_presence": {
+    "prematch_rule": "bt2_odds_snapshot.fetched_at < bt2_events.kickoff_utc",
+    "note": "Si casi todos los fetched_at son posteriores al kickoff (ingesta batch), la columna ROI ex-ante será baja aunque existan filas de mercado.",
+    "events_final_score_with_prematch_any_odds": 102,
+    "events_final_score_with_prematch_ft_pattern": 102,
+    "events_final_score_with_prematch_ou25_pattern": 0,
+    "events_final_score_with_odds_rows_ft_ignore_time": 41724,
+    "events_final_score_with_odds_rows_ou25_ignore_time": 0,
+    "events_final_score_with_any_odds_row_ignore_time": 41724
+  }
+}

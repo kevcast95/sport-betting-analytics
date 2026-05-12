@@ -1,0 +1,21 @@
+{
+  "universe_events": 3806,
+  "roi_v1_events": 3088,
+  "roi_v1_match_rate_vs_universe": 0.8114,
+  "representativeness_risk_roi_v1": "medium",
+  "max_abs_league_delta_pp_roi_v1": 2.97,
+  "worst_league_segment": "league:soccer_france_ligue_one",
+  "worst_league_deltas": {
+    "segment": "league:soccer_france_ligue_one",
+    "universe_n": 623,
+    "subset_n": 365,
+    "delta_home_rate_pp": -2.97,
+    "delta_draw_rate_pp": 0.79,
+    "delta_away_rate_pp": 2.18,
+    "delta_ou25_over_pp": -0.67,
+    "delta_btts_yes_pp": -0.97,
+    "avg_goals_universe": 2.831460674157303,
+    "avg_goals_subset": 2.8328767123287673
+  },
+  "methodology_note": "Tasas 1X2/OU2.5/BTTS en MM-3.1E usan solo partidos con marcador final (result_home/away no nulos). MM-3.1D/1C mezclaban fixtures matched sin resultado en denominadores de representatividad; por eso max|Δ| puede diferir del artifact 1D."
+}

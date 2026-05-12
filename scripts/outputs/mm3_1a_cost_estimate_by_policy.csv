@@ -1,0 +1,6 @@
+snapshot_policy,current_selected_markets,regions,snapshot_count,estimated_requests,estimated_credits,credits_per_request,previous_observed_cost_per_request,lab_event_odds_avg_x_requests_last_mm28c_proxy,conservative_multiplier,recommended_safe_batch_size_requests,balance_required_warning
+closing_approx,"h2h,totals",eu,2740,2740,54800,20,,10.0,1.15,50,False
+t60,"h2h,totals",eu,2740,2740,54800,20,,10.0,1.15,50,False
+t24,"h2h,totals",eu,2740,2740,54800,20,,10.0,1.15,50,False
+t24_t60,"h2h,totals",eu,5278,5278,105560,20,,10.0,1.15,50,False
+multi,"h2h,totals",eu,10615,10615,212300,20,,10.0,1.15,50,False

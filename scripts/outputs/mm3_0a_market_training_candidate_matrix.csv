@@ -1,0 +1,11 @@
+target_key,probability_modeling_events_with_final_score,roi_backtest_events_final_score_plus_prematch_odds_for_target,odds_rows_exist_final_score_events_ignore_time,prematch_rule,notes
+FT_1X2,43569,102,41724,fetched_at < kickoff_utc AND mercado FT/1X2/Match Winner,Columna snap: filas en snapshot sin filtro temporal (audita presencia de mercado).
+OU_GOALS_0_5,43569,0,0,market+selection contienen 0.5 y familia goles O/U,
+OU_GOALS_1_5,43569,0,0,market+selection contienen 1.5 y familia goles O/U,
+OU_GOALS_2_5,43569,0,0,market+selection contienen 2.5 y familia goles O/U,CDM v1 suele persistir Goals Over/Under + Over/Under.
+OU_GOALS_3_5,43569,0,0,market+selection contienen 3.5 y familia goles O/U,
+OU_GOALS_4_5,43569,0,0,market+selection contienen 4.5 y familia goles O/U,
+BTTS,43569,0,0,BTTS / Both teams / AMBOS,
+CORNERS_ODDS,43569,0,0,market ILIKE %CORNER%,Outcome corners desde marcador no está en bt2_events — ROI aquí es sobre mercado cuotas.
+CARDS_ODDS,43569,0,0,card/booking/yellow,
+ANY_ODDS_PREMATCH,43569,102,41724,cualquier fila con fetched_at < kickoff,snap_any = cualquier fila odds (sin filtro temporal).

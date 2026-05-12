@@ -1,0 +1,30 @@
+{
+  "recommended_dataset_for_mm3_2a": "roi_safe_subset_v2_stratified",
+  "ready_for_mm3_2a_feature_engineering": true,
+  "ready_for_mm3_2a_model_training": true,
+  "ready_for_mm3_2_full_big5": true,
+  "reason": "Feature engineering viable: volumen y mercados digest OK. Entrenamiento permitido con protocolo de mitigación documentado. Cobertura Big 5 alta con riesgo acotado. n_v2_full=3126.",
+  "required_caveats": [
+    "Representatividad global en v2_full sigue critical salvo ponderación/stratificación.",
+    "Odds decimales no están en digest; MM-3.2 debe parsear bookmakers o aceptar features sin cuotas decimales hasta nuevo artifact.",
+    "Simulación de alias no re-matchea toda la cohorte; MM-3.1F para curación manual."
+  ],
+  "recommended_validation_protocol": "Entrenar con sample_weight (v2_weighted); validación estratificada por (sport_key, año, mes); calibration por liga; monitorear métricas hold-out Ligue 1 vs EPL.",
+  "representativeness_methodology_note": "Riesgo max|Δ| en este JSON se calcula sobre distribuciones de outcome solo en partidos finalizados con goles en DB; no recalcula el numerador MM-3.1D que incluía unknowns.",
+  "metrics": {
+    "n_v2_full": 3126,
+    "n_v2_with_results": 3088,
+    "representativeness_risk_v2_full": "medium",
+    "max_abs_delta_pp_v2_full": 2.97,
+    "representativeness_risk_v2_weighted_effective": "medium",
+    "max_abs_delta_pp_v2_weighted": 3.16,
+    "representativeness_risk_v2_stratified": "medium",
+    "max_abs_delta_pp_v2_stratified": 2.97,
+    "min_league_count_v2_full_results": 365,
+    "league_coverage_hole_heuristic": false,
+    "mitigation_protocol_flags": {
+      "protocol_weighted_score_improved": false,
+      "protocol_stratified_risk_ok": true
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "requests_executed": 2740,
+  "requests_skipped_resume": 0,
+  "sum_x_requests_last": 54800.0,
+  "last_x_requests_remaining": "40777",
+  "last_x_requests_used": "59223",
+  "provider_errors": [],
+  "stop_reason": null
+}

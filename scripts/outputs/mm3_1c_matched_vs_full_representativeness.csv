@@ -1,0 +1,7 @@
+segment,universe_n,matched_n,delta_home_rate_pp,delta_draw_rate_pp,delta_away_rate_pp,delta_ou25_over_pp,delta_btts_yes_pp,avg_goals_universe,avg_goals_matched
+global,3806,2031,1.73,2.13,1.67,2.03,3.11,2.8521641371557056,2.800596718050721
+league:soccer_epl,783,595,1.63,-1.85,0.58,-0.99,-2.41,3.099354838709677,3.0846023688663284
+league:soccer_france_ligue_one,629,248,-3.58,0.42,3.31,1.26,-0.66,2.831460674157303,2.8252032520325203
+league:soccer_germany_bundesliga,837,228,9.97,7.44,6.97,19.15,23.66,3.180064308681672,3.3333333333333335
+league:soccer_italy_serie_a,780,559,-1.26,2.82,-1.38,-2.79,0.29,2.5769728331177233,2.4486486486486485
+league:soccer_spain_la_liga,777,401,-1.11,1.05,-0.14,-1.33,-0.59,2.630065359477124,2.550761421319797

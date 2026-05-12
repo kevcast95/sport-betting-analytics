@@ -1,0 +1,4 @@
+metric,value
+n_safe_alias_proposals_total,76
+n_safe_actionable_non_identity,1
+note,MM-3.1E no re-ejecuta el matcher 1D completo; lista impacto táctil por equipo. Rematch total requiere MM-3.1F + reglas en artifact.

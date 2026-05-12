@@ -1,0 +1,9 @@
+{
+  "full_big5_events": 3806,
+  "matched_events": 2031,
+  "match_rate": 0.5336,
+  "global_delta_home_rate_pp": 1.73,
+  "global_delta_ou25_over_pp": 2.03,
+  "max_abs_league_delta_pp": 19.15,
+  "representativeness_risk": "critical"
+}

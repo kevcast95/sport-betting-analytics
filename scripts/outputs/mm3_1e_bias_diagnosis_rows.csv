@@ -1,0 +1,696 @@
+segment_type,segment_key,universe_count,subset_count,subset_share_of_universe,delta_home_rate_pp,delta_away_rate_pp,delta_ou25_over_pp,delta_btts_yes_pp,avg_goals_universe,avg_goals_subset
+league,soccer_epl,783,734,0.9374,-0.17,-0.03,-0.69,-1.17,3.099354838709677,3.0708446866485013
+league,soccer_france_ligue_one,629,365,0.5803,-2.97,2.18,-0.67,-0.97,2.831460674157303,2.8328767123287673
+league,soccer_germany_bundesliga,837,612,0.7312,-0.14,-0.11,-0.46,0.16,3.180064308681672,3.156862745098039
+league,soccer_italy_serie_a,780,693,0.8885,0.07,-0.98,-0.94,0.65,2.5769728331177233,2.5281385281385282
+league,soccer_spain_la_liga,777,684,0.8803,-0.03,0.37,0.65,0.87,2.630065359477124,2.6491228070175437
+year,2023,852,733,0.8603,-0.21,-0.07,0.58,0.89,2.816901408450704,2.8281036834924964
+year,2024,1718,1493,0.869,-0.06,-0.23,-0.68,-0.46,2.921420256111758,2.8995311453449433
+year,2025,934,816,0.8737,-1.44,0.76,0.14,0.3,2.770877944325482,2.775735294117647
+year,2026,302,46,0.1523,2.42,-4.75,-1.53,3.14,2.611111111111111,2.5434782608695654
+month,2023-08,124,106,0.8548,-2.86,1.58,0.68,1.23,2.967741935483871,2.9622641509433962
+month,2023-09,189,162,0.8571,1.41,-0.79,-0.88,0.79,2.962962962962963,2.9753086419753085
+month,2023-10,165,143,0.8667,-0.19,0.19,1.45,1.21,2.8848484848484848,2.93006993006993
+month,2023-11,144,125,0.8681,1.74,-0.68,3.01,0.49,2.7430555555555554,2.8
+month,2023-12,230,197,0.8565,-1.34,-0.13,-0.47,0.76,2.6130434782608694,2.5786802030456855
+month,2024-01,140,123,0.8786,0.85,0.18,-0.01,0.28,2.757142857142857,2.7804878048780486
+month,2024-02,199,170,0.8543,-3.49,0.87,-2.49,0.46,3.0100502512562812,2.9352941176470586
+month,2024-03,180,154,0.8556,0.82,0.25,1.39,-0.92,2.816666666666667,2.824675324675325
+month,2024-04,202,172,0.8515,-1.79,0.53,-2.86,-3.1,3.0,2.9302325581395348
+month,2024-05,178,150,0.8427,-1.01,0.29,-1.66,-1.51,3.095505617977528,3.06
+month,2024-06,1,1,1.0,0.0,0.0,0.0,0.0,5.0,5.0
+month,2024-08,125,108,0.864,-1.11,-0.77,-0.4,1.96,2.704,2.6203703703703702
+month,2024-09,174,154,0.8851,2.2,-2.54,0.12,-1.18,3.028735632183908,3.0324675324675323
+month,2024-10,153,133,0.8693,1.62,-1.59,-2.27,1.23,2.9215686274509802,2.857142857142857
+month,2024-11,167,148,0.8862,2.1,-0.29,2.48,-0.22,2.7724550898203595,2.8378378378378377
+month,2024-12,199,180,0.9045,-0.15,0.27,-0.62,-0.22,2.9648241206030153,2.9722222222222223
+month,2025-01,185,161,0.8703,0.37,1.27,0.85,-0.59,2.8864864864864863,2.937888198757764
+month,2025-02,196,172,0.8776,-2.09,0.63,-2.11,-0.65,2.806122448979592,2.744186046511628
+month,2025-03,165,141,0.8545,-3.12,1.73,1.16,1.08,2.6363636363636362,2.6382978723404253
+month,2025-04,203,178,0.8768,-1.98,0.56,-0.74,-0.53,2.6551724137931036,2.634831460674157
+month,2025-05,185,164,0.8865,-0.5,-0.3,1.84,2.51,2.864864864864865,2.9207317073170733
+month,2026-04,302,46,0.1523,2.42,-4.75,-1.53,3.14,2.611111111111111,2.5434782608695654
+season,2023/24,1752,1503,0.8579,-0.65,0.19,-0.36,-0.1,2.884703196347032,2.8722554890219563
+season,2024/25,1752,1539,0.8784,-0.29,-0.04,0.05,0.24,2.827054794520548,2.8265107212475633
+season,2025/26,302,46,0.1523,2.42,-4.75,-1.53,3.14,2.611111111111111,2.5434782608695654
+ft_1x2_outcome,away,1132,983,0.8684,0.0,0.0,-0.72,-0.27,3.0097173144876326,2.9796541200406916
+ft_1x2_outcome,draw,914,806,0.8818,0.0,0.0,0.24,0.04,2.210065645514223,2.2158808933002483
+ft_1x2_outcome,home,1512,1299,0.8591,0.0,0.0,0.3,0.18,3.122354497354497,3.132409545804465
+ft_1x2_outcome,unknown,248,0,0.0,,,,,,
+ou2_5_outcome,over,1926,1666,0.865,-0.1,-0.28,0.0,0.22,4.090861889927311,4.090636254501801
+ou2_5_outcome,under,1632,1422,0.8713,-0.75,0.41,0.0,0.21,1.3903186274509804,1.3846694796061885
+ou2_5_outcome,unknown,248,0,0.0,,,,,,
+btts_outcome,no,1585,1372,0.8656,-0.54,0.31,-0.28,0.0,1.772870662460568,1.7543731778425655
+btts_outcome,unknown,248,0,0.0,,,,,,
+btts_outcome,yes,1973,1716,0.8697,-0.32,-0.2,-0.21,0.0,3.7192093258996453,3.7162004662004664
+total_goals_bucket,tg_0_1,778,684,0.8792,-1.38,1.35,0.0,0.0,0.7210796915167095,0.7207602339181286
+total_goals_bucket,tg_2_3,1626,1409,0.8665,0.07,-0.43,0.14,0.28,2.4747847478474783,2.476224272533712
+total_goals_bucket,tg_4_5,899,773,0.8598,-0.69,-0.03,0.0,0.8,4.355951056729699,4.357050452781372
+total_goals_bucket,tg_6p,255,222,0.8706,0.33,-1.09,0.0,0.13,6.458823529411765,6.45945945945946
+total_goals_bucket,unknown,248,0,0.0,,,,,,
+home_goals_bucket,g_0p,799,699,0.8748,0.0,-0.17,-0.78,0.0,1.471839799749687,1.4349070100143062
+home_goals_bucket,g_1p,1171,1015,0.8668,-0.54,0.05,0.05,0.54,2.286080273270709,2.2935960591133004
+home_goals_bucket,g_2p,857,744,0.8681,-0.33,-0.18,0.41,0.41,3.310385064177363,3.318548387096774
+home_goals_bucket,g_3p,444,389,0.8761,-0.31,-0.36,0.0,-0.31,4.171171171171171,4.179948586118252
+home_goals_bucket,g_4p,198,160,0.8081,0.29,0.12,0.0,1.17,5.328282828282828,5.36875
+home_goals_bucket,g_5p,68,63,0.9265,0.0,0.0,0.0,-2.68,5.882352941176471,5.873015873015873
+home_goals_bucket,g_6p,21,18,0.8571,0.0,0.0,0.0,1.59,7.190476190476191,7.166666666666667
+home_goals_bucket,unknown,248,0,0.0,,,,,,
+away_goals_bucket,g_0p,1003,864,0.8614,-0.47,0.0,0.13,0.0,1.6291126620139582,1.625
+away_goals_bucket,g_1p,1221,1066,0.8731,-1.21,1.01,-1.21,-1.01,2.588861588861589,2.547842401500938
+away_goals_bucket,g_2p,807,703,0.8711,0.78,-1.22,0.75,0.75,3.493184634448575,3.5248933143669987
+away_goals_bucket,g_3p,356,313,0.8792,-0.08,-0.71,0.0,0.21,4.455056179775281,4.463258785942492
+away_goals_bucket,g_4p,118,99,0.839,0.0,0.88,0.0,0.89,5.254237288135593,5.212121212121212
+away_goals_bucket,g_5p,38,29,0.7632,0.0,0.0,0.0,4.99,5.921052631578948,6.068965517241379
+away_goals_bucket,g_6p,15,14,0.9333,0.0,0.0,0.0,2.86,6.866666666666666,6.928571428571429
+away_goals_bucket,unknown,248,0,0.0,,,,,,
+team_as_home,home_role:AC Milan,39,36,0.9231,3.07,-1.9,0.0,-2.92,2.6578947368421053,2.6666666666666665
+team_as_home,home_role:ADO Den Haag,1,0,0.0,,,,,,
+team_as_home,home_role:AFC Bournemouth,39,37,0.9487,-1.64,0.92,-1.42,-1.42,2.473684210526316,2.3513513513513513
+team_as_home,home_role:AFC Wimbledon,1,0,0.0,,,,,,
+team_as_home,home_role:Aalesund,1,0,0.0,,,,,,
+team_as_home,home_role:Al Hilal,1,0,0.0,,,,,,
+team_as_home,home_role:Al Ittihad,1,0,0.0,,,,,,
+team_as_home,home_role:Al Rayyan,1,0,0.0,,,,,,
+team_as_home,home_role:Al Sailiya,1,0,0.0,,,,,,
+team_as_home,home_role:Al Shahaniya,1,0,0.0,,,,,,
+team_as_home,home_role:Al Wakrah,1,0,0.0,,,,,,
+team_as_home,home_role:Al-Ahli Doha,1,0,0.0,,,,,,
+team_as_home,home_role:Al-Arabi SC,1,0,0.0,,,,,,
+team_as_home,home_role:Al-Fayha,1,0,0.0,,,,,,
+team_as_home,home_role:Alianza Atlético,1,0,0.0,,,,,,
+team_as_home,home_role:Almere City,1,0,0.0,,,,,,
+team_as_home,home_role:Almería,19,18,0.9474,0.29,2.92,3.8,3.22,3.0526315789473686,3.2222222222222223
+team_as_home,home_role:Always Ready,1,0,0.0,,,,,,
+team_as_home,home_role:AmaZulu,1,0,0.0,,,,,,
+team_as_home,home_role:Angers SCO,18,13,0.7222,10.68,-17.09,1.71,9.4,2.9444444444444446,3.1538461538461537
+team_as_home,home_role:Argentinos Juniors,1,0,0.0,,,,,,
+team_as_home,home_role:Arka Gdynia,1,0,0.0,,,,,,
+team_as_home,home_role:Arouca,1,0,0.0,,,,,,
+team_as_home,home_role:Arsenal,39,37,0.9487,-0.85,0.28,1.71,1.49,3.0526315789473686,3.081081081081081
+team_as_home,home_role:Aston Villa,39,38,0.9744,-1.01,0.27,-0.81,-0.67,3.5128205128205128,3.5
+team_as_home,home_role:Atalanta,39,34,0.8718,3.87,-3.1,1.24,0.93,3.1052631578947367,3.176470588235294
+team_as_home,home_role:Athletic Club,40,0,0.0,,,,,2.769230769230769,
+team_as_home,home_role:Atlético Madrid,38,36,0.9474,-1.17,0.44,0.88,0.44,3.1842105263157894,3.2222222222222223
+team_as_home,home_role:Atlético Nacional,1,0,0.0,,,,,,
+team_as_home,home_role:Atromitos,1,0,0.0,,,,,,
+team_as_home,home_role:Auxerre,18,13,0.7222,-2.71,-0.45,-4.98,-0.9,2.411764705882353,2.3846153846153846
+team_as_home,home_role:Bandırmaspor,1,0,0.0,,,,,,
+team_as_home,home_role:Barcelona Guayaquil,1,0,0.0,,,,,,
+team_as_home,home_role:Bari 1908,1,0,0.0,,,,,,
+team_as_home,home_role:Barnsley,1,0,0.0,,,,,,
+team_as_home,home_role:Barracas Central,1,0,0.0,,,,,,
+team_as_home,home_role:Barrow,1,0,0.0,,,,,,
+team_as_home,home_role:Bayer 04 Leverkusen,35,33,0.9429,-1.9,0.69,-1.56,0.61,3.4,3.3636363636363638
+team_as_home,home_role:Bačka Topola,1,0,0.0,,,,,,
+team_as_home,home_role:Blackburn Rovers,1,0,0.0,,,,,,
+team_as_home,home_role:Bohemians,1,0,0.0,,,,,,
+team_as_home,home_role:Bologna,39,37,0.9487,0.49,-2.15,2.22,2.49,2.5128205128205128,2.5945945945945947
+team_as_home,home_role:Bolton Wanderers,1,0,0.0,,,,,,
+team_as_home,home_role:Borussia Dortmund,35,34,0.9714,0.0,0.0,0.0,0.0,3.588235294117647,3.588235294117647
+team_as_home,home_role:Borussia Mönchengladbach,35,34,0.9714,0.0,0.0,0.0,0.0,3.176470588235294,3.176470588235294
+team_as_home,home_role:Boston River,1,0,0.0,,,,,,
+team_as_home,home_role:Botev Plovdiv,1,0,0.0,,,,,,
+team_as_home,home_role:Brackley Town,1,0,0.0,,,,,,
+team_as_home,home_role:Braintree Town,1,0,0.0,,,,,,
+team_as_home,home_role:Brentford,40,38,0.95,-1.69,0.88,-0.94,-0.74,3.5384615384615383,3.526315789473684
+team_as_home,home_role:Brest,34,26,0.7647,0.9,1.58,4.98,-0.9,2.676470588235294,2.8461538461538463
+team_as_home,home_role:Brighton & Hove Albion,39,36,0.9231,-0.44,-1.61,-2.05,1.17,2.973684210526316,2.888888888888889
+team_as_home,home_role:Bristol City,1,0,0.0,,,,,,
+team_as_home,home_role:Bromley,1,0,0.0,,,,,,
+team_as_home,home_role:Burnley,21,18,0.8571,0.58,3.8,3.22,-2.34,3.263157894736842,3.3333333333333335
+team_as_home,home_role:Cagliari,39,36,0.9231,1.75,-3.36,0.58,3.65,2.9473684210526314,2.9722222222222223
+team_as_home,home_role:Carrarese,1,0,0.0,,,,,,
+team_as_home,home_role:Casa Pia,1,0,0.0,,,,,,
+team_as_home,home_role:Castellón,1,0,0.0,,,,,,
+team_as_home,home_role:Catanzaro,1,0,0.0,,,,,,
+team_as_home,home_role:Celta de Vigo,39,36,0.9231,0.85,-2.78,-4.06,-0.85,2.5641025641025643,2.5277777777777777
+team_as_home,home_role:Ceramica Cleopatra,1,0,0.0,,,,,,
+team_as_home,home_role:Cesena,1,0,0.0,,,,,,
+team_as_home,home_role:Chelsea,40,38,0.95,-2.24,1.05,-2.11,0.26,3.175,3.1842105263157894
+team_as_home,home_role:Cheltenham Town,1,0,0.0,,,,,,
+team_as_home,home_role:Chennaiyin,1,0,0.0,,,,,,
+team_as_home,home_role:Chippa United,1,0,0.0,,,,,,
+team_as_home,home_role:Clermont,17,13,0.7647,-2.26,0.9,-2.71,-0.9,2.411764705882353,2.230769230769231
+team_as_home,home_role:Club Brugge,1,0,0.0,,,,,,
+team_as_home,home_role:Como,20,18,0.9,4.44,-7.22,0.0,2.22,3.05,2.888888888888889
+team_as_home,home_role:Coquimbo Unido,1,0,0.0,,,,,,
+team_as_home,home_role:Crawley Town,1,0,0.0,,,,,,
+team_as_home,home_role:Cremonese,1,1,1.0,0.0,0.0,0.0,0.0,0.0,0.0
+team_as_home,home_role:Crewe Alexandra,1,0,0.0,,,,,,
+team_as_home,home_role:Crystal Palace,40,39,0.975,0.96,0.83,1.41,-1.03,2.9,2.923076923076923
+team_as_home,home_role:Cádiz,19,18,0.9474,1.46,1.46,1.46,2.05,1.8421052631578947,1.9444444444444444
+team_as_home,home_role:Darmstadt 98,17,17,1.0,0.0,0.0,0.0,0.0,3.4705882352941178,3.4705882352941178
+team_as_home,home_role:De Graafschap,1,0,0.0,,,,,,
+team_as_home,home_role:Deportes Tolima,1,0,0.0,,,,,,
+team_as_home,home_role:Deportivo Alavés,38,36,0.9474,2.19,-0.88,1.17,-0.88,1.9210526315789473,1.9166666666666667
+team_as_home,home_role:Deportivo Cuenca,1,0,0.0,,,,,,
+team_as_home,home_role:Deportivo La Guaira,1,0,0.0,,,,,,
+team_as_home,home_role:Deportivo Pereira,1,0,0.0,,,,,,
+team_as_home,home_role:Deportivo Recoleta,1,0,0.0,,,,,,
+team_as_home,home_role:Deportivo Riestra,1,0,0.0,,,,,,
+team_as_home,home_role:Derby County,1,0,0.0,,,,,,
+team_as_home,home_role:Dinamo Moskva,1,0,0.0,,,,,,
+team_as_home,home_role:Drogheda United,1,0,0.0,,,,,,
+team_as_home,home_role:Dundalk,1,0,0.0,,,,,,
+team_as_home,home_role:Durban City,1,0,0.0,,,,,,
+team_as_home,home_role:Eastleigh,1,0,0.0,,,,,,
+team_as_home,home_role:Eintracht Frankfurt,35,35,1.0,0.0,0.0,0.0,0.0,3.342857142857143,3.342857142857143
+team_as_home,home_role:Elche,2,0,0.0,,,,,,
+team_as_home,home_role:Elfsborg,1,0,0.0,,,,,,
+team_as_home,home_role:Empoli,38,36,0.9474,1.02,-2.78,-0.88,1.75,1.9473684210526316,1.9444444444444444
+team_as_home,home_role:Energie Cottbus,1,0,0.0,,,,,,
+team_as_home,home_role:Epitsentr Dunayivtsi,1,0,0.0,,,,,,
+team_as_home,home_role:Espanyol,19,18,0.9474,2.34,1.46,2.05,-2.05,2.263157894736842,2.2777777777777777
+team_as_home,home_role:Everton,39,38,0.9744,0.88,-1.75,-1.48,-1.55,2.358974358974359,2.3421052631578947
+team_as_home,home_role:Exeter City,1,0,0.0,,,,,,
+team_as_home,home_role:FC Augsburg,35,34,0.9714,0.0,0.0,0.0,0.0,2.6470588235294117,2.6470588235294117
+team_as_home,home_role:FC Barcelona,40,35,0.875,-2.03,1.58,-0.3,1.43,3.5789473684210527,3.5714285714285716
+team_as_home,home_role:FC Bayern München,35,33,0.9429,1.99,-2.51,-1.39,-0.26,3.9714285714285715,3.8484848484848486
+team_as_home,home_role:FC Cajamarca,1,0,0.0,,,,,,
+team_as_home,home_role:FC Emmen,1,0,0.0,,,,,,
+team_as_home,home_role:FC Köln,18,18,1.0,0.0,0.0,0.0,0.0,2.611111111111111,2.611111111111111
+team_as_home,home_role:FC Union Berlin,35,35,1.0,0.0,0.0,0.0,0.0,2.742857142857143,2.742857142857143
+team_as_home,home_role:FSV Mainz 05,35,35,1.0,0.0,0.0,0.0,0.0,2.4,2.4
+team_as_home,home_role:Fiorentina,39,37,0.9487,0.49,-1.73,0.76,3.05,2.8205128205128207,2.864864864864865
+team_as_home,home_role:Fleetwood Town,1,0,0.0,,,,,,
+team_as_home,home_role:Frosinone,19,18,0.9474,2.05,-3.22,-1.46,3.8,3.1578947368421053,3.0555555555555554
+team_as_home,home_role:Fulham,38,37,0.9737,-1.56,1.07,1.71,1.49,2.9473684210526314,3.0
+team_as_home,home_role:GAIS,1,0,0.0,,,,,,
+team_as_home,home_role:Gamba Osaka,1,0,0.0,,,,,,
+team_as_home,home_role:Gateshead,1,0,0.0,,,,,,
+team_as_home,home_role:Genoa,39,37,0.9487,1.94,1.66,-0.35,-2.36,2.5128205128205128,2.4864864864864864
+team_as_home,home_role:Gent,1,0,0.0,,,,,,
+team_as_home,home_role:Getafe,38,36,0.9474,1.75,-3.51,1.61,2.34,2.0,2.0
+team_as_home,home_role:Ghazl El Mehalla,1,0,0.0,,,,,,
+team_as_home,home_role:Gillingham,1,0,0.0,,,,,,
+team_as_home,home_role:Girona,40,36,0.9,0.44,1.61,1.02,-2.78,3.4210526315789473,3.4722222222222223
+team_as_home,home_role:Goiás,1,0,0.0,,,,,,
+team_as_home,home_role:Granada,19,18,0.9474,1.17,2.63,2.63,-2.34,2.9473684210526314,3.0
+team_as_home,home_role:Grasshopper,1,0,0.0,,,,,,
+team_as_home,home_role:Guadalajara,1,0,0.0,,,,,,
+team_as_home,home_role:Göztepe,1,0,0.0,,,,,,
+team_as_home,home_role:HB Køge,1,0,0.0,,,,,,
+team_as_home,home_role:Halifax Town,1,0,0.0,,,,,,
+team_as_home,home_role:HamKam,1,0,0.0,,,,,,
+team_as_home,home_role:Hapoel Tel Aviv,1,0,0.0,,,,,,
+team_as_home,home_role:Haras El Hodood,1,0,0.0,,,,,,
+team_as_home,home_role:Harrogate Town,1,0,0.0,,,,,,
+team_as_home,home_role:Hartlepool United,1,0,0.0,,,,,,
+team_as_home,home_role:Hatayspor,1,0,0.0,,,,,,
+team_as_home,home_role:Heidenheim,35,34,0.9714,0.0,0.0,0.0,0.0,3.0,3.0
+team_as_home,home_role:Hellas Verona,39,37,0.9487,1.39,-0.21,-2.36,0.07,2.58974358974359,2.4864864864864864
+team_as_home,home_role:Helmond Sport,1,0,0.0,,,,,,
+team_as_home,home_role:Holstein Kiel,17,17,1.0,0.0,0.0,0.0,0.0,3.823529411764706,3.823529411764706
+team_as_home,home_role:Huachipato,1,0,0.0,,,,,,
+team_as_home,home_role:Hull City,1,0,0.0,,,,,,
+team_as_home,home_role:Häcken,1,0,0.0,,,,,,
+team_as_home,home_role:ISCA,1,0,0.0,,,,,,
+team_as_home,home_role:Independiente Petrolero,1,0,0.0,,,,,,
+team_as_home,home_role:Independiente Rivadavia,1,0,0.0,,,,,,
+team_as_home,home_role:Ingolstadt,1,0,0.0,,,,,,
+team_as_home,home_role:Instituto,1,0,0.0,,,,,,
+team_as_home,home_role:Inter,39,0,0.0,,,,,3.0526315789473686,
+team_as_home,home_role:Ipswich Town,20,19,0.95,0.0,0.0,0.0,0.0,3.0526315789473686,3.0526315789473686
+team_as_home,home_role:Istra 1961,1,0,0.0,,,,,,
+team_as_home,home_role:Iğdır FK,1,0,0.0,,,,,,
+team_as_home,home_role:Jahn Regensburg,1,0,0.0,,,,,,
+team_as_home,home_role:Javor Ivanjica,1,0,0.0,,,,,,
+team_as_home,home_role:Jong PSV,1,0,0.0,,,,,,
+team_as_home,home_role:Juventus,40,37,0.925,0.49,0.28,1.8,-0.62,2.1794871794871793,2.2162162162162162
+team_as_home,home_role:KFUM,1,0,0.0,,,,,,
+team_as_home,home_role:Kahraba Ismailia,1,0,0.0,,,,,,
+team_as_home,home_role:Kocaelispor,1,0,0.0,,,,,,
+team_as_home,home_role:Kristiansund,1,0,0.0,,,,,,
+team_as_home,home_role:Krylya Sovetov,1,0,0.0,,,,,,
+team_as_home,home_role:LOSC Lille,35,0,0.0,,,,,2.7714285714285714,
+team_as_home,home_role:La Louvière,1,0,0.0,,,,,,
+team_as_home,home_role:Larissa,1,0,0.0,,,,,,
+team_as_home,home_role:Las Palmas,38,36,0.9474,1.46,-3.07,-0.58,0.29,2.3684210526315788,2.3055555555555554
+team_as_home,home_role:Lazio,38,36,0.9474,2.49,-4.39,-0.29,3.22,2.526315789473684,2.4444444444444446
+team_as_home,home_role:Le Havre,34,25,0.7353,5.53,-9.76,-10.82,-2.0,2.735294117647059,2.56
+team_as_home,home_role:Le Mans,1,0,0.0,,,,,,
+team_as_home,home_role:Lecce,40,37,0.925,1.39,-3.19,-3.33,2.22,2.3076923076923075,2.2162162162162162
+team_as_home,home_role:Lechia Gdańsk,1,0,0.0,,,,,,
+team_as_home,home_role:Leeds United,1,1,1.0,0.0,0.0,0.0,0.0,3.0,3.0
+team_as_home,home_role:Leganés,19,18,0.9474,2.05,-3.22,2.63,2.05,2.6315789473684212,2.6666666666666665
+team_as_home,home_role:Leicester City,19,19,1.0,0.0,0.0,0.0,0.0,2.5789473684210527,2.5789473684210527
+team_as_home,home_role:Lens,35,25,0.7143,0.94,0.71,5.76,1.76,2.5294117647058822,2.68
+team_as_home,home_role:Levante,1,1,1.0,0.0,0.0,0.0,0.0,1.0,1.0
+team_as_home,home_role:Leyton Orient,1,0,0.0,,,,,,
+team_as_home,home_role:Liverpool,39,37,0.9487,-0.64,0.14,-0.92,-1.0,3.263157894736842,3.2162162162162162
+team_as_home,home_role:Lorient,18,13,0.7222,-12.39,3.85,8.12,5.98,3.2222222222222223,3.1538461538461537
+team_as_home,home_role:Luton Town,19,0,0.0,,,,,3.4210526315789473,
+team_as_home,home_role:MSV Duisburg,1,0,0.0,,,,,,
+team_as_home,home_role:Magesi,1,0,0.0,,,,,,
+team_as_home,home_role:Mallorca,40,37,0.925,1.94,1.52,2.08,2.77,1.9743589743589745,2.081081081081081
+team_as_home,home_role:Manchester City,39,37,0.9487,-1.52,0.42,-1.8,-1.8,3.4871794871794872,3.4054054054054053
+team_as_home,home_role:Manchester United,39,38,0.9744,-1.48,1.08,1.62,1.28,2.8974358974358974,2.9473684210526314
+team_as_home,home_role:Manisa FK,1,0,0.0,,,,,,
+team_as_home,home_role:Mansfield Town,1,0,0.0,,,,,,
+team_as_home,home_role:Mantova,1,0,0.0,,,,,,
+team_as_home,home_role:Melbourne City,1,0,0.0,,,,,,
+team_as_home,home_role:Metz,18,14,0.7778,4.76,4.76,-12.7,-12.7,2.6666666666666665,2.4285714285714284
+team_as_home,home_role:Millwall,1,0,0.0,,,,,,
+team_as_home,home_role:Mirassol,1,0,0.0,,,,,,
+team_as_home,home_role:Mladost Lučani,1,0,0.0,,,,,,
+team_as_home,home_role:Molde,1,0,0.0,,,,,,
+team_as_home,home_role:Monaco,35,25,0.7143,-2.86,-1.14,-1.14,7.43,2.914285714285714,2.96
+team_as_home,home_role:Montana,1,0,0.0,,,,,,
+team_as_home,home_role:Montpellier,34,26,0.7647,5.43,-1.81,-1.13,-2.04,2.9705882352941178,3.0
+team_as_home,home_role:Monza,38,36,0.9474,1.02,0.15,-0.29,-2.49,2.4473684210526314,2.361111111111111
+team_as_home,home_role:Morecambe,1,0,0.0,,,,,,
+team_as_home,home_role:Nantes,35,27,0.7714,3.92,-4.13,-2.96,-8.68,2.4285714285714284,2.4444444444444446
+team_as_home,home_role:Napoli,40,37,0.925,2.77,-1.46,0.21,0.07,2.5128205128205128,2.5135135135135136
+team_as_home,home_role:Newcastle United,39,38,0.9744,1.62,0.61,-0.88,-1.28,3.4358974358974357,3.3157894736842106
+team_as_home,home_role:Nice,35,27,0.7714,2.12,1.38,5.29,3.28,2.4857142857142858,2.6666666666666665
+team_as_home,home_role:Nieciecza,1,0,0.0,,,,,,
+team_as_home,home_role:Nordsjælland,1,0,0.0,,,,,,
+team_as_home,home_role:Northampton Town,1,0,0.0,,,,,,
+team_as_home,home_role:Nottingham Forest,40,39,0.975,0.96,0.9,-1.47,-1.15,2.65,2.6153846153846154
+team_as_home,home_role:Notts County,1,0,0.0,,,,,,
+team_as_home,home_role:O'Higgins,1,0,0.0,,,,,,
+team_as_home,home_role:Odense BK,1,0,0.0,,,,,,
+team_as_home,home_role:Oldham Athletic,1,0,0.0,,,,,,
+team_as_home,home_role:Olympique Lyonnais,35,0,0.0,,,,,3.257142857142857,
+team_as_home,home_role:Olympique Marseille,35,0,0.0,,,,,3.176470588235294,
+team_as_home,home_role:Orbit College,1,0,0.0,,,,,,
+team_as_home,home_role:Orlando Pirates,1,0,0.0,,,,,,
+team_as_home,home_role:Osasuna,39,36,0.9231,0.64,-3.21,0.64,2.14,2.641025641025641,2.6944444444444446
+team_as_home,home_role:Panserraikos,1,0,0.0,,,,,,
+team_as_home,home_role:Paris,1,0,0.0,,,,,,
+team_as_home,home_role:Paris Saint Germain,36,26,0.7222,-0.33,0.11,-3.08,-4.07,3.657142857142857,3.576923076923077
+team_as_home,home_role:Parma,20,19,0.95,1.32,2.11,-2.63,-1.58,2.75,2.6842105263157894
+team_as_home,home_role:Peterborough United,1,0,0.0,,,,,,
+team_as_home,home_role:Petrolul 52,1,0,0.0,,,,,,
+team_as_home,home_role:Pisa,1,1,1.0,0.0,0.0,0.0,0.0,2.0,2.0
+team_as_home,home_role:Pogoń Szczecin,1,0,0.0,,,,,,
+team_as_home,home_role:Port Vale,1,0,0.0,,,,,,
+team_as_home,home_role:Porto II,1,0,0.0,,,,,,
+team_as_home,home_role:Portsmouth,1,0,0.0,,,,,,
+team_as_home,home_role:Preston North End,1,0,0.0,,,,,,
+team_as_home,home_role:Querétaro,1,0,0.0,,,,,,
+team_as_home,home_role:RB Leipzig,35,34,0.9714,0.0,0.0,0.0,0.0,3.176470588235294,3.176470588235294
+team_as_home,home_role:Radomiak Radom,1,0,0.0,,,,,,
+team_as_home,home_role:Rayo Vallecano,38,36,0.9474,1.46,-3.8,-0.29,0.58,2.473684210526316,2.5
+team_as_home,home_role:Reading,1,0,0.0,,,,,,
+team_as_home,home_role:Real Betis,38,36,0.9474,-0.15,0.88,-2.92,-1.9,2.6052631578947367,2.5277777777777777
+team_as_home,home_role:Real Madrid,40,36,0.9,-0.88,0.29,3.36,2.49,3.1842105263157894,3.2777777777777777
+team_as_home,home_role:Real Sociedad,40,36,0.9,-0.44,1.9,-0.73,2.05,2.263157894736842,2.3055555555555554
+team_as_home,home_role:Real Valladolid,19,17,0.8947,1.86,1.55,-0.31,-7.43,2.263157894736842,2.1176470588235294
+team_as_home,home_role:Reggiana,1,0,0.0,,,,,,
+team_as_home,home_role:Reims,34,0,0.0,,,,,2.323529411764706,
+team_as_home,home_role:Rennes,35,26,0.7429,-0.9,0.23,2.71,6.56,3.0,3.1538461538461537
+team_as_home,home_role:Richards Bay,1,0,0.0,,,,,,
+team_as_home,home_role:Rionegro Águilas,1,0,0.0,,,,,,
+team_as_home,home_role:Roda JC Kerkrade,1,0,0.0,,,,,,
+team_as_home,home_role:Roma,40,37,0.925,3.47,-4.44,0.07,0.21,2.8461538461538463,2.810810810810811
+team_as_home,home_role:SC Cambuur,1,0,0.0,,,,,,
+team_as_home,home_role:SC Freiburg,35,35,1.0,0.0,0.0,0.0,0.0,3.4,3.4
+team_as_home,home_role:Saarbrücken,1,0,0.0,,,,,,
+team_as_home,home_role:Saint-Étienne,17,13,0.7647,-12.22,6.79,0.9,2.71,3.3529411764705883,3.6153846153846154
+team_as_home,home_role:Salernitana,19,18,0.9474,0.29,-1.75,-1.75,3.8,2.8947368421052633,2.8333333333333335
+team_as_home,home_role:Sampdoria,1,0,0.0,,,,,,
+team_as_home,home_role:Sarpsborg 08,1,0,0.0,,,,,,
+team_as_home,home_role:Sassuolo,20,18,0.9,-4.09,2.63,2.63,3.22,3.0,3.111111111111111
+team_as_home,home_role:Schweinfurt,1,0,0.0,,,,,,
+team_as_home,home_role:Septemvri Sofia,1,0,0.0,,,,,,
+team_as_home,home_role:Serik Belediyespor,1,0,0.0,,,,,,
+team_as_home,home_role:Servette,1,0,0.0,,,,,,
+team_as_home,home_role:Sevilla,39,36,0.9231,1.75,-3.36,2.34,3.36,2.473684210526316,2.5277777777777777
+team_as_home,home_role:Shamrock Rovers,1,0,0.0,,,,,,
+team_as_home,home_role:Sheffield United,19,18,0.9474,0.58,-1.75,-0.88,-2.34,4.0,3.9444444444444446
+team_as_home,home_role:Sheffield Wednesday,1,0,0.0,,,,,,
+team_as_home,home_role:Sligo Rovers,1,0,0.0,,,,,,
+team_as_home,home_role:Smouha,1,0,0.0,,,,,,
+team_as_home,home_role:Sochi,1,0,0.0,,,,,,
+team_as_home,home_role:Solihull Moors,1,0,0.0,,,,,,
+team_as_home,home_role:Southampton,19,19,1.0,0.0,0.0,0.0,0.0,3.1578947368421053,3.1578947368421053
+team_as_home,home_role:Sporting Gijón,1,0,0.0,,,,,,
+team_as_home,home_role:St. Gallen,1,0,0.0,,,,,,
+team_as_home,home_role:St. Pauli,19,17,0.8947,0.0,0.0,0.0,0.0,1.7058823529411764,1.7058823529411764
+team_as_home,home_role:Stade d'Abidjan,1,0,0.0,,,,,,
+team_as_home,home_role:Stevenage,1,0,0.0,,,,,,
+team_as_home,home_role:Strasbourg,35,27,0.7714,-7.83,8.47,1.8,-1.9,2.8857142857142857,2.925925925925926
+team_as_home,home_role:Stuttgart II,1,0,0.0,,,,,,
+team_as_home,home_role:Sunderland,1,1,1.0,0.0,0.0,0.0,0.0,1.0,1.0
+team_as_home,home_role:Sutton United,1,0,0.0,,,,,,
+team_as_home,home_role:Swansea City,1,0,0.0,,,,,,
+team_as_home,home_role:Swindon Town,1,0,0.0,,,,,,
+team_as_home,home_role:TOP Oss,1,0,0.0,,,,,,
+team_as_home,home_role:TS Galaxy,1,0,0.0,,,,,,
+team_as_home,home_role:TSG Hoffenheim,35,34,0.9714,0.92,-1.76,-1.01,2.35,3.6,3.588235294117647
+team_as_home,home_role:Torino,39,36,0.9231,2.05,-4.39,-1.61,1.75,1.631578947368421,1.5833333333333333
+team_as_home,home_role:Torreense,1,0,0.0,,,,,,
+team_as_home,home_role:Tottenham Hotspur,39,38,0.9744,-1.35,1.08,-0.54,-0.54,3.5641025641025643,3.5789473684210527
+team_as_home,home_role:Toulouse,35,26,0.7429,0.22,-4.4,-7.14,-3.19,2.6285714285714286,2.3846153846153846
+team_as_home,home_role:Tranmere Rovers,1,0,0.0,,,,,,
+team_as_home,home_role:Tromsø,1,0,0.0,,,,,,
+team_as_home,home_role:Truro City,1,0,0.0,,,,,,
+team_as_home,home_role:Udinese,40,36,0.9,1.71,-4.7,-4.27,-3.85,2.5641025641025643,2.4722222222222223
+team_as_home,home_role:Ufa,1,0,0.0,,,,,,
+team_as_home,home_role:Universidad Católica,1,0,0.0,,,,,,
+team_as_home,home_role:Universitatea Craiova,1,0,0.0,,,,,,
+team_as_home,home_role:Valencia,38,36,0.9474,-0.29,-1.17,2.34,2.34,2.1052631578947367,2.1666666666666665
+team_as_home,home_role:Vejle Boldklub,1,0,0.0,,,,,,
+team_as_home,home_role:Venezia,20,18,0.9,1.46,-2.92,1.75,2.34,2.0526315789473686,2.111111111111111
+team_as_home,home_role:Verl,1,0,0.0,,,,,,
+team_as_home,home_role:VfB Stuttgart,35,35,1.0,0.0,0.0,0.0,0.0,3.742857142857143,3.742857142857143
+team_as_home,home_role:VfL Bochum 1848,34,30,0.8824,-0.2,-1.18,-2.94,1.96,3.0588235294117645,2.9
+team_as_home,home_role:VfL Wolfsburg,35,34,0.9714,0.0,0.0,0.0,0.0,3.1470588235294117,3.1470588235294117
+team_as_home,home_role:Viborg FF,1,0,0.0,,,,,,
+team_as_home,home_role:Villarreal,38,36,0.9474,2.34,-1.32,1.32,1.46,3.6315789473684212,3.6944444444444446
+team_as_home,home_role:Vitesse,1,0,0.0,,,,,,
+team_as_home,home_role:Vizela,1,0,0.0,,,,,,
+team_as_home,home_role:Vojvodina,1,0,0.0,,,,,,
+team_as_home,home_role:Vukovar,1,0,0.0,,,,,,
+team_as_home,home_role:Vålerenga,1,0,0.0,,,,,,
+team_as_home,home_role:Wadi Degla,1,0,0.0,,,,,,
+team_as_home,home_role:Waldhof Mannheim,1,0,0.0,,,,,,
+team_as_home,home_role:Watford,1,0,0.0,,,,,,
+team_as_home,home_role:Wealdstone,1,0,0.0,,,,,,
+team_as_home,home_role:Wehen Wiesbaden,1,0,0.0,,,,,,
+team_as_home,home_role:Werder Bremen,35,34,0.9714,-1.85,1.01,-1.09,-1.26,3.0285714285714285,2.9705882352941178
+team_as_home,home_role:West Ham United,39,37,0.9487,-1.85,0.92,-1.21,-1.0,3.0526315789473686,3.027027027027027
+team_as_home,home_role:Wolverhampton Wanderers,38,37,0.9737,-1.71,1.28,-1.07,-1.0,3.026315789473684,3.027027027027027
+team_as_home,home_role:Wrexham,1,0,0.0,,,,,,
+team_as_home,home_role:Wycombe Wanderers,1,0,0.0,,,,,,
+team_as_home,home_role:Wydad Casablanca,1,0,0.0,,,,,,
+team_as_home,home_role:York City,1,0,0.0,,,,,,
+team_as_home,home_role:ZED FC,1,0,0.0,,,,,,
+team_as_home,home_role:Zenit,1,0,0.0,,,,,,
+team_as_home,home_role:Çorum FK,1,0,0.0,,,,,,
+team_as_home,home_role:Ümraniyespor,1,0,0.0,,,,,,
+team_as_away,away_role:1860 München,1,0,0.0,,,,,,
+team_as_away,away_role:AC Milan,40,37,0.925,-1.04,0.07,-1.39,-1.66,3.3076923076923075,3.2432432432432434
+team_as_away,away_role:AFC Bournemouth,40,36,0.9,-5.13,2.99,-1.71,-2.14,3.4358974358974357,3.4444444444444446
+team_as_away,away_role:AGF,1,0,0.0,,,,,,
+team_as_away,away_role:Aarhus Fremad,1,0,0.0,,,,,,
+team_as_away,away_role:Accrington Stanley,1,0,0.0,,,,,,
+team_as_away,away_role:Adana Demirspor,1,0,0.0,,,,,,
+team_as_away,away_role:Al Ahli,1,0,0.0,,,,,,
+team_as_away,away_role:Al Ahly,1,0,0.0,,,,,,
+team_as_away,away_role:Al Duhail,1,0,0.0,,,,,,
+team_as_away,away_role:Al Gharafa,1,0,0.0,,,,,,
+team_as_away,away_role:Al Kholood,1,0,0.0,,,,,,
+team_as_away,away_role:Al Sadd,1,0,0.0,,,,,,
+team_as_away,away_role:Al Shamal SC,1,0,0.0,,,,,,
+team_as_away,away_role:Aldershot Town,1,0,0.0,,,,,,
+team_as_away,away_role:Alemannia Aachen,1,0,0.0,,,,,,
+team_as_away,away_role:Alianza Petrolera,1,0,0.0,,,,,,
+team_as_away,away_role:Almería,19,18,0.9474,-1.75,0.58,-2.05,3.8,3.1578947368421053,3.1666666666666665
+team_as_away,away_role:Altrincham,1,0,0.0,,,,,,
+team_as_away,away_role:Anderlecht,1,0,0.0,,,,,,
+team_as_away,away_role:Angers SCO,18,12,0.6667,-5.39,3.92,7.35,6.37,2.0,2.1666666666666665
+team_as_away,away_role:Arab Contractors FC,1,0,0.0,,,,,,
+team_as_away,away_role:Arsenal,39,38,0.9744,0.4,-1.15,-1.42,-1.42,2.8205128205128207,2.710526315789474
+team_as_away,away_role:Asteras Tripolis,1,0,0.0,,,,,,
+team_as_away,away_role:Aston Villa,39,38,0.9744,1.08,-1.55,-0.94,-1.21,3.0256410256410255,2.973684210526316
+team_as_away,away_role:Atalanta,40,37,0.925,-4.02,2.91,-2.22,2.49,2.8974358974358974,2.8378378378378377
+team_as_away,away_role:Athletic Club,38,0,0.0,,,,,2.0,
+team_as_away,away_role:Atlético Bucaramanga,1,0,0.0,,,,,,
+team_as_away,away_role:Atlético Madrid,40,36,0.9,-0.88,-0.44,2.19,1.9,2.3684210526315788,2.4166666666666665
+team_as_away,away_role:Auxerre,18,14,0.7778,8.73,-7.94,-2.38,-2.38,3.4444444444444446,3.4285714285714284
+team_as_away,away_role:Banfield,1,0,0.0,,,,,,
+team_as_away,away_role:Barnet,1,0,0.0,,,,,,
+team_as_away,away_role:Bayer 04 Leverkusen,35,32,0.9143,0.0,1.1,0.74,0.92,3.2941176470588234,3.28125
+team_as_away,away_role:Benfica,1,0,0.0,,,,,,
+team_as_away,away_role:Benfica II,1,0,0.0,,,,,,
+team_as_away,away_role:Birmingham City,1,0,0.0,,,,,,
+team_as_away,away_role:Blackpool,1,0,0.0,,,,,,
+team_as_away,away_role:Boca Juniors,1,0,0.0,,,,,,
+team_as_away,away_role:Bodrum FK,1,0,0.0,,,,,,
+team_as_away,away_role:Bodø / Glimt,1,0,0.0,,,,,,
+team_as_away,away_role:Bologna,39,37,0.9487,1.52,1.66,-2.63,-2.49,2.4615384615384617,2.3783783783783785
+team_as_away,away_role:Boreham Wood,1,0,0.0,,,,,,
+team_as_away,away_role:Borussia Dortmund,35,35,1.0,0.0,0.0,0.0,0.0,3.257142857142857,3.257142857142857
+team_as_away,away_role:Borussia Mönchengladbach,35,34,0.9714,0.0,0.0,0.0,0.0,3.735294117647059,3.735294117647059
+team_as_away,away_role:Boston United,1,0,0.0,,,,,,
+team_as_away,away_role:Botev Vratsa,1,0,0.0,,,,,,
+team_as_away,away_role:Bradford City,1,0,0.0,,,,,,
+team_as_away,away_role:Brann,1,0,0.0,,,,,,
+team_as_away,away_role:Brentford,38,37,0.9737,1.42,-1.85,-1.07,-1.14,2.789473684210526,2.7027027027027026
+team_as_away,away_role:Brest,35,27,0.7714,-8.68,4.44,-5.29,-7.83,3.085714285714286,2.962962962962963
+team_as_away,away_role:Brighton & Hove Albion,40,38,0.95,-1.62,0.81,-0.81,1.75,3.41025641025641,3.3947368421052633
+team_as_away,away_role:Bristol Rovers,1,0,0.0,,,,,,
+team_as_away,away_role:Brommapojkarna,1,0,0.0,,,,,,
+team_as_away,away_role:Brøndby IF,1,0,0.0,,,,,,
+team_as_away,away_role:Burnley,20,19,0.95,3.16,-4.47,-1.84,-1.58,3.1,3.1052631578947367
+team_as_away,away_role:Burton Albion,1,0,0.0,,,,,,
+team_as_away,away_role:CFR Cluj,1,0,0.0,,,,,,
+team_as_away,away_role:CSKA Moskva,1,0,0.0,,,,,,
+team_as_away,away_role:CSKA Sofia,1,0,0.0,,,,,,
+team_as_away,away_role:Cagliari,39,36,0.9231,0.58,0.73,-2.92,-2.78,2.473684210526316,2.388888888888889
+team_as_away,away_role:Cambridge United,1,0,0.0,,,,,,
+team_as_away,away_role:Cardiff City,1,0,0.0,,,,,,
+team_as_away,away_role:Carlisle United,1,0,0.0,,,,,,
+team_as_away,away_role:Celta de Vigo,39,36,0.9231,-2.63,1.32,-1.75,-1.75,3.210526315789474,3.0833333333333335
+team_as_away,away_role:Central Coast Mariners,1,0,0.0,,,,,,
+team_as_away,away_role:Charlton Athletic,1,0,0.0,,,,,,
+team_as_away,away_role:Chaves,1,0,0.0,,,,,,
+team_as_away,away_role:Chelsea,39,37,0.9487,1.0,-1.64,-0.92,-0.92,3.263157894736842,3.2162162162162162
+team_as_away,away_role:Chesterfield,1,0,0.0,,,,,,
+team_as_away,away_role:Clermont,17,12,0.7059,-8.82,-3.43,-8.82,-2.94,2.6470588235294117,2.3333333333333335
+team_as_away,away_role:Club Bolívar,1,0,0.0,,,,,,
+team_as_away,away_role:Colchester United,1,0,0.0,,,,,,
+team_as_away,away_role:Como,21,18,0.8571,-2.92,1.46,2.34,2.92,2.473684210526316,2.5
+team_as_away,away_role:Coventry City,1,0,0.0,,,,,,
+team_as_away,away_role:Cremonese,1,0,0.0,,,,,,
+team_as_away,away_role:Criciúma,1,0,0.0,,,,,,
+team_as_away,away_role:Cruzeiro,1,0,0.0,,,,,,
+team_as_away,away_role:Crystal Palace,38,37,0.9737,-1.78,0.85,-1.49,-1.14,2.736842105263158,2.72972972972973
+team_as_away,away_role:Csikszereda,1,0,0.0,,,,,,
+team_as_away,away_role:Cádiz,19,18,0.9474,-2.05,0.29,-4.09,2.34,2.4210526315789473,2.388888888888889
+team_as_away,away_role:Darmstadt 98,17,17,1.0,0.0,0.0,0.0,0.0,3.3529411764705883,3.3529411764705883
+team_as_away,away_role:Defensa y Justicia,1,0,0.0,,,,,,
+team_as_away,away_role:Dender,1,0,0.0,,,,,,
+team_as_away,away_role:Deportivo Alavés,40,36,0.9,-2.78,1.02,2.49,2.78,2.5,2.5555555555555554
+team_as_away,away_role:Derry City,1,0,0.0,,,,,,
+team_as_away,away_role:Difaâ El Jadida,1,0,0.0,,,,,,
+team_as_away,away_role:Djurgården,1,0,0.0,,,,,,
+team_as_away,away_role:Doncaster Rovers,1,0,0.0,,,,,,
+team_as_away,away_role:ENPPI,1,0,0.0,,,,,,
+team_as_away,away_role:Eintracht Frankfurt,35,34,0.9714,0.0,0.0,0.0,0.0,3.0,3.0
+team_as_away,away_role:El Gounah,1,0,0.0,,,,,,
+team_as_away,away_role:Empoli,39,36,0.9231,-2.63,1.17,-0.29,0.29,2.6578947368421053,2.638888888888889
+team_as_away,away_role:Erzgebirge Aue,1,0,0.0,,,,,,
+team_as_away,away_role:Espanyol,20,18,0.9,-1.75,0.88,-3.22,-2.92,2.526315789473684,2.388888888888889
+team_as_away,away_role:Estoril,1,0,0.0,,,,,,
+team_as_away,away_role:Everton,39,37,0.9487,1.14,0.78,1.0,-1.56,2.3157894736842106,2.324324324324324
+team_as_away,away_role:FC Augsburg,35,35,1.0,0.0,0.0,0.0,0.0,3.1142857142857143,3.1142857142857143
+team_as_away,away_role:FC Barcelona,38,36,0.9474,0.58,0.88,1.02,3.65,3.3684210526315788,3.4722222222222223
+team_as_away,away_role:FC Bayern München,35,31,0.8857,-1.23,-0.76,-1.71,3.32,4.0,3.935483870967742
+team_as_away,away_role:FC Den Bosch,1,0,0.0,,,,,,
+team_as_away,away_role:FC Dordrecht,1,0,0.0,,,,,,
+team_as_away,away_role:FC Eindhoven,1,0,0.0,,,,,,
+team_as_away,away_role:FC Köln,18,17,0.9444,0.0,0.0,0.0,0.0,2.6470588235294117,2.6470588235294117
+team_as_away,away_role:FC Union Berlin,35,34,0.9714,0.0,0.0,0.0,0.0,2.4705882352941178,2.4705882352941178
+team_as_away,away_role:FSV Mainz 05,35,34,0.9714,0.0,0.0,0.0,0.0,3.088235294117647,3.088235294117647
+team_as_away,away_role:Fiorentina,39,37,0.9487,-3.19,1.94,-2.91,0.21,2.58974358974359,2.5405405405405403
+team_as_away,away_role:Fluminense,1,0,0.0,,,,,,
+team_as_away,away_role:Forest Green Rovers,1,0,0.0,,,,,,
+team_as_away,away_role:Fredericia,1,0,0.0,,,,,,
+team_as_away,away_role:Fredrikstad,1,0,0.0,,,,,,
+team_as_away,away_role:Frosinone,19,18,0.9474,-2.34,0.29,2.63,3.22,2.789473684210526,2.8333333333333335
+team_as_away,away_role:Fulham,40,38,0.95,1.08,-1.82,-1.15,-1.01,2.871794871794872,2.789473684210526
+team_as_away,away_role:Galatasaray,1,0,0.0,,,,,,
+team_as_away,away_role:Galway United,1,0,0.0,,,,,,
+team_as_away,away_role:Genoa,40,37,0.925,-3.19,1.25,-0.62,0.07,2.128205128205128,2.135135135135135
+team_as_away,away_role:Getafe,40,37,0.925,2.77,1.25,-0.21,-3.05,2.41025641025641,2.3783783783783785
+team_as_away,away_role:Girona,39,36,0.9231,-3.36,2.05,-2.78,0.44,2.763157894736842,2.6944444444444446
+team_as_away,away_role:Golden Arrows,1,0,0.0,,,,,,
+team_as_away,away_role:Granada,20,18,0.9,4.68,0.0,2.63,-3.22,3.210526315789474,3.2777777777777777
+team_as_away,away_role:Grimsby Town,1,0,0.0,,,,,,
+team_as_away,away_role:Hajduk Split,1,0,0.0,,,,,,
+team_as_away,away_role:Hamburger SV,2,2,1.0,0.0,0.0,0.0,0.0,4.0,4.0
+team_as_away,away_role:Hansa Rostock,1,0,0.0,,,,,,
+team_as_away,away_role:Havelse,1,0,0.0,,,,,,
+team_as_away,away_role:Heidenheim,35,35,1.0,0.0,0.0,0.0,0.0,3.057142857142857,3.057142857142857
+team_as_away,away_role:Hellas Verona,39,36,0.9231,-2.34,1.32,-0.58,-0.15,2.3421052631578947,2.361111111111111
+team_as_away,away_role:Hoffenheim II,1,0,0.0,,,,,,
+team_as_away,away_role:Holstein Kiel,17,17,1.0,0.0,0.0,0.0,0.0,3.764705882352941,3.764705882352941
+team_as_away,away_role:Huddersfield Town,1,0,0.0,,,,,,
+team_as_away,away_role:IFK Göteborg,1,0,0.0,,,,,,
+team_as_away,away_role:IMT Novi Beograd,1,0,0.0,,,,,,
+team_as_away,away_role:Inter,39,0,0.0,,,,,2.9743589743589745,
+team_as_away,away_role:Inter Kashi,1,0,0.0,,,,,,
+team_as_away,away_role:Ipswich Town,19,19,1.0,0.0,0.0,0.0,0.0,3.1578947368421053,3.1578947368421053
+team_as_away,away_role:Jaguares de Córdoba,1,0,0.0,,,,,,
+team_as_away,away_role:Jong AZ,1,0,0.0,,,,,,
+team_as_away,away_role:Jong Ajax,1,0,0.0,,,,,,
+team_as_away,away_role:Jong FC Utrecht,1,0,0.0,,,,,,
+team_as_away,away_role:Juve Stabia,1,0,0.0,,,,,,
+team_as_away,away_role:Juventus,39,36,0.9231,-1.75,2.19,-0.15,0.29,2.5,2.388888888888889
+team_as_away,away_role:Juárez,1,0,0.0,,,,,,
+team_as_away,away_role:Kaizer Chiefs,1,0,0.0,,,,,,
+team_as_away,away_role:Keçiörengücü,1,0,0.0,,,,,,
+team_as_away,away_role:Kifisia,1,0,0.0,,,,,,
+team_as_away,away_role:Korona Kielce,1,0,0.0,,,,,,
+team_as_away,away_role:Krasnodar,1,0,0.0,,,,,,
+team_as_away,away_role:Kudrivka,1,0,0.0,,,,,,
+team_as_away,away_role:LDU Quito,1,0,0.0,,,,,,
+team_as_away,away_role:LOSC Lille,35,0,0.0,,,,,2.3142857142857145,
+team_as_away,away_role:Lanús,1,0,0.0,,,,,,
+team_as_away,away_role:Las Palmas,38,36,0.9474,-2.19,1.17,2.19,2.63,2.3947368421052633,2.4722222222222223
+team_as_away,away_role:Lazio,40,38,0.95,1.97,2.63,0.13,-2.5,2.625,2.6052631578947367
+team_as_away,away_role:Le Havre,36,28,0.7778,-5.95,2.78,-3.57,3.17,2.8055555555555554,2.75
+team_as_away,away_role:Lecce,39,36,0.9231,-1.07,1.28,2.99,0.85,2.1794871794871793,2.1944444444444446
+team_as_away,away_role:Leeds United,2,1,0.5,0.0,0.0,0.0,0.0,3.0,3.0
+team_as_away,away_role:Leganés,19,18,0.9474,2.34,0.58,2.05,2.92,2.3684210526315788,2.5
+team_as_away,away_role:Legia Warszawa,1,0,0.0,,,,,,
+team_as_away,away_role:Leicester City,20,19,0.95,0.0,0.0,0.0,0.0,3.3684210526315788,3.3684210526315788
+team_as_away,away_role:Leixões,1,0,0.0,,,,,,
+team_as_away,away_role:Lens,34,24,0.7059,0.98,-9.07,-3.68,-1.23,2.264705882352941,2.2916666666666665
+team_as_away,away_role:Lillestrøm,1,0,0.0,,,,,,
+team_as_away,away_role:Lincoln City,1,0,0.0,,,,,,
+team_as_away,away_role:Liverpool,39,38,0.9744,0.4,1.42,1.69,-0.88,3.41025641025641,3.4473684210526314
+team_as_away,away_role:Lokomotiv Plovdiv,1,0,0.0,,,,,,
+team_as_away,away_role:Lokomotiva Zagreb,1,0,0.0,,,,,,
+team_as_away,away_role:Lorient,18,13,0.7222,-7.26,6.41,0.43,1.71,3.0555555555555554,3.0
+team_as_away,away_role:Los Chankas,1,0,0.0,,,,,,
+team_as_away,away_role:Luton Town,20,0,0.0,,,,,3.789473684210526,
+team_as_away,away_role:Luzern,1,0,0.0,,,,,,
+team_as_away,away_role:MVV Maastricht,1,0,0.0,,,,,,
+team_as_away,away_role:Maccabi Haifa,1,0,0.0,,,,,,
+team_as_away,away_role:Mallorca,38,36,0.9474,0.0,1.17,-1.02,-0.29,2.1578947368421053,2.111111111111111
+team_as_away,away_role:Mamelodi Sundowns,1,0,0.0,,,,,,
+team_as_away,away_role:Manchester City,40,37,0.925,1.25,-2.22,-2.22,-0.07,2.9743589743589745,2.945945945945946
+team_as_away,away_role:Manchester United,39,38,0.9744,1.15,-1.75,-1.28,-1.35,2.6666666666666665,2.6578947368421053
+team_as_away,away_role:Marumo Gallants FC,1,0,0.0,,,,,,
+team_as_away,away_role:Mechelen,1,0,0.0,,,,,,
+team_as_away,away_role:Metz,18,13,0.7222,2.71,9.05,8.6,-6.79,2.8823529411764706,3.076923076923077
+team_as_away,away_role:Middlesbrough,1,0,0.0,,,,,,
+team_as_away,away_role:Millonarios,1,0,0.0,,,,,,
+team_as_away,away_role:Milton Keynes Dons,1,0,0.0,,,,,,
+team_as_away,away_role:Modena,1,0,0.0,,,,,,
+team_as_away,away_role:Modern Sport FC,1,0,0.0,,,,,,
+team_as_away,away_role:Monaco,35,26,0.7429,-6.33,6.79,2.49,2.49,3.411764705882353,3.576923076923077
+team_as_away,away_role:Montpellier,34,26,0.7647,-2.26,-0.45,-3.85,-7.47,2.7058823529411766,2.4615384615384617
+team_as_away,away_role:Monza,39,36,0.9231,-2.49,1.02,-0.29,-0.44,2.473684210526316,2.4166666666666665
+team_as_away,away_role:Motor Lublin,1,0,0.0,,,,,,
+team_as_away,away_role:NEOM SC,1,0,0.0,,,,,,
+team_as_away,away_role:Nacional,1,0,0.0,,,,,,
+team_as_away,away_role:Nantes,36,25,0.6944,-7.06,5.53,10.0,14.24,2.7058823529411766,2.96
+team_as_away,away_role:Napoli,39,37,0.9487,0.97,2.36,2.36,-2.77,2.4358974358974357,2.4594594594594597
+team_as_away,away_role:Napredak,1,0,0.0,,,,,,
+team_as_away,away_role:Newcastle United,39,38,0.9744,-1.35,0.94,1.75,1.62,3.4358974358974357,3.5
+team_as_away,away_role:Newport County,1,0,0.0,,,,,,
+team_as_away,away_role:Nice,35,26,0.7429,-4.51,8.02,-1.43,1.54,2.6,2.5384615384615383
+team_as_away,away_role:Norwich City,1,0,0.0,,,,,,
+team_as_away,away_role:Nottingham Forest,38,37,0.9737,1.21,1.0,1.71,-1.07,3.1842105263157894,3.2162162162162162
+team_as_away,away_role:Olympique Lyonnais,35,0,0.0,,,,,3.0285714285714285,
+team_as_away,away_role:Olympique Marseille,35,0,0.0,,,,,3.085714285714286,
+team_as_away,away_role:Osasuna,39,35,0.8974,3.61,-1.05,-1.88,-0.98,2.6315789473684212,2.6
+team_as_away,away_role:Osnabrück,1,0,0.0,,,,,,
+team_as_away,away_role:Oxford United,1,0,0.0,,,,,,
+team_as_away,away_role:Palestino,1,0,0.0,,,,,,
+team_as_away,away_role:Panaitolikos,1,0,0.0,,,,,,
+team_as_away,away_role:Paris,1,1,1.0,0.0,0.0,0.0,0.0,4.0,4.0
+team_as_away,away_role:Paris Saint Germain,34,26,0.7647,0.9,-0.45,-1.13,1.58,3.411764705882353,3.4615384615384617
+team_as_away,away_role:Parma,20,19,0.95,-3.16,0.79,-2.37,-2.11,2.5,2.4210526315789473
+team_as_away,away_role:Pau,1,0,0.0,,,,,,
+team_as_away,away_role:Pendikspor,1,0,0.0,,,,,,
+team_as_away,away_role:Pescara,1,0,0.0,,,,,,
+team_as_away,away_role:Petrojet,1,0,0.0,,,,,,
+team_as_away,away_role:Pharco,1,0,0.0,,,,,,
+team_as_away,away_role:Piast Gliwice,1,0,0.0,,,,,,
+team_as_away,away_role:Pisa,1,0,0.0,,,,,,
+team_as_away,away_role:Plymouth Argyle,1,0,0.0,,,,,,
+team_as_away,away_role:Polokwane City,1,0,0.0,,,,,,
+team_as_away,away_role:Pumas UNAM,1,0,0.0,,,,,,
+team_as_away,away_role:Qatar SC,1,0,0.0,,,,,,
+team_as_away,away_role:Queens Park Rangers,1,0,0.0,,,,,,
+team_as_away,away_role:RB Leipzig,35,35,1.0,0.0,0.0,0.0,0.0,3.2285714285714286,3.2285714285714286
+team_as_away,away_role:RKC Waalwijk,1,0,0.0,,,,,,
+team_as_away,away_role:Racing Club,1,0,0.0,,,,,,
+team_as_away,away_role:Racing d'Abidjan,1,0,0.0,,,,,,
+team_as_away,away_role:Radnički Niš,1,0,0.0,,,,,,
+team_as_away,away_role:Randers FC,1,0,0.0,,,,,,
+team_as_away,away_role:Rayo Vallecano,39,37,0.9487,-3.05,1.52,-3.33,-1.04,1.8461538461538463,1.7297297297297298
+team_as_away,away_role:Real Betis,40,37,0.925,-0.9,1.66,-0.21,-1.94,2.641025641025641,2.5675675675675675
+team_as_away,away_role:Real Madrid,38,36,0.9474,-2.05,0.58,0.15,0.29,2.8421052631578947,2.861111111111111
+team_as_away,away_role:Real Oviedo,1,0,0.0,,,,,3.0,
+team_as_away,away_role:Real Sociedad,38,36,0.9474,-3.36,1.9,-0.29,-0.73,2.236842105263158,2.25
+team_as_away,away_role:Real Sociedad II,1,0,0.0,,,,,,
+team_as_away,away_role:Real Valladolid,19,16,0.8421,-0.99,0.99,3.29,5.59,3.8421052631578947,3.5625
+team_as_away,away_role:Reims,34,0,0.0,,,,,2.6470588235294117,
+team_as_away,away_role:Rennes,35,27,0.7714,-6.98,4.76,-5.29,-6.98,2.8857142857142857,2.6666666666666665
+team_as_away,away_role:Rochdale,1,0,0.0,,,,,,
+team_as_away,away_role:Roma,38,35,0.9211,0.08,-2.78,1.2,2.11,2.4473684210526314,2.5142857142857142
+team_as_away,away_role:Rosenborg,1,0,0.0,,,,,,
+team_as_away,away_role:Rot-Weiss Essen,1,0,0.0,,,,,,
+team_as_away,away_role:Rotherham United,1,0,0.0,,,,,,
+team_as_away,away_role:Rubin Kazan,1,0,0.0,,,,,,
+team_as_away,away_role:SC Freiburg,35,35,1.0,0.0,0.0,0.0,0.0,2.5714285714285716,2.5714285714285716
+team_as_away,away_role:SOA,1,0,0.0,,,,,,
+team_as_away,away_role:Saint-Étienne,17,13,0.7647,-1.36,-4.07,2.71,0.9,3.4705882352941178,3.4615384615384617
+team_as_away,away_role:Sakaryaspor,1,0,0.0,,,,,,
+team_as_away,away_role:Salernitana,19,18,0.9474,-2.05,0.29,-2.05,2.63,3.0526315789473686,3.0
+team_as_away,away_role:Salford City,1,0,0.0,,,,,,
+team_as_away,away_role:San Lorenzo,1,0,0.0,,,,,,
+team_as_away,away_role:Sandefjord,1,0,0.0,,,,,,
+team_as_away,away_role:Santos,1,0,0.0,,,,,,
+team_as_away,away_role:Sarıyer SK,1,0,0.0,,,,,,
+team_as_away,away_role:Sassuolo,20,19,0.95,3.68,-4.74,-1.84,-1.84,3.2,3.210526315789474
+team_as_away,away_role:Scunthorpe United,1,0,0.0,,,,,,
+team_as_away,away_role:Sekhukhune United,1,0,0.0,,,,,,
+team_as_away,away_role:Sevilla,38,36,0.9474,0.0,1.17,2.63,0.15,2.763157894736842,2.8055555555555554
+team_as_away,away_role:Sheffield United,20,18,0.9,4.39,-5.26,-2.34,-2.34,3.3157894736842106,3.2777777777777777
+team_as_away,away_role:Shelbourne,1,0,0.0,,,,,,
+team_as_away,away_role:Shrewsbury Town,1,0,0.0,,,,,,
+team_as_away,away_role:Sion,1,0,0.0,,,,,,
+team_as_away,away_role:Siwelele,1,0,0.0,,,,,,
+team_as_away,away_role:Southampton,20,19,0.95,0.0,0.0,0.0,0.0,2.736842105263158,2.736842105263158
+team_as_away,away_role:Southend United,1,0,0.0,,,,,,
+team_as_away,away_role:Spartak Moskva,1,0,0.0,,,,,,
+team_as_away,away_role:Spezia,1,0,0.0,,,,,,
+team_as_away,away_role:St Patrick's,1,0,0.0,,,,,,
+team_as_away,away_role:St. Pauli,17,17,1.0,0.0,0.0,0.0,0.0,2.3529411764705883,2.3529411764705883
+team_as_away,away_role:Start,1,0,0.0,,,,,,
+team_as_away,away_role:Stellenbosch,1,0,0.0,,,,,,
+team_as_away,away_role:Stockport County,1,0,0.0,,,,,,
+team_as_away,away_role:Stoke City,1,0,0.0,,,,,,
+team_as_away,away_role:Strasbourg,34,26,0.7647,-1.81,4.3,0.0,-4.98,2.6470588235294117,2.5
+team_as_away,away_role:Sunderland,1,1,1.0,0.0,0.0,0.0,0.0,7.0,7.0
+team_as_away,away_role:São Paulo,1,0,0.0,,,,,,
+team_as_away,away_role:Südtirol,1,0,0.0,,,,,,
+team_as_away,away_role:TSG Hoffenheim,35,34,0.9714,0.0,0.0,0.0,0.0,3.6176470588235294,3.6176470588235294
+team_as_away,away_role:Tamworth,1,0,0.0,,,,,,
+team_as_away,away_role:Tigre,1,0,0.0,,,,,,
+team_as_away,away_role:Torino,39,36,0.9231,-4.7,1.92,-2.56,1.07,2.41025641025641,2.3333333333333335
+team_as_away,away_role:Torpedo Moskva,1,0,0.0,,,,,,
+team_as_away,away_role:Tottenham Hotspur,39,38,0.9744,1.28,-1.82,1.62,1.35,3.3333333333333335,3.3947368421052633
+team_as_away,away_role:Toulouse,35,26,0.7429,-3.62,8.82,1.81,-0.9,2.5588235294117645,2.6153846153846154
+team_as_away,away_role:True Bangkok United,1,0,0.0,,,,,,
+team_as_away,away_role:Udinese,39,36,0.9231,-3.36,1.46,-3.51,0.29,2.3157894736842106,2.25
+team_as_away,away_role:Ulm,1,0,0.0,,,,,,
+team_as_away,away_role:Umm-Salal SC,1,0,0.0,,,,,,
+team_as_away,away_role:Univ. Concepción,1,0,0.0,,,,,,
+team_as_away,away_role:Universitario,1,0,0.0,,,,,,
+team_as_away,away_role:VVV-Venlo,1,0,0.0,,,,,,
+team_as_away,away_role:Valencia,40,36,0.9,-0.15,1.02,-0.29,0.44,2.710526315789474,2.7222222222222223
+team_as_away,away_role:Vanspor FK,1,0,0.0,,,,,,
+team_as_away,away_role:Vasco da Gama,1,0,0.0,,,,,,
+team_as_away,away_role:Venezia,19,18,0.9474,-2.63,0.0,2.92,3.22,2.5789473684210527,2.6666666666666665
+team_as_away,away_role:VfB Stuttgart,35,35,1.0,0.0,0.0,0.0,0.0,3.2,3.2
+team_as_away,away_role:VfL Bochum 1848,34,29,0.8529,-2.64,-0.91,-7.1,-1.22,3.2941176470588234,3.0
+team_as_away,away_role:VfL Wolfsburg,35,35,1.0,0.0,0.0,0.0,0.0,2.942857142857143,2.942857142857143
+team_as_away,away_role:Viking,1,0,0.0,,,,,,
+team_as_away,away_role:Viktoria Köln,1,0,0.0,,,,,,
+team_as_away,away_role:Villarreal,40,36,0.9,-0.43,1.28,2.14,0.43,3.0,3.0555555555555554
+team_as_away,away_role:Virtus Entella,1,0,0.0,,,,,,
+team_as_away,away_role:Walsall,1,0,0.0,,,,,,
+team_as_away,away_role:Waterford United,1,0,0.0,,,,,,
+team_as_away,away_role:Werder Bremen,35,35,1.0,0.0,0.0,0.0,0.0,3.2857142857142856,3.2857142857142856
+team_as_away,away_role:West Bromwich Albion,1,0,0.0,,,,,,
+team_as_away,away_role:West Ham United,39,38,0.9744,1.21,-1.75,-1.01,-0.88,3.230769230769231,3.236842105263158
+team_as_away,away_role:Wigan Athletic,1,0,0.0,,,,,,
+team_as_away,away_role:Willem II,1,0,0.0,,,,,,
+team_as_away,away_role:Woking,1,0,0.0,,,,,,
+team_as_away,away_role:Wolverhampton Wanderers,40,38,0.95,1.42,0.74,1.82,-1.01,3.230769230769231,3.263157894736842
+team_as_away,away_role:Yeovil Town,1,0,0.0,,,,,,
+team_as_away,away_role:Zagłębie Lubin,1,0,0.0,,,,,,
+team_as_away,away_role:Zürich,1,0,0.0,,,,,,
+team_as_away,away_role:İstanbul Başakşehir,1,0,0.0,,,,,,
+team_as_away,away_role:Železničar Pančevo,1,0,0.0,,,,,,
+market_readiness,odds_decimals_in_roi_v1|fill_rate=0.0,3806,3088,0.8114,,,,,,

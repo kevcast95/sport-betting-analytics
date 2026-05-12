@@ -1,0 +1,1538 @@
+calendar_year,calendar_month,sm_league_id,league_name,tier,n_events,n_with_final_score,n_with_any_prematch_odds
+2023,8,8,Premier League,S,29,29,0
+2023,8,9,Championship,B,48,48,0
+2023,8,12,League One,unknown,60,60,0
+2023,8,14,League Two,unknown,59,59,0
+2023,8,17,Enterprise National League,unknown,72,72,0
+2023,8,24,FA Cup,unknown,413,411,0
+2023,8,27,Carabao Cup,unknown,60,60,0
+2023,8,72,Eredivisie,A,23,23,0
+2023,8,74,Eerste Divisie,unknown,29,29,0
+2023,8,78,KNVB Beker,unknown,30,30,0
+2023,8,82,Bundesliga,S,18,18,0
+2023,8,85,2. Bundesliga,B,27,27,0
+2023,8,88,3. Liga,unknown,40,40,0
+2023,8,109,DFB Pokal,unknown,30,30,0
+2023,8,181,Admiral Bundesliga,unknown,24,24,0
+2023,8,208,Pro League,A,29,29,0
+2023,8,211,Challenger Pro League,unknown,23,23,0
+2023,8,229,First League,unknown,30,30,0
+2023,8,244,1. HNL,unknown,16,16,0
+2023,8,262,Chance Liga,unknown,31,31,0
+2023,8,271,Superliga,unknown,24,24,0
+2023,8,274,First Division,unknown,30,30,0
+2023,8,301,Ligue 1,S,27,27,0
+2023,8,304,Ligue 2,B,40,40,0
+2023,8,325,Super League,unknown,12,12,0
+2023,8,334,NB I,unknown,22,22,0
+2023,8,372,Ligat ha'Al,unknown,6,6,0
+2023,8,384,Serie A,S,20,20,0
+2023,8,387,Serie B,B,24,24,0
+2023,8,390,Coppa Italia,unknown,20,20,0
+2023,8,453,Ekstraklasa,A,33,33,0
+2023,8,462,Liga Portugal,A,26,26,0
+2023,8,465,Liga Portugal 2,unknown,27,27,0
+2023,8,474,Superliga,unknown,28,28,0
+2023,8,486,Premier League,unknown,32,32,0
+2023,8,489,FNL,unknown,36,36,0
+2023,8,492,Russian Cup,unknown,62,61,0
+2023,8,501,Premiership,A,18,18,0
+2023,8,531,Super Liga,unknown,31,31,0
+2023,8,540,Niké Liga,unknown,21,21,0
+2023,8,564,La Liga,S,30,30,0
+2023,8,567,La Liga 2,B,33,33,0
+2023,8,591,Super League,unknown,16,16,0
+2023,8,600,Super Lig,A,27,27,0
+2023,8,603,1. Lig,unknown,27,27,0
+2023,8,609,Premier League,unknown,29,29,0
+2023,8,743,Liga MX,A,26,26,0
+2023,8,806,Premier League,unknown,40,40,0
+2023,8,860,Botola Pro,unknown,8,8,0
+2023,8,902,Persian Gulf Pro League,unknown,31,31,0
+2023,8,938,Stars League,unknown,12,12,0
+2023,8,944,Pro League,unknown,36,36,0
+2023,8,959,UAE Pro League,unknown,14,14,0
+2023,8,1085,AFC Champions League Elite,unknown,13,13,0
+2023,8,1088,AFC Champions League Two,unknown,13,13,0
+2023,8,1107,CAF Champions League,unknown,44,42,0
+2023,8,1658,Copa de la Superliga,unknown,27,27,0
+2023,9,8,Premier League,S,38,38,0
+2023,9,9,Championship,B,59,59,0
+2023,9,12,League One,unknown,53,53,0
+2023,9,14,League Two,unknown,59,59,0
+2023,9,17,Enterprise National League,unknown,84,84,0
+2023,9,24,FA Cup,unknown,270,270,0
+2023,9,27,Carabao Cup,unknown,16,16,0
+2023,9,72,Eredivisie,A,34,34,0
+2023,9,74,Eerste Divisie,unknown,47,47,0
+2023,9,78,KNVB Beker,unknown,21,21,0
+2023,9,82,Bundesliga,S,34,34,0
+2023,9,85,2. Bundesliga,B,33,33,0
+2023,9,88,3. Liga,unknown,38,38,0
+2023,9,109,DFB Pokal,unknown,2,2,0
+2023,9,181,Admiral Bundesliga,unknown,21,21,0
+2023,9,208,Pro League,A,31,31,0
+2023,9,211,Challenger Pro League,unknown,29,29,0
+2023,9,229,First League,unknown,34,34,0
+2023,9,244,1. HNL,unknown,17,17,0
+2023,9,262,Chance Liga,unknown,29,29,0
+2023,9,271,Superliga,unknown,19,19,0
+2023,9,274,First Division,unknown,21,21,0
+2023,9,301,Ligue 1,S,30,30,0
+2023,9,304,Ligue 2,B,47,47,0
+2023,9,325,Super League,unknown,28,28,0
+2023,9,334,NB I,unknown,18,18,0
+2023,9,372,Ligat ha'Al,unknown,26,26,0
+2023,9,384,Serie A,S,43,43,0
+2023,9,387,Serie B,B,45,45,0
+2023,9,453,Ekstraklasa,A,34,34,0
+2023,9,462,Liga Portugal,A,33,33,0
+2023,9,465,Liga Portugal 2,unknown,21,21,0
+2023,9,468,Taça De Portugal,unknown,82,82,0
+2023,9,474,Superliga,unknown,28,28,0
+2023,9,486,Premier League,unknown,29,29,0
+2023,9,489,FNL,unknown,36,36,0
+2023,9,492,Russian Cup,unknown,38,38,0
+2023,9,501,Premiership,A,24,24,0
+2023,9,531,Super Liga,unknown,26,26,0
+2023,9,540,Niké Liga,unknown,23,23,0
+2023,9,564,La Liga,S,44,44,0
+2023,9,567,La Liga 2,B,49,49,0
+2023,9,591,Super League,unknown,21,21,0
+2023,9,600,Super Lig,A,37,37,0
+2023,9,603,1. Lig,unknown,31,31,0
+2023,9,609,Premier League,unknown,26,26,0
+2023,9,743,Liga MX,A,34,34,0
+2023,9,806,Premier League,unknown,18,18,0
+2023,9,809,Ligue 1,unknown,20,20,0
+2023,9,830,Premier League,unknown,17,17,0
+2023,9,860,Botola Pro,unknown,25,25,0
+2023,9,902,Persian Gulf Pro League,unknown,5,5,0
+2023,9,938,Stars League,unknown,18,18,0
+2023,9,944,Pro League,unknown,36,36,0
+2023,9,950,Kings Cup,unknown,16,16,0
+2023,9,959,UAE Pro League,unknown,14,14,0
+2023,9,1007,Indian Super League,unknown,9,9,0
+2023,9,1085,AFC Champions League Elite,unknown,20,20,0
+2023,9,1088,AFC Champions League Two,unknown,18,18,0
+2023,9,1107,CAF Champions League,unknown,27,27,0
+2023,9,1658,Copa de la Superliga,unknown,62,62,0
+2023,10,8,Premier League,S,33,33,0
+2023,10,9,Championship,B,60,60,0
+2023,10,12,League One,unknown,67,67,0
+2023,10,14,League Two,unknown,71,71,0
+2023,10,17,Enterprise National League,unknown,58,58,0
+2023,10,24,FA Cup,unknown,47,47,0
+2023,10,27,Carabao Cup,unknown,2,2,0
+2023,10,72,Eredivisie,A,30,30,0
+2023,10,74,Eerste Divisie,unknown,43,43,0
+2023,10,78,KNVB Beker,unknown,12,12,0
+2023,10,82,Bundesliga,S,29,29,0
+2023,10,85,2. Bundesliga,B,30,30,0
+2023,10,88,3. Liga,unknown,49,49,0
+2023,10,109,DFB Pokal,unknown,8,8,0
+2023,10,181,Admiral Bundesliga,unknown,21,21,0
+2023,10,208,Pro League,A,28,28,0
+2023,10,211,Challenger Pro League,unknown,27,27,0
+2023,10,229,First League,unknown,30,30,0
+2023,10,244,1. HNL,unknown,18,18,0
+2023,10,262,Chance Liga,unknown,27,27,0
+2023,10,271,Superliga,unknown,23,23,0
+2023,10,274,First Division,unknown,21,21,0
+2023,10,301,Ligue 1,S,31,31,0
+2023,10,304,Ligue 2,B,33,33,0
+2023,10,325,Super League,unknown,22,22,0
+2023,10,334,NB I,unknown,20,20,0
+2023,10,372,Ligat ha'Al,unknown,2,2,0
+2023,10,384,Serie A,S,37,37,0
+2023,10,387,Serie B,B,37,37,0
+2023,10,390,Coppa Italia,unknown,3,3,0
+2023,10,453,Ekstraklasa,A,31,31,0
+2023,10,462,Liga Portugal,A,22,22,0
+2023,10,465,Liga Portugal 2,unknown,24,24,0
+2023,10,468,Taça De Portugal,unknown,31,31,0
+2023,10,474,Superliga,unknown,32,32,0
+2023,10,486,Premier League,unknown,27,27,0
+2023,10,489,FNL,unknown,45,45,0
+2023,10,492,Russian Cup,unknown,18,18,0
+2023,10,501,Premiership,A,16,16,0
+2023,10,531,Super Liga,unknown,29,29,0
+2023,10,540,Niké Liga,unknown,21,21,0
+2023,10,564,La Liga,S,35,35,0
+2023,10,567,La Liga 2,B,61,61,0
+2023,10,570,Copa Del Rey,unknown,16,16,0
+2023,10,591,Super League,unknown,21,21,0
+2023,10,600,Super Lig,A,35,35,0
+2023,10,603,1. Lig,unknown,32,32,0
+2023,10,609,Premier League,unknown,28,28,0
+2023,10,743,Liga MX,A,39,39,0
+2023,10,806,Premier League,unknown,15,15,0
+2023,10,809,Ligue 1,unknown,10,10,0
+2023,10,827,Ligue 1,unknown,48,48,0
+2023,10,830,Premier League,unknown,25,25,0
+2023,10,860,Botola Pro,unknown,22,22,0
+2023,10,902,Persian Gulf Pro League,unknown,23,23,0
+2023,10,938,Stars League,unknown,10,10,0
+2023,10,944,Pro League,unknown,27,27,0
+2023,10,950,Kings Cup,unknown,8,8,0
+2023,10,959,UAE Pro League,unknown,14,14,0
+2023,10,1007,Indian Super League,unknown,18,18,0
+2023,10,1073,V-League,unknown,13,13,0
+2023,10,1085,AFC Champions League Elite,unknown,40,40,0
+2023,10,1088,AFC Champions League Two,unknown,35,34,0
+2023,10,1107,CAF Champions League,unknown,5,5,0
+2023,10,1356,A-League Men,unknown,12,12,0
+2023,10,1658,Copa de la Superliga,unknown,63,63,0
+2023,11,8,Premier League,S,30,30,0
+2023,11,9,Championship,B,49,49,0
+2023,11,12,League One,unknown,43,43,0
+2023,11,14,League Two,unknown,46,46,0
+2023,11,17,Enterprise National League,unknown,47,47,0
+2023,11,24,FA Cup,unknown,48,48,0
+2023,11,27,Carabao Cup,unknown,6,6,0
+2023,11,72,Eredivisie,A,28,28,0
+2023,11,74,Eerste Divisie,unknown,39,39,0
+2023,11,78,KNVB Beker,unknown,15,15,0
+2023,11,82,Bundesliga,S,27,27,0
+2023,11,85,2. Bundesliga,B,27,27,0
+2023,11,88,3. Liga,unknown,33,33,0
+2023,11,109,DFB Pokal,unknown,8,8,0
+2023,11,181,Admiral Bundesliga,unknown,18,18,0
+2023,11,208,Pro League,A,24,24,0
+2023,11,211,Challenger Pro League,unknown,24,24,0
+2023,11,229,First League,unknown,27,27,0
+2023,11,244,1. HNL,unknown,16,16,0
+2023,11,262,Chance Liga,unknown,24,24,0
+2023,11,271,Superliga,unknown,18,18,0
+2023,11,274,First Division,unknown,18,18,0
+2023,11,301,Ligue 1,S,27,27,0
+2023,11,304,Ligue 2,B,30,30,0
+2023,11,307,Coupe de France,unknown,87,87,0
+2023,11,325,Super League,unknown,22,22,0
+2023,11,334,NB I,unknown,18,18,0
+2023,11,372,Ligat ha'Al,unknown,1,1,0
+2023,11,384,Serie A,S,30,30,0
+2023,11,387,Serie B,B,34,34,0
+2023,11,390,Coppa Italia,unknown,5,5,0
+2023,11,453,Ekstraklasa,A,28,28,0
+2023,11,462,Liga Portugal,A,18,18,0
+2023,11,465,Liga Portugal 2,unknown,27,27,0
+2023,11,468,Taça De Portugal,unknown,17,17,0
+2023,11,474,Superliga,unknown,24,24,0
+2023,11,486,Premier League,unknown,24,24,0
+2023,11,489,FNL,unknown,36,36,0
+2023,11,492,Russian Cup,unknown,14,14,0
+2023,11,501,Premiership,A,23,23,0
+2023,11,531,Super Liga,unknown,26,26,0
+2023,11,540,Niké Liga,unknown,19,19,0
+2023,11,564,La Liga,S,30,30,0
+2023,11,567,La Liga 2,B,44,44,0
+2023,11,570,Copa Del Rey,unknown,50,50,0
+2023,11,591,Super League,unknown,18,18,0
+2023,11,600,Super Lig,A,31,31,0
+2023,11,603,1. Lig,unknown,27,27,0
+2023,11,609,Premier League,unknown,23,23,0
+2023,11,743,Liga MX,A,33,33,0
+2023,11,806,Premier League,unknown,24,24,0
+2023,11,809,Ligue 1,unknown,24,24,0
+2023,11,827,Ligue 1,unknown,54,54,0
+2023,11,830,Premier League,unknown,17,17,0
+2023,11,860,Botola Pro,unknown,21,21,0
+2023,11,902,Persian Gulf Pro League,unknown,23,23,0
+2023,11,938,Stars League,unknown,11,11,0
+2023,11,944,Pro League,unknown,30,30,0
+2023,11,959,UAE Pro League,unknown,14,14,0
+2023,11,1007,Indian Super League,unknown,13,13,0
+2023,11,1073,V-League,unknown,8,8,0
+2023,11,1085,AFC Champions League Elite,unknown,40,40,0
+2023,11,1088,AFC Champions League Two,unknown,36,34,0
+2023,11,1107,CAF Champions League,unknown,8,8,0
+2023,11,1356,A-League Men,unknown,18,18,0
+2023,11,1658,Copa de la Superliga,unknown,44,44,0
+2023,12,8,Premier League,S,66,66,0
+2023,12,9,Championship,B,84,84,0
+2023,12,12,League One,unknown,61,61,0
+2023,12,14,League Two,unknown,55,55,0
+2023,12,17,Enterprise National League,unknown,43,43,0
+2023,12,24,FA Cup,unknown,25,25,0
+2023,12,27,Carabao Cup,unknown,4,4,0
+2023,12,72,Eredivisie,A,29,29,0
+2023,12,74,Eerste Divisie,unknown,41,41,0
+2023,12,78,KNVB Beker,unknown,15,15,0
+2023,12,82,Bundesliga,S,35,35,0
+2023,12,85,2. Bundesliga,B,27,27,0
+2023,12,88,3. Liga,unknown,37,37,0
+2023,12,109,DFB Pokal,unknown,8,8,0
+2023,12,181,Admiral Bundesliga,unknown,12,12,0
+2023,12,208,Pro League,A,40,40,0
+2023,12,211,Challenger Pro League,unknown,25,25,0
+2023,12,229,First League,unknown,17,17,0
+2023,12,244,1. HNL,unknown,15,15,0
+2023,12,262,Chance Liga,unknown,21,21,0
+2023,12,271,Superliga,unknown,6,6,0
+2023,12,274,First Division,unknown,6,6,0
+2023,12,301,Ligue 1,S,38,38,0
+2023,12,304,Ligue 2,B,40,40,0
+2023,12,307,Coupe de France,unknown,47,47,0
+2023,12,325,Super League,unknown,21,21,0
+2023,12,334,NB I,unknown,19,19,0
+2023,12,372,Ligat ha'Al,unknown,55,55,0
+2023,12,384,Serie A,S,50,50,0
+2023,12,387,Serie B,B,50,50,0
+2023,12,390,Coppa Italia,unknown,4,4,0
+2023,12,453,Ekstraklasa,A,26,26,0
+2023,12,462,Liga Portugal,A,36,36,0
+2023,12,465,Liga Portugal 2,unknown,37,37,0
+2023,12,474,Superliga,unknown,32,32,0
+2023,12,486,Premier League,unknown,16,16,0
+2023,12,501,Premiership,A,36,36,0
+2023,12,531,Super Liga,unknown,32,32,0
+2023,12,540,Niké Liga,unknown,18,18,0
+2023,12,564,La Liga,S,41,41,0
+2023,12,567,La Liga 2,B,44,44,0
+2023,12,570,Copa Del Rey,unknown,27,27,0
+2023,12,591,Super League,unknown,20,20,0
+2023,12,600,Super Lig,A,40,40,0
+2023,12,603,1. Lig,unknown,36,36,0
+2023,12,609,Premier League,unknown,15,15,0
+2023,12,743,Liga MX,A,12,12,0
+2023,12,806,Premier League,unknown,28,28,0
+2023,12,809,Ligue 1,unknown,27,27,0
+2023,12,827,Ligue 1,unknown,18,18,0
+2023,12,830,Premier League,unknown,24,24,0
+2023,12,860,Botola Pro,unknown,27,27,0
+2023,12,902,Persian Gulf Pro League,unknown,34,34,0
+2023,12,938,Stars League,unknown,21,21,0
+2023,12,944,Pro League,unknown,41,41,0
+2023,12,950,Kings Cup,unknown,3,3,0
+2023,12,959,UAE Pro League,unknown,28,28,0
+2023,12,1007,Indian Super League,unknown,28,28,0
+2023,12,1073,V-League,unknown,35,35,0
+2023,12,1085,AFC Champions League Elite,unknown,20,20,0
+2023,12,1088,AFC Champions League Two,unknown,19,18,0
+2023,12,1107,CAF Champions League,unknown,23,23,0
+2023,12,1356,A-League Men,unknown,29,29,0
+2023,12,1658,Copa de la Superliga,unknown,8,8,0
+2024,1,8,Premier League,S,20,20,0
+2024,1,9,Championship,B,43,43,0
+2024,1,12,League One,unknown,55,55,0
+2024,1,14,League Two,unknown,48,48,0
+2024,1,17,Enterprise National League,unknown,48,48,0
+2024,1,24,FA Cup,unknown,56,56,0
+2024,1,27,Carabao Cup,unknown,4,4,0
+2024,1,72,Eredivisie,A,27,27,0
+2024,1,74,Eerste Divisie,unknown,29,29,0
+2024,1,78,KNVB Beker,unknown,9,9,0
+2024,1,82,Bundesliga,S,27,27,0
+2024,1,85,2. Bundesliga,B,18,18,0
+2024,1,88,3. Liga,unknown,29,29,0
+2024,1,109,DFB Pokal,unknown,2,2,0
+2024,1,208,Pro League,A,22,22,0
+2024,1,211,Challenger Pro League,unknown,20,20,0
+2024,1,244,1. HNL,unknown,7,7,0
+2024,1,301,Ligue 1,S,18,18,0
+2024,1,304,Ligue 2,B,30,30,0
+2024,1,307,Coupe de France,unknown,48,48,0
+2024,1,325,Super League,unknown,35,35,0
+2024,1,372,Ligat ha'Al,unknown,43,43,0
+2024,1,384,Serie A,S,36,36,0
+2024,1,387,Serie B,B,30,30,0
+2024,1,390,Coppa Italia,unknown,8,8,0
+2024,1,462,Liga Portugal,A,36,36,0
+2024,1,465,Liga Portugal 2,unknown,35,35,0
+2024,1,468,Taça De Portugal,unknown,8,8,0
+2024,1,474,Superliga,unknown,16,16,0
+2024,1,501,Premiership,A,16,16,0
+2024,1,564,La Liga,S,39,39,0
+2024,1,567,La Liga 2,B,33,33,0
+2024,1,570,Copa Del Rey,unknown,28,28,0
+2024,1,591,Super League,unknown,17,17,0
+2024,1,600,Super Lig,A,60,60,0
+2024,1,603,1. Lig,unknown,27,27,0
+2024,1,672,Liga BetPlay,A,25,25,0
+2024,1,743,Liga MX,A,33,33,0
+2024,1,764,Primera Division,unknown,9,9,0
+2024,1,809,Ligue 1,unknown,38,38,0
+2024,1,830,Premier League,unknown,2,2,0
+2024,1,860,Botola Pro,unknown,17,17,0
+2024,1,902,Persian Gulf Pro League,unknown,4,4,0
+2024,1,1007,Indian Super League,unknown,1,1,0
+2024,1,1356,A-League Men,unknown,26,26,0
+2024,1,1658,Copa de la Superliga,unknown,24,24,0
+2024,2,8,Premier League,S,42,42,0
+2024,2,9,Championship,B,64,64,0
+2024,2,12,League One,unknown,73,73,0
+2024,2,14,League Two,unknown,68,68,0
+2024,2,17,Enterprise National League,unknown,68,68,0
+2024,2,24,FA Cup,unknown,13,13,0
+2024,2,27,Carabao Cup,unknown,1,1,0
+2024,2,72,Eredivisie,A,36,36,0
+2024,2,74,Eerste Divisie,unknown,41,41,0
+2024,2,78,KNVB Beker,unknown,6,6,0
+2024,2,82,Bundesliga,S,37,37,0
+2024,2,85,2. Bundesliga,B,36,36,0
+2024,2,88,3. Liga,unknown,43,43,0
+2024,2,109,DFB Pokal,unknown,1,1,0
+2024,2,181,Admiral Bundesliga,unknown,18,18,0
+2024,2,208,Pro League,A,34,34,0
+2024,2,211,Challenger Pro League,unknown,36,36,0
+2024,2,229,First League,unknown,16,16,0
+2024,2,244,1. HNL,unknown,20,20,0
+2024,2,262,Chance Liga,unknown,28,28,0
+2024,2,271,Superliga,unknown,12,12,0
+2024,2,274,First Division,unknown,6,6,0
+2024,2,301,Ligue 1,S,36,36,0
+2024,2,304,Ligue 2,B,40,40,0
+2024,2,307,Coupe de France,unknown,11,11,0
+2024,2,325,Super League,unknown,35,35,0
+2024,2,334,NB I,unknown,29,29,0
+2024,2,360,Premier Division,unknown,10,10,0
+2024,2,372,Ligat ha'Al,unknown,28,28,0
+2024,2,384,Serie A,S,44,44,0
+2024,2,387,Serie B,B,50,50,0
+2024,2,453,Ekstraklasa,A,28,28,0
+2024,2,462,Liga Portugal,A,35,35,0
+2024,2,465,Liga Portugal 2,unknown,36,36,0
+2024,2,468,Taça De Portugal,unknown,5,5,0
+2024,2,474,Superliga,unknown,40,40,0
+2024,2,501,Premiership,A,33,33,0
+2024,2,531,Super Liga,unknown,24,24,0
+2024,2,540,Niké Liga,unknown,18,18,0
+2024,2,564,La Liga,S,40,40,0
+2024,2,567,La Liga 2,B,43,43,0
+2024,2,570,Copa Del Rey,unknown,4,4,0
+2024,2,591,Super League,unknown,25,25,0
+2024,2,600,Super Lig,A,40,40,0
+2024,2,603,1. Lig,unknown,36,36,0
+2024,2,609,Premier League,unknown,8,8,0
+2024,2,654,Copa do Brasil,unknown,38,38,0
+2024,2,663,Primera Division,A,13,13,0
+2024,2,672,Liga BetPlay,A,62,62,0
+2024,2,743,Liga MX,A,47,47,0
+2024,2,764,Primera Division,unknown,37,37,0
+2024,2,770,Primera Division,unknown,14,14,0
+2024,2,779,Major League Soccer,A,15,15,0
+2024,2,806,Premier League,unknown,11,11,0
+2024,2,809,Ligue 1,unknown,21,21,0
+2024,2,827,Ligue 1,unknown,7,7,0
+2024,2,830,Premier League,unknown,24,24,0
+2024,2,860,Botola Pro,unknown,44,44,0
+2024,2,902,Persian Gulf Pro League,unknown,21,21,0
+2024,2,938,Stars League,unknown,9,9,0
+2024,2,944,Pro League,unknown,22,22,0
+2024,2,950,Kings Cup,unknown,1,1,0
+2024,2,959,UAE Pro League,unknown,12,12,0
+2024,2,968,J1 League,A,10,10,0
+2024,2,1007,Indian Super League,unknown,29,29,0
+2024,2,1073,V-League,unknown,21,21,0
+2024,2,1085,AFC Champions League Elite,unknown,16,16,0
+2024,2,1088,AFC Champions League Two,unknown,6,6,0
+2024,2,1107,CAF Champions League,unknown,9,9,0
+2024,2,1122,Copa Libertadores,A,21,21,0
+2024,2,1123,OFC Champions League,unknown,16,16,0
+2024,2,1356,A-League Men,unknown,26,26,0
+2024,2,1658,Copa de la Superliga,unknown,75,75,0
+2024,3,8,Premier League,S,35,35,0
+2024,3,9,Championship,B,58,58,0
+2024,3,12,League One,unknown,65,65,0
+2024,3,14,League Two,unknown,73,73,0
+2024,3,17,Enterprise National League,unknown,75,75,0
+2024,3,24,FA Cup,unknown,4,4,0
+2024,3,72,Eredivisie,A,36,36,0
+2024,3,74,Eerste Divisie,unknown,49,49,0
+2024,3,82,Bundesliga,S,36,36,0
+2024,3,85,2. Bundesliga,B,36,36,0
+2024,3,88,3. Liga,unknown,39,39,0
+2024,3,109,DFB Pokal,unknown,1,1,0
+2024,3,181,Admiral Bundesliga,unknown,24,24,0
+2024,3,208,Pro League,A,28,28,0
+2024,3,211,Challenger Pro League,unknown,32,32,0
+2024,3,229,First League,unknown,32,32,0
+2024,3,244,1. HNL,unknown,20,20,0
+2024,3,262,Chance Liga,unknown,32,32,0
+2024,3,271,Superliga,unknown,20,20,0
+2024,3,274,First Division,unknown,20,20,0
+2024,3,301,Ligue 1,S,36,36,0
+2024,3,304,Ligue 2,B,39,39,0
+2024,3,307,Coupe de France,unknown,1,1,0
+2024,3,325,Super League,unknown,21,21,0
+2024,3,334,NB I,unknown,24,24,0
+2024,3,360,Premier Division,unknown,23,23,0
+2024,3,372,Ligat ha'Al,unknown,27,27,0
+2024,3,384,Serie A,S,34,34,0
+2024,3,387,Serie B,B,30,30,0
+2024,3,444,Eliteserien,unknown,1,1,0
+2024,3,453,Ekstraklasa,A,33,33,0
+2024,3,462,Liga Portugal,A,35,35,0
+2024,3,465,Liga Portugal 2,unknown,34,34,0
+2024,3,474,Superliga,unknown,31,31,0
+2024,3,486,Premier League,unknown,24,24,0
+2024,3,489,FNL,unknown,35,35,0
+2024,3,492,Russian Cup,unknown,8,8,0
+2024,3,501,Premiership,A,19,19,0
+2024,3,531,Super Liga,unknown,40,40,0
+2024,3,540,Niké Liga,unknown,24,24,0
+2024,3,564,La Liga,S,39,39,0
+2024,3,567,La Liga 2,B,56,56,0
+2024,3,573,Allsvenskan,A,4,4,0
+2024,3,591,Super League,unknown,21,21,0
+2024,3,600,Super Lig,A,30,30,0
+2024,3,603,1. Lig,unknown,27,27,0
+2024,3,609,Premier League,unknown,32,32,0
+2024,3,654,Copa do Brasil,unknown,22,22,0
+2024,3,663,Primera Division,A,35,35,0
+2024,3,672,Liga BetPlay,A,53,53,0
+2024,3,743,Liga MX,A,35,35,0
+2024,3,764,Primera Division,unknown,35,35,0
+2024,3,770,Primera Division,unknown,33,33,0
+2024,3,779,Major League Soccer,A,68,68,0
+2024,3,806,Premier League,unknown,27,27,0
+2024,3,809,Ligue 1,unknown,25,25,0
+2024,3,827,Ligue 1,unknown,39,39,0
+2024,3,830,Premier League,unknown,16,16,0
+2024,3,860,Botola Pro,unknown,28,28,0
+2024,3,902,Persian Gulf Pro League,unknown,24,24,0
+2024,3,938,Stars League,unknown,27,27,0
+2024,3,944,Pro League,unknown,33,33,0
+2024,3,959,UAE Pro League,unknown,19,19,0
+2024,3,968,J1 League,A,39,39,0
+2024,3,989,Super League,unknown,24,24,0
+2024,3,1007,Indian Super League,unknown,17,17,0
+2024,3,1034,K League 1,A,24,24,0
+2024,3,1073,V-League,unknown,21,21,0
+2024,3,1085,AFC Champions League Elite,unknown,8,8,0
+2024,3,1088,AFC Champions League Two,unknown,4,4,0
+2024,3,1107,CAF Champions League,unknown,12,12,0
+2024,3,1116,Copa Sudamericana,B,16,16,0
+2024,3,1122,Copa Libertadores,A,9,9,0
+2024,3,1123,OFC Champions League,unknown,4,4,0
+2024,3,1356,A-League Men,unknown,23,23,0
+2024,3,1502,Super Cup,unknown,1,1,0
+2024,3,1658,Copa de la Superliga,unknown,66,66,0
+2024,4,8,Premier League,S,53,53,0
+2024,4,9,Championship,B,75,75,0
+2024,4,12,League One,unknown,75,75,0
+2024,4,14,League Two,unknown,73,73,0
+2024,4,17,Enterprise National League,unknown,61,60,0
+2024,4,24,FA Cup,unknown,2,2,0
+2024,4,72,Eredivisie,A,36,36,0
+2024,4,74,Eerste Divisie,unknown,42,42,0
+2024,4,78,KNVB Beker,unknown,1,1,0
+2024,4,82,Bundesliga,S,36,36,0
+2024,4,85,2. Bundesliga,B,36,36,0
+2024,4,88,3. Liga,unknown,42,42,0
+2024,4,109,DFB Pokal,unknown,2,2,0
+2024,4,181,Admiral Bundesliga,unknown,30,30,0
+2024,4,208,Pro League,A,40,40,0
+2024,4,211,Challenger Pro League,unknown,26,26,0
+2024,4,229,First League,unknown,41,41,0
+2024,4,244,1. HNL,unknown,21,21,0
+2024,4,262,Chance Liga,unknown,32,32,0
+2024,4,271,Superliga,unknown,28,28,0
+2024,4,274,First Division,unknown,28,28,0
+2024,4,292,Veikkausliiga,unknown,25,25,0
+2024,4,301,Ligue 1,S,36,36,0
+2024,4,304,Ligue 2,B,51,51,0
+2024,4,307,Coupe de France,unknown,2,2,0
+2024,4,325,Super League,unknown,33,33,0
+2024,4,334,NB I,unknown,25,25,0
+2024,4,360,Premier Division,unknown,29,29,0
+2024,4,372,Ligat ha'Al,unknown,25,25,0
+2024,4,384,Serie A,S,45,45,0
+2024,4,387,Serie B,B,50,50,0
+2024,4,390,Coppa Italia,unknown,4,4,0
+2024,4,444,Eliteserien,unknown,40,40,0
+2024,4,453,Ekstraklasa,A,41,41,0
+2024,4,462,Liga Portugal,A,38,38,0
+2024,4,465,Liga Portugal 2,unknown,38,38,0
+2024,4,468,Taça De Portugal,unknown,3,3,0
+2024,4,474,Superliga,unknown,41,41,0
+2024,4,486,Premier League,unknown,40,40,0
+2024,4,489,FNL,unknown,46,46,0
+2024,4,492,Russian Cup,unknown,10,10,0
+2024,4,501,Premiership,A,19,19,0
+2024,4,531,Super Liga,unknown,40,40,0
+2024,4,540,Niké Liga,unknown,24,24,0
+2024,4,564,La Liga,S,32,32,0
+2024,4,567,La Liga 2,B,44,44,0
+2024,4,570,Copa Del Rey,unknown,1,1,0
+2024,4,573,Allsvenskan,A,44,44,0
+2024,4,591,Super League,unknown,27,27,0
+2024,4,600,Super Lig,A,40,40,0
+2024,4,603,1. Lig,unknown,45,45,0
+2024,4,609,Premier League,unknown,37,37,0
+2024,4,636,Liga Profesional de Fútbol,A,1,1,0
+2024,4,648,Serie A,A,38,38,0
+2024,4,651,Serie B,unknown,20,20,0
+2024,4,654,Copa do Brasil,unknown,2,2,0
+2024,4,663,Primera Division,A,32,32,0
+2024,4,672,Liga BetPlay,A,50,50,0
+2024,4,743,Liga MX,A,38,38,0
+2024,4,764,Primera Division,unknown,36,36,0
+2024,4,770,Primera Division,unknown,33,33,0
+2024,4,779,Major League Soccer,A,57,57,0
+2024,4,806,Premier League,unknown,37,37,0
+2024,4,809,Ligue 1,unknown,22,22,0
+2024,4,827,Ligue 1,unknown,26,26,0
+2024,4,830,Premier League,unknown,35,35,0
+2024,4,860,Botola Pro,unknown,22,22,0
+2024,4,902,Persian Gulf Pro League,unknown,28,28,0
+2024,4,938,Stars League,unknown,24,24,0
+2024,4,944,Pro League,unknown,35,35,0
+2024,4,950,Kings Cup,unknown,1,1,0
+2024,4,959,UAE Pro League,unknown,24,24,0
+2024,4,968,J1 League,A,50,50,0
+2024,4,989,Super League,unknown,43,43,0
+2024,4,1007,Indian Super League,unknown,23,23,0
+2024,4,1034,K League 1,A,31,31,0
+2024,4,1073,V-League,unknown,7,7,0
+2024,4,1085,AFC Champions League Elite,unknown,4,4,0
+2024,4,1088,AFC Champions League Two,unknown,4,4,0
+2024,4,1107,CAF Champions League,unknown,8,8,0
+2024,4,1116,Copa Sudamericana,B,48,48,0
+2024,4,1122,Copa Libertadores,A,48,48,0
+2024,4,1356,A-League Men,unknown,27,27,0
+2024,4,1658,Copa de la Superliga,unknown,36,36,0
+2024,5,8,Premier League,S,34,34,0
+2024,5,9,Championship,B,17,17,0
+2024,5,12,League One,unknown,5,5,0
+2024,5,14,League Two,unknown,5,5,0
+2024,5,17,Enterprise National League,unknown,1,1,0
+2024,5,24,FA Cup,unknown,1,1,0
+2024,5,72,Eredivisie,A,30,30,0
+2024,5,74,Eerste Divisie,unknown,20,20,0
+2024,5,82,Bundesliga,S,27,27,0
+2024,5,85,2. Bundesliga,B,27,27,0
+2024,5,88,3. Liga,unknown,30,30,0
+2024,5,109,DFB Pokal,unknown,1,1,0
+2024,5,181,Admiral Bundesliga,unknown,21,21,0
+2024,5,208,Pro League,A,28,28,0
+2024,5,211,Challenger Pro League,unknown,4,4,0
+2024,5,229,First League,unknown,35,35,0
+2024,5,244,1. HNL,unknown,20,20,0
+2024,5,262,Chance Liga,unknown,37,37,0
+2024,5,271,Superliga,unknown,31,31,0
+2024,5,274,First Division,unknown,24,24,0
+2024,5,292,Veikkausliiga,unknown,31,31,0
+2024,5,301,Ligue 1,S,27,27,0
+2024,5,304,Ligue 2,B,32,32,0
+2024,5,307,Coupe de France,unknown,1,1,0
+2024,5,325,Super League,unknown,11,11,0
+2024,5,334,NB I,unknown,18,18,0
+2024,5,360,Premier Division,unknown,32,32,0
+2024,5,372,Ligat ha'Al,unknown,27,27,0
+2024,5,384,Serie A,S,40,40,0
+2024,5,387,Serie B,B,39,39,0
+2024,5,390,Coppa Italia,unknown,1,1,0
+2024,5,444,Eliteserien,unknown,43,43,0
+2024,5,453,Ekstraklasa,A,36,36,0
+2024,5,462,Liga Portugal,A,27,27,0
+2024,5,465,Liga Portugal 2,unknown,27,27,0
+2024,5,468,Taça De Portugal,unknown,1,1,0
+2024,5,474,Superliga,unknown,21,21,0
+2024,5,486,Premier League,unknown,32,32,0
+2024,5,489,FNL,unknown,45,45,0
+2024,5,492,Russian Cup,unknown,5,5,0
+2024,5,501,Premiership,A,24,24,0
+2024,5,513,Premiership Play-Offs,unknown,6,6,0
+2024,5,531,Super Liga,unknown,40,40,0
+2024,5,540,Niké Liga,unknown,18,18,0
+2024,5,564,La Liga,S,50,50,0
+2024,5,567,La Liga 2,B,44,44,0
+2024,5,573,Allsvenskan,A,42,42,0
+2024,5,591,Super League,unknown,30,30,0
+2024,5,600,Super Lig,A,40,40,0
+2024,5,603,1. Lig,unknown,23,23,0
+2024,5,609,Premier League,unknown,35,35,0
+2024,5,636,Liga Profesional de Fútbol,A,41,41,0
+2024,5,648,Serie A,A,14,14,0
+2024,5,651,Serie B,unknown,50,50,0
+2024,5,654,Copa do Brasil,unknown,26,26,0
+2024,5,663,Primera Division,A,30,30,0
+2024,5,672,Liga BetPlay,A,21,21,0
+2024,5,743,Liga MX,A,17,17,0
+2024,5,764,Primera Division,unknown,36,36,0
+2024,5,770,Primera Division,unknown,32,32,0
+2024,5,779,Major League Soccer,A,82,82,0
+2024,5,806,Premier League,unknown,40,40,0
+2024,5,809,Ligue 1,unknown,28,28,0
+2024,5,827,Ligue 1,unknown,41,41,0
+2024,5,830,Premier League,unknown,45,45,0
+2024,5,860,Botola Pro,unknown,10,10,0
+2024,5,902,Persian Gulf Pro League,unknown,39,39,0
+2024,5,944,Pro League,unknown,46,46,0
+2024,5,950,Kings Cup,unknown,2,2,0
+2024,5,959,UAE Pro League,unknown,34,34,0
+2024,5,968,J1 League,A,60,60,0
+2024,5,989,Super League,unknown,44,44,0
+2024,5,1007,Indian Super League,unknown,1,1,0
+2024,5,1034,K League 1,A,35,35,0
+2024,5,1073,V-League,unknown,49,49,0
+2024,5,1085,AFC Champions League Elite,unknown,2,2,0
+2024,5,1088,AFC Champions League Two,unknown,1,1,0
+2024,5,1107,CAF Champions League,unknown,2,2,0
+2024,5,1116,Copa Sudamericana,B,46,46,0
+2024,5,1122,Copa Libertadores,A,46,46,0
+2024,5,1123,OFC Champions League,unknown,15,15,0
+2024,5,1356,A-League Men,unknown,8,8,0
+2024,5,1658,Copa de la Superliga,unknown,1,1,0
+2024,5,1673,Ligue 1 Play-offs,unknown,1,1,0
+2024,5,1681,Super League Play-offs,unknown,2,2,0
+2024,5,1682,Parva Liga - Play-offs,unknown,1,1,0
+2024,5,1691,Premier League - Playoffs,unknown,2,2,0
+2024,5,1989,Qatar Prince Cup,unknown,3,3,0
+2024,6,208,Pro League,A,1,1,0
+2024,6,274,First Division,unknown,6,6,0
+2024,6,292,Veikkausliiga,unknown,26,26,0
+2024,6,360,Premier Division,unknown,17,17,0
+2024,6,384,Serie A,S,1,1,0
+2024,6,387,Serie B,B,1,1,0
+2024,6,444,Eliteserien,unknown,15,15,0
+2024,6,492,Russian Cup,unknown,1,1,0
+2024,6,567,La Liga 2,B,17,17,0
+2024,6,573,Allsvenskan,A,8,8,0
+2024,6,636,Liga Profesional de Fútbol,A,28,28,0
+2024,6,648,Serie A,A,72,72,0
+2024,6,651,Serie B,unknown,54,54,0
+2024,6,663,Primera Division,A,10,10,0
+2024,6,672,Liga BetPlay,A,5,5,0
+2024,6,770,Primera Division,unknown,32,32,0
+2024,6,779,Major League Soccer,A,71,71,0
+2024,6,809,Ligue 1,unknown,25,25,0
+2024,6,827,Ligue 1,unknown,7,7,0
+2024,6,830,Premier League,unknown,32,32,0
+2024,6,860,Botola Pro,unknown,16,16,0
+2024,6,902,Persian Gulf Pro League,unknown,8,8,0
+2024,6,959,UAE Pro League,unknown,9,9,0
+2024,6,968,J1 League,A,50,50,0
+2024,6,989,Super League,unknown,25,25,0
+2024,6,1034,K League 1,A,30,30,0
+2024,6,1073,V-League,unknown,28,28,0
+2024,6,1116,Copa Sudamericana,B,2,2,0
+2024,6,1122,Copa Libertadores,A,2,2,0
+2024,6,1673,Ligue 1 Play-offs,unknown,1,1,0
+2024,6,1691,Premier League - Playoffs,unknown,2,2,0
+2024,7,208,Pro League,A,8,8,0
+2024,7,229,First League,unknown,15,15,0
+2024,7,262,Chance Liga,unknown,16,16,0
+2024,7,271,Superliga,unknown,12,12,0
+2024,7,274,First Division,unknown,12,12,0
+2024,7,292,Veikkausliiga,unknown,20,20,0
+2024,7,334,NB I,unknown,5,5,0
+2024,7,360,Premier Division,unknown,11,11,0
+2024,7,444,Eliteserien,unknown,30,30,0
+2024,7,453,Ekstraklasa,A,18,18,0
+2024,7,474,Superliga,unknown,24,24,0
+2024,7,486,Premier League,unknown,16,16,0
+2024,7,489,FNL,unknown,27,27,0
+2024,7,492,Russian Cup,unknown,20,20,0
+2024,7,531,Super Liga,unknown,14,14,0
+2024,7,540,Niké Liga,unknown,6,6,0
+2024,7,573,Allsvenskan,A,32,32,0
+2024,7,591,Super League,unknown,13,13,0
+2024,7,636,Liga Profesional de Fútbol,A,42,42,0
+2024,7,648,Serie A,A,64,64,0
+2024,7,651,Serie B,unknown,53,53,0
+2024,7,654,Copa do Brasil,unknown,9,9,0
+2024,7,663,Primera Division,A,16,16,0
+2024,7,672,Liga BetPlay,A,31,31,0
+2024,7,743,Liga MX,A,36,36,0
+2024,7,764,Primera Division,unknown,32,32,0
+2024,7,770,Primera Division,unknown,32,32,0
+2024,7,779,Major League Soccer,A,68,68,0
+2024,7,830,Premier League,unknown,41,41,0
+2024,7,968,J1 League,A,31,31,0
+2024,7,989,Super League,unknown,32,32,0
+2024,7,1034,K League 1,A,30,30,0
+2024,7,1116,Copa Sudamericana,B,16,16,0
+2024,7,1128,Super Cup,unknown,1,1,0
+2024,7,1691,Premier League - Playoffs,unknown,3,3,0
+2024,8,8,Premier League,S,27,27,0
+2024,8,9,Championship,B,47,47,0
+2024,8,12,League One,unknown,48,48,0
+2024,8,14,League Two,unknown,47,47,0
+2024,8,17,Enterprise National League,unknown,71,71,0
+2024,8,23,Community Shield,unknown,1,1,0
+2024,8,24,FA Cup,unknown,535,535,0
+2024,8,27,Carabao Cup,unknown,60,60,0
+2024,8,72,Eredivisie,A,30,30,0
+2024,8,74,Eerste Divisie,unknown,39,39,0
+2024,8,82,Bundesliga,S,16,16,0
+2024,8,85,2. Bundesliga,B,33,33,0
+2024,8,88,3. Liga,unknown,37,37,0
+2024,8,109,DFB Pokal,unknown,32,32,0
+2024,8,181,Admiral Bundesliga,unknown,26,26,0
+2024,8,208,Pro League,A,34,34,0
+2024,8,211,Challenger Pro League,unknown,21,21,0
+2024,8,229,First League,unknown,34,34,0
+2024,8,244,1. HNL,unknown,23,23,0
+2024,8,262,Chance Liga,unknown,33,33,0
+2024,8,271,Superliga,unknown,26,26,0
+2024,8,274,First Division,unknown,34,34,0
+2024,8,292,Veikkausliiga,unknown,24,24,0
+2024,8,301,Ligue 1,S,22,22,0
+2024,8,304,Ligue 2,B,27,27,0
+2024,8,325,Super League,unknown,17,17,0
+2024,8,334,NB I,unknown,24,24,0
+2024,8,360,Premier Division,unknown,17,17,0
+2024,8,372,Ligat ha'Al,unknown,11,11,0
+2024,8,384,Serie A,S,26,26,0
+2024,8,387,Serie B,B,35,35,0
+2024,8,390,Coppa Italia,unknown,20,20,0
+2024,8,444,Eliteserien,unknown,30,30,0
+2024,8,453,Ekstraklasa,A,39,39,0
+2024,8,462,Liga Portugal,A,32,32,0
+2024,8,465,Liga Portugal 2,unknown,31,31,0
+2024,8,474,Superliga,unknown,33,33,0
+2024,8,486,Premier League,unknown,36,36,0
+2024,8,489,FNL,unknown,40,40,0
+2024,8,492,Russian Cup,unknown,49,49,0
+2024,8,501,Premiership,A,21,21,0
+2024,8,531,Super Liga,unknown,34,34,0
+2024,8,540,Niké Liga,unknown,22,22,0
+2024,8,564,La Liga,S,34,34,0
+2024,8,567,La Liga 2,B,27,27,0
+2024,8,573,Allsvenskan,A,33,33,0
+2024,8,591,Super League,unknown,18,18,0
+2024,8,600,Super Lig,A,29,29,0
+2024,8,603,1. Lig,unknown,35,35,0
+2024,8,609,Premier League,unknown,34,34,0
+2024,8,636,Liga Profesional de Fútbol,A,62,62,0
+2024,8,648,Serie A,A,44,44,0
+2024,8,651,Serie B,unknown,53,52,0
+2024,8,654,Copa do Brasil,unknown,15,15,0
+2024,8,663,Primera Division,A,41,41,0
+2024,8,672,Liga BetPlay,A,34,34,0
+2024,8,743,Liga MX,A,17,17,0
+2024,8,764,Primera Division,unknown,47,47,0
+2024,8,770,Primera Division,unknown,9,9,0
+2024,8,779,Major League Soccer,A,19,19,0
+2024,8,830,Premier League,unknown,28,28,0
+2024,8,860,Botola Pro,unknown,8,8,0
+2024,8,902,Persian Gulf Pro League,unknown,24,24,0
+2024,8,938,Stars League,unknown,18,18,0
+2024,8,944,Pro League,unknown,18,18,0
+2024,8,959,UAE Pro League,unknown,14,14,0
+2024,8,968,J1 League,A,42,42,0
+2024,8,989,Super League,unknown,24,24,0
+2024,8,1034,K League 1,A,20,20,0
+2024,8,1085,AFC Champions League Elite,unknown,3,3,0
+2024,8,1088,AFC Champions League Two,unknown,2,2,0
+2024,8,1107,CAF Champions League,unknown,54,53,0
+2024,8,1116,Copa Sudamericana,B,16,16,0
+2024,8,1122,Copa Libertadores,A,16,16,0
+2024,8,1328,UEFA Super Cup,unknown,1,1,0
+2024,9,8,Premier League,S,33,33,0
+2024,9,9,Championship,B,37,37,0
+2024,9,12,League One,unknown,42,42,0
+2024,9,14,League Two,unknown,46,46,0
+2024,9,17,Enterprise National League,unknown,72,72,0
+2024,9,24,FA Cup,unknown,164,164,0
+2024,9,27,Carabao Cup,unknown,15,15,0
+2024,9,72,Eredivisie,A,31,31,0
+2024,9,74,Eerste Divisie,unknown,41,41,0
+2024,9,78,KNVB Beker,unknown,52,52,0
+2024,9,82,Bundesliga,S,29,29,0
+2024,9,85,2. Bundesliga,B,30,30,0
+2024,9,88,3. Liga,unknown,43,43,0
+2024,9,181,Admiral Bundesliga,unknown,20,20,0
+2024,9,208,Pro League,A,30,30,0
+2024,9,211,Challenger Pro League,unknown,27,27,0
+2024,9,229,First League,unknown,29,29,0
+2024,9,244,1. HNL,unknown,17,17,0
+2024,9,262,Chance Liga,unknown,23,23,0
+2024,9,271,Superliga,unknown,22,22,0
+2024,9,274,First Division,unknown,20,20,0
+2024,9,292,Veikkausliiga,unknown,24,24,0
+2024,9,301,Ligue 1,S,32,32,0
+2024,9,304,Ligue 2,B,36,36,0
+2024,9,325,Super League,unknown,25,25,0
+2024,9,334,NB I,unknown,15,15,0
+2024,9,360,Premier Division,unknown,20,20,0
+2024,9,372,Ligat ha'Al,unknown,23,23,0
+2024,9,384,Serie A,S,34,34,0
+2024,9,387,Serie B,B,35,35,0
+2024,9,390,Coppa Italia,unknown,8,8,0
+2024,9,444,Eliteserien,unknown,32,32,0
+2024,9,453,Ekstraklasa,A,31,31,0
+2024,9,462,Liga Portugal,A,31,31,0
+2024,9,465,Liga Portugal 2,unknown,23,23,0
+2024,9,468,Taça De Portugal,unknown,83,83,0
+2024,9,474,Superliga,unknown,29,29,0
+2024,9,486,Premier League,unknown,28,28,0
+2024,9,489,FNL,unknown,41,41,0
+2024,9,492,Russian Cup,unknown,38,38,0
+2024,9,501,Premiership,A,17,17,0
+2024,9,531,Super Liga,unknown,28,28,0
+2024,9,540,Niké Liga,unknown,22,22,0
+2024,9,564,La Liga,S,46,46,0
+2024,9,567,La Liga 2,B,50,50,0
+2024,9,573,Allsvenskan,A,36,36,0
+2024,9,591,Super League,unknown,17,17,0
+2024,9,600,Super Lig,A,34,34,0
+2024,9,603,1. Lig,unknown,35,35,0
+2024,9,609,Premier League,unknown,27,27,0
+2024,9,636,Liga Profesional de Fútbol,A,46,46,0
+2024,9,648,Serie A,A,43,43,0
+2024,9,651,Serie B,unknown,55,55,0
+2024,9,654,Copa do Brasil,unknown,4,4,0
+2024,9,663,Primera Division,A,27,27,0
+2024,9,672,Liga BetPlay,A,44,44,0
+2024,9,743,Liga MX,A,39,39,0
+2024,9,764,Primera Division,unknown,38,38,0
+2024,9,770,Primera Division,unknown,32,32,0
+2024,9,779,Major League Soccer,A,69,69,0
+2024,9,806,Premier League,unknown,28,28,0
+2024,9,809,Ligue 1,unknown,12,12,0
+2024,9,827,Ligue 1,unknown,13,13,0
+2024,9,860,Botola Pro,unknown,21,21,0
+2024,9,902,Persian Gulf Pro League,unknown,22,22,0
+2024,9,938,Stars League,unknown,18,18,0
+2024,9,944,Pro League,unknown,27,27,0
+2024,9,950,Kings Cup,unknown,16,16,0
+2024,9,959,UAE Pro League,unknown,13,13,0
+2024,9,968,J1 League,A,33,33,0
+2024,9,989,Super League,unknown,24,24,0
+2024,9,1007,Indian Super League,unknown,18,18,0
+2024,9,1034,K League 1,A,22,22,0
+2024,9,1073,V-League,unknown,21,21,0
+2024,9,1085,AFC Champions League Elite,unknown,16,16,0
+2024,9,1088,AFC Champions League Two,unknown,16,16,0
+2024,9,1107,CAF Champions League,unknown,32,32,0
+2024,9,1116,Copa Sudamericana,B,8,8,0
+2024,9,1122,Copa Libertadores,A,8,8,0
+2024,9,1452,FIFA Intercontinental Cup,unknown,1,1,0
+2024,10,8,Premier League,S,30,30,0
+2024,10,9,Championship,B,60,60,0
+2024,10,12,League One,unknown,65,65,0
+2024,10,14,League Two,unknown,70,70,0
+2024,10,17,Enterprise National League,unknown,49,49,0
+2024,10,24,FA Cup,unknown,50,50,0
+2024,10,27,Carabao Cup,unknown,9,9,0
+2024,10,72,Eredivisie,A,28,28,0
+2024,10,74,Eerste Divisie,unknown,40,40,0
+2024,10,78,KNVB Beker,unknown,26,26,0
+2024,10,82,Bundesliga,S,27,27,0
+2024,10,85,2. Bundesliga,B,27,27,0
+2024,10,88,3. Liga,unknown,40,40,0
+2024,10,109,DFB Pokal,unknown,16,16,0
+2024,10,181,Admiral Bundesliga,unknown,18,18,0
+2024,10,208,Pro League,A,24,24,0
+2024,10,211,Challenger Pro League,unknown,24,24,0
+2024,10,229,First League,unknown,24,24,0
+2024,10,244,1. HNL,unknown,15,15,0
+2024,10,262,Chance Liga,unknown,24,24,0
+2024,10,271,Superliga,unknown,18,18,0
+2024,10,274,First Division,unknown,18,18,0
+2024,10,292,Veikkausliiga,unknown,16,16,0
+2024,10,301,Ligue 1,S,27,27,0
+2024,10,304,Ligue 2,B,35,35,0
+2024,10,325,Super League,unknown,21,21,0
+2024,10,334,NB I,unknown,18,18,0
+2024,10,360,Premier Division,unknown,16,16,0
+2024,10,372,Ligat ha'Al,unknown,21,21,0
+2024,10,384,Serie A,S,39,39,0
+2024,10,387,Serie B,B,40,40,0
+2024,10,444,Eliteserien,unknown,17,17,0
+2024,10,453,Ekstraklasa,A,28,28,0
+2024,10,462,Liga Portugal,A,17,17,0
+2024,10,465,Liga Portugal 2,unknown,25,25,0
+2024,10,468,Taça De Portugal,unknown,32,32,0
+2024,10,474,Superliga,unknown,24,24,0
+2024,10,486,Premier League,unknown,24,24,0
+2024,10,489,FNL,unknown,36,36,0
+2024,10,492,Russian Cup,unknown,28,28,0
+2024,10,501,Premiership,A,24,24,0
+2024,10,531,Super Liga,unknown,25,25,0
+2024,10,540,Niké Liga,unknown,21,21,0
+2024,10,564,La Liga,S,30,30,0
+2024,10,567,La Liga 2,B,55,55,0
+2024,10,570,Copa Del Rey,unknown,58,58,0
+2024,10,573,Allsvenskan,A,25,25,0
+2024,10,591,Super League,unknown,24,24,0
+2024,10,600,Super Lig,A,27,27,0
+2024,10,603,1. Lig,unknown,30,30,0
+2024,10,609,Premier League,unknown,24,24,0
+2024,10,636,Liga Profesional de Fútbol,A,49,49,0
+2024,10,648,Serie A,A,34,34,0
+2024,10,651,Serie B,unknown,55,54,0
+2024,10,654,Copa do Brasil,unknown,4,4,0
+2024,10,663,Primera Division,A,20,20,0
+2024,10,672,Liga BetPlay,A,41,41,0
+2024,10,743,Liga MX,A,35,35,0
+2024,10,764,Primera Division,unknown,28,28,0
+2024,10,770,Primera Division,unknown,32,32,0
+2024,10,779,Major League Soccer,A,54,54,0
+2024,10,806,Premier League,unknown,19,19,0
+2024,10,809,Ligue 1,unknown,36,36,0
+2024,10,827,Ligue 1,unknown,33,33,0
+2024,10,830,Premier League,unknown,4,4,0
+2024,10,860,Botola Pro,unknown,35,35,0
+2024,10,902,Persian Gulf Pro League,unknown,23,23,0
+2024,10,938,Stars League,unknown,15,15,0
+2024,10,944,Pro League,unknown,30,30,0
+2024,10,950,Kings Cup,unknown,8,8,0
+2024,10,959,UAE Pro League,unknown,16,16,0
+2024,10,968,J1 League,A,25,25,0
+2024,10,989,Super League,unknown,16,16,0
+2024,10,1007,Indian Super League,unknown,20,20,0
+2024,10,1034,K League 1,A,18,18,0
+2024,10,1073,V-League,unknown,14,14,0
+2024,10,1085,AFC Champions League Elite,unknown,20,20,0
+2024,10,1088,AFC Champions League Two,unknown,32,30,0
+2024,10,1116,Copa Sudamericana,B,3,3,0
+2024,10,1122,Copa Libertadores,A,4,4,0
+2024,10,1356,A-League Men,unknown,12,12,0
+2024,10,1452,FIFA Intercontinental Cup,unknown,1,1,0
+2024,11,8,Premier League,S,36,36,0
+2024,11,9,Championship,B,69,69,0
+2024,11,12,League One,unknown,40,40,0
+2024,11,14,League Two,unknown,36,36,0
+2024,11,17,Enterprise National League,unknown,51,51,0
+2024,11,24,FA Cup,unknown,55,55,0
+2024,11,72,Eredivisie,A,32,32,0
+2024,11,74,Eerste Divisie,unknown,47,47,0
+2024,11,82,Bundesliga,S,34,34,0
+2024,11,85,2. Bundesliga,B,33,33,0
+2024,11,88,3. Liga,unknown,37,37,0
+2024,11,181,Admiral Bundesliga,unknown,21,21,0
+2024,11,208,Pro League,A,27,27,0
+2024,11,211,Challenger Pro League,unknown,29,29,0
+2024,11,229,First League,unknown,30,30,0
+2024,11,244,1. HNL,unknown,18,18,0
+2024,11,262,Chance Liga,unknown,28,28,0
+2024,11,271,Superliga,unknown,19,19,0
+2024,11,274,First Division,unknown,21,21,0
+2024,11,292,Veikkausliiga,unknown,1,1,0
+2024,11,301,Ligue 1,S,31,31,0
+2024,11,304,Ligue 2,B,27,27,0
+2024,11,307,Coupe de France,unknown,129,129,0
+2024,11,325,Super League,unknown,24,24,0
+2024,11,334,NB I,unknown,22,22,0
+2024,11,360,Premier Division,unknown,5,5,0
+2024,11,372,Ligat ha'Al,unknown,20,20,0
+2024,11,384,Serie A,S,34,34,0
+2024,11,387,Serie B,B,36,36,0
+2024,11,444,Eliteserien,unknown,24,24,0
+2024,11,453,Ekstraklasa,A,32,32,0
+2024,11,462,Liga Portugal,A,22,22,0
+2024,11,465,Liga Portugal 2,unknown,26,26,0
+2024,11,468,Taça De Portugal,unknown,16,16,0
+2024,11,474,Superliga,unknown,31,31,0
+2024,11,486,Premier League,unknown,27,27,0
+2024,11,489,FNL,unknown,40,40,0
+2024,11,492,Russian Cup,unknown,12,12,0
+2024,11,501,Premiership,A,21,21,0
+2024,11,531,Super Liga,unknown,29,29,0
+2024,11,540,Niké Liga,unknown,22,22,0
+2024,11,564,La Liga,S,32,32,0
+2024,11,567,La Liga 2,B,49,49,0
+2024,11,570,Copa Del Rey,unknown,7,7,0
+2024,11,573,Allsvenskan,A,16,16,0
+2024,11,591,Super League,unknown,21,21,0
+2024,11,600,Super Lig,A,32,32,0
+2024,11,603,1. Lig,unknown,35,35,0
+2024,11,609,Premier League,unknown,28,28,0
+2024,11,636,Liga Profesional de Fútbol,A,70,70,0
+2024,11,648,Serie A,A,45,45,0
+2024,11,651,Serie B,unknown,40,40,0
+2024,11,654,Copa do Brasil,unknown,2,2,0
+2024,11,663,Primera Division,A,16,16,0
+2024,11,672,Liga BetPlay,A,52,52,0
+2024,11,743,Liga MX,A,34,34,0
+2024,11,764,Primera Division,unknown,8,8,0
+2024,11,770,Primera Division,unknown,44,44,0
+2024,11,779,Major League Soccer,A,16,16,0
+2024,11,806,Premier League,unknown,13,13,0
+2024,11,809,Ligue 1,unknown,29,29,0
+2024,11,827,Ligue 1,unknown,35,35,0
+2024,11,830,Premier League,unknown,26,26,0
+2024,11,860,Botola Pro,unknown,29,29,0
+2024,11,902,Persian Gulf Pro League,unknown,9,9,0
+2024,11,938,Stars League,unknown,9,9,0
+2024,11,944,Pro League,unknown,33,33,0
+2024,11,959,UAE Pro League,unknown,11,11,0
+2024,11,968,J1 League,A,29,29,0
+2024,11,989,Super League,unknown,8,8,0
+2024,11,1007,Indian Super League,unknown,20,20,0
+2024,11,1034,K League 1,A,18,18,0
+2024,11,1073,V-League,unknown,28,28,0
+2024,11,1085,AFC Champions League Elite,unknown,24,24,0
+2024,11,1088,AFC Champions League Two,unknown,32,30,0
+2024,11,1107,CAF Champions League,unknown,8,8,0
+2024,11,1116,Copa Sudamericana,B,2,2,0
+2024,11,1122,Copa Libertadores,A,1,1,0
+2024,11,1356,A-League Men,unknown,22,22,0
+2024,12,8,Premier League,S,62,62,0
+2024,12,9,Championship,B,71,71,0
+2024,12,12,League One,unknown,69,69,0
+2024,12,14,League Two,unknown,67,67,0
+2024,12,17,Enterprise National League,unknown,40,40,0
+2024,12,24,FA Cup,unknown,5,5,0
+2024,12,27,Carabao Cup,unknown,4,4,0
+2024,12,72,Eredivisie,A,31,31,0
+2024,12,74,Eerste Divisie,unknown,33,33,0
+2024,12,78,KNVB Beker,unknown,16,16,0
+2024,12,82,Bundesliga,S,29,29,0
+2024,12,85,2. Bundesliga,B,30,30,0
+2024,12,88,3. Liga,unknown,33,33,0
+2024,12,109,DFB Pokal,unknown,8,8,0
+2024,12,181,Admiral Bundesliga,unknown,11,11,0
+2024,12,208,Pro League,A,37,37,0
+2024,12,211,Challenger Pro League,unknown,27,26,0
+2024,12,229,First League,unknown,20,20,0
+2024,12,244,1. HNL,unknown,17,17,0
+2024,12,262,Chance Liga,unknown,28,28,0
+2024,12,271,Superliga,unknown,5,5,0
+2024,12,274,First Division,unknown,3,3,0
+2024,12,301,Ligue 1,S,24,24,0
+2024,12,304,Ligue 2,B,19,19,0
+2024,12,307,Coupe de France,unknown,39,39,0
+2024,12,325,Super League,unknown,25,25,0
+2024,12,334,NB I,unknown,17,17,0
+2024,12,372,Ligat ha'Al,unknown,33,33,0
+2024,12,384,Serie A,S,45,45,0
+2024,12,387,Serie B,B,54,54,0
+2024,12,390,Coppa Italia,unknown,8,8,0
+2024,12,444,Eliteserien,unknown,8,8,0
+2024,12,453,Ekstraklasa,A,14,14,0
+2024,12,462,Liga Portugal,A,42,42,0
+2024,12,465,Liga Portugal 2,unknown,33,33,0
+2024,12,468,Taça De Portugal,unknown,3,3,0
+2024,12,474,Superliga,unknown,27,27,0
+2024,12,486,Premier League,unknown,13,13,0
+2024,12,489,FNL,unknown,5,5,0
+2024,12,501,Premiership,A,33,33,0
+2024,12,531,Super Liga,unknown,30,30,0
+2024,12,540,Niké Liga,unknown,15,15,0
+2024,12,564,La Liga,S,39,39,0
+2024,12,567,La Liga 2,B,48,48,0
+2024,12,570,Copa Del Rey,unknown,28,28,0
+2024,12,591,Super League,unknown,15,15,0
+2024,12,600,Super Lig,A,31,31,0
+2024,12,603,1. Lig,unknown,35,35,0
+2024,12,609,Premier League,unknown,21,21,0
+2024,12,636,Liga Profesional de Fútbol,A,40,40,0
+2024,12,648,Serie A,A,26,26,0
+2024,12,672,Liga BetPlay,A,14,14,0
+2024,12,743,Liga MX,A,9,9,0
+2024,12,770,Primera Division,unknown,4,4,0
+2024,12,779,Major League Soccer,A,3,3,0
+2024,12,806,Premier League,unknown,26,25,0
+2024,12,809,Ligue 1,unknown,31,31,0
+2024,12,827,Ligue 1,unknown,39,39,0
+2024,12,830,Premier League,unknown,30,30,0
+2024,12,860,Botola Pro,unknown,35,35,0
+2024,12,902,Persian Gulf Pro League,unknown,34,34,0
+2024,12,938,Stars League,unknown,6,6,0
+2024,12,944,Pro League,unknown,9,9,0
+2024,12,959,UAE Pro League,unknown,15,15,0
+2024,12,968,J1 League,A,11,11,0
+2024,12,1007,Indian Super League,unknown,26,26,0
+2024,12,1085,AFC Champions League Elite,unknown,12,12,0
+2024,12,1088,AFC Champions League Two,unknown,16,15,0
+2024,12,1107,CAF Champions League,unknown,16,16,0
+2024,12,1356,A-League Men,unknown,26,26,0
+2024,12,1452,FIFA Intercontinental Cup,unknown,3,3,0
+2024,12,1990,Super Cup,unknown,1,1,0
+2025,1,8,Premier League,S,41,41,0
+2025,1,9,Championship,B,65,65,0
+2025,1,12,League One,unknown,63,63,0
+2025,1,14,League Two,unknown,59,59,0
+2025,1,17,Enterprise National League,unknown,45,45,0
+2025,1,24,FA Cup,unknown,32,32,0
+2025,1,27,Carabao Cup,unknown,2,2,0
+2025,1,72,Eredivisie,A,26,26,0
+2025,1,74,Eerste Divisie,unknown,33,33,0
+2025,1,78,KNVB Beker,unknown,8,8,0
+2025,1,82,Bundesliga,S,37,37,0
+2025,1,85,2. Bundesliga,B,20,20,0
+2025,1,88,3. Liga,unknown,21,21,0
+2025,1,208,Pro League,A,25,25,0
+2025,1,211,Challenger Pro League,unknown,26,25,0
+2025,1,244,1. HNL,unknown,6,6,0
+2025,1,301,Ligue 1,S,36,36,0
+2025,1,304,Ligue 2,B,42,42,0
+2025,1,307,Coupe de France,unknown,17,16,0
+2025,1,325,Super League,unknown,28,28,0
+2025,1,372,Ligat ha'Al,unknown,32,32,0
+2025,1,384,Serie A,S,41,41,0
+2025,1,387,Serie B,B,31,31,0
+2025,1,453,Ekstraklasa,A,2,2,0
+2025,1,462,Liga Portugal,A,28,28,0
+2025,1,465,Liga Portugal 2,unknown,34,34,0
+2025,1,468,Taça De Portugal,unknown,5,5,0
+2025,1,474,Superliga,unknown,18,18,0
+2025,1,501,Premiership,A,27,27,0
+2025,1,531,Super Liga,unknown,1,1,0
+2025,1,564,La Liga,S,30,30,0
+2025,1,567,La Liga 2,B,35,35,0
+2025,1,570,Copa Del Rey,unknown,24,24,0
+2025,1,591,Super League,unknown,12,12,0
+2025,1,600,Super Lig,A,38,38,0
+2025,1,603,1. Lig,unknown,41,41,0
+2025,1,636,Liga Profesional de Fútbol,A,30,30,0
+2025,1,672,Liga BetPlay,A,9,9,0
+2025,1,743,Liga MX,A,35,35,0
+2025,1,770,Primera Division,unknown,1,1,0
+2025,1,806,Premier League,unknown,22,20,0
+2025,1,809,Ligue 1,unknown,8,8,0
+2025,1,830,Premier League,unknown,33,33,0
+2025,1,860,Botola Pro,unknown,24,24,0
+2025,1,902,Persian Gulf Pro League,unknown,26,26,0
+2025,1,938,Stars League,unknown,18,18,0
+2025,1,944,Pro League,unknown,42,42,0
+2025,1,950,Kings Cup,unknown,4,4,0
+2025,1,959,UAE Pro League,unknown,28,28,0
+2025,1,1007,Indian Super League,unknown,31,31,0
+2025,1,1073,V-League,unknown,13,13,0
+2025,1,1107,CAF Champions League,unknown,24,24,0
+2025,1,1251,Super Cup,unknown,3,3,0
+2025,1,1356,A-League Men,unknown,33,33,0
+2025,2,8,Premier League,S,42,42,0
+2025,2,9,Championship,B,60,60,0
+2025,2,12,League One,unknown,60,60,0
+2025,2,14,League Two,unknown,64,64,0
+2025,2,17,Enterprise National League,unknown,65,65,0
+2025,2,24,FA Cup,unknown,17,17,0
+2025,2,27,Carabao Cup,unknown,2,2,0
+2025,2,72,Eredivisie,A,30,30,0
+2025,2,74,Eerste Divisie,unknown,39,39,0
+2025,2,78,KNVB Beker,unknown,6,6,0
+2025,2,82,Bundesliga,S,36,36,0
+2025,2,85,2. Bundesliga,B,36,36,0
+2025,2,88,3. Liga,unknown,40,40,0
+2025,2,109,DFB Pokal,unknown,4,4,0
+2025,2,181,Admiral Bundesliga,unknown,18,18,0
+2025,2,208,Pro League,A,32,32,0
+2025,2,211,Challenger Pro League,unknown,32,29,0
+2025,2,229,First League,unknown,24,24,0
+2025,2,244,1. HNL,unknown,20,20,0
+2025,2,262,Chance Liga,unknown,30,30,0
+2025,2,271,Superliga,unknown,13,13,0
+2025,2,274,First Division,unknown,9,9,0
+2025,2,301,Ligue 1,S,36,36,0
+2025,2,304,Ligue 2,B,35,35,0
+2025,2,307,Coupe de France,unknown,12,12,0
+2025,2,325,Super League,unknown,28,28,0
+2025,2,334,NB I,unknown,25,25,0
+2025,2,360,Premier Division,unknown,14,14,0
+2025,2,372,Ligat ha'Al,unknown,28,28,0
+2025,2,384,Serie A,S,42,42,0
+2025,2,387,Serie B,B,40,40,0
+2025,2,390,Coppa Italia,unknown,4,4,0
+2025,2,453,Ekstraklasa,A,36,36,0
+2025,2,462,Liga Portugal,A,35,35,0
+2025,2,465,Liga Portugal 2,unknown,36,36,0
+2025,2,468,Taça De Portugal,unknown,4,4,0
+2025,2,474,Superliga,unknown,40,40,0
+2025,2,486,Premier League,unknown,1,1,0
+2025,2,501,Premiership,A,25,25,0
+2025,2,531,Super Liga,unknown,38,38,0
+2025,2,540,Niké Liga,unknown,18,18,0
+2025,2,564,La Liga,S,40,40,0
+2025,2,567,La Liga 2,B,44,44,0
+2025,2,570,Copa Del Rey,unknown,6,6,0
+2025,2,591,Super League,unknown,30,30,0
+2025,2,600,Super Lig,A,34,34,0
+2025,2,603,1. Lig,unknown,50,50,0
+2025,2,609,Premier League,unknown,11,11,0
+2025,2,636,Liga Profesional de Fútbol,A,74,74,0
+2025,2,654,Copa do Brasil,unknown,40,40,0
+2025,2,663,Primera Division,A,17,17,0
+2025,2,672,Liga BetPlay,A,48,48,0
+2025,2,743,Liga MX,A,46,46,0
+2025,2,764,Primera Division,unknown,28,28,0
+2025,2,770,Primera Division,unknown,31,31,0
+2025,2,779,Major League Soccer,A,15,15,0
+2025,2,806,Premier League,unknown,42,41,0
+2025,2,809,Ligue 1,unknown,28,28,0
+2025,2,827,Ligue 1,unknown,40,40,0
+2025,2,830,Premier League,unknown,51,51,0
+2025,2,860,Botola Pro,unknown,32,32,0
+2025,2,902,Persian Gulf Pro League,unknown,30,30,0
+2025,2,938,Stars League,unknown,18,18,0
+2025,2,944,Pro League,unknown,42,42,0
+2025,2,959,UAE Pro League,unknown,27,27,0
+2025,2,968,J1 League,A,30,30,0
+2025,2,989,Super League,unknown,10,10,0
+2025,2,1007,Indian Super League,unknown,27,27,0
+2025,2,1034,K League 1,A,12,12,0
+2025,2,1073,V-League,unknown,25,25,0
+2025,2,1085,AFC Champions League Elite,unknown,24,24,0
+2025,2,1088,AFC Champions League Two,unknown,16,16,0
+2025,2,1122,Copa Libertadores,A,22,22,0
+2025,2,1123,OFC Champions League,unknown,3,3,0
+2025,2,1356,A-League Men,unknown,23,23,0
+2025,2,1798,Supercopa do Brasil,unknown,1,1,0
+2025,3,8,Premier League,S,18,18,0
+2025,3,9,Championship,B,58,58,0
+2025,3,12,League One,unknown,73,73,0
+2025,3,14,League Two,unknown,77,77,0
+2025,3,17,Enterprise National League,unknown,83,83,0
+2025,3,24,FA Cup,unknown,11,11,0
+2025,3,27,Carabao Cup,unknown,1,1,0
+2025,3,72,Eredivisie,A,33,33,0
+2025,3,74,Eerste Divisie,unknown,46,46,0
+2025,3,82,Bundesliga,S,35,35,0
+2025,3,85,2. Bundesliga,B,34,34,0
+2025,3,88,3. Liga,unknown,48,48,0
+2025,3,181,Admiral Bundesliga,unknown,24,24,0
+2025,3,208,Pro League,A,31,31,0
+2025,3,211,Challenger Pro League,unknown,30,26,0
+2025,3,229,First League,unknown,32,32,0
+2025,3,244,1. HNL,unknown,19,19,0
+2025,3,262,Chance Liga,unknown,33,33,0
+2025,3,271,Superliga,unknown,23,23,0
+2025,3,274,First Division,unknown,21,21,0
+2025,3,301,Ligue 1,S,35,35,0
+2025,3,304,Ligue 2,B,31,31,0
+2025,3,325,Super League,unknown,21,21,0
+2025,3,334,NB I,unknown,24,24,0
+2025,3,360,Premier Division,unknown,20,20,0
+2025,3,372,Ligat ha'Al,unknown,28,28,0
+2025,3,384,Serie A,S,39,39,0
+2025,3,387,Serie B,B,39,39,0
+2025,3,444,Eliteserien,unknown,8,8,0
+2025,3,453,Ekstraklasa,A,34,34,0
+2025,3,462,Liga Portugal,A,34,34,0
+2025,3,465,Liga Portugal 2,unknown,35,35,0
+2025,3,474,Superliga,unknown,30,30,0
+2025,3,486,Premier League,unknown,31,31,0
+2025,3,489,FNL,unknown,45,45,0
+2025,3,492,Russian Cup,unknown,6,6,0
+2025,3,501,Premiership,A,18,18,0
+2025,3,531,Super Liga,unknown,33,33,0
+2025,3,540,Niké Liga,unknown,24,24,0
+2025,3,564,La Liga,S,38,38,0
+2025,3,567,La Liga 2,B,55,55,0
+2025,3,573,Allsvenskan,A,8,8,0
+2025,3,591,Super League,unknown,24,24,0
+2025,3,600,Super Lig,A,36,36,0
+2025,3,603,1. Lig,unknown,49,49,0
+2025,3,609,Premier League,unknown,28,28,0
+2025,3,636,Liga Profesional de Fútbol,A,61,61,0
+2025,3,648,Serie A,A,10,10,0
+2025,3,654,Copa do Brasil,unknown,20,20,0
+2025,3,663,Primera Division,A,29,29,0
+2025,3,672,Liga BetPlay,A,51,51,0
+2025,3,743,Liga MX,A,36,36,0
+2025,3,764,Primera Division,unknown,24,24,0
+2025,3,770,Primera Division,unknown,39,39,0
+2025,3,779,Major League Soccer,A,74,74,0
+2025,3,806,Premier League,unknown,37,37,0
+2025,3,809,Ligue 1,unknown,16,16,0
+2025,3,827,Ligue 1,unknown,37,37,0
+2025,3,830,Premier League,unknown,17,17,0
+2025,3,860,Botola Pro,unknown,16,16,0
+2025,3,902,Persian Gulf Pro League,unknown,22,22,0
+2025,3,938,Stars League,unknown,12,12,0
+2025,3,944,Pro League,unknown,24,24,0
+2025,3,959,UAE Pro League,unknown,7,7,0
+2025,3,968,J1 League,A,38,38,0
+2025,3,989,Super League,unknown,14,14,0
+2025,3,1007,Indian Super League,unknown,16,16,0
+2025,3,1034,K League 1,A,24,24,0
+2025,3,1073,V-League,unknown,11,11,0
+2025,3,1085,AFC Champions League Elite,unknown,16,16,0
+2025,3,1088,AFC Champions League Two,unknown,8,8,0
+2025,3,1116,Copa Sudamericana,B,16,16,0
+2025,3,1122,Copa Libertadores,A,8,8,0
+2025,3,1123,OFC Champions League,unknown,4,4,0
+2025,3,1356,A-League Men,unknown,22,22,0
+2025,4,8,Premier League,S,50,50,0
+2025,4,9,Championship,B,73,73,0
+2025,4,12,League One,unknown,80,80,0
+2025,4,14,League Two,unknown,74,74,0
+2025,4,17,Enterprise National League,unknown,64,64,0
+2025,4,24,FA Cup,unknown,2,2,0
+2025,4,72,Eredivisie,A,31,31,0
+2025,4,74,Eerste Divisie,unknown,42,42,0
+2025,4,78,KNVB Beker,unknown,1,1,0
+2025,4,82,Bundesliga,S,36,36,0
+2025,4,85,2. Bundesliga,B,36,36,0
+2025,4,88,3. Liga,unknown,50,50,0
+2025,4,109,DFB Pokal,unknown,2,2,0
+2025,4,181,Admiral Bundesliga,unknown,30,30,0
+2025,4,208,Pro League,A,36,36,0
+2025,4,211,Challenger Pro League,unknown,28,25,0
+2025,4,229,First League,unknown,40,40,0
+2025,4,244,1. HNL,unknown,25,25,0
+2025,4,262,Chance Liga,unknown,31,31,0
+2025,4,271,Superliga,unknown,30,30,0
+2025,4,274,First Division,unknown,30,30,0
+2025,4,292,Veikkausliiga,unknown,26,26,0
+2025,4,301,Ligue 1,S,36,36,0
+2025,4,304,Ligue 2,B,36,36,0
+2025,4,307,Coupe de France,unknown,2,2,0
+2025,4,325,Super League,unknown,24,24,0
+2025,4,334,NB I,unknown,24,24,0
+2025,4,360,Premier Division,unknown,26,26,0
+2025,4,372,Ligat ha'Al,unknown,24,24,0
+2025,4,384,Serie A,S,40,40,0
+2025,4,387,Serie B,B,30,30,0
+2025,4,390,Coppa Italia,unknown,4,4,0
+2025,4,444,Eliteserien,unknown,28,28,0
+2025,4,453,Ekstraklasa,A,36,36,0
+2025,4,462,Liga Portugal,A,38,38,0
+2025,4,465,Liga Portugal 2,unknown,36,36,0
+2025,4,468,Taça De Portugal,unknown,4,4,0
+2025,4,474,Superliga,unknown,32,32,0
+2025,4,486,Premier League,unknown,32,32,0
+2025,4,489,FNL,unknown,36,36,0
+2025,4,492,Russian Cup,unknown,7,7,0
+2025,4,501,Premiership,A,18,18,0
+2025,4,531,Super Liga,unknown,32,32,0
+2025,4,540,Niké Liga,unknown,24,24,0
+2025,4,564,La Liga,S,41,41,0
+2025,4,567,La Liga 2,B,44,44,0
+2025,4,570,Copa Del Rey,unknown,3,3,0
+2025,4,573,Allsvenskan,A,39,39,0
+2025,4,591,Super League,unknown,24,24,0
+2025,4,600,Super Lig,A,36,36,0
+2025,4,603,1. Lig,unknown,50,50,0
+2025,4,609,Premier League,unknown,34,34,0
+2025,4,636,Liga Profesional de Fútbol,A,59,59,0
+2025,4,648,Serie A,A,50,50,0
+2025,4,651,Serie B,unknown,50,50,0
+2025,4,654,Copa do Brasil,unknown,7,7,0
+2025,4,663,Primera Division,A,22,22,0
+2025,4,672,Liga BetPlay,A,50,50,0
+2025,4,743,Liga MX,A,38,38,0
+2025,4,764,Primera Division,unknown,35,35,0
+2025,4,770,Primera Division,unknown,33,33,0
+2025,4,779,Major League Soccer,A,60,60,0
+2025,4,806,Premier League,unknown,22,22,0
+2025,4,809,Ligue 1,unknown,27,27,0
+2025,4,827,Ligue 1,unknown,19,19,0
+2025,4,830,Premier League,unknown,14,14,0
+2025,4,860,Botola Pro,unknown,15,15,0
+2025,4,902,Persian Gulf Pro League,unknown,26,26,0
+2025,4,938,Stars League,unknown,18,18,0
+2025,4,944,Pro League,unknown,36,36,0
+2025,4,950,Kings Cup,unknown,2,2,0
+2025,4,959,UAE Pro League,unknown,22,22,0
+2025,4,968,J1 League,A,60,60,0
+2025,4,989,Super League,unknown,46,46,0
+2025,4,1007,Indian Super League,unknown,5,5,0
+2025,4,1034,K League 1,A,26,26,0
+2025,4,1073,V-League,unknown,27,27,0
+2025,4,1085,AFC Champions League Elite,unknown,6,6,0
+2025,4,1088,AFC Champions League Two,unknown,4,4,0
+2025,4,1107,CAF Champions League,unknown,12,12,0
+2025,4,1116,Copa Sudamericana,B,48,48,0
+2025,4,1122,Copa Libertadores,A,48,48,0
+2025,4,1123,OFC Champions League,unknown,11,11,0
+2025,4,1356,A-League Men,unknown,25,25,0
+2025,4,1989,Qatar Prince Cup,unknown,2,2,0
+2025,5,8,Premier League,S,41,41,0
+2025,5,9,Championship,B,17,17,0
+2025,5,12,League One,unknown,17,17,0
+2025,5,14,League Two,unknown,17,17,0
+2025,5,17,Enterprise National League,unknown,16,16,0
+2025,5,24,FA Cup,unknown,1,1,0
+2025,5,72,Eredivisie,A,37,37,0
+2025,5,74,Eerste Divisie,unknown,20,20,0
+2025,5,82,Bundesliga,S,27,27,0
+2025,5,85,2. Bundesliga,B,27,27,0
+2025,5,88,3. Liga,unknown,31,31,0
+2025,5,109,DFB Pokal,unknown,1,1,0
+2025,5,181,Admiral Bundesliga,unknown,26,26,0
+2025,5,208,Pro League,A,28,28,0
+2025,5,211,Challenger Pro League,unknown,2,2,0
+2025,5,229,First League,unknown,44,44,0
+2025,5,244,1. HNL,unknown,20,20,0
+2025,5,262,Chance Liga,unknown,30,30,0
+2025,5,271,Superliga,unknown,24,24,0
+2025,5,274,First Division,unknown,24,24,0
+2025,5,292,Veikkausliiga,unknown,30,30,0
+2025,5,301,Ligue 1,S,27,27,0
+2025,5,304,Ligue 2,B,20,20,0
+2025,5,307,Coupe de France,unknown,1,1,0
+2025,5,325,Super League,unknown,23,23,0
+2025,5,334,NB I,unknown,24,24,0
+2025,5,360,Premier Division,unknown,32,32,0
+2025,5,372,Ligat ha'Al,unknown,20,20,0
+2025,5,384,Serie A,S,40,40,0
+2025,5,387,Serie B,B,47,47,0
+2025,5,390,Coppa Italia,unknown,1,1,0
+2025,5,444,Eliteserien,unknown,36,36,0
+2025,5,453,Ekstraklasa,A,36,36,0
+2025,5,462,Liga Portugal,A,27,27,0
+2025,5,465,Liga Portugal 2,unknown,27,27,0
+2025,5,468,Taça De Portugal,unknown,1,1,0
+2025,5,474,Superliga,unknown,27,27,0
+2025,5,486,Premier League,unknown,32,32,0
+2025,5,489,FNL,unknown,36,36,0
+2025,5,492,Russian Cup,unknown,2,2,0
+2025,5,501,Premiership,A,24,24,0
+2025,5,513,Premiership Play-Offs,unknown,6,6,0
+2025,5,531,Super Liga,unknown,32,32,0
+2025,5,540,Niké Liga,unknown,20,20,0
+2025,5,564,La Liga,S,50,50,0
+2025,5,567,La Liga 2,B,47,47,0
+2025,5,573,Allsvenskan,A,46,46,0
+2025,5,591,Super League,unknown,30,30,0
+2025,5,600,Super Lig,A,43,43,0
+2025,5,603,1. Lig,unknown,25,25,0
+2025,5,609,Premier League,unknown,33,33,0
+2025,5,636,Liga Profesional de Fútbol,A,30,30,0
+2025,5,648,Serie A,A,40,40,0
+2025,5,651,Serie B,unknown,45,45,0
+2025,5,654,Copa do Brasil,unknown,25,25,0
+2025,5,663,Primera Division,A,27,27,0
+2025,5,672,Liga BetPlay,A,43,43,0
+2025,5,743,Liga MX,A,15,15,0
+2025,5,764,Primera Division,unknown,35,35,0
+2025,5,770,Primera Division,unknown,27,27,0
+2025,5,779,Major League Soccer,A,94,94,0
+2025,5,806,Premier League,unknown,31,28,0
+2025,5,809,Ligue 1,unknown,28,28,0
+2025,5,827,Ligue 1,unknown,24,24,0
+2025,5,830,Premier League,unknown,50,50,0
+2025,5,860,Botola Pro,unknown,25,25,0
+2025,5,902,Persian Gulf Pro League,unknown,24,24,0
+2025,5,944,Pro League,unknown,45,45,0
+2025,5,950,Kings Cup,unknown,1,1,0
+2025,5,959,UAE Pro League,unknown,29,29,0
+2025,5,968,J1 League,A,58,58,0
+2025,5,989,Super League,unknown,31,31,0
+2025,5,1034,K League 1,A,39,39,0
+2025,5,1073,V-League,unknown,28,28,0
+2025,5,1085,AFC Champions League Elite,unknown,1,1,0
+2025,5,1088,AFC Champions League Two,unknown,1,1,0
+2025,5,1107,CAF Champions League,unknown,1,1,0
+2025,5,1116,Copa Sudamericana,B,48,48,0
+2025,5,1122,Copa Libertadores,A,48,48,0
+2025,5,1356,A-League Men,unknown,13,13,0
+2025,5,1673,Ligue 1 Play-offs,unknown,2,2,0
+2025,5,1681,Super League Play-offs,unknown,2,2,0
+2025,5,1682,Parva Liga - Play-offs,unknown,3,3,0
+2025,5,1691,Premier League - Playoffs,unknown,2,2,0
+2025,5,1989,Qatar Prince Cup,unknown,1,1,0
+2026,4,8,Premier League,S,23,15,22
+2026,4,9,Championship,B,38,2,18
+2026,4,72,Eredivisie,A,10,0,10
+2026,4,82,Bundesliga,S,225,10,99
+2026,4,85,2. Bundesliga,B,18,0,9
+2026,4,208,Pro League,A,21,1,11
+2026,4,301,Ligue 1,S,17,11,16
+2026,4,304,Ligue 2,B,18,1,9
+2026,4,384,Serie A,S,20,13,18
+2026,4,387,Serie B,B,21,1,11
+2026,4,453,Ekstraklasa,A,18,2,10
+2026,4,462,Liga Portugal,A,18,3,11
+2026,4,501,Premiership,A,6,0,6
+2026,4,564,La Liga,S,17,5,13
+2026,4,567,La Liga 2,B,22,1,11
+2026,4,573,Allsvenskan,A,20,2,8
+2026,4,600,Super Lig,A,19,5,12
+2026,4,636,Liga Profesional de Fútbol,A,30,10,23
+2026,4,648,Serie A,A,20,0,10
+2026,4,663,Primera Division,A,15,2,7
+2026,4,672,Liga BetPlay,A,19,2,9
+2026,4,743,Liga MX,A,22,1,8
+2026,4,779,Major League Soccer,A,35,2,22
+2026,4,1034,K League 1,A,19,2,7
+2026,4,1116,Copa Sudamericana,B,18,10,11
+2026,4,1122,Copa Libertadores,A,19,9,11

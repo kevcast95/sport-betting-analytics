@@ -1,0 +1,5 @@
+dataset,event_count,match_rate_vs_big5_universe,max_abs_delta_pp,representativeness_risk,min_events_per_league_segment,min_year_month_stratum_count,h2h_ready_rate_approx,weighted_effective
+roi_safe_subset_v1,3088,0.8114,2.97,medium,365,,1.0,False
+roi_safe_subset_v2_full,3088,0.8114,2.97,medium,365,,1.0,False
+roi_safe_subset_v2_stratified,2674,0.7026,2.97,medium,365,1,1.0,False
+roi_safe_subset_v2_weighted,3088,0.8114,3.16,medium,540,,1.0,True

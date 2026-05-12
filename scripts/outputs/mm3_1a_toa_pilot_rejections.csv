@@ -1,0 +1,224 @@
+toa_event_id,commence_toa,home_toa,away_toa,reason
+9d35082081b6450749fb6f1cc908f57b,2023-09-30T11:30:00Z,Aston Villa,Brighton and Hove Albion,no_confident_bt2_match
+7d4220e8bf528f818408301b517fbee8,2023-09-30T14:00:00Z,Bournemouth,Arsenal,no_confident_bt2_match
+e573c7cf0a99cdc038d519a5b63520c0,2023-09-30T14:00:00Z,Everton,Luton,no_confident_bt2_match
+d808239f478b81bbbd8afc914dcdc548,2023-10-01T13:00:00Z,Nottingham Forest,Brentford,no_confident_bt2_match
+7bc7e53ac44c6bd3cbe692b0d46e76fe,2023-10-02T19:00:00Z,Fulham,Chelsea,no_confident_bt2_match
+515f74c17c4d3598c982646ded5e51a9,2023-10-03T18:30:00Z,Luton,Burnley,no_confident_bt2_match
+5528d0b167ff7ae068b6d0478eb997c7,2023-10-07T11:30:00Z,Luton,Tottenham Hotspur,no_confident_bt2_match
+14f4848838e0003cf90b04e2b050bb07,2023-10-07T14:00:00Z,Everton,Bournemouth,no_confident_bt2_match
+ffaee6d3d0a33a53aaa286624422cd11,2023-10-07T14:00:00Z,Manchester United,Brentford,no_confident_bt2_match
+5ca0d427c6074c5081f434511430569c,2023-10-07T14:00:00Z,Burnley,Chelsea,no_confident_bt2_match
+5e1ad13cab7640dc90ac2911df6542dc,2023-10-07T14:00:00Z,Fulham,Sheffield United,no_confident_bt2_match
+f0f806a5dd04563e48566f1581aa3b55,2023-10-07T16:30:00Z,Crystal Palace,Nottingham Forest,no_confident_bt2_match
+8af4e3cafd5acdf76aa802f6efdcf41d,2023-10-08T13:00:00Z,Wolverhampton Wanderers,Aston Villa,no_confident_bt2_match
+e0e8c94420c07532683f7c157d4ea9b6,2023-10-08T13:00:00Z,Brighton and Hove Albion,Liverpool,no_confident_bt2_match
+0314f09e396060fe7a79e5aa3fee29da,2023-10-08T13:00:00Z,West Ham United,Newcastle United,no_confident_bt2_match
+f9759348f08884df9648f3e2dbbfd819,2023-10-08T15:30:00Z,Arsenal,Manchester City,no_confident_bt2_match
+9d35082081b6450749fb6f1cc908f57b,2023-09-30T11:30:08Z,Aston Villa,Brighton and Hove Albion,no_confident_bt2_match
+7d4220e8bf528f818408301b517fbee8,2023-09-30T14:00:00Z,Bournemouth,Arsenal,no_confident_bt2_match
+e573c7cf0a99cdc038d519a5b63520c0,2023-09-30T14:00:00Z,Everton,Luton,no_confident_bt2_match
+d808239f478b81bbbd8afc914dcdc548,2023-10-01T13:00:00Z,Nottingham Forest,Brentford,no_confident_bt2_match
+7bc7e53ac44c6bd3cbe692b0d46e76fe,2023-10-02T19:00:00Z,Fulham,Chelsea,no_confident_bt2_match
+515f74c17c4d3598c982646ded5e51a9,2023-10-03T18:30:00Z,Luton,Burnley,no_confident_bt2_match
+5528d0b167ff7ae068b6d0478eb997c7,2023-10-07T11:30:00Z,Luton,Tottenham Hotspur,no_confident_bt2_match
+14f4848838e0003cf90b04e2b050bb07,2023-10-07T14:00:00Z,Everton,Bournemouth,no_confident_bt2_match
+ffaee6d3d0a33a53aaa286624422cd11,2023-10-07T14:00:00Z,Manchester United,Brentford,no_confident_bt2_match
+5ca0d427c6074c5081f434511430569c,2023-10-07T14:00:00Z,Burnley,Chelsea,no_confident_bt2_match
+5e1ad13cab7640dc90ac2911df6542dc,2023-10-07T14:00:00Z,Fulham,Sheffield United,no_confident_bt2_match
+f0f806a5dd04563e48566f1581aa3b55,2023-10-07T16:30:00Z,Crystal Palace,Nottingham Forest,no_confident_bt2_match
+8af4e3cafd5acdf76aa802f6efdcf41d,2023-10-08T13:00:00Z,Wolverhampton Wanderers,Aston Villa,no_confident_bt2_match
+e0e8c94420c07532683f7c157d4ea9b6,2023-10-08T13:00:00Z,Brighton and Hove Albion,Liverpool,no_confident_bt2_match
+0314f09e396060fe7a79e5aa3fee29da,2023-10-08T13:00:00Z,West Ham United,Newcastle United,no_confident_bt2_match
+f9759348f08884df9648f3e2dbbfd819,2023-10-08T15:30:00Z,Arsenal,Manchester City,no_confident_bt2_match
+e573c7cf0a99cdc038d519a5b63520c0,2023-09-30T14:00:06Z,Everton,Luton,no_confident_bt2_match
+7d4220e8bf528f818408301b517fbee8,2023-09-30T14:00:28Z,Bournemouth,Arsenal,no_confident_bt2_match
+d808239f478b81bbbd8afc914dcdc548,2023-10-01T13:00:00Z,Nottingham Forest,Brentford,no_confident_bt2_match
+7bc7e53ac44c6bd3cbe692b0d46e76fe,2023-10-02T19:00:00Z,Fulham,Chelsea,no_confident_bt2_match
+515f74c17c4d3598c982646ded5e51a9,2023-10-03T18:30:00Z,Luton,Burnley,no_confident_bt2_match
+5528d0b167ff7ae068b6d0478eb997c7,2023-10-07T11:30:00Z,Luton,Tottenham Hotspur,no_confident_bt2_match
+14f4848838e0003cf90b04e2b050bb07,2023-10-07T14:00:00Z,Everton,Bournemouth,no_confident_bt2_match
+ffaee6d3d0a33a53aaa286624422cd11,2023-10-07T14:00:00Z,Manchester United,Brentford,no_confident_bt2_match
+5ca0d427c6074c5081f434511430569c,2023-10-07T14:00:00Z,Burnley,Chelsea,no_confident_bt2_match
+5e1ad13cab7640dc90ac2911df6542dc,2023-10-07T14:00:00Z,Fulham,Sheffield United,no_confident_bt2_match
+f0f806a5dd04563e48566f1581aa3b55,2023-10-07T16:30:00Z,Crystal Palace,Nottingham Forest,no_confident_bt2_match
+8af4e3cafd5acdf76aa802f6efdcf41d,2023-10-08T13:00:00Z,Wolverhampton Wanderers,Aston Villa,no_confident_bt2_match
+e0e8c94420c07532683f7c157d4ea9b6,2023-10-08T13:00:00Z,Brighton and Hove Albion,Liverpool,no_confident_bt2_match
+0314f09e396060fe7a79e5aa3fee29da,2023-10-08T13:00:00Z,West Ham United,Newcastle United,no_confident_bt2_match
+f9759348f08884df9648f3e2dbbfd819,2023-10-08T15:30:00Z,Arsenal,Manchester City,no_confident_bt2_match
+46a9e6b3f71feeba5ea7df3f06472ec9,2023-10-21T14:00:00Z,Bournemouth,Wolverhampton Wanderers,no_confident_bt2_match
+5fb327dee8252a821f171d8cd543b197,2023-10-21T14:00:00Z,Manchester City,Brighton and Hove Albion,no_confident_bt2_match
+12a78834c1d008d7e4d3cd8c27dda056,2023-10-21T14:00:00Z,Nottingham Forest,Luton,no_confident_bt2_match
+02cccd18939a65f1a301fadffab951d9,2023-10-22T15:30:00Z,Aston Villa,West Ham United,no_confident_bt2_match
+cb080897cfb2626e93bec2e63947911a,2023-10-23T19:00:00Z,Tottenham Hotspur,Fulham,no_confident_bt2_match
+cc3c1b56cba5a77f4d9d3e2bcfc22514,2023-10-27T19:00:00Z,Crystal Palace,Tottenham Hotspur,no_confident_bt2_match
+536f44f6f12f24b3676e3f104c512e52,2023-10-28T11:30:00Z,Chelsea,Brentford,no_confident_bt2_match
+15e994381b697e59a790b3c85a18632a,2023-10-28T14:00:00Z,Arsenal,Sheffield United,no_confident_bt2_match
+012818c15693e7a6c7f8f27b68c84c86,2023-10-28T14:00:00Z,Bournemouth,Burnley,no_confident_bt2_match
+ab1580643b97f71e4450ba26a7110a16,2023-10-28T16:30:00Z,Wolverhampton Wanderers,Newcastle United,no_confident_bt2_match
+d2a89958592a5faec572c285a24d2023,2023-10-29T13:00:00Z,West Ham United,Everton,no_confident_bt2_match
+2805ab860d9648659b1f1f62ef14e32b,2023-10-29T14:00:00Z,Aston Villa,Luton,no_confident_bt2_match
+c02a5535b31b233c97f2b1a47632d75f,2023-10-29T14:00:00Z,Brighton and Hove Albion,Fulham,no_confident_bt2_match
+2396cdc83d3f5994ae732126ccf61075,2023-10-29T14:00:00Z,Liverpool,Nottingham Forest,no_confident_bt2_match
+206298e9cfcd85d8df11f17239044690,2023-10-29T15:30:00Z,Manchester United,Manchester City,no_confident_bt2_match
+46a9e6b3f71feeba5ea7df3f06472ec9,2023-10-21T14:00:00Z,Bournemouth,Wolverhampton Wanderers,no_confident_bt2_match
+5fb327dee8252a821f171d8cd543b197,2023-10-21T14:00:00Z,Manchester City,Brighton and Hove Albion,no_confident_bt2_match
+12a78834c1d008d7e4d3cd8c27dda056,2023-10-21T14:00:00Z,Nottingham Forest,Luton,no_confident_bt2_match
+02cccd18939a65f1a301fadffab951d9,2023-10-22T15:30:00Z,Aston Villa,West Ham United,no_confident_bt2_match
+cb080897cfb2626e93bec2e63947911a,2023-10-23T19:00:00Z,Tottenham Hotspur,Fulham,no_confident_bt2_match
+cc3c1b56cba5a77f4d9d3e2bcfc22514,2023-10-27T19:00:00Z,Crystal Palace,Tottenham Hotspur,no_confident_bt2_match
+536f44f6f12f24b3676e3f104c512e52,2023-10-28T11:30:00Z,Chelsea,Brentford,no_confident_bt2_match
+15e994381b697e59a790b3c85a18632a,2023-10-28T14:00:00Z,Arsenal,Sheffield United,no_confident_bt2_match
+012818c15693e7a6c7f8f27b68c84c86,2023-10-28T14:00:00Z,Bournemouth,Burnley,no_confident_bt2_match
+ab1580643b97f71e4450ba26a7110a16,2023-10-28T16:30:00Z,Wolverhampton Wanderers,Newcastle United,no_confident_bt2_match
+d2a89958592a5faec572c285a24d2023,2023-10-29T13:00:00Z,West Ham United,Everton,no_confident_bt2_match
+2805ab860d9648659b1f1f62ef14e32b,2023-10-29T14:00:00Z,Aston Villa,Luton,no_confident_bt2_match
+c02a5535b31b233c97f2b1a47632d75f,2023-10-29T14:00:00Z,Brighton and Hove Albion,Fulham,no_confident_bt2_match
+2396cdc83d3f5994ae732126ccf61075,2023-10-29T14:00:00Z,Liverpool,Nottingham Forest,no_confident_bt2_match
+206298e9cfcd85d8df11f17239044690,2023-10-29T15:30:00Z,Manchester United,Manchester City,no_confident_bt2_match
+46a9e6b3f71feeba5ea7df3f06472ec9,2023-10-21T14:00:24Z,Bournemouth,Wolverhampton Wanderers,no_confident_bt2_match
+5fb327dee8252a821f171d8cd543b197,2023-10-21T14:02:39Z,Manchester City,Brighton and Hove Albion,no_confident_bt2_match
+12a78834c1d008d7e4d3cd8c27dda056,2023-10-21T14:09:29Z,Nottingham Forest,Luton,no_confident_bt2_match
+02cccd18939a65f1a301fadffab951d9,2023-10-22T15:30:00Z,Aston Villa,West Ham United,no_confident_bt2_match
+cb080897cfb2626e93bec2e63947911a,2023-10-23T19:00:00Z,Tottenham Hotspur,Fulham,no_confident_bt2_match
+cc3c1b56cba5a77f4d9d3e2bcfc22514,2023-10-27T19:00:00Z,Crystal Palace,Tottenham Hotspur,no_confident_bt2_match
+536f44f6f12f24b3676e3f104c512e52,2023-10-28T11:30:00Z,Chelsea,Brentford,no_confident_bt2_match
+15e994381b697e59a790b3c85a18632a,2023-10-28T14:00:00Z,Arsenal,Sheffield United,no_confident_bt2_match
+012818c15693e7a6c7f8f27b68c84c86,2023-10-28T14:00:00Z,Bournemouth,Burnley,no_confident_bt2_match
+ab1580643b97f71e4450ba26a7110a16,2023-10-28T16:30:00Z,Wolverhampton Wanderers,Newcastle United,no_confident_bt2_match
+d2a89958592a5faec572c285a24d2023,2023-10-29T13:00:00Z,West Ham United,Everton,no_confident_bt2_match
+2805ab860d9648659b1f1f62ef14e32b,2023-10-29T14:00:00Z,Aston Villa,Luton,no_confident_bt2_match
+c02a5535b31b233c97f2b1a47632d75f,2023-10-29T14:00:00Z,Brighton and Hove Albion,Fulham,no_confident_bt2_match
+2396cdc83d3f5994ae732126ccf61075,2023-10-29T14:00:00Z,Liverpool,Nottingham Forest,no_confident_bt2_match
+206298e9cfcd85d8df11f17239044690,2023-10-29T15:30:00Z,Manchester United,Manchester City,no_confident_bt2_match
+439ae8b6e6ccb25359cae67ccee9a61c,2023-11-04T12:30:00Z,Fulham,Manchester United,no_confident_bt2_match
+d42006aa25ebf9627c4146d69563b890,2023-11-04T15:00:00Z,Manchester City,Bournemouth,no_confident_bt2_match
+197f71924f69a83fbd10a4f0daa2d8d6,2023-11-04T15:00:00Z,Brentford,West Ham United,no_confident_bt2_match
+95d920ae631e4c3d05782f74cafb8010,2023-11-04T15:00:00Z,Everton,Brighton and Hove Albion,no_confident_bt2_match
+f77d9e4a963ee0e68fb0f71d51fa6855,2023-11-04T15:00:00Z,Burnley,Crystal Palace,no_confident_bt2_match
+330ccff0621fbd93b991703a55bc3045,2023-11-04T15:00:00Z,Sheffield United,Wolverhampton Wanderers,no_confident_bt2_match
+e23f284f9be1986a3bdcbc63fdfeb5e9,2023-11-04T17:30:00Z,Newcastle United,Arsenal,no_confident_bt2_match
+2e4e068dd8799ba3fafa34acfab91fab,2023-11-05T14:00:00Z,Nottingham Forest,Aston Villa,no_confident_bt2_match
+d4be0bb766fcb90b5f0c7dfc5fe3e9fd,2023-11-05T16:30:00Z,Luton,Liverpool,no_confident_bt2_match
+f9797be65a325bc844892ebd2dd41a98,2023-11-06T20:00:00Z,Tottenham Hotspur,Chelsea,no_confident_bt2_match
+02cccd18939a65f1a301fadffab951d9,2023-10-22T15:30:00Z,Aston Villa,West Ham United,no_confident_bt2_match
+cb080897cfb2626e93bec2e63947911a,2023-10-23T19:00:00Z,Tottenham Hotspur,Fulham,no_confident_bt2_match
+cc3c1b56cba5a77f4d9d3e2bcfc22514,2023-10-27T19:00:00Z,Crystal Palace,Tottenham Hotspur,no_confident_bt2_match
+536f44f6f12f24b3676e3f104c512e52,2023-10-28T11:30:00Z,Chelsea,Brentford,no_confident_bt2_match
+15e994381b697e59a790b3c85a18632a,2023-10-28T14:00:00Z,Arsenal,Sheffield United,no_confident_bt2_match
+012818c15693e7a6c7f8f27b68c84c86,2023-10-28T14:00:00Z,Bournemouth,Burnley,no_confident_bt2_match
+ab1580643b97f71e4450ba26a7110a16,2023-10-28T16:30:00Z,Wolverhampton Wanderers,Newcastle United,no_confident_bt2_match
+d2a89958592a5faec572c285a24d2023,2023-10-29T13:00:00Z,West Ham United,Everton,no_confident_bt2_match
+2805ab860d9648659b1f1f62ef14e32b,2023-10-29T14:00:00Z,Aston Villa,Luton,no_confident_bt2_match
+c02a5535b31b233c97f2b1a47632d75f,2023-10-29T14:00:00Z,Brighton and Hove Albion,Fulham,no_confident_bt2_match
+2396cdc83d3f5994ae732126ccf61075,2023-10-29T14:00:00Z,Liverpool,Nottingham Forest,no_confident_bt2_match
+206298e9cfcd85d8df11f17239044690,2023-10-29T15:30:00Z,Manchester United,Manchester City,no_confident_bt2_match
+439ae8b6e6ccb25359cae67ccee9a61c,2023-11-04T12:30:00Z,Fulham,Manchester United,no_confident_bt2_match
+d42006aa25ebf9627c4146d69563b890,2023-11-04T15:00:00Z,Manchester City,Bournemouth,no_confident_bt2_match
+197f71924f69a83fbd10a4f0daa2d8d6,2023-11-04T15:00:00Z,Brentford,West Ham United,no_confident_bt2_match
+95d920ae631e4c3d05782f74cafb8010,2023-11-04T15:00:00Z,Everton,Brighton and Hove Albion,no_confident_bt2_match
+f77d9e4a963ee0e68fb0f71d51fa6855,2023-11-04T15:00:00Z,Burnley,Crystal Palace,no_confident_bt2_match
+330ccff0621fbd93b991703a55bc3045,2023-11-04T15:00:00Z,Sheffield United,Wolverhampton Wanderers,no_confident_bt2_match
+e23f284f9be1986a3bdcbc63fdfeb5e9,2023-11-04T17:30:00Z,Newcastle United,Arsenal,no_confident_bt2_match
+2e4e068dd8799ba3fafa34acfab91fab,2023-11-05T14:00:00Z,Nottingham Forest,Aston Villa,no_confident_bt2_match
+d4be0bb766fcb90b5f0c7dfc5fe3e9fd,2023-11-05T16:30:00Z,Luton,Liverpool,no_confident_bt2_match
+f9797be65a325bc844892ebd2dd41a98,2023-11-06T20:00:00Z,Tottenham Hotspur,Chelsea,no_confident_bt2_match
+6619d3ca44afc07cccaee264d4f62977,2024-03-30T15:00:00Z,Bournemouth,Everton,no_confident_bt2_match
+8a065e80284e1157870534a772c62305,2024-03-30T15:00:00Z,Tottenham Hotspur,Luton,no_confident_bt2_match
+6cc43229e6d4cecb17a81350fadc348e,2024-03-31T13:00:00Z,Liverpool,Brighton and Hove Albion,no_confident_bt2_match
+742a2b03e7bda7de65179b2a3eee8bd2,2024-03-31T15:30:00Z,Manchester City,Arsenal,no_confident_bt2_match
+2b45606a19467a04cbe30aabdba5f6d9,2024-04-02T18:30:00Z,Newcastle United,Everton,no_confident_bt2_match
+5d50cb1b7d2e3290d56d0398e01e60e3,2024-04-02T18:30:00Z,Nottingham Forest,Fulham,no_confident_bt2_match
+69763436c65e956ddc950c436b64a290,2024-04-02T18:45:00Z,Bournemouth,Crystal Palace,no_confident_bt2_match
+2883b9e70f9f90877c85ebb1bceebf82,2024-04-02T18:45:00Z,Burnley,Wolverhampton Wanderers,no_confident_bt2_match
+10d617cd5230f91dd2886bc5249d2f63,2024-04-02T19:15:00Z,West Ham United,Tottenham Hotspur,no_confident_bt2_match
+7801e89270a952704db9fe98f66720b9,2024-04-03T18:30:00Z,Arsenal,Luton,no_confident_bt2_match
+ed20905dccc1b8fd3c7e553e8c2e7dbe,2024-04-03T18:30:00Z,Brentford,Brighton and Hove Albion,no_confident_bt2_match
+4c51af29ed929e650f9be88ab4ae5d77,2024-04-03T19:15:00Z,Manchester City,Aston Villa,no_confident_bt2_match
+bb4fa8be4734f8faaa37de47c0423b29,2024-04-04T18:30:00Z,Liverpool,Sheffield United,no_confident_bt2_match
+669758585d86adfedda3eed1dbedb47a,2024-04-04T19:15:00Z,Chelsea,Manchester United,no_confident_bt2_match
+aa25689e103b645febb56301485aa739,2024-04-06T11:30:00Z,Crystal Palace,Manchester City,no_confident_bt2_match
+f089aa5e8ff6db585da034202166e655,2024-04-06T14:00:00Z,Aston Villa,Brentford,no_confident_bt2_match
+b228cf71ae51253f85681f7d532ae777,2024-04-06T14:00:00Z,Luton,Bournemouth,no_confident_bt2_match
+abd63bd4c706e3c9a8bc92ad7aa903ea,2024-04-06T14:00:00Z,Everton,Burnley,no_confident_bt2_match
+3881f0fcbcfd89e89c78a015ecdf947b,2024-04-06T14:00:00Z,Fulham,Newcastle United,no_confident_bt2_match
+1f772e8d8642f23015d7f5f320e5010f,2024-04-06T14:00:00Z,Wolverhampton Wanderers,West Ham United,no_confident_bt2_match
+5b908d12a76265b0d54e24e7e0a0e185,2024-04-06T16:30:00Z,Brighton and Hove Albion,Arsenal,no_confident_bt2_match
+0be20dfb5c98e93071442812ab84d57b,2024-04-07T14:30:00Z,Manchester United,Liverpool,no_confident_bt2_match
+a003a42901e673a63784a2b0c8abfb52,2024-04-07T16:30:00Z,Sheffield United,Chelsea,no_confident_bt2_match
+88f87ff935da98fca61533c9a4defcd8,2024-04-07T17:00:00Z,Tottenham Hotspur,Nottingham Forest,no_confident_bt2_match
+6619d3ca44afc07cccaee264d4f62977,2024-03-30T15:00:00Z,Bournemouth,Everton,no_confident_bt2_match
+8a065e80284e1157870534a772c62305,2024-03-30T15:00:00Z,Tottenham Hotspur,Luton,no_confident_bt2_match
+6cc43229e6d4cecb17a81350fadc348e,2024-03-31T13:00:00Z,Liverpool,Brighton and Hove Albion,no_confident_bt2_match
+742a2b03e7bda7de65179b2a3eee8bd2,2024-03-31T15:30:00Z,Manchester City,Arsenal,no_confident_bt2_match
+2b45606a19467a04cbe30aabdba5f6d9,2024-04-02T18:30:00Z,Newcastle United,Everton,no_confident_bt2_match
+5d50cb1b7d2e3290d56d0398e01e60e3,2024-04-02T18:30:00Z,Nottingham Forest,Fulham,no_confident_bt2_match
+69763436c65e956ddc950c436b64a290,2024-04-02T18:45:00Z,Bournemouth,Crystal Palace,no_confident_bt2_match
+2883b9e70f9f90877c85ebb1bceebf82,2024-04-02T18:45:00Z,Burnley,Wolverhampton Wanderers,no_confident_bt2_match
+10d617cd5230f91dd2886bc5249d2f63,2024-04-02T19:15:00Z,West Ham United,Tottenham Hotspur,no_confident_bt2_match
+7801e89270a952704db9fe98f66720b9,2024-04-03T18:30:00Z,Arsenal,Luton,no_confident_bt2_match
+ed20905dccc1b8fd3c7e553e8c2e7dbe,2024-04-03T18:30:00Z,Brentford,Brighton and Hove Albion,no_confident_bt2_match
+4c51af29ed929e650f9be88ab4ae5d77,2024-04-03T19:15:00Z,Manchester City,Aston Villa,no_confident_bt2_match
+bb4fa8be4734f8faaa37de47c0423b29,2024-04-04T18:30:00Z,Liverpool,Sheffield United,no_confident_bt2_match
+669758585d86adfedda3eed1dbedb47a,2024-04-04T19:15:00Z,Chelsea,Manchester United,no_confident_bt2_match
+aa25689e103b645febb56301485aa739,2024-04-06T11:30:00Z,Crystal Palace,Manchester City,no_confident_bt2_match
+f089aa5e8ff6db585da034202166e655,2024-04-06T14:00:00Z,Aston Villa,Brentford,no_confident_bt2_match
+b228cf71ae51253f85681f7d532ae777,2024-04-06T14:00:00Z,Luton,Bournemouth,no_confident_bt2_match
+abd63bd4c706e3c9a8bc92ad7aa903ea,2024-04-06T14:00:00Z,Everton,Burnley,no_confident_bt2_match
+3881f0fcbcfd89e89c78a015ecdf947b,2024-04-06T14:00:00Z,Fulham,Newcastle United,no_confident_bt2_match
+1f772e8d8642f23015d7f5f320e5010f,2024-04-06T14:00:00Z,Wolverhampton Wanderers,West Ham United,no_confident_bt2_match
+5b908d12a76265b0d54e24e7e0a0e185,2024-04-06T16:30:00Z,Brighton and Hove Albion,Arsenal,no_confident_bt2_match
+0be20dfb5c98e93071442812ab84d57b,2024-04-07T14:30:00Z,Manchester United,Liverpool,no_confident_bt2_match
+a003a42901e673a63784a2b0c8abfb52,2024-04-07T16:30:00Z,Sheffield United,Chelsea,no_confident_bt2_match
+88f87ff935da98fca61533c9a4defcd8,2024-04-07T17:00:00Z,Tottenham Hotspur,Nottingham Forest,no_confident_bt2_match
+6619d3ca44afc07cccaee264d4f62977,2024-03-30T15:00:02Z,Bournemouth,Everton,no_confident_bt2_match
+8a065e80284e1157870534a772c62305,2024-03-30T15:00:18Z,Tottenham Hotspur,Luton,no_confident_bt2_match
+6cc43229e6d4cecb17a81350fadc348e,2024-03-31T13:00:00Z,Liverpool,Brighton and Hove Albion,no_confident_bt2_match
+742a2b03e7bda7de65179b2a3eee8bd2,2024-03-31T15:30:00Z,Manchester City,Arsenal,no_confident_bt2_match
+2b45606a19467a04cbe30aabdba5f6d9,2024-04-02T18:30:00Z,Newcastle United,Everton,no_confident_bt2_match
+5d50cb1b7d2e3290d56d0398e01e60e3,2024-04-02T18:30:00Z,Nottingham Forest,Fulham,no_confident_bt2_match
+69763436c65e956ddc950c436b64a290,2024-04-02T18:45:00Z,Bournemouth,Crystal Palace,no_confident_bt2_match
+2883b9e70f9f90877c85ebb1bceebf82,2024-04-02T18:45:00Z,Burnley,Wolverhampton Wanderers,no_confident_bt2_match
+10d617cd5230f91dd2886bc5249d2f63,2024-04-02T19:15:00Z,West Ham United,Tottenham Hotspur,no_confident_bt2_match
+7801e89270a952704db9fe98f66720b9,2024-04-03T18:30:00Z,Arsenal,Luton,no_confident_bt2_match
+ed20905dccc1b8fd3c7e553e8c2e7dbe,2024-04-03T18:30:00Z,Brentford,Brighton and Hove Albion,no_confident_bt2_match
+4c51af29ed929e650f9be88ab4ae5d77,2024-04-03T19:15:00Z,Manchester City,Aston Villa,no_confident_bt2_match
+bb4fa8be4734f8faaa37de47c0423b29,2024-04-04T18:30:00Z,Liverpool,Sheffield United,no_confident_bt2_match
+669758585d86adfedda3eed1dbedb47a,2024-04-04T19:15:00Z,Chelsea,Manchester United,no_confident_bt2_match
+aa25689e103b645febb56301485aa739,2024-04-06T11:30:00Z,Crystal Palace,Manchester City,no_confident_bt2_match
+f089aa5e8ff6db585da034202166e655,2024-04-06T14:00:00Z,Aston Villa,Brentford,no_confident_bt2_match
+b228cf71ae51253f85681f7d532ae777,2024-04-06T14:00:00Z,Luton,Bournemouth,no_confident_bt2_match
+abd63bd4c706e3c9a8bc92ad7aa903ea,2024-04-06T14:00:00Z,Everton,Burnley,no_confident_bt2_match
+3881f0fcbcfd89e89c78a015ecdf947b,2024-04-06T14:00:00Z,Fulham,Newcastle United,no_confident_bt2_match
+1f772e8d8642f23015d7f5f320e5010f,2024-04-06T14:00:00Z,Wolverhampton Wanderers,West Ham United,no_confident_bt2_match
+5b908d12a76265b0d54e24e7e0a0e185,2024-04-06T16:30:00Z,Brighton and Hove Albion,Arsenal,no_confident_bt2_match
+0be20dfb5c98e93071442812ab84d57b,2024-04-07T14:30:00Z,Manchester United,Liverpool,no_confident_bt2_match
+a003a42901e673a63784a2b0c8abfb52,2024-04-07T16:30:00Z,Sheffield United,Chelsea,no_confident_bt2_match
+88f87ff935da98fca61533c9a4defcd8,2024-04-07T17:00:00Z,Tottenham Hotspur,Nottingham Forest,no_confident_bt2_match
+6cc43229e6d4cecb17a81350fadc348e,2024-03-31T13:00:00Z,Liverpool,Brighton and Hove Albion,no_confident_bt2_match
+742a2b03e7bda7de65179b2a3eee8bd2,2024-03-31T15:30:00Z,Manchester City,Arsenal,no_confident_bt2_match
+2b45606a19467a04cbe30aabdba5f6d9,2024-04-02T18:30:00Z,Newcastle United,Everton,no_confident_bt2_match
+5d50cb1b7d2e3290d56d0398e01e60e3,2024-04-02T18:30:00Z,Nottingham Forest,Fulham,no_confident_bt2_match
+69763436c65e956ddc950c436b64a290,2024-04-02T18:45:00Z,Bournemouth,Crystal Palace,no_confident_bt2_match
+2883b9e70f9f90877c85ebb1bceebf82,2024-04-02T18:45:00Z,Burnley,Wolverhampton Wanderers,no_confident_bt2_match
+10d617cd5230f91dd2886bc5249d2f63,2024-04-02T19:15:00Z,West Ham United,Tottenham Hotspur,no_confident_bt2_match
+7801e89270a952704db9fe98f66720b9,2024-04-03T18:30:00Z,Arsenal,Luton,no_confident_bt2_match
+ed20905dccc1b8fd3c7e553e8c2e7dbe,2024-04-03T18:30:00Z,Brentford,Brighton and Hove Albion,no_confident_bt2_match
+4c51af29ed929e650f9be88ab4ae5d77,2024-04-03T19:15:00Z,Manchester City,Aston Villa,no_confident_bt2_match
+bb4fa8be4734f8faaa37de47c0423b29,2024-04-04T18:30:00Z,Liverpool,Sheffield United,no_confident_bt2_match
+669758585d86adfedda3eed1dbedb47a,2024-04-04T19:15:00Z,Chelsea,Manchester United,no_confident_bt2_match
+aa25689e103b645febb56301485aa739,2024-04-06T11:30:00Z,Crystal Palace,Manchester City,no_confident_bt2_match
+f089aa5e8ff6db585da034202166e655,2024-04-06T14:00:00Z,Aston Villa,Brentford,no_confident_bt2_match
+b228cf71ae51253f85681f7d532ae777,2024-04-06T14:00:00Z,Luton,Bournemouth,no_confident_bt2_match
+abd63bd4c706e3c9a8bc92ad7aa903ea,2024-04-06T14:00:00Z,Everton,Burnley,no_confident_bt2_match
+3881f0fcbcfd89e89c78a015ecdf947b,2024-04-06T14:00:00Z,Fulham,Newcastle United,no_confident_bt2_match
+1f772e8d8642f23015d7f5f320e5010f,2024-04-06T14:00:00Z,Wolverhampton Wanderers,West Ham United,no_confident_bt2_match
+5b908d12a76265b0d54e24e7e0a0e185,2024-04-06T16:30:00Z,Brighton and Hove Albion,Arsenal,no_confident_bt2_match
+0be20dfb5c98e93071442812ab84d57b,2024-04-07T14:30:00Z,Manchester United,Liverpool,no_confident_bt2_match
+a003a42901e673a63784a2b0c8abfb52,2024-04-07T16:30:00Z,Sheffield United,Chelsea,no_confident_bt2_match
+88f87ff935da98fca61533c9a4defcd8,2024-04-07T17:00:00Z,Tottenham Hotspur,Nottingham Forest,no_confident_bt2_match
+78983527cc9aee0d0b708fde9b91bd37,2024-05-19T15:00:00Z,Chelsea,Bournemouth,no_confident_bt2_match
+3c64fdd38cde33a37cee85c0cabff38f,2024-05-19T15:00:00Z,Brighton and Hove Albion,Manchester United,no_confident_bt2_match
+4ee651c4bbbd6eeb0bd534b848255a32,2024-05-19T15:00:00Z,Luton,Fulham,no_confident_bt2_match
+2b7aee2c0822de472cf30c0ab8bb3791,2025-05-25T15:00:00Z,Bournemouth,Leicester City,no_confident_bt2_match
+28088e3327584451bdb3e8de04539199,2025-05-25T15:00:00Z,Tottenham Hotspur,Brighton and Hove Albion,no_confident_bt2_match

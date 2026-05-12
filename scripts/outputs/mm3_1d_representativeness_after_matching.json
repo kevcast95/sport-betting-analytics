@@ -1,0 +1,28 @@
+{
+  "full_big5_events": 3806,
+  "improved_matched_events": 3126,
+  "previous_matched_events": 2031,
+  "newly_matched_count": 1095,
+  "improved_match_rate": 0.8213,
+  "previous_match_rate": 0.5336,
+  "representativeness_risk_before": "critical",
+  "representativeness_risk_after": "critical",
+  "max_abs_league_delta_pp_before": 19.15,
+  "max_abs_league_delta_pp_after": 14.56,
+  "league_match_rate_before_by_sport_key": {
+    "soccer_epl": 0.7599,
+    "soccer_france_ligue_one": 0.3943,
+    "soccer_germany_bundesliga": 0.2724,
+    "soccer_italy_serie_a": 0.7167,
+    "soccer_spain_la_liga": 0.5161
+  },
+  "league_match_rate_after_by_sport_key": {
+    "soccer_epl": 0.9476,
+    "soccer_france_ligue_one": 0.5882,
+    "soccer_germany_bundesliga": 0.7407,
+    "soccer_italy_serie_a": 0.8962,
+    "soccer_spain_la_liga": 0.8945
+  },
+  "ligue1_before": 0.3943,
+  "ligue1_after": 0.5882
+}

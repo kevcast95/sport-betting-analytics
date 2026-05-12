@@ -1,0 +1,30 @@
+{
+  "by_sport_key": {
+    "soccer_epl": {
+      "fixtures": 783,
+      "matched_bt2": 595
+    },
+    "soccer_france_ligue_one": {
+      "fixtures": 629,
+      "matched_bt2": 248
+    },
+    "soccer_germany_bundesliga": {
+      "fixtures": 837,
+      "matched_bt2": 228
+    },
+    "soccer_italy_serie_a": {
+      "fixtures": 780,
+      "matched_bt2": 559
+    },
+    "soccer_spain_la_liga": {
+      "fixtures": 777,
+      "matched_bt2": 401
+    }
+  },
+  "matched_board": {
+    "ft_1x2_ready": 2031,
+    "totals_ready": 2031,
+    "ou2_5_ready": 2031,
+    "ou_lines_sum": 7510
+  }
+}

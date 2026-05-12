@@ -1,0 +1,22 @@
+{
+  "previous_match_rate": 0.5336,
+  "improved_match_rate": 0.8213,
+  "previous_matched_count": 2031,
+  "improved_matched_events_count": 3126,
+  "newly_matched_count": 1095,
+  "high_confidence_match_count": 3126,
+  "medium_confidence_diagnostic_count": 360,
+  "rejected_ambiguous_count": 2,
+  "unmatched_no_candidate_count": 208,
+  "low_confidence_count": 110,
+  "representativeness_risk": "critical",
+  "representativeness_risk_previous": "critical",
+  "league_coverage_hole_flag": false,
+  "league_coverage_hole_flag_previous": true,
+  "min_league_match_rate_after": 0.5882,
+  "worst_league_sport_key_after": "soccer_france_ligue_one",
+  "ready_for_mm3_2a_subset": false,
+  "ready_for_mm3_2_full_big5": false,
+  "recommended_path": "improve_matching_first",
+  "all_high_confidence_have_h2h_totals_ou25_digest": true
+}
